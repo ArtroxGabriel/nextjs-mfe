@@ -1,10 +1,6 @@
-export interface UserSession {
-  readonly userId: string;
-  readonly userName: string;
-  readonly email: string;
-  readonly role: 'admin' | 'operator' | 'viewer';
-  readonly tenant: string;
-}
+import type { UserSession, ToastPayload, MapMarker } from '@mfe/ui-shell';
+
+export type { UserSession, ToastPayload, MapMarker };
 
 export interface ServerMetrics {
   readonly cpuArch: string;
@@ -31,23 +27,6 @@ export interface TelemetryEvent {
   readonly value: number;
 }
 
-export interface MapMarker {
-  readonly id: string;
-  readonly name: string;
-  readonly lat: number;
-  readonly lng: number;
-  readonly status: 'active' | 'warning' | 'idle';
-  readonly description: string;
-}
-
-export interface ToastPayload {
-  readonly id: string;
-  readonly title: string;
-  readonly message: string;
-  readonly type: 'info' | 'success' | 'warning' | 'error';
-  readonly timestamp: number;
-}
-
 export interface ServerCardProps {
   readonly initialData?: ServerPayload;
   readonly title?: string;
@@ -68,4 +47,3 @@ export interface RemoteTelemetryProps {
   readonly maxEvents?: number;
   readonly session?: UserSession;
 }
-

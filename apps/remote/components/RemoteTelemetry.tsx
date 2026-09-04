@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import type { RemoteTelemetryProps, TelemetryEvent } from '../types';
-import { emitToast } from '../lib/events';
-import { remoteLog } from '../lib/logger';
+import { emitToast, remoteLog } from '@mfe/ui-shell';
 
 const MAX_BUFFER_SIZE = 8;
 
@@ -25,9 +24,8 @@ export const RemoteTelemetry: React.FC<RemoteTelemetryProps> = ({
       return;
     }
 
-    const sseUrl = typeof window !== 'undefined' && window.location.port === '3001'
-      ? '/api/sse-events'
-      : 'http://localhost:3001/api/sse-events';
+    // In Multi-Zone, SSE is under /remote-app/api/sse-events
+    const sseUrl = '/remote-app/api/sse-events';
 
     remoteLog.client('SSE_STREAM_CONNECTING', { sseUrl });
     const es = new EventSource(sseUrl);
@@ -76,7 +74,7 @@ export const RemoteTelemetry: React.FC<RemoteTelemetryProps> = ({
   return (
     <div className="federated-card telemetry-card">
       <header className="federated-card-header">
-        <span className="badge">Remote SSE Stream</span>
+        <span className="badge">Zone 2 SSE Stream</span>
         <h3 className="card-title">Live Server-Sent Events Telemetry</h3>
         <span className={`status-indicator status-${status}`}>
           ● {status.toUpperCase()}
@@ -85,7 +83,7 @@ export const RemoteTelemetry: React.FC<RemoteTelemetryProps> = ({
 
       <div className="card-body">
         {session && (
-          <p className="session-info-small">
+          <p className="session-info-small" style={{ marginBottom: '1rem', color: '#94a3b8' }}>
             Connected as: <strong>{session.userName}</strong> ({session.role})
           </p>
         )}
@@ -110,7 +108,7 @@ export const RemoteTelemetry: React.FC<RemoteTelemetryProps> = ({
         <div className="events-stream-list">
           {filtered.length === 0 ? (
             <p className="fallback-text">
-              {status === 'connecting' ? 'Connecting to remote SSE stream...' : 'No telemetry events received yet.'}
+              {status === 'connecting' ? 'Connecting to Zone 2 SSE stream (/remote-app/api/sse-events)...' : 'No telemetry events received yet.'}
             </p>
           ) : (
             filtered.map((evt) => (

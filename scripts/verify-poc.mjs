@@ -64,22 +64,29 @@ function fetchSseStream(url, maxEvents = 2, timeoutMs = 4000) {
 }
 
 async function runPoCVerification() {
-  console.log('====================================================');
-  console.log('🚀 Executing Full Next.js MFE PoC Verification Suite');
-  console.log('====================================================\n');
+  console.log('===============================================================');
+  console.log('🚀 Executing Next.js 16 Multi-Zones PoC Full Verification Suite');
+  console.log('===============================================================\n');
 
   let passedAll = true;
 
-  // 1. Verify Host & Remote Availability
-  console.log('1. Checking Services Status...');
+  // 1. Verify Host & Remote Availability and Reverse Proxy
+  console.log('1. Checking Multi-Zone Availability & Reverse Proxy Routing...');
   try {
     const hostRes = await fetchUrl('http://localhost:3000');
-    const remoteRes = await fetchUrl('http://localhost:3001/api/server-data');
+    const remoteDirectRes = await fetchUrl('http://localhost:3001/remote-app');
+    const remoteProxiedRes = await fetchUrl('http://localhost:3000/remote-app');
 
-    if (hostRes.statusCode === 200 && remoteRes.statusCode === 200) {
-      console.log('   ✅ Host (Port 3000) and Remote API (Port 3001) are ONLINE (HTTP 200)');
+    if (
+      hostRes.statusCode === 200 &&
+      remoteDirectRes.statusCode === 200 &&
+      remoteProxiedRes.statusCode === 200
+    ) {
+      console.log('   ✅ Zone 1 (3000), Zone 2 (3001), and Proxy (/remote-app) are ONLINE (HTTP 200)');
     } else {
-      console.error(`   ❌ Status check failed: Host=${hostRes.statusCode}, Remote=${remoteRes.statusCode}`);
+      console.error(
+        `   ❌ Status check failed: Host=${hostRes.statusCode}, RemoteDirect=${remoteDirectRes.statusCode}, RemoteProxied=${remoteProxiedRes.statusCode}`
+      );
       passedAll = false;
     }
   } catch (err) {
@@ -87,17 +94,32 @@ async function runPoCVerification() {
     process.exit(1);
   }
 
-  // 2. Verify Session in Host & Remote Inheritance
-  console.log('\n2. Verifying Session Management & Inheritance...');
+  // 2. Verify Session Propagation via Cookie across Zones
+  console.log('\n2. Verifying Multi-Zone Session Inheritance (Cookie-based)...');
   try {
-    const hostHtml = (await fetchUrl('http://localhost:3000')).body;
-    const hasSessionHeader = /Session:/.test(hostHtml);
-    const hasInheritedBadge = /Inherited Host Session|Ana Souza/.test(hostHtml);
+    const sessionCookie = encodeURIComponent(
+      JSON.stringify({
+        userId: 'operator-2',
+        userName: 'Carlos Mendes',
+        email: 'carlos.mendes@enterprise.com',
+        role: 'operator',
+        token: 'jwt_sec_operator_48102',
+      })
+    );
 
-    if (hasSessionHeader && hasInheritedBadge) {
-      console.log('   ✅ Host defines session and Remote inherits user context on SSR');
+    const remoteHtml = (
+      await fetchUrl('http://localhost:3000/remote-app', {
+        cookie: `mfe_user_session=${sessionCookie}`,
+      })
+    ).body;
+
+    const hasCarlosSession = /Carlos Mendes/.test(remoteHtml);
+    const hasRoleOperator = /role-operator/.test(remoteHtml);
+
+    if (hasCarlosSession && hasRoleOperator) {
+      console.log('   ✅ User session passed via Cookie seamlessly read server-side in Zone 2 App Router');
     } else {
-      console.error('   ❌ Session inheritance missing in SSR markup');
+      console.error('   ❌ Cookie session context not reflected in server-rendered markup');
       passedAll = false;
     }
   } catch (err) {
@@ -105,34 +127,42 @@ async function runPoCVerification() {
     passedAll = false;
   }
 
-  // 3. Verify Host Layout (Header + SideNavigation)
-  console.log('\n3. Verifying Host Layout (Header + SideNav + Content Slot)...');
+  // 3. Verify Shared UI Shell (Header + SideNav + Toasts)
+  console.log('\n3. Verifying Shared UI Shell in both Zones...');
   try {
     const hostHtml = (await fetchUrl('http://localhost:3000')).body;
-    const hasHeader = /Enterprise MFE Host/.test(hostHtml);
-    const hasSideNav = /Micro-Frontend Views|Live Telemetry|Fleet Map/.test(hostHtml);
-    const hasToastContainer = /toast-portal/.test(hostHtml);
+    const remoteHtml = (await fetchUrl('http://localhost:3000/remote-app')).body;
 
-    if (hasHeader && hasSideNav && hasToastContainer) {
-      console.log('   ✅ Host Layout correctly renders Top Header, SideNavigation, and Global Toast portal');
+    const hostHasShell =
+      /Next\.js 16 Multi-Zones/.test(hostHtml) &&
+      /Multi-Zone Routing/.test(hostHtml) &&
+      /toast-portal/.test(hostHtml);
+
+    const remoteHasShell =
+      /Next\.js 16 Multi-Zones/.test(remoteHtml) &&
+      /Multi-Zone Routing/.test(remoteHtml) &&
+      /toast-portal/.test(remoteHtml);
+
+    if (hostHasShell && remoteHasShell) {
+      console.log('   ✅ Both Zone 1 and Zone 2 consistently render the shared @mfe/ui-shell');
     } else {
-      console.error('   ❌ Layout elements missing in Host markup');
+      console.error('   ❌ UI Shell elements missing in one or more zones');
       passedAll = false;
     }
   } catch (err) {
-    console.error('   ❌ Layout check error:', err.message);
+    console.error('   ❌ UI Shell check error:', err.message);
     passedAll = false;
   }
 
-  // 4. Verify SSE (Server-Sent Events) Stream from Remote
-  console.log('\n4. Verifying SSE Stream from Remote (Port 3001)...');
+  // 4. Verify SSE (Server-Sent Events) Stream via Multi-Zone Route
+  console.log('\n4. Verifying SSE Stream from Zone 2 (/remote-app/api/sse-events)...');
   try {
-    const sseEvents = await fetchSseStream('http://localhost:3001/api/sse-events', 2);
+    const sseEvents = await fetchSseStream('http://localhost:3000/remote-app/api/sse-events', 2);
     const joined = sseEvents.join('\n');
     const isEventStream = joined.includes('data:') || joined.includes('connected');
 
     if (isEventStream) {
-      console.log(`   ✅ Remote SSE endpoint actively streaming real-time events (${sseEvents.length} chunks received)`);
+      console.log(`   ✅ Zone 2 SSE endpoint actively streaming through Host proxy (${sseEvents.length} chunks received)`);
     } else {
       console.error('   ❌ SSE stream did not emit event-stream packets');
       passedAll = false;
@@ -142,18 +172,18 @@ async function runPoCVerification() {
     passedAll = false;
   }
 
-  // 5. Verify Server-Side Rendering (SSR) of Remote Component
-  console.log('\n5. Verifying Server-Side Rendering (SSR) of Next.js Module Federation...');
+  // 5. Verify Server-Side Rendering (RSC) of Remote Zone Page
+  console.log('\n5. Verifying App Router Server-Side Rendering (RSC) on Remote Zone...');
   try {
-    const hostHtml = (await fetchUrl('http://localhost:3000')).body;
-    const hasOrigin = /Remote Application \(Port 3001\)/.test(hostHtml);
-    const hasRequestId = /SSR Request ID:/.test(hostHtml);
-    const hasFederatedCard = /Federated Remote Component|Remote SSR Federated Card/.test(hostHtml);
+    const remoteHtml = (await fetchUrl('http://localhost:3000/remote-app')).body;
+    const hasOrigin = /Remote Application \(Port 3001\)/.test(remoteHtml);
+    const hasRequestId = /SSR Request ID:/.test(remoteHtml);
+    const hasCardTitle = /Zone 2 SSR Federated Diagnostic Card/.test(remoteHtml);
 
-    if (hasOrigin && hasRequestId && hasFederatedCard) {
-      console.log('   ✅ Next.js Host successfully executed SSR rendering remote federated markup');
+    if (hasOrigin && hasRequestId && hasCardTitle) {
+      console.log('   ✅ Next.js 16 App Router successfully executed secure Server Component rendering');
     } else {
-      console.error('   ❌ SSR markup verification failed in Host HTML');
+      console.error('   ❌ SSR markup verification failed in Remote Zone HTML');
       passedAll = false;
     }
   } catch (err) {
@@ -161,15 +191,15 @@ async function runPoCVerification() {
     passedAll = false;
   }
 
-  // 6. Verify Server Cache & Global State (Toasts / Headers)
-  console.log('\n6. Verifying Server & Client Cache...');
+  // 6. Verify Server Cache & API Endpoint
+  console.log('\n6. Verifying In-Memory Cache & API Route Handlers...');
   try {
-    const apiRes1 = await fetchUrl('http://localhost:3001/api/server-data');
+    const apiRes1 = await fetchUrl('http://localhost:3000/remote-app/api/server-data');
     const cacheHeader = apiRes1.headers['cache-control'] || '';
-    const apiRes2 = await fetchUrl('http://localhost:3001/api/server-data');
+    const apiRes2 = await fetchUrl('http://localhost:3000/remote-app/api/server-data');
     const json2 = JSON.parse(apiRes2.body);
 
-    if (cacheHeader.includes('s-maxage') && (json2.cached !== undefined)) {
+    if (cacheHeader.includes('s-maxage') && json2.cached !== undefined) {
       console.log(`   ✅ Cache-Control headers (${cacheHeader}) and memory cache verification passed`);
     } else {
       console.warn('   ⚠️ Cache headers partially present:', cacheHeader);
@@ -179,32 +209,32 @@ async function runPoCVerification() {
     passedAll = false;
   }
 
-  // 7. Verify MapLibre GL Integration & Query Parameters
-  console.log('\n7. Verifying MapLibre GL & Query Parameter Handling...');
+  // 7. Verify MapLibre GL Route & Multi-Zone Path Routing
+  console.log('\n7. Verifying MapLibre GL Route (/remote-app/map)...');
   try {
-    const mapHtml = (await fetchUrl('http://localhost:3000/?tab=map&city=sao-paulo')).body;
+    const mapHtml = (await fetchUrl('http://localhost:3000/remote-app/map')).body;
     const hasMapLibreCss = /maplibre-gl/.test(mapHtml);
-    const hasRoute = /\/\?tab=map/.test(mapHtml);
+    const hasMapTitle = /Fleet Map Visualization \(Zone 2\)/.test(mapHtml);
 
-    if (hasMapLibreCss && hasRoute) {
-      console.log('   ✅ MapLibre GL assets, styles, and query parameter routing (?tab=map) verified');
+    if (hasMapLibreCss && hasMapTitle) {
+      console.log('   ✅ MapLibre GL assets, styles, and Multi-Zone path routing (/remote-app/map) verified');
     } else {
-      console.error('   ❌ MapLibre integration or query param routing missing');
+      console.error('   ❌ MapLibre integration or Multi-Zone path route missing');
       passedAll = false;
     }
   } catch (err) {
-    console.error('   ❌ MapLibre / Query param check error:', err.message);
+    console.error('   ❌ MapLibre check error:', err.message);
     passedAll = false;
   }
 
-  console.log('\n----------------------------------------------------');
+  console.log('\n---------------------------------------------------------------');
   if (passedAll) {
-    console.log('🎉 ALL 7 POC REQUIREMENTS SUCCESSFULLY VERIFIED & PASSED!');
-    console.log('----------------------------------------------------');
+    console.log('🎉 ALL 7 NEXT.JS 16 MULTI-ZONES REQUIREMENTS SUCCESSFULLY PASSED!');
+    console.log('---------------------------------------------------------------');
     process.exit(0);
   } else {
-    console.error('❌ PoC verification suite failed one or more checks.');
-    console.log('----------------------------------------------------');
+    console.error('❌ Multi-Zones PoC verification suite failed one or more checks.');
+    console.log('---------------------------------------------------------------');
     process.exit(1);
   }
 }

@@ -2,12 +2,11 @@
 
 import React, { useState } from 'react';
 import type { ServerCardProps } from '../types';
-import { emitToast } from '../lib/events';
-import { remoteLog } from '../lib/logger';
+import { emitToast, remoteLog } from '@mfe/ui-shell';
 
 export const ServerCard: React.FC<ServerCardProps> = ({
   initialData,
-  title = 'Remote SSR Federated Card',
+  title = 'Zone 2 Remote SSR Card',
   session,
 }) => {
   const [clickCount, setClickCount] = useState<number>(0);
@@ -30,14 +29,14 @@ export const ServerCard: React.FC<ServerCardProps> = ({
   return (
     <div className="federated-card">
       <header className="federated-card-header">
-        <span className="badge">Federated Remote Component</span>
+        <span className="badge">Multi-Zone Remote App</span>
         <h3 className="card-title">{title}</h3>
       </header>
 
       <div className="card-body">
         {activeSession && (
           <div className="session-banner">
-            <span className="session-badge">Inherited Host Session</span>
+            <span className="session-badge">Inherited Multi-Zone Session</span>
             <p>
               User: <strong>{activeSession.userName}</strong> ({activeSession.email}) | Role:{' '}
               <span className={`role-tag role-${activeSession.role}`}>{activeSession.role}</span>

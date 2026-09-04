@@ -2,8 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import type { RemoteMapProps, MapMarker } from '../types';
-import { emitToast, emitMapSelect } from '../lib/events';
-import { remoteLog } from '../lib/logger';
+import { emitToast, emitMapSelect, remoteLog } from '@mfe/ui-shell';
 
 const SAMPLE_MARKERS: readonly MapMarker[] = [
   {
@@ -44,7 +43,6 @@ export const RemoteMap: React.FC<RemoteMapProps> = ({
   lat = -23.5505,
   lng = -46.6333,
   zoom = 2,
-  selectedCity,
   onMarkerClick,
   session,
 }) => {
@@ -139,7 +137,7 @@ export const RemoteMap: React.FC<RemoteMapProps> = ({
       isCancelled = true;
       mapInstanceRef.current?.remove();
     };
-  }, []);
+  }, [lat, lng, zoom, onMarkerClick]);
 
   const handleFlyTo = (marker: MapMarker) => {
     setSelectedMarker(marker);
@@ -153,9 +151,9 @@ export const RemoteMap: React.FC<RemoteMapProps> = ({
   return (
     <div className="federated-card map-card">
       <header className="federated-card-header">
-        <span className="badge">Remote MapLibre GL</span>
+        <span className="badge">Zone 2 MapLibre GL</span>
         <h3 className="card-title">Geographic Fleet Infrastructure</h3>
-        {session && <span className="session-tag">Operator: {session.userName}</span>}
+        {session && <span className="session-tag" style={{ marginLeft: 'auto', color: '#94a3b8' }}>Operator: {session.userName}</span>}
       </header>
 
       <div className="card-body">

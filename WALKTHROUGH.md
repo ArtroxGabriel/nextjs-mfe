@@ -1,213 +1,247 @@
-# Guia Definitivo: Arquitetura de Micro-Frontends com Next.js 15, Module Federation e SSR Resiliente
+# Definitive Architectural Guide: Next.js 16 App Router Multi-Zones Architecture
 
-Este documento documenta a arquitetura, as decisões técnicas, a implementação dos 7 pilares da Prova de Conceito (PoC) e o histórico de resolução de problemas do projeto de **Micro-Frontends (MFE)** com **Next.js** e **Module Federation** (`@module-federation/nextjs-mf`).
+This document serves as the complete architectural reference, design documentation, and operational manual for the **Next.js 16 App Router Multi-Zones Micro-Frontend (MFE)** project.
 
 ---
 
-## 1. Visão Geral da Arquitetura
+## 1. Executive Summary & Architecture Overview
 
-O projeto é composto por dois micro-frontends executando em um monorepo gerenciado por **pnpm workspaces**:
+The **Multi-Zones Architecture** is Next.js's native pattern for scaling large-scale web applications across multiple autonomous squads. Rather than composing JavaScript bundles at runtime in the browser (Module Federation), Multi-Zones decomposes the application along **URL path routes (Micro-Sites)**, with each zone operating as an independent Next.js App Router service.
 
-1. **Host Shell (`apps/host` - Porta 3000)**:
-   * Atua como a casca da aplicação (App Shell), contendo cabeçalho unificado, navegação lateral e portal de notificações globais.
-   * Gerencia a autenticação/sessão do usuário e consome os módulos expostos pelo Remote tanto durante o ciclo de **Server-Side Rendering (SSR)** quanto na hidratação interativa no cliente.
-   * Possui camada de tolerância a falhas (*fault-tolerance*): caso o Remote fique fora do ar ou apresente lentidão, o Host degrada graciosamente e responde sempre com `HTTP 200 OK`.
-
-2. **Remote Provider (`apps/remote` - Porta 3001)**:
-   * Expõe componentes visuais federados ([`ServerCard`](apps/remote/components/ServerCard.tsx), [`RemoteTelemetry`](apps/remote/components/RemoteTelemetry.tsx), [`RemoteMap`](apps/remote/components/RemoteMap.tsx), [`RemoteDashboard`](apps/remote/components/RemoteDashboard.tsx)).
-   * Disponibiliza endpoint de streaming em tempo real via **Server-Sent Events (SSE)** em `/api/sse-events`.
-   * Fornece dados de SSR com cabeçalhos de cache HTTP e cache em memória com TTL.
+### Core Stack
+- **Framework**: Next.js 16 (`16.3.4`) with native **Turbopack** build compiler.
+- **Rendering Model**: **React 19 Server Components (RSC)** with secure Server-Side Rendering (SSR).
+- **Workspace Architecture**: **pnpm workspaces** with a shared Design System & Session package (`@mfe/ui-shell`).
+- **Reverse Proxy Routing**: Zero-hop path rewrites seamlessly directing traffic through the Host Gateway on Port 3000.
 
 ```mermaid
 graph TD
-    subgraph Browser["Navegador do Usuário"]
-        UI["Host Shell (Porta 3000)"]
-        Header["Header (Sessão + Status)"]
-        Sidebar["SideNavigation (Rotas / Abas)"]
+    subgraph Browser["User Browser"]
+        Client["Browser Client"]
+        Header["Shared Header (Session + Status)"]
+        Sidebar["Shared SideNavigation (Multi-Zone Links)"]
         ToastPortal["Toast Portal (CustomEvents)"]
-        Slot["Slot de Conteúdo Federado"]
     end
 
-    subgraph HostServer["Host Node.js Server (Porta 3000)"]
-        HGSSP["getServerSideProps"]
-        SafeLoader["safeRemoteLoader (Timeout 800ms)"]
-        HostLayout["HostLayout SSR"]
+    subgraph HostGateway["Zone 1: Host Gateway (Port 3000)"]
+        HostRouter["Next.js 16 App Router (/)"]
+        Proxy["Reverse Proxy Rewrites (/remote-app/*)"]
+        HostRSC["Host Server Components (RSC)"]
     end
 
-    subgraph RemoteServer["Remote Node.js Server (Porta 3001)"]
-        API_Data["/api/server-data (Cache + Sessão)"]
+    subgraph RemoteApp["Zone 2: Remote App Router (Port 3001)"]
+        RemoteRouter["basePath: /remote-app"]
+        RemoteRSC["Remote Server Components (Overview, Metrics)"]
+        API_Data["/api/server-data (Cache + Headers)"]
         API_SSE["/api/sse-events (EventStream)"]
-        R_SSR["_next/static/ssr/remoteEntry.js"]
-        R_Client["_next/static/chunks/remoteEntry.js"]
+        MapClient["MapLibre GL Client Component"]
     end
 
-    UI -->|1. Request Inicial| HostServer
-    HGSSP -->|2. Fetch com fallback| SafeLoader
-    SafeLoader -.->|"3. HTTP GET (800ms)"| API_Data
-    HostLayout -->|4. SSR Markup Inicial| UI
-    Slot -->|5. Hidratação de Bundles| R_Client
-    Slot -->|6. Conexão EventSource| API_SSE
-    Slot -->|7. Disparo de Toasts| ToastPortal
+    Client -->|1. Request /| HostGateway
+    HostRouter --> HostRSC
+    HostRSC -->|2. Secure SSR Markup| Client
+
+    Client -->|3. Request /remote-app/*| Proxy
+    Proxy -.->|"4. Reverse Proxy Forward"| RemoteRouter
+    RemoteRouter --> RemoteRSC
+    RemoteRSC -->|5. Secure Remote SSR Markup| Client
+    Client -->|6. EventSource Stream| API_SSE
 ```
 
 ---
 
-## 2. Estrutura do Monorepo
+## 2. Monorepo Project Structure
 
 ```
-.
+nextjs-mfe/
+├── packages/
+│   └── ui-shell/                     # Shared UI Shell, Layout, Session & Event Bus
+│       ├── package.json
+│       ├── tsconfig.json
+│       ├── src/
+│       │   ├── Header.tsx            # Client Component (Session selector, Status pill)
+│       │   ├── SideNavigation.tsx    # Client Component (Multi-zone path navigation)
+│       │   ├── ToastContainer.tsx    # Client Component (Global notification portal)
+│       │   ├── ShellLayout.tsx       # Root layout wrapper for App Router
+│       │   ├── session.ts            # Cookie-based session sync & validation
+│       │   ├── events.ts             # CustomEvents & notification dispatcher
+│       │   ├── logger.ts             # Isomorphic ANSI stdout & CSS console logger
+│       │   └── index.ts
+│       └── styles/
+│           └── globals.css           # Unified design tokens & responsive CSS
 ├── apps/
-│   ├── host/                               # Host Application (Next.js 15 - Porta 3000)
-│   │   ├── components/
-│   │   │   ├── Header.tsx                  # Topo com perfil de sessão, status e botão de toast
-│   │   │   ├── SideNavigation.tsx          # Menu lateral com rotas semânticas (?tab=...)
-│   │   │   ├── ToastContainer.tsx          # Portal de notificações globais via CustomEvents
-│   │   │   ├── HostLayout.tsx              # Layout unificado do Shell
-│   │   │   ├── FederatedErrorBoundary.tsx  # Error Boundary para isolar falhas do Remote
-│   │   │   └── RemoteFallbackCard.tsx      # Card de degradação graciosa quando Remote está offline
-│   │   ├── lib/
-│   │   │   ├── events.ts                   # Despachante e constantes de eventos globais
-│   │   │   ├── session.ts                  # Perfis de sessão pré-definidos e persistência
-│   │   │   └── safeRemoteLoader.ts         # Fetch com timeout estrito (800ms) e header de sessão
-│   │   ├── pages/
-│   │   │   ├── index.tsx                   # Página principal com SSR e hidratação federada
-│   │   │   ├── 404.tsx & 500.tsx           # Páginas de fallback de status
-│   │   │   └── _app.tsx
-│   │   ├── public/
-│   │   │   └── favicon.ico                 # Ícone da aplicação (HTTP 200)
-│   │   ├── styles/globals.css              # Estilos do App Shell, Sidebar, Mapas e Toasts
-│   │   ├── declarations.d.ts               # Tipagens TypeScript para módulos de 'remote/*'
-│   │   └── next.config.js                  # NextFederationPlugin configurado como Host
-│   │
-│   └── remote/                             # Remote Application (Next.js 15 - Porta 3001)
+│   ├── host/                         # Zone 1: Host Gateway (Port 3000)
+│   │   ├── next.config.js            # Rewrites /remote-app/* -> http://localhost:3001
+│   │   ├── package.json              # Next.js 16 App Router setup
+│   │   ├── tsconfig.json
+│   │   └── app/
+│   │       ├── layout.tsx            # Zone 1 Root Layout using ShellLayout
+│   │       ├── page.tsx              # Zone 1 Gateway Diagnostics (RSC)
+│   │       └── not-found.tsx
+│   └── remote/                       # Zone 2: Remote Application (Port 3001)
+│       ├── next.config.js            # basePath & assetPrefix: '/remote-app'
+│       ├── package.json              # Next.js 16 App Router + MapLibre GL
+│       ├── tsconfig.json
+│       ├── types/index.ts            # Shared domain types
 │       ├── components/
-│       │   ├── ServerCard.tsx              # Componente federado com métricas e sessão herdada
-│       │   ├── RemoteTelemetry.tsx         # Consumidor de SSE com reconexão e controle de stream
-│       │   ├── RemoteMap.tsx               # Mapa interativo com MapLibre GL e marcadores de frota
-│       │   └── RemoteDashboard.tsx         # Container federado integrado por abas
+│       │   ├── ServerCard.tsx        # Hydrated SSR diagnostic card with counter
+│       │   ├── RemoteTelemetry.tsx   # EventSource SSE stream consumer
+│       │   └── RemoteMap.tsx         # MapLibre GL WebGL geospatial map
 │       ├── lib/
-│       │   ├── cache.ts                    # Gerenciador de cache em memória com TTL
-│       │   ├── events.ts                   # Emissor de eventos globais para o Host
-│       │   └── getServerData.ts            # Provedor de diagnóstico SSR e herança de sessão
-│       ├── pages/
-│       │   ├── api/
-│       │   │   ├── server-data.ts          # Endpoint HTTP para dados de SSR com cabeçalhos de cache
-│       │   │   └── sse-events.ts           # Endpoint text/event-stream de telemetria contínua
-│       │   ├── index.tsx                   # Visualização standalone da Remote na porta 3001
-│       │   ├── 404.tsx & 500.tsx
-│       │   └── _app.tsx
-│       ├── public/
-│       │   └── favicon.ico
-│       ├── styles/globals.css              # Estilos dos componentes federados e pins
-│       ├── types/index.ts                  # Interfaces TypeScript compartilhadas
-│       └── next.config.js                  # NextFederationPlugin expondo os 6 módulos
-│
-├── scripts/
-│   ├── verify-poc.mjs                      # Validação automatizada de todos os 7 critérios da PoC
-│   ├── verify-ssr.mjs                      # Validação de SSR no HTML bruto
-│   └── verify-resilience.mjs               # Validação de tolerância a falhas (Remote Offline)
-├── pnpm-workspace.yaml                     # Configuração de workspaces e pinagem
-└── package.json                            # Scripts de orquestração (dev, build, start, test)
+│       │   ├── cache.ts              # In-memory TTL cache
+│       │   └── getServerData.ts      # Server-side diagnostic engine
+│       └── app/                      # App Router with basePath /remote-app
+│           ├── layout.tsx            # Zone 2 Root Layout using ShellLayout
+│           ├── page.tsx              # ServerCard Overview Server Component
+│           ├── telemetry/page.tsx    # Live Telemetry Stream route
+│           ├── map/page.tsx          # MapLibre GL Fleet Map route
+│           ├── metrics/page.tsx      # Cache & Runtime Diagnostics route
+│           └── api/
+│               ├── server-data/
+│               │   └── route.ts      # GET /remote-app/api/server-data
+│               └── sse-events/
+│                   └── route.ts      # GET /remote-app/api/sse-events (EventStream)
+└── scripts/
+    ├── verify-poc.mjs                # 7-Pillar Multi-Zones verification suite
+    ├── verify-ssr.mjs                # Multi-Zone SSR assertion test
+    └── verify-resilience.mjs         # Process fault-tolerance test
 ```
 
 ---
 
-## 3. Os 7 Pilares da Prova de Conceito (PoC)
+## 3. The 7 Pillars of the Multi-Zones Architecture
 
-| # | Requisito | Como foi Implementado |
-| --- | --- | --- |
-| **1** | **Sessão no Host e Herança pelo Remote** | O Host gerencia o estado da sessão (`UserSession`) com seletor de perfis (Admin, Operator, Viewer). No SSR, o Host encaminha a sessão via header `x-user-session` para o Remote, que a injeta nas propriedades do componente federado. No cliente, mudanças de sessão são emitidas via `mfe:session-change`. |
-| **2** | **Remote como Seção Interna do Host** | O `HostLayout` provê um cabeçalho fixo (`Header`) e barra de navegação lateral (`SideNavigation`), renderizando o micro-frontend remoto dentro do slot principal de conteúdo, envelopado por `Suspense` e `FederatedErrorBoundary`. |
-| **3** | **Conexões SSE (Server-Sent Events)** | A aplicação Remote possui o endpoint `/api/sse-events` transmitindo pacotes de telemetria e alertas contínuos. O componente `RemoteTelemetry` abre a conexão via `EventSource`, gerencia reconexão automática, controles de pausa/retomada e executa `es.close()` no unmount. |
-| **4** | **Server-Side Rendering (SSR)** | A integração via `@module-federation/nextjs-mf` renderiza a árvore de componentes do Remote durante o `getServerSideProps` do Host. O markup final é enviado completo no HTML inicial, sem flash de carregamento ou waterfall. |
-| **5** | **Estados Globais e Cache** | *Estados Globais*: Sistema de Toasts desacoplado operando através do padrão Event Bus com `CustomEvent('mfe:toast')`. O Remote dispara toasts que o Host renderiza no portal flutuante.<br>*Cache*: Endpoint `/api/server-data` utiliza cabeçalho `Cache-Control: public, s-maxage=5, stale-while-revalidate=10` e store em memória com TTL. |
-| **6** | **Query Params e Roteamento** | A navegação lateral e os controles de filtro utilizam sincronização de query params (`?tab=overview`, `?tab=telemetry`, `?tab=map`, `?tab=metrics`, `?city=sao-paulo`) utilizando History API e estado local, evitando recarregamentos totais de página. |
-| **7** | **Remote MFE com MapLibre GL** | O componente `RemoteMap` carrega dinamicamente a biblioteca `maplibre-gl` no cliente, renderiza tiles OpenStreetMap, adiciona marcadores de nós de infraestrutura com popups e dispara notificações de toast ao selecionar locais. |
+### Pillar 1: Session Management & Security-First SSR
+- **Cookie-Backed Identity**: When a user profile is selected in the `<Header />`, the session is persisted to an `mfe_user_session` cookie (`SameSite=Lax; path=/`).
+- **Server Security**: In Next.js 16 Server Components (`app/page.tsx`), sessions are extracted securely on the server via `cookies()` without exposing tokens or secrets to client JavaScript bundles.
+
+```typescript
+// Secure Server Component session extraction (apps/remote/app/page.tsx)
+import { cookies } from 'next/headers';
+import { parseSessionFromCookieHeader, SESSION_COOKIE_NAME } from '@mfe/ui-shell';
+
+export default async function RemoteOverviewPage() {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const session = parseSessionFromCookieHeader(
+    sessionCookie ? `${SESSION_COOKIE_NAME}=${sessionCookie}` : null
+  );
+
+  // Sensitive data fetched exclusively on the Node server
+  const serverData = await getServerData(session);
+
+  return <ServerCard initialData={serverData} session={session} />;
+}
+```
+
+### Pillar 2: Shared UI Shell (`@mfe/ui-shell`)
+Both applications import `<ShellLayout />` from the shared workspace package. This gives users a 100% unified visual experience:
+- Persistent header with live zone indicator.
+- Unified sidebar routing between Zone 1 (`/`) and Zone 2 (`/remote-app`, `/remote-app/telemetry`, `/remote-app/map`, `/remote-app/metrics`).
+- Global Toast notification portal.
+
+### Pillar 3: Real-Time SSE Stream with Next.js 16 Route Handlers
+The real-time telemetry stream is implemented using standard Web APIs and Next.js 16 `ReadableStream` route handlers:
+- Endpoint: `GET /remote-app/api/sse-events`
+- Served with `Content-Type: text/event-stream` and `Cache-Control: no-cache, no-transform`.
+- The Host reverse-proxy forwards the event stream without buffering.
+
+### Pillar 4: Server-Side Rendering (SSR) & React 19 Server Components
+Unlike Module Federation (which requires complex Webpack runtime loaders for SSR chunks), Multi-Zones uses **native Next.js Server Components**:
+- Zone 1 server renders Zone 1 HTML.
+- Zone 2 server renders Zone 2 HTML.
+- Result: 0ms runtime bundle negotiation latency, faster TTFB, and zero shared-dependency version collision bugs.
+
+### Pillar 5: Server Memory Caching with TTL
+- Diagnostic data in `getServerData()` is cached in memory with a 5-second TTL per user identity.
+- Responses return standard HTTP cache headers (`Cache-Control: public, s-maxage=5, stale-while-revalidate=10`).
+
+### Pillar 6: Multi-Zone Path Routing & Deep-Linking
+- Zone 1 handles `/` on port 3000.
+- Zone 2 handles `/remote-app/*` on port 3001.
+- All Zone 2 paths are accessible directly through port 3000 via Host rewrites:
+  - `http://localhost:3000/remote-app` -> Overview
+  - `http://localhost:3000/remote-app/telemetry` -> Telemetry
+  - `http://localhost:3000/remote-app/map` -> Map
+  - `http://localhost:3000/remote-app/metrics` -> Metrics
+
+### Pillar 7: MapLibre GL WebGL Integration
+The MapLibre GL geospatial map runs as a client component (`'use client'`) inside `/remote-app/map`:
+- Renders 4 fleet nodes (São Paulo, San Francisco, London, Tokyo) with custom status pins and coordinates.
+- Interacting with markers dispatches `mfe:map-select` and toasts across the UI shell.
 
 ---
 
-## 4. Histórico de Problemas Enfrentados e Soluções Aplicadas
+## 4. Multi-Zone Reverse Proxy Configuration
 
-### Desafio 1: Permissões de Scripts no pnpm v11
+### Host Zone Configuration (`apps/host/next.config.js`)
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  async rewrites() {
+    const remoteUrl = process.env.REMOTE_ZONE_URL || 'http://localhost:3001';
+    return [
+      {
+        source: '/remote-app',
+        destination: `${remoteUrl}/remote-app`,
+      },
+      {
+        source: '/remote-app/:path*',
+        destination: `${remoteUrl}/remote-app/:path*`,
+      },
+    ];
+  },
+};
 
-* **Sintoma**: `pnpm install` ignorava scripts de pós-instalação exigidos pelo `@module-federation/nextjs-mf`.
-* **Solução**: Criação do arquivo `.npmrc` na raiz com `enable-pre-post-scripts=true`.
+module.exports = nextConfig;
+```
 
-### Desafio 2: Webpack Interno vs. Local do Next.js
+### Remote Zone Configuration (`apps/remote/next.config.js`)
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  basePath: '/remote-app',
+  assetPrefix: '/remote-app',
+};
 
-* **Sintoma**: Incompatibilidade entre o Webpack embutido do Next.js 15 e a compilação do plugin de federação.
-* **Solução**: Adicionada a flag `NEXT_PRIVATE_LOCAL_WEBPACK=true` nos scripts de `dev` e `build` em ambos os `package.json`.
-
-### Desafio 3: Resiliência a Falhas no SSR (Timeout e Degradação Graciosa)
-
-* **Sintoma**: Se a Remote ficasse offline, a resolução padrão do Module Federation no servidor causava travamento ou erro 500 no Host.
-* **Solução**: Implementação do utilitário `safeRemoteLoader.ts` com requisição HTTP direta, timeout de 800ms e retorno de `null` controlado, fazendo o Host renderizar o `RemoteFallbackCard` com código `HTTP 200 OK`.
-
-### Desafio 4: Paridade de Tags DOM para Evitar Hydration Mismatch
-
-* **Sintoma**: Erros de hidratação no React 18/19 quando a estrutura de tags do componente renderizado diferia da estrutura do fallback.
-* **Solução**: Unificação de tags semânticas `<div className="federated-card">` e `<header className="federated-card-header">` em todos os estados de renderização.
-
-### Desafio 5: Erro "NextRouter was not mounted" em Componentes Federados
-
-* **Sintoma**: Invocação de `useRouter()` dentro de componentes antes da montagem completa do `RouterContext` do Next.js disparava exceções de cliente e erro minificado `#423`.
-* **Solução**: Remoção da dependência direta de `useRouter` nos componentes de navegação; substituição por âncoras semânticas `<a>` e propagação de `initialTab`/`initialRoute` a partir do `getServerSideProps`.
-
-### Desafio 6: Erro de Serialização JSON de `undefined` no `getServerSideProps`
-
-* **Sintoma**: O Next.js rejeita propriedades contendo `undefined` com o erro *`Reason: undefined cannot be serialized as JSON. Please use null or omit this value.`*
-* **Solução**: Sanitização de todas as propriedades opcionais do servidor (`initialFilter`, `initialCity`, `serverData.session`, `errorReason`) para utilizarem `null` explicitamente.
-
-### Desafio 7: Isolamento de Renderização WebGL do MapLibre no SSR
-
-* **Sintoma**: Tentativas de acessar `window` ou instanciar WebGL durante o SSR provocavam quebra de build e de servidor.
-* **Solução**: Importação dinâmica de `maplibre-gl` protegida dentro do hook `useEffect` no cliente, com exibição de overlay de carregamento elegante durante a renderização no servidor.
+module.exports = nextConfig;
+```
 
 ---
 
-## 5. Guia de Execução e Verificação
+## 5. Operational Commands & Verification Guide
 
-### 1. Instalação e Compilação
-
+### 1. Workspace Typechecking
+Validates all TypeScript definitions across `@mfe/ui-shell`, `@mfe/host`, and `@mfe/remote`:
 ```bash
-# Instalar dependências
-pnpm install
-
-# Verificar tipagem TypeScript
 pnpm typecheck
+```
 
-# Compilar ambas as aplicações para produção
+### 2. Turbopack Production Build
+Compiles all zones with Next.js 16 Turbopack:
+```bash
 pnpm build
 ```
 
-### 2. Execução dos Servidores
-
+### 3. Running the Multi-Zone Environment
+Starts both Zone 1 (Port 3000) and Zone 2 (Port 3001) concurrently:
 ```bash
-# Iniciar Host (3000) e Remote (3001) em paralelo
 pnpm start
-
-# Ou iniciar individualmente:
-pnpm start:remote   # Porta 3001
-pnpm start:host     # Porta 3000
+# Or for live hot-reloading development:
+pnpm dev
 ```
 
-### 3. Suíte de Testes Automatizados
-
+### 4. Running the Verification Test Suites
+While the servers are running:
 ```bash
-# 1. Validação Completa da PoC (Todos os 7 Requisitos)
-pnpm verify:poc
-
-# 2. Validação do Server-Side Rendering (Markup no HTML Bruto)
+# 1. Verify SSR across both zones via Port 3000
 pnpm verify:ssr
 
-# 3. Validação de Resiliência e Modo Degradado (Remote Offline)
+# 2. Verify all 7 Multi-Zone PoC Pillars
+pnpm verify:poc
+
+# 3. Verify Zone 1 process isolation & fault tolerance
 pnpm verify:resilience
 ```
-
----
-
-## 6. Conclusão
-
-A arquitetura desenvolvida comprova a viabilidade técnica de uma solução corporativa de **Micro-Frontends com Next.js 15 e Module Federation**.
-
-Os componentes remotos operam como ilhas dinâmicas isoladas, herdando a identidade e o contexto do Host, comunicando-se por barramento de eventos desacoplado e mantendo alta disponibilidade mesmo diante de falhas completas nos serviços remotos.
