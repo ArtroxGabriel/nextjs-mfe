@@ -55,6 +55,20 @@ async function testZoneIndexViaShellRewrite() {
 }
 
 /**
+ * Checks that a zone prefix in other letter case does not reach the zone.
+ * The shell's rewrites must match case like its middleware matcher does;
+ * otherwise /REMOTE-APP bypasses the outage handling (challenger_m2_5, A1).
+ * Both paths answer 200 from the zone if the rewrite matches them, so a 404
+ * here can only come from the shell.
+ */
+async function testMixedCaseZonePrefixStaysInShell() {
+  for (const pathname of ['/REMOTE-APP', '/Remote-App/api/health']) {
+    const res = await httpFetch(`${HOST_BASE_URL}${pathname}`);
+    assertStatusCode(res.status, 404, `Mixed-case zone prefix ${pathname}`);
+  }
+}
+
+/**
  * Checks Zone Health Check Endpoint via Shell (GET /remote-app/api/health).
  */
 async function testZoneHealthViaShell() {
@@ -169,6 +183,7 @@ export async function runOnlineSmokeChecks(initialReport) {
     { id: 'ONLINE-07', desc: 'Fragment Unknown via Shell returns 204 No Content', fn: testFragmentUnknownReturns204 },
     { id: 'ONLINE-08', desc: 'Fragment POST returns 405 Method Not Allowed', fn: testFragmentPostReturns405 },
     { id: 'ONLINE-09', desc: 'Static asset proxying (/remote-app-static/**) resolves without 5xx', fn: testStaticAssetProxying },
+    { id: 'ONLINE-10', desc: 'Mixed-case zone prefix (/REMOTE-APP) gets the shell 404, not the zone', fn: testMixedCaseZonePrefixStaysInShell },
   ];
 
   console.log(`\n${ANSI.cyan}${ANSI.bold}--- Tier 1/2/3 Online Smoke Checks ---${ANSI.reset}`);

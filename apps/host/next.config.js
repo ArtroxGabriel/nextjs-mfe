@@ -5,6 +5,9 @@ const nextConfig = {
     // Rewrites match case-insensitively by default, but the middleware matcher
     // is case-sensitive. Without this, /REMOTE-APP reached the zone around
     // middleware.ts and a down zone answered it with a bare 500.
+    // Experimental in Next 15: Next only warns on an unknown experimental key,
+    // so re-check it on every Next upgrade. ONLINE-10 in the smoke suite fails
+    // if a mixed-case prefix reaches the zone again.
     caseSensitiveRoutes: true,
   },
   async rewrites() {

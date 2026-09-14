@@ -1,0 +1,1 @@
+{"ttl":1000,"timeout":800,"n":443,"slowOver100ms":175,"share":0.4,"maxMs":803}

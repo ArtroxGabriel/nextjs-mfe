@@ -60,7 +60,10 @@ Each was escalated to the human, who decided the round it belongs to.
 - **Found by**: challenger_m2_5 (M2 gate, iteration 4), finding D-b
 - **Evidence**: zone frozen with SIGSTOP right after a healthy probe; a request inside the 1 s window waited 30.03,
   30.03 and 30.06 s and then got the bare 500 (3/3). The next request paid the 800 ms probe timeout (815–817 ms) and got
-  503; later requests got 503 from the cache.
+  503; later requests got 503 from the cache until it expired. The wait recurs: the cache trusts a result for 1 s from
+  the end of each probe, so while the zone stays hung every expiry starts another 800 ms probe that every arriving
+  request waits on — about 40% of a continuous stream (reviewer_m2_6: 175 of 442 requests over 100 ms, real cache and
+  probe against a fetch that never answers).
 - **Why not fixed**: the lever is `experimental.proxyTimeout` on the host, which applies to every proxied request,
   including SSE streams and slow legitimate responses through the rewrite. Choosing a value is an operational
   decision, not a gate remediation. Documented in `01-operacao.md` §5.1 instead.
@@ -71,3 +74,12 @@ Each was escalated to the human, who decided the round it belongs to.
   project root; `node ../../scripts/smoke-test.mjs --strict` from `apps/host` fails STATIC-02/03/05/06/07 (11/16)
   with the tree correct.
 - **Routed to**: M3, with D4.
+
+## D9 — The outage page's no-network guard does not see a fetch inside an effect
+- **Found by**: reviewer_m2_5 (M6), confirmed by auditor_m2_4 (A27) and auditor_m2_5.
+- **Evidence**: `useEffect(() => { fetch(...) }, [])` in `pages/erro-de-zona.tsx` keeps the host suite green.
+  `react-dom/server` never runs effects, and no DOM renderer (jsdom, happy-dom, react-test-renderer,
+  @testing-library) is installed.
+- **Why not fixed**: covering it needs a new test dependency. On the server the page still renders with the zone
+  down; the call would run only in the browser. Declared in the test file header.
+- **Owner**: whoever adds a DOM test renderer to the workspace.

@@ -9,3 +9,4 @@
   404 text/html; charset=utf-8  /Erro-De-Zona
   200 text/html; charset=utf-8  /erro-de-zona
   200 text/html; charset=utf-8  /
+loop of 25 rounds x 4 case-variant paths (/REMOTE-APP, /Remote-App/api/health, /REMOTE-APP-STATIC/x.css, /remote-APP/nao/existe) during the outage, same run, terminal output: 100 404

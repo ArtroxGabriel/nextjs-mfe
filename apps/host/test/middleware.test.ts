@@ -19,6 +19,7 @@ let resetLivenessCache: () => void;
 let renderZoneErrorHtml: () => string;
 let NextRequest: NextServerModule['NextRequest'];
 let rewriteSources: string[];
+let rewriteZoneOrigin: () => Promise<string>;
 
 test.before(async () => {
   const middlewareModule = await import('../middleware.ts');
@@ -32,6 +33,13 @@ test.before(async () => {
   const rewrites = await nextConfig.rewrites?.();
   assert.ok(Array.isArray(rewrites), 'next.config.js rewrites() must return a flat array');
   rewriteSources = rewrites.map((rule) => rule.source);
+  rewriteZoneOrigin = async () => {
+    const rules = await nextConfig.rewrites?.();
+    assert.ok(Array.isArray(rules));
+    const root = rules.find((rule) => rule.source === '/remote-app');
+    assert.ok(root, 'next.config.js must rewrite the zone root');
+    return root.destination.slice(0, -'/remote-app'.length);
+  };
 });
 
 const HEALTH_URL = 'http://localhost:3001/remote-app/api/health';
@@ -157,20 +165,45 @@ test('the shell recovers once the zone is back and the TTL elapses', async () =>
   assert.ok(isPassThrough(await middleware(zoneRequest())));
 });
 
-test('the probe targets the same zone origin the rewrites use, REMOTE_ZONE_URL first', async () => {
+test('with both zone variables set, the probe and the rewrites use the same origin', async () => {
   const zone = stubZone('up');
   process.env.REMOTE_ZONE_URL = 'http://zone-primary:4001';
   process.env.REMOTE_APP_URL = 'http://zone-fallback:4002';
 
   await middleware(zoneRequest());
-  resetLivenessCache();
-  delete process.env.REMOTE_ZONE_URL;
+
+  assert.deepEqual(zone.probedUrls, [`${await rewriteZoneOrigin()}/remote-app/api/health`]);
+});
+
+test('with only REMOTE_APP_URL set, the probe and the rewrites use it', async () => {
+  const zone = stubZone('up');
+  process.env.REMOTE_APP_URL = 'http://zone-fallback:4002';
+
   await middleware(zoneRequest());
 
-  assert.deepEqual(zone.probedUrls, [
-    'http://zone-primary:4001/remote-app/api/health',
-    'http://zone-fallback:4002/remote-app/api/health',
-  ]);
+  assert.equal(await rewriteZoneOrigin(), 'http://zone-fallback:4002');
+  assert.deepEqual(zone.probedUrls, ['http://zone-fallback:4002/remote-app/api/health']);
+});
+
+test('a healthy zone that takes 150 ms to answer the probe is still let through', { timeout: 5000 }, async () => {
+  // Guards the timeout from below: a value in seconds typed as milliseconds,
+  // or any bound shorter than a slow but live zone, would 503 a healthy zone.
+  const probedUrls: string[] = [];
+  mock.method(globalThis, 'fetch', (input: string | URL | Request, init?: RequestInit) => {
+    probedUrls.push(String(input));
+    return new Promise<Response>((resolve, reject) => {
+      const timer = setTimeout(() => resolve(new Response('{"ok":true}', { status: 200 })), 150);
+      init?.signal?.addEventListener('abort', () => {
+        clearTimeout(timer);
+        reject(init.signal?.reason);
+      });
+    });
+  });
+
+  const response = await middleware(zoneRequest());
+
+  assert.ok(isPassThrough(response), `a live zone answering in 150 ms got ${response.status}`);
+  assert.equal(probedUrls.length, 1);
 });
 
 test('a zone that never answers the probe gets the 503 in under a second and a half', { timeout: 5000 }, async () => {

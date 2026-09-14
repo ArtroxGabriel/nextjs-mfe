@@ -25,6 +25,9 @@ test('renderZoneErrorHtml() returns a full standalone HTML document', () => {
 
 test('renderZoneErrorHtml() contains the shared shell error copy', () => {
   const html = renderZoneErrorHtml();
+  for (const text of [ZONE_ERROR_TITLE, ZONE_ERROR_HEADING, ZONE_ERROR_MESSAGE, ZONE_ERROR_RETRY_HINT]) {
+    assert.ok(text.trim().length > 0, 'shared copy must not be empty');
+  }
 
   assert.ok(html.includes(ZONE_ERROR_HEADING), 'must include the shared heading text');
   assert.ok(html.includes(ZONE_ERROR_MESSAGE), 'must include the shared message text');

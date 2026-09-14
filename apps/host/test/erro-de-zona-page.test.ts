@@ -1,4 +1,4 @@
-import test, { mock } from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import './support/register-next-resolution.ts';
 
@@ -8,9 +8,10 @@ import './support/register-next-resolution.ts';
  * rendered for real here, through the resolution hooks above, so a page
  * that stops using the shared copy fails even if it still imports it.
  *
- * Network access is checked at the two points a server ever runs this page:
- * module load and render. A fetch inside an effect runs only in the browser,
- * and react-dom/server never runs effects, so that one is not covered here.
+ * Network access is checked at the two points a server ever runs this page,
+ * module load and render, including work they defer with a timer. A fetch
+ * inside an effect runs only in the browser, and react-dom/server never runs
+ * effects, so that one is not covered here.
  */
 
 type PageModule = typeof import('../pages/erro-de-zona.tsx');
@@ -22,43 +23,44 @@ let pageModule: PageModule;
 let zoneErrorContent: ZoneErrorContent;
 let renderZoneErrorHtml: () => string;
 let renderPage: () => string;
+// Every fetch made while this file runs is recorded, from before the page
+// is imported until the last test, so a call deferred with a timer at module
+// scope is still seen.
+const fetchCalls: string[] = [];
+const realFetch = globalThis.fetch;
 let fetchCallsWhileLoadingPage = 0;
 
 test.before(async () => {
   const { createElement } = await import('react');
   const { renderToStaticMarkup } = await import('react-dom/server');
 
-  const loadFetchMock = mock.method(globalThis, 'fetch', async () => {
-    throw new Error('the outage page must not fetch anything while loading');
-  });
-  try {
-    pageModule = await import('../pages/erro-de-zona.tsx');
-  } finally {
-    fetchCallsWhileLoadingPage = loadFetchMock.mock.callCount();
-    loadFetchMock.mock.restore();
-  }
+  globalThis.fetch = async (input: string | URL | Request) => {
+    fetchCalls.push(String(input));
+    throw new Error('the outage page must not fetch anything');
+  };
+  pageModule = await import('../pages/erro-de-zona.tsx');
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  fetchCallsWhileLoadingPage = fetchCalls.length;
 
   zoneErrorContent = await import('../lib/zoneErrorContent.ts');
   renderZoneErrorHtml = (await import('../lib/zoneErrorPage.ts')).renderZoneErrorHtml;
   renderPage = () => renderToStaticMarkup(createElement(pageModule.default));
 });
 
-test.afterEach(() => {
-  mock.restoreAll();
+test.after(() => {
+  globalThis.fetch = realFetch;
 });
 
 test('loading the page module does not touch the network', () => {
-  assert.equal(fetchCallsWhileLoadingPage, 0);
+  assert.equal(fetchCallsWhileLoadingPage, 0, `fetched ${JSON.stringify(fetchCalls)}`);
 });
 
 test('the page renders without touching the network', () => {
-  const fetchMock = mock.method(globalThis, 'fetch', async () => {
-    throw new Error('the outage page must not fetch anything');
-  });
+  const before = fetchCalls.length;
 
   renderPage();
 
-  assert.equal(fetchMock.mock.callCount(), 0);
+  assert.equal(fetchCalls.length, before, `fetched ${JSON.stringify(fetchCalls.slice(before))}`);
 });
 
 test('the page has no data fetching Next would run before rendering it', () => {
@@ -77,3 +79,7 @@ for (const field of OUTAGE_COPY_FIELDS) {
     assert.ok(renderZoneErrorHtml().includes(text), 'missing from the middleware fallback');
   });
 }
+
+test('nothing in the page fetched at any point while this file ran', () => {
+  assert.deepEqual(fetchCalls, []);
+});

@@ -187,14 +187,16 @@ rewrite. O middleware consulta o health check da zona (§5.2), guarda o resultad
 com a zona fora, responde 503 com `Retry-After` e a página de erro. As rotas do shell
 diferenciam maiúsculas (`experimental.caseSensitiveRoutes`): sem isso, o rewrite aceitava
 `/REMOTE-APP` e o matcher do middleware não, e essa variante recebia o 500 cru durante a
-queda inteira. Hoje ela recebe o 404 do shell.
+queda inteira. Hoje ela recebe o 404 do shell. A opção é experimental no Next 15 e precisa
+ser conferida a cada atualização do framework; o smoke test falha se a variante voltar a
+chegar à zona.
 
 A primeira exceção é o intervalo logo após a queda de um processo que morreu. Enquanto o
 último resultado saudável está no cache, as requisições ainda chegam à zona e recebem o
 500 cru. Medido com `next start` em localhost (2026-09-14), com a zona encerrada logo após
-uma sonda bem-sucedida, o primeiro 503 chegou entre 871 e 940 ms num cliente sequencial
-(11 quedas, duas medições independentes), depois de 79 a 190 requisições. Com 30 clientes
-concorrentes a fronteira, medida pelo envio, ficou entre 826 e 1010 ms. No mesmo cenário,
+uma sonda bem-sucedida, a janela de 500 cru terminou entre 871 e 950 ms num cliente
+sequencial (16 quedas, três medições independentes), depois de 79 a 190 requisições. Com
+30 clientes concorrentes a fronteira, medida pelo envio, ficou entre 826 e 1010 ms. No mesmo cenário,
 medido na iteração anterior com o cache de 3 s, o intervalo foi de 2,96 s. A janela é
 limitada por tempo, e quantas requisições caem nela depende da taxa.
 
@@ -202,13 +204,17 @@ A segunda exceção é a zona travada: processo vivo, porta aceitando conexão, 
 (medido com `SIGSTOP`). Uma requisição enviada dentro do mesmo intervalo de 1 s não recebe
 o 500 na hora: espera o timeout do proxy do Next, observado em 30 s (3 de 3), e só então
 recebe o 500 cru. Depois do intervalo, a requisição que dispara a sonda espera o timeout da
-sonda, 800 ms (815 a 817 ms medidos), e recebe 503. As seguintes recebem 503 do cache.
+sonda, 800 ms (815 a 817 ms medidos), e recebe 503. O custo não é único: o cache vale 1 s a
+partir do fim de cada sonda, então, enquanto a zona seguir travada, cada expiração repete
+a espera de 800 ms para toda requisição que chega durante ela. Num fluxo contínuo isso é
+cerca de 40% das requisições (175 de 443, uma a cada 20 ms durante 9 s, com o cache e a
+sonda reais contra um destino que nunca responde).
 
 Uma zona que já está fora quando o shell sobe, ou quando o cache já expirou, recebe 503 na
-primeira requisição, porque cache vazio força sonda síncrona. Quanto ao custo, a requisição
-que dispara a sonda paga de 3 a 6 ms a mais em localhost (medianas pareadas de cinco séries),
-com a zona no ar ou morta, no máximo uma vez por segundo por processo do shell: 30 clientes
-durante 6 s geraram 7 sondas.
+primeira requisição, porque cache vazio força sonda síncrona. Quanto ao custo, com a zona no
+ar ou com o processo morto, a requisição que dispara a sonda paga de 3 a 6 ms a mais em
+localhost (medianas de cinco séries), no máximo uma vez por segundo por processo do shell:
+30 clientes durante 6 s geraram 7 sondas.
 
 As duas últimas linhas da tabela são deliberadas. Store de sessão e shell são pontos únicos de
 falha, e fingir o contrário produziria um desenho pior — com sessão replicada por zona,
