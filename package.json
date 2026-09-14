@@ -19,7 +19,6 @@
     "verify:resilience": "node scripts/verify-resilience.mjs"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
-    "webpack": "5.90.3"
+    "concurrently": "^8.2.2"
   }
 }
