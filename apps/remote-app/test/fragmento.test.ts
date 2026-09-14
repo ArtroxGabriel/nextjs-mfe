@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import handler from '../pages/_fragmento/[name]/[id]';
+import handler from '../pages/_fragmento/[name]/[id].ts';
 
 interface MockResponse {
   statusCode: number;

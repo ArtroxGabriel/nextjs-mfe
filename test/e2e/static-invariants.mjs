@@ -161,9 +161,21 @@ function testHostRewritesConfig() {
     throw new Error('apps/host/next.config.js does not export async rewrites()');
   }
 
-  assertContains(hostConfig, '/remote-app', 'apps/host/next.config.js rewrites root');
-  assertContains(hostConfig, '/remote-app/:path*', 'apps/host/next.config.js rewrites subroutes');
-  assertContains(hostConfig, '/remote-app-static/:path*', 'apps/host/next.config.js rewrites static assets');
+  // D4 fix: Ensure zone root rule is explicitly matched as exact source, not substring of subroutes
+  const hasExactRootRule = /source:\s*['"]\/remote-app['"](?:\s*,|\s*\})/.test(hostConfig);
+  if (!hasExactRootRule) {
+    throw new Error('apps/host/next.config.js missing explicit rewrite rule for zone root source: "/remote-app"');
+  }
+
+  const hasSubroutesRule = /source:\s*['"]\/remote-app\/:path\*['"]/.test(hostConfig);
+  if (!hasSubroutesRule) {
+    throw new Error('apps/host/next.config.js missing rewrite rule for subroutes source: "/remote-app/:path*"');
+  }
+
+  const hasStaticRule = /source:\s*['"]\/remote-app-static\/:path\*['"]/.test(hostConfig);
+  if (!hasStaticRule) {
+    throw new Error('apps/host/next.config.js missing rewrite rule for static assets source: "/remote-app-static/:path*"');
+  }
 }
 
 /**

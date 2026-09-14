@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import handler, { type HealthResponse } from '../pages/api/health';
+import handler, { type HealthResponse } from '../pages/api/health.ts';
 
 interface MockResponse {
   statusCode: number;
