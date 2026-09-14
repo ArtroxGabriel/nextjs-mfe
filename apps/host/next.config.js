@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  transpilePackages: ['@mfe/shell-ui'],
   async rewrites() {
     const remoteZoneUrl =
       process.env.REMOTE_ZONE_URL ||

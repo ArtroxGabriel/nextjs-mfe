@@ -1,5 +1,7 @@
+import React, { useState, useEffect } from 'react';
 import type { GetServerSideProps, NextPage } from 'next';
 import Head from 'next/head';
+import { ShellLayout, DEFAULT_SESSION, type UserSession } from '@mfe/shell-ui';
 import ServerCard from '../components/ServerCard';
 import { getServerData } from '../lib/getServerData';
 import type { ServerPayload } from '../types';
@@ -9,6 +11,31 @@ interface RemoteHomeProps {
 }
 
 const RemoteHomePage: NextPage<RemoteHomeProps> = ({ serverData }) => {
+  const [session, setSession] = useState<UserSession>(DEFAULT_SESSION);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('host_user_session');
+      if (raw) {
+        const parsed = JSON.parse(raw) as UserSession;
+        if (parsed.userId) {
+          setSession(parsed);
+        }
+      }
+    } catch {
+      // localStorage unavailable during SSR or restricted context
+    }
+  }, []);
+
+  const handleSessionChange = (nextSession: UserSession) => {
+    setSession(nextSession);
+    try {
+      localStorage.setItem('host_user_session', JSON.stringify(nextSession));
+    } catch {
+      // localStorage write fallback
+    }
+  };
+
   return (
     <>
       <Head>
@@ -16,14 +43,20 @@ const RemoteHomePage: NextPage<RemoteHomeProps> = ({ serverData }) => {
         <meta name="description" content="Remote Micro-Frontend App" />
       </Head>
 
-      <main className="container">
-        <header className="header">
-          <h1>Remote Standalone Application</h1>
-          <p>Running natively on port 3001 using Next.js 15 Pages Router with SSR.</p>
-        </header>
+      <ShellLayout
+        currentSession={session}
+        onSessionChange={handleSessionChange}
+        activeRoute="/remote-app"
+      >
+        <div className="container">
+          <header className="header">
+            <h1>Remote Standalone Application</h1>
+            <p>Running natively on port 3001 using Next.js 15 Pages Router with SSR.</p>
+          </header>
 
-        <ServerCard initialData={serverData} title="Remote Standalone SSR Card" />
-      </main>
+          <ServerCard initialData={serverData} title="Remote Standalone SSR Card" />
+        </div>
+      </ShellLayout>
     </>
   );
 };

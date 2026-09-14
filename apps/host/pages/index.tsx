@@ -50,7 +50,7 @@ const HostHomePage: NextPage<HostHomePageProps> = ({
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <HostLayout currentSession={currentSession} onSessionChange={handleSessionChange}>
+      <HostLayout currentSession={currentSession} onSessionChange={handleSessionChange} activeRoute="/">
         <section className="host-section">
           <div className="section-header-flex">
             <div>
