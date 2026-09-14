@@ -1,3 +1,7 @@
+> **Documento histórico.** Descreve a PoC com Module Federation *antes* da migração para Multi-Zones nativo
+> (branch `bff-multizone`). O código atual não usa `@module-federation/nextjs-mf`,
+> `remoteEntry.js` nem SSR federado; para o desenho vigente veja `docs/design-bff/mfe/` e `TEST_READY.md`.
+
 # Guia Definitivo: Arquitetura de Micro-Frontends com Next.js 15, Module Federation e SSR Resiliente
 
 Este documento documenta a arquitetura, as decisões técnicas, a implementação dos 7 pilares da Prova de Conceito (PoC) e o histórico de resolução de problemas do projeto de **Micro-Frontends (MFE)** com **Next.js** e **Module Federation** (`@module-federation/nextjs-mf`).

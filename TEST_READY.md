@@ -9,7 +9,9 @@ The test suite validates the architectural transition from Webpack Module Federa
 
 ## 2. How to Run the Tests
 
-The primary test runner is `scripts/smoke-test.mjs`. It requires no external dependencies beyond Node.js v18+ (tested on Node v26.8.1).
+The primary test runner is `scripts/smoke-test.mjs`. It requires no external dependencies beyond Node.js v18+ (tested on Node v26.8.1 and v24.7.0). Paths resolve from the script's own location, so it can be started from any directory.
+
+Unit suites run on Node's native test runner, with no `tsx`: `pnpm test` at the root, or `node --test test/*.test.ts` inside an app. Use the explicit glob: on Node 24.7, `node --test <dir>` runs zero tests and exits 0.
 
 ### 2.1 Quick Commands
 
@@ -60,8 +62,8 @@ The test infrastructure is designed around a 4-Tier opaque-box methodology detai
 - `[STATIC-03]` **Plain HTML `<a>` navigation**: Enforces that cross-zone navigation to `/remote-app` in `apps/host` uses native `<a>` tags and never Next.js `<Link>`.
 - `[STATIC-04]` **Shell DAL exclusion**: Verifies zero database packages or domain access layers in `apps/host/package.json` or `apps/host/pages/`.
 - `[STATIC-05]` **Zone directory rename**: Verifies `apps/remote` is renamed to `apps/remote-app` and `package.json` name is updated.
-- `[STATIC-06]` **Host rewrites configuration**: Verifies `apps/host/next.config.js` exports `async rewrites()` covering zone root (`/remote-app`), sub-routes (`/remote-app/:path*`), and static assets (`/remote-app-static/:path*`).
-- `[STATIC-07]` **Remote zone configuration**: Verifies `apps/remote-app/next.config.js` sets `basePath: '/remote-app'` and `assetPrefix: '/remote-app-static'`.
+- `[STATIC-06]` **Host rewrites configuration**: Loads `apps/host/next.config.js`, calls `rewrites()`, and requires exactly the sources `/remote-app`, `/remote-app/:path*` and `/remote-app-static/:path*`, each keeping its path on one zone origin. (Before 2026-09-14 this was a substring check that passed with the root rule removed, D4.)
+- `[STATIC-07]` **Remote zone configuration**: Loads `apps/remote-app/next.config.js` and requires `basePath === '/remote-app'` and `assetPrefix === '/remote-app-static'`.
 
 ### 4.2 Online Smoke Checks (`ONLINE-*`)
 - `[ONLINE-01]` **Host Shell Home**: `GET http://localhost:3000/` returns HTTP 200, renders shell runtime diagnostics, and includes `<a href="/remote-app">`.
@@ -73,6 +75,7 @@ The test infrastructure is designed around a 4-Tier opaque-box methodology detai
 - `[ONLINE-07]` **Fragment Unknown / Unauthorized (Masking)**: `GET http://localhost:3000/remote-app/_fragmento/unknown/1` returns HTTP 204 No Content with 0-byte payload.
 - `[ONLINE-08]` **Fragment Method Not Allowed**: `POST http://localhost:3000/remote-app/_fragmento/demo/1` returns HTTP 405 Method Not Allowed.
 - `[ONLINE-09]` **Static Asset Proxying**: `GET http://localhost:3000/remote-app-static/...` proxies without host 5xx server crash.
+- `[ONLINE-10]` **Mixed-case zone prefix stays in the shell**: `GET /REMOTE-APP` and `GET /Remote-App/api/health` on the host return 404. Both answer 200 from the zone if the rewrites match case-insensitively, which would let them bypass `middleware.ts` (see `docs/design-bff/mfe/01-operacao.md` §5.1). Guards `experimental.caseSensitiveRoutes` across Next upgrades.
 
 ---
 

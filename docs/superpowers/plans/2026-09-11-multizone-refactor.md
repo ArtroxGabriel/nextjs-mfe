@@ -10,6 +10,28 @@
 
 ---
 
+## Registro de execução (2026-09-14)
+
+Executado pelo harness de `.agents/` (orquestrador, worker e gate de revisor, challenger e auditor por
+milestone). Vereditos em `.agents/orchestrator/GATE_STATUS.md`; adiamentos em `.agents/orchestrator/DEFERRED.md`.
+Todas as tarefas abaixo estão feitas. Onde a execução se afastou do texto:
+
+- **Testes em Node nativo.** Os comandos com `npx tsx` foram trocados por `node --test test/*.test.ts`:
+  `tsx` não está em nenhum `package.json` nem no lockfile. Módulos do Next (`middleware.ts`, páginas `.tsx`,
+  `next/server`) são carregados por um hook de resolução só de teste, `test/support/register-next-resolution.ts`,
+  em cada app. Nenhum teste lê código-fonte como texto.
+- **Task 3.** O rewrite aceita `REMOTE_ZONE_URL` e, na falta dele, `REMOTE_APP_URL`. As rotas do shell
+  diferenciam maiúsculas (`experimental.caseSensitiveRoutes`); sem isso `/REMOTE-APP` contornava o middleware.
+  Além do plano, o `webpack: 5.90.3` explícito saiu do root e dos dois apps, junto com os overrides.
+- **Task 5.** O Pages Router não roteia pastas com `_`, então `/_fragmento/:name/:id` é um rewrite interno da
+  zona para `pages/api/fragmento/[name]/[id].ts`, que reexporta o handler.
+- **Fora do plano: zona fora do ar.** `01-operacao.md` §5.1 promete `/erro-de-zona`, mas uma zona morta
+  devolvia o 500 cru do framework. O shell ganhou `middleware.ts` com sonda de vivacidade em cache de 1 s,
+  que responde 503 com `Retry-After` e a página do shell. As exceções medidas estão no §5.1.
+- **Adiado** (D1–D9 em `DEFERRED.md`): vazamento de intervalo no SSE da zona; moldura do shell dentro da zona;
+  herança de sessão entre zonas; zona travada segura requisições pelo timeout do proxy; `fetch` em efeito na
+  página de erro sem cobertura.
+
 ## Global Constraints
 
 - No new npm dependencies unless listed in a task. Remove `@module-federation/nextjs-mf`, `@module-federation/enhanced`, and the `webpack` override when the last task completes.
@@ -62,13 +84,13 @@
 - Consumes: nothing
 - Produces: workspace recognizes `apps/remote-app`
 
-- [ ] **Step 1: Rename the directory**
+- [x] **Step 1: Rename the directory**
 
 ```bash
 mv apps/remote apps/remote-app
 ```
 
-- [ ] **Step 2: Update package name**
+- [x] **Step 2: Update package name**
 
 In `apps/remote-app/package.json`, change:
 ```json
@@ -79,7 +101,7 @@ to:
 { "name": "remote-app" }
 ```
 
-- [ ] **Step 3: Re-install to refresh workspace symlinks**
+- [x] **Step 3: Re-install to refresh workspace symlinks**
 
 ```bash
 pnpm install
@@ -87,7 +109,7 @@ pnpm install
 
 Expected: no errors; both `apps/host` and `apps/remote-app` in the workspace.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/remote-app apps/host pnpm-workspace.yaml pnpm-lock.yaml
@@ -106,7 +128,7 @@ git commit -m "chore: rename apps/remote to apps/remote-app"
 - Consumes: directory from Task 1
 - Produces: `remote-app` zone serves its pages under `/remote-app` with assets under `/remote-app-static`
 
-- [ ] **Step 1: Write a test that the basePath is set**
+- [x] **Step 1: Write a test that the basePath is set**
 
 Create `apps/remote-app/test/next-config.test.ts`:
 ```typescript
@@ -122,14 +144,14 @@ test('assetPrefix is /remote-app-static', () => {
 });
 ```
 
-- [ ] **Step 2: Run it to confirm it fails**
+- [x] **Step 2: Run it to confirm it fails**
 
 ```bash
-cd apps/remote-app && npx tsx --test test/next-config.test.ts
+cd apps/remote-app && node --test test/next-config.test.ts
 ```
 Expected: FAIL — `nextConfig.basePath` is undefined (Federation config in place).
 
-- [ ] **Step 3: Replace `apps/remote-app/next.config.js`**
+- [x] **Step 3: Replace `apps/remote-app/next.config.js`**
 
 ```javascript
 /** @type {import('next').NextConfig} */
@@ -142,28 +164,28 @@ const nextConfig = {
 module.exports = nextConfig;
 ```
 
-- [ ] **Step 4: Add `exactOptionalPropertyTypes` to tsconfig**
+- [x] **Step 4: Add `exactOptionalPropertyTypes` to tsconfig**
 
 In `apps/remote-app/tsconfig.json`, inside `compilerOptions`:
 ```json
 "exactOptionalPropertyTypes": true
 ```
 
-- [ ] **Step 5: Run the test**
+- [x] **Step 5: Run the test**
 
 ```bash
-cd apps/remote-app && npx tsx --test test/next-config.test.ts
+cd apps/remote-app && node --test test/next-config.test.ts
 ```
 Expected: PASS.
 
-- [ ] **Step 6: Start the zone and verify root page loads under /remote-app**
+- [x] **Step 6: Start the zone and verify root page loads under /remote-app**
 
 ```bash
 cd apps/remote-app && pnpm dev
 ```
 Open `http://localhost:3001/remote-app` — should render the existing index page without 404.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add apps/remote-app/next.config.js apps/remote-app/tsconfig.json apps/remote-app/test/
@@ -186,7 +208,7 @@ git commit -m "feat(remote-app): configure as Multi-Zones zone (basePath + asset
 - Consumes: zone running at `REMOTE_ZONE_URL` (default `http://localhost:3001`)
 - Produces: shell at port 3000 proxies `/remote-app/**` and `/remote-app-static/**` to the zone
 
-- [ ] **Step 1: Write routing tests**
+- [x] **Step 1: Write routing tests**
 
 Create `apps/host/test/rewrites.test.ts`:
 ```typescript
@@ -209,14 +231,14 @@ test('rewrites include zone root, sub-routes, and static assets', async () => {
 });
 ```
 
-- [ ] **Step 2: Run to confirm fail**
+- [x] **Step 2: Run to confirm fail**
 
 ```bash
-cd apps/host && npx tsx --test test/rewrites.test.ts
+cd apps/host && node --test test/rewrites.test.ts
 ```
 Expected: FAIL — current config has no `rewrites`.
 
-- [ ] **Step 3: Replace `apps/host/next.config.js`**
+- [x] **Step 3: Replace `apps/host/next.config.js`**
 
 ```javascript
 /** @type {import('next').NextConfig} */
@@ -247,14 +269,14 @@ const nextConfig = {
 module.exports = nextConfig;
 ```
 
-- [ ] **Step 4: Run the rewrite tests**
+- [x] **Step 4: Run the rewrite tests**
 
 ```bash
-cd apps/host && npx tsx --test test/rewrites.test.ts
+cd apps/host && node --test test/rewrites.test.ts
 ```
 Expected: PASS.
 
-- [ ] **Step 5: Delete Federation artifacts from host**
+- [x] **Step 5: Delete Federation artifacts from host**
 
 ```bash
 rm apps/host/declarations.d.ts
@@ -262,7 +284,7 @@ rm apps/host/declarations.d.ts
 
 Remove `@module-federation/nextjs-mf` from `apps/host/package.json` `dependencies`.
 
-- [ ] **Step 6: Strip Federation overrides from pnpm-workspace.yaml**
+- [x] **Step 6: Strip Federation overrides from pnpm-workspace.yaml**
 
 ```yaml
 packages:
@@ -272,14 +294,14 @@ packages:
 
 Also remove `@module-federation/nextjs-mf` from `apps/remote-app/package.json`.
 
-- [ ] **Step 7: Re-install**
+- [x] **Step 7: Re-install**
 
 ```bash
 pnpm install
 ```
 Expected: lockfile updated; no Federation packages installed.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add apps/host/ apps/remote-app/package.json pnpm-workspace.yaml pnpm-lock.yaml
@@ -302,7 +324,7 @@ git commit -m "feat(host): replace Module Federation with Multi-Zones rewrites"
 - Consumes: nothing from zone at runtime
 - Produces: host index renders shell diagnostics and a plain `<a href="/remote-app">` for zone navigation
 
-- [ ] **Step 1: Delete obsolete files**
+- [x] **Step 1: Delete obsolete files**
 
 ```bash
 rm apps/host/components/FederatedErrorBoundary.tsx
@@ -310,7 +332,7 @@ rm apps/host/components/RemoteCardClientWrapper.tsx
 rm apps/host/lib/safeRemoteLoader.ts
 ```
 
-- [ ] **Step 2: Rewrite `apps/host/pages/index.tsx`**
+- [x] **Step 2: Rewrite `apps/host/pages/index.tsx`**
 
 ```tsx
 import React, { useState, useEffect } from 'react';
@@ -382,7 +404,7 @@ export const getServerSideProps: GetServerSideProps<HostHomePageProps> = async (
 export default HostHomePage;
 ```
 
-- [ ] **Step 3: Update `apps/host/components/HostLayout.tsx`**
+- [x] **Step 3: Update `apps/host/components/HostLayout.tsx`**
 
 Remove `isRemoteAvailable` and `onTabSelect` props — they only existed for the federated tab model:
 
@@ -415,7 +437,7 @@ export const HostLayout: React.FC<HostLayoutProps> = ({ children, currentSession
 export default HostLayout;
 ```
 
-- [ ] **Step 4: Update `apps/host/components/SideNavigation.tsx`**
+- [x] **Step 4: Update `apps/host/components/SideNavigation.tsx`**
 
 Replace tab-based navigation with `<a>` links. Cross-zone links MUST be `<a>`, not `<Link>`:
 
@@ -435,14 +457,14 @@ export const SideNavigation: React.FC = () => (
 export default SideNavigation;
 ```
 
-- [ ] **Step 5: Fix any TypeScript errors**
+- [x] **Step 5: Fix any TypeScript errors**
 
 ```bash
 cd apps/host && npx tsc --noEmit
 ```
 Fix any remaining type errors from removed props (Header, etc.).
 
-- [ ] **Step 6: Start both apps and verify navigation**
+- [x] **Step 6: Start both apps and verify navigation**
 
 Terminal 1: `cd apps/remote-app && pnpm dev` (port 3001)
 Terminal 2: `cd apps/host && pnpm dev` (port 3000)
@@ -452,7 +474,7 @@ Terminal 2: `cd apps/host && pnpm dev` (port 3000)
 3. Verify remote app content renders (proxied by shell rewrite).
 4. DevTools Network: no `remoteEntry.js` requests.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add apps/host/
@@ -473,7 +495,7 @@ git commit -m "feat(host): remove Module Federation; cross-zone navigation via p
   - `GET /remote-app/api/health` → `{ ok: true }`, 200
   - `GET /remote-app/_fragmento/{name}/{id}` → inert `text/html` or `204`
 
-- [ ] **Step 1: Write health check test**
+- [x] **Step 1: Write health check test**
 
 Create `apps/remote-app/test/health.test.ts`:
 ```typescript
@@ -502,14 +524,14 @@ test('returns 200 { ok: true }', () => {
 });
 ```
 
-- [ ] **Step 2: Run to confirm fail**
+- [x] **Step 2: Run to confirm fail**
 
 ```bash
-cd apps/remote-app && npx tsx --test test/health.test.ts
+cd apps/remote-app && node --test test/health.test.ts
 ```
 Expected: FAIL — file doesn't exist.
 
-- [ ] **Step 3: Create `apps/remote-app/pages/api/health.ts`**
+- [x] **Step 3: Create `apps/remote-app/pages/api/health.ts`**
 
 ```typescript
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -521,7 +543,7 @@ export default function handler(_req: NextApiRequest, res: NextApiResponse): voi
 }
 ```
 
-- [ ] **Step 4: Write fragment endpoint test**
+- [x] **Step 4: Write fragment endpoint test**
 
 Create `apps/remote-app/test/fragmento.test.ts`:
 ```typescript
@@ -573,14 +595,14 @@ test('POST returns 405', () => {
 });
 ```
 
-- [ ] **Step 5: Run fragment test to confirm fail**
+- [x] **Step 5: Run fragment test to confirm fail**
 
 ```bash
-cd apps/remote-app && npx tsx --test test/fragmento.test.ts
+cd apps/remote-app && node --test test/fragmento.test.ts
 ```
 Expected: FAIL — file doesn't exist.
 
-- [ ] **Step 6: Create `apps/remote-app/pages/_fragmento/[name]/[id].tsx`**
+- [x] **Step 6: Create `apps/remote-app/pages/_fragmento/[name]/[id].tsx`**
 
 ```typescript
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -615,14 +637,14 @@ export default function handler(req: NextApiRequest, res: NextApiResponse): void
 }
 ```
 
-- [ ] **Step 7: Run all remote-app tests**
+- [x] **Step 7: Run all remote-app tests**
 
 ```bash
-cd apps/remote-app && npx tsx --test test/health.test.ts test/fragmento.test.ts
+cd apps/remote-app && node --test test/*.test.ts
 ```
 Expected: all PASS.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add apps/remote-app/pages/api/health.ts apps/remote-app/pages/_fragmento/ apps/remote-app/test/
@@ -640,29 +662,29 @@ git commit -m "feat(remote-app): add health check and _fragmento stub endpoint"
 - Consumes: everything from Tasks 1–5
 - Produces: clean repo; both apps boot without Federation; all tests pass
 
-- [ ] **Step 1: Grep for Federation remnants**
+- [x] **Step 1: Grep for Federation remnants**
 
 ```bash
 rg "@module-federation|remoteEntry|NextFederationPlugin|remote/ServerCard|remote/RemoteDashboard" apps/
 ```
 Expected: zero matches. If any found, remove the import and the code that depends on it.
 
-- [ ] **Step 2: Verify no `exposes`/`remotes` keys in any config**
+- [x] **Step 2: Verify no `exposes`/`remotes` keys in any config**
 
 ```bash
 rg "exposes:|remotes:" apps/
 ```
 Expected: zero matches.
 
-- [ ] **Step 3: Run all tests**
+- [x] **Step 3: Run all tests**
 
 ```bash
-cd apps/host && npx tsx --test test/*.test.ts
-cd apps/remote-app && npx tsx --test test/*.test.ts
+cd apps/host && node --test test/*.test.ts
+cd apps/remote-app && node --test test/*.test.ts
 ```
 Expected: all PASS.
 
-- [ ] **Step 4: End-to-end smoke test**
+- [x] **Step 4: End-to-end smoke test**
 
 Start both:
 ```bash
@@ -679,7 +701,7 @@ cd apps/host && pnpm dev         # port 3000
 | `http://localhost:3000/remote-app/_fragmento/unknown/1` | 204 |
 | Network tab | zero `remoteEntry.js` requests |
 
-- [ ] **Step 5: Final commit**
+- [x] **Step 5: Final commit**
 
 ```bash
 git add .

@@ -55,8 +55,8 @@ Transition from Webpack Module Federation (`@module-federation/nextjs-mf`) to na
 |---|------|-------|-------------|--------|
 | E2E | E2E Testing Track | Test infrastructure, 4-tier opaque-box test suites, TEST_READY.md | none | DONE |
 | M1 | Remote App Zone (`apps/remote-app`) | R1, R2, R5: Rename to `apps/remote-app`, configure basePath/assetPrefix, tsconfig exactOptionalPropertyTypes, types/index.ts, health API, _fragmento endpoint & rewrite, unit tests | none | DONE |
-| M2 | Host Shell Gateway (`apps/host`) | R3, R4: Delete deprecated files, configure 3 rewrites, rewrite index.tsx, update HostLayout/SideNavigation/Header, rewrites test | M1 | READY |
-| M3 | Workspace Purge & Final E2E Pass | R6: Strip workspace federation overrides, clean pnpm install, zero-grep audit, 100% E2E test pass | M1, M2, E2E | PLANNED |
+| M2 | Host Shell Gateway (`apps/host`) | R3, R4: Delete deprecated files, configure 3 rewrites, rewrite index.tsx, update HostLayout/SideNavigation/Header, rewrites test; plus zone-outage middleware (F1) and case-sensitive routes (A1) | M1 | IN FINAL GATE (iteration 6) |
+| M3 | Workspace Purge & Final E2E Pass | R6: Strip workspace federation overrides, clean pnpm install, zero-grep audit, 100% E2E test pass; D4, D5, D8 | M1, M2, E2E | IN FINAL GATE |
 
 ---
 
