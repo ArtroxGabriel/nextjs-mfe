@@ -25,7 +25,7 @@ test('middleware.ts exists at the host app root', () => {
   assert.ok(fs.existsSync(MIDDLEWARE_PATH));
 });
 
-test('ZONE_MATCHER_PATHS covers the zone root, zone sub-routes, and zone static assets', () => {
+test('matcher covers the zone root, zone sub-routes, and zone static assets with static literals', () => {
   assert.deepEqual(ZONE_MATCHER_PATHS, [
     '/remote-app',
     '/remote-app/:path*',
@@ -33,8 +33,10 @@ test('ZONE_MATCHER_PATHS covers the zone root, zone sub-routes, and zone static 
   ]);
 
   const source = readMiddlewareSource();
-  assert.match(source, /ZONE_MATCHER_PATHS/, 'middleware.ts must import and use ZONE_MATCHER_PATHS');
-  assert.match(source, /matcher\s*:\s*\[\s*\.\.\.ZONE_MATCHER_PATHS\s*\]/, 'matcher must spread ZONE_MATCHER_PATHS');
+  assert.match(source, /matcher\s*:\s*\[/, 'middleware.ts must export static literal array for Next.js AST parser');
+  assert.match(source, /['"]\/remote-app['"]/, 'matcher must explicitly contain /remote-app');
+  assert.match(source, /['"]\/remote-app\/:path\*['"]/, 'matcher must explicitly contain /remote-app/:path*');
+  assert.match(source, /['"]\/remote-app-static\/:path\*['"]/, 'matcher must explicitly contain /remote-app-static/:path*');
 });
 
 test('decideZoneResponse returns next when zone is healthy', () => {
