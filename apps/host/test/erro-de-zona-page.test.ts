@@ -60,8 +60,29 @@ test('pages/erro-de-zona.tsx exports a default React component', () => {
   assert.match(source, /export\s+default\s+/, 'the page module must have a default export');
 });
 
-test('pages/erro-de-zona.tsx renders the shared shell error copy', () => {
+test('pages/erro-de-zona.tsx renders the shared shell error copy in its JSX body', () => {
   const source = readPageSource();
+  // Strip imports so an unused import cannot satisfy the assertion if the JSX diverges
+  const sourceWithoutImports = source.replace(/import\s+[\s\S]*?from\s+['"][^'"]+['"];?/g, '');
 
-  assert.match(source, /ZONE_ERROR_HEADING|ZONE_ERROR_MESSAGE/, 'must reuse the shared copy so the standalone page and the outage fallback stay in sync');
+  assert.match(
+    sourceWithoutImports,
+    /<h2>\s*\{\s*ZONE_ERROR_HEADING\s*\}\s*<\/h2>/,
+    'JSX must render <h2>{ZONE_ERROR_HEADING}</h2>, not hardcoded divergent text'
+  );
+  assert.match(
+    sourceWithoutImports,
+    /\{\s*ZONE_ERROR_MESSAGE\s*\}/,
+    'JSX must render {ZONE_ERROR_MESSAGE}'
+  );
+  assert.match(
+    sourceWithoutImports,
+    /\{\s*ZONE_ERROR_RETRY_HINT\s*\}/,
+    'JSX must render {ZONE_ERROR_RETRY_HINT}'
+  );
+  assert.match(
+    sourceWithoutImports,
+    /<title>\s*\{\s*ZONE_ERROR_TITLE\s*\}\s*<\/title>/,
+    'JSX must render <title>{ZONE_ERROR_TITLE}</title>'
+  );
 });

@@ -3,15 +3,15 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-
-/**
- * middleware.ts wires the pure zoneLiveness/zoneErrorPage logic (covered by
- * their own unit tests) into Next's request pipeline via `next/server`.
- * `next/server` cannot be imported under plain `node --test` outside of
- * Next's own bundler resolution (bare specifier "next/server" has no
- * extension and Next's package.json declares no "exports" map for it), so
- * this file verifies the wiring statically instead of importing the module.
- */
+import {
+  ZONE_MATCHER_PATHS,
+  decideZoneResponse,
+  OUTAGE_RETRY_AFTER_SECONDS,
+} from '../lib/zoneDecision.ts';
+import {
+  ZONE_ERROR_HEADING,
+  ZONE_ERROR_MESSAGE,
+} from '../lib/zoneErrorContent.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MIDDLEWARE_PATH = path.join(__dirname, '..', 'middleware.ts');
@@ -25,28 +25,56 @@ test('middleware.ts exists at the host app root', () => {
   assert.ok(fs.existsSync(MIDDLEWARE_PATH));
 });
 
-test('middleware.ts matcher covers the zone root, zone sub-routes, and zone static assets', () => {
-  const source = readMiddlewareSource();
+test('ZONE_MATCHER_PATHS covers the zone root, zone sub-routes, and zone static assets', () => {
+  assert.deepEqual(ZONE_MATCHER_PATHS, [
+    '/remote-app',
+    '/remote-app/:path*',
+    '/remote-app-static/:path*',
+  ]);
 
-  assert.match(source, /matcher\s*:/, 'must export a matcher config');
-  assert.match(source, /['"]\/remote-app['"]/, 'matcher must cover the bare zone root');
-  assert.match(source, /['"]\/remote-app\/:path\*['"]/, 'matcher must cover zone sub-routes');
-  assert.match(source, /['"]\/remote-app-static\/:path\*['"]/, 'matcher must cover zone static assets');
+  const source = readMiddlewareSource();
+  assert.match(source, /ZONE_MATCHER_PATHS/, 'middleware.ts must import and use ZONE_MATCHER_PATHS');
+  assert.match(source, /matcher\s*:\s*\[\s*\.\.\.ZONE_MATCHER_PATHS\s*\]/, 'matcher must spread ZONE_MATCHER_PATHS');
 });
 
-test('middleware.ts responds 503 with Retry-After when the zone is unhealthy, not a bare 500', () => {
-  const source = readMiddlewareSource();
+test('decideZoneResponse returns next when zone is healthy', () => {
+  const decision = decideZoneResponse(true);
 
-  assert.match(source, /503/, 'the deliberate outage status code must be 503 (dependency down), not a bare 500');
-  assert.match(source, /retry-after/i, 'a 503 for a down dependency must advertise Retry-After');
+  assert.equal(decision.action, 'next', 'healthy zone must proceed to next handler');
+  assert.equal(Object.keys(decision).length, 1);
 });
 
-test('middleware.ts consults the shared zone liveness cache rather than probing on every request inline', () => {
+test('decideZoneResponse returns 503 with Retry-After and inert outage page when zone is down', () => {
+  const decision = decideZoneResponse(false);
+
+  assert.equal(decision.action, 'outage', 'unhealthy zone must return outage response');
+  if (decision.action === 'outage') {
+    assert.equal(decision.status, 503, 'the deliberate outage status code must be 503 (dependency down), not a bare 500');
+    assert.equal(decision.headers['retry-after'], OUTAGE_RETRY_AFTER_SECONDS);
+    assert.equal(decision.headers['content-type'], 'text/html; charset=utf-8');
+    assert.equal(decision.headers['cache-control'], 'no-store');
+    assert.ok(decision.body.includes(ZONE_ERROR_HEADING), 'outage body must include shared heading');
+    assert.ok(decision.body.includes(ZONE_ERROR_MESSAGE), 'outage body must include shared message');
+    assert.doesNotMatch(decision.body, /<script\b/i, 'outage body must be inert with no script tags');
+  }
+});
+
+test('middleware.ts delegates decision to decideZoneResponse and getSharedZoneLivenessCache', () => {
   const source = readMiddlewareSource();
 
   assert.match(
     source,
-    /zoneLiveness/i,
+    /getSharedZoneLivenessCache/,
     'middleware must delegate the outage decision to the cached liveness module, not re-implement probing'
+  );
+  assert.match(
+    source,
+    /decideZoneResponse/,
+    'middleware must delegate routing decision to decideZoneResponse'
+  );
+  assert.match(
+    source,
+    /if\s*\(\s*decision\.action\s*===\s*['"]next['"]\s*\)/,
+    'middleware must branch on decision.action === next'
   );
 });

@@ -80,7 +80,7 @@ export function createZoneLivenessCache(options: ZoneLivenessCacheOptions): Zone
   };
 }
 
-const DEFAULT_TTL_MS = 3000;
+export const DEFAULT_TTL_MS = 1000;
 const DEFAULT_PROBE_TIMEOUT_MS = 800;
 
 /**

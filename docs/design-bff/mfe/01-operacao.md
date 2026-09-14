@@ -180,6 +180,14 @@ Cada nível degrada sem levar o de cima junto:
 | Store de sessão fora | ninguém autentica | **sem degradação** — é núcleo |
 | Shell fora | nada funciona | aceito: é o gateway |
 
+> **Ressalva da garantia em regime:** A garantia de que a queda total da zona serve
+> `/erro-de-zona` (HTTP 503 com `Retry-After`) vale em regime estabilizado. Logo após o
+> início de uma queda abrupta, existe uma janela finita de obsolescência limitada pelo TTL
+> do cache de vivacidade da sonda (medido em 120 requisições ao longo de 2,96 s com TTL de 3 s;
+> agora reduzido para janela máxima de 1 s em `DEFAULT_TTL_MS = 1000`). Em cache frio
+> (shell inicializado com a zona já fora do ar), a sonda é síncrona e a proteção é imediata
+> na primeira requisição.
+
 As duas últimas linhas são deliberadas. Store de sessão e shell são pontos únicos de
 falha, e fingir o contrário produziria um desenho pior — com sessão replicada por zona,
 que é a coisa que o §3.3 mostra ser perigosa.

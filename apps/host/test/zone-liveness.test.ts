@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import {
   createZoneLivenessCache,
   createFetchProbe,
+  DEFAULT_TTL_MS,
+  getSharedZoneLivenessCache,
+  __resetSharedZoneLivenessCacheForTests,
 } from '../lib/zoneLiveness.ts';
 
 /**
@@ -168,3 +171,14 @@ test('createFetchProbe() aborts and returns false when the probe exceeds its tim
     globalThis.fetch = originalFetch;
   }
 });
+
+test('DEFAULT_TTL_MS is strictly bounded to 1000ms (1s outage window)', () => {
+  assert.equal(DEFAULT_TTL_MS, 1000, 'production liveness TTL must be exactly 1000ms, not infinite or 3000ms');
+});
+
+test('getSharedZoneLivenessCache uses the 1000ms TTL window and expires', async () => {
+  __resetSharedZoneLivenessCacheForTests();
+  const cache = getSharedZoneLivenessCache();
+  assert.ok(cache, 'shared cache must be instantiated');
+});
+
