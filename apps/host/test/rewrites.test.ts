@@ -17,6 +17,7 @@ type RewritesExport = () => Promise<readonly RewriteRule[] | RewritesResultObjec
 
 interface NextConfigModule {
   readonly reactStrictMode?: boolean | null | undefined;
+  readonly experimental?: { readonly caseSensitiveRoutes?: boolean | undefined } | undefined;
   readonly rewrites?: RewritesExport | undefined;
   readonly default?: NextConfigModule | undefined;
 }
@@ -42,6 +43,14 @@ function extractRewriteRules(
 test('reactStrictMode is enabled in host next.config.js', () => {
   // Assert
   assert.equal(config.reactStrictMode, true);
+});
+
+test('routes match case-sensitively, so a zone prefix in other letter case cannot reach the zone', () => {
+  // Rewrites match case-insensitively by default while the middleware matcher
+  // does not. With the default, /REMOTE-APP was proxied to the zone without
+  // passing through middleware.ts, and a down zone answered it with the bare
+  // 500 for the whole outage (challenger_m2_5, finding A1).
+  assert.equal(config.experimental?.caseSensitiveRoutes, true);
 });
 
 test('next.config.js exports rewrites as an async function', () => {

@@ -1,0 +1,17 @@
+import { spawn } from 'node:child_process';
+import { stop, start, portOpen } from './pm.mjs';
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+console.log(JSON.stringify(await stop('zone', 'SIGKILL')));
+const stub = spawn(process.execPath, ['stub.mjs'], { stdio: ['ignore', 'pipe', 'inherit'] });
+while (!(await portOpen(3001))) await sleep(10);
+await sleep(1500);
+await fetch('http://localhost:3001/__events').then((r) => r.json());
+const t0 = Date.now(); let n = 0; const st = {};
+await Promise.all(Array.from({ length: 30 }, async () => { while (Date.now() - t0 < 6000) { const r = await fetch('http://localhost:3000/remote-app/x'); await r.arrayBuffer(); n++; st[r.status] = (st[r.status] || 0) + 1; } }));
+const ev = await fetch('http://localhost:3001/__events').then((r) => r.json());
+const health = ev.filter(([, u]) => u.startsWith('/remote-app/api/health')).map(([t]) => t - t0);
+const gaps = health.slice(1).map((t, i) => t - health[i]);
+console.log(JSON.stringify({ workers: 30, durationMs: 6000, hostRequests: n, statuses: st, proxiedSeenByStub: ev.filter(([, u]) => !u.startsWith('/remote-app/api/health')).length, healthProbes: health.length, probeTimesMs: health, gapsMs: gaps }));
+stub.kill('SIGKILL');
+while (await portOpen(3001)) await sleep(10);
+console.log(JSON.stringify({ zoneRestart: await start('zone') }));

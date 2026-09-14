@@ -1,0 +1,11 @@
+  200 text/html; charset=utf-8  /remote-app
+  404 text/html; charset=utf-8  /REMOTE-APP
+  404 text/html; charset=utf-8  /Remote-App/api/health
+  200 application/json; charset=utf-8  /remote-app/api/health
+  200 text/html; charset=utf-8  /remote-app/_fragmento/demo/42
+  404 text/html; charset=utf-8  /REMOTE-APP-STATIC/_next/static/css/7328242de7a8f19b.css
+  200 text/css; charset=UTF-8  /remote-app-static/_next/static/css/7328242de7a8f19b.css
+  404 text/html; charset=utf-8  /remote-APP/nao/existe
+  404 text/html; charset=utf-8  /Erro-De-Zona
+  200 text/html; charset=utf-8  /erro-de-zona
+  200 text/html; charset=utf-8  /

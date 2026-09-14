@@ -1,0 +1,2 @@
+{"warm":200,"workers":10,"clientTimeoutMs":4000,"statusesBySendSecondAfterSIGSTOP":{"0s":{"TIMEOUT4s":10},"4s":{"503":40},"5s":{"503":186}},"latency503":{"n":226,"p50":47,"p90":72,"max":871},"latencyTimeout":{"n":10,"p50":4008,"p90":4012,"max":4012},"latency500":null,"latency200":null}
+{"afterSIGCONT":[200,200,200,200,200,200,200,200,200,200]}

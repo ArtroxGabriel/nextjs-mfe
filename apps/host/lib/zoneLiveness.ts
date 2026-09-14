@@ -89,7 +89,12 @@ export function createZoneLivenessCache(options: ZoneLivenessCacheOptions): Zone
  * interval while the zone is up.
  */
 export const ZONE_LIVENESS_TTL_MS = 1000;
-const DEFAULT_PROBE_TIMEOUT_MS = 800;
+/**
+ * How long one probe may take before the zone is treated as down. A zone
+ * that drops packets instead of refusing connections holds every request
+ * that pays a probe for this long before it gets the 503.
+ */
+export const ZONE_PROBE_TIMEOUT_MS = 800;
 
 /**
  * Builds a probe function that hits a zone's own `/api/health` endpoint
@@ -99,7 +104,7 @@ const DEFAULT_PROBE_TIMEOUT_MS = 800;
  */
 export function createFetchProbe(
   healthUrl: string,
-  timeoutMs: number = DEFAULT_PROBE_TIMEOUT_MS
+  timeoutMs: number = ZONE_PROBE_TIMEOUT_MS
 ): () => Promise<boolean> {
   return async () => {
     const controller = new AbortController();

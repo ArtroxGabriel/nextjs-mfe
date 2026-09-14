@@ -1,6 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    // Rewrites match case-insensitively by default, but the middleware matcher
+    // is case-sensitive. Without this, /REMOTE-APP reached the zone around
+    // middleware.ts and a down zone answered it with a bare 500.
+    caseSensitiveRoutes: true,
+  },
   async rewrites() {
     const remoteZoneUrl =
       process.env.REMOTE_ZONE_URL ||

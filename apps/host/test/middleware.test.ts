@@ -72,7 +72,16 @@ function isPassThrough(response: Response): boolean {
   return response.headers.get('x-middleware-next') === '1';
 }
 
+const ZONE_URL_VARIABLES = ['REMOTE_ZONE_URL', 'REMOTE_APP_URL'] as const;
+const savedZoneUrls = new Map<string, string | undefined>();
+
 test.beforeEach(() => {
+  // The shared cache reads the zone origin from the environment when it is
+  // built, so a CI run with these set must not change what the tests see.
+  for (const name of ZONE_URL_VARIABLES) {
+    savedZoneUrls.set(name, process.env[name]);
+    delete process.env[name];
+  }
   resetLivenessCache();
   mock.timers.enable({ apis: ['Date'], now: 1_000_000 });
 });
@@ -80,6 +89,14 @@ test.beforeEach(() => {
 test.afterEach(() => {
   mock.timers.reset();
   mock.restoreAll();
+  for (const name of ZONE_URL_VARIABLES) {
+    const saved = savedZoneUrls.get(name);
+    if (saved === undefined) {
+      delete process.env[name];
+    } else {
+      process.env[name] = saved;
+    }
+  }
 });
 
 test('the matcher covers exactly the paths the rewrites send to the zone', () => {
@@ -138,4 +155,36 @@ test('the shell recovers once the zone is back and the TTL elapses', async () =>
   mock.timers.tick(EXPECTED_TTL_MS);
 
   assert.ok(isPassThrough(await middleware(zoneRequest())));
+});
+
+test('the probe targets the same zone origin the rewrites use, REMOTE_ZONE_URL first', async () => {
+  const zone = stubZone('up');
+  process.env.REMOTE_ZONE_URL = 'http://zone-primary:4001';
+  process.env.REMOTE_APP_URL = 'http://zone-fallback:4002';
+
+  await middleware(zoneRequest());
+  resetLivenessCache();
+  delete process.env.REMOTE_ZONE_URL;
+  await middleware(zoneRequest());
+
+  assert.deepEqual(zone.probedUrls, [
+    'http://zone-primary:4001/remote-app/api/health',
+    'http://zone-fallback:4002/remote-app/api/health',
+  ]);
+});
+
+test('a zone that never answers the probe gets the 503 in under a second and a half', { timeout: 5000 }, async () => {
+  mock.method(globalThis, 'fetch', (_input: string | URL | Request, init?: RequestInit) => {
+    // Packets dropped: no answer and no refusal, only the abort ends it.
+    return new Promise<Response>((_resolve, reject) => {
+      init?.signal?.addEventListener('abort', () => reject(init.signal?.reason));
+    });
+  });
+
+  const startedAt = performance.now();
+  const response = await middleware(zoneRequest());
+  const elapsedMs = performance.now() - startedAt;
+
+  assert.equal(response.status, 503);
+  assert.ok(elapsedMs < 1500, `waited ${elapsedMs.toFixed(0)} ms for a silent zone`);
 });

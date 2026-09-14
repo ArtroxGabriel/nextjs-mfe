@@ -180,23 +180,35 @@ Cada nível degrada sem levar o de cima junto:
 | Store de sessão fora | ninguém autentica | **sem degradação** — é núcleo |
 | Shell fora | nada funciona | aceito: é o gateway |
 
-A terceira linha vale em regime, com uma exceção limitada. O `rewrites()` do Next não
+A terceira linha vale em regime, com duas exceções limitadas. O `rewrites()` do Next não
 tem gancho para falha do destino: a zona morta vira um 500 cru do framework, sem
 `Content-Type`, antes de qualquer código do shell rodar. Por isso o shell decide antes do
 rewrite. O middleware consulta o health check da zona (§5.2), guarda o resultado por 1 s e,
-com a zona fora, responde 503 com `Retry-After` e a página de erro.
+com a zona fora, responde 503 com `Retry-After` e a página de erro. As rotas do shell
+diferenciam maiúsculas (`experimental.caseSensitiveRoutes`): sem isso, o rewrite aceitava
+`/REMOTE-APP` e o matcher do middleware não, e essa variante recebia o 500 cru durante a
+queda inteira. Hoje ela recebe o 404 do shell.
 
-A exceção é o intervalo logo após a queda. Enquanto o último resultado saudável está no
-cache, as requisições ainda chegam à zona morta e recebem o 500 cru. Medido com
-`next start` em localhost (2026-09-14), três quedas logo após uma sonda bem-sucedida
-levaram o primeiro 503 a 871, 929 e 940 ms; num laço sequencial isso foram de 110 a 190
-requisições. Com o cache de 3 s usado antes, a mesma medição deu 2,96 s. A janela é
+A primeira exceção é o intervalo logo após a queda de um processo que morreu. Enquanto o
+último resultado saudável está no cache, as requisições ainda chegam à zona e recebem o
+500 cru. Medido com `next start` em localhost (2026-09-14), com a zona encerrada logo após
+uma sonda bem-sucedida, o primeiro 503 chegou entre 871 e 940 ms num cliente sequencial
+(11 quedas, duas medições independentes), depois de 79 a 190 requisições. Com 30 clientes
+concorrentes a fronteira, medida pelo envio, ficou entre 826 e 1010 ms. No mesmo cenário,
+medido na iteração anterior com o cache de 3 s, o intervalo foi de 2,96 s. A janela é
 limitada por tempo, e quantas requisições caem nela depende da taxa.
 
-Duas situações ficam fora da exceção. Uma zona que já está fora quando o shell sobe, ou
-quando o cache já expirou, recebe 503 na primeira requisição, porque cache vazio força
-sonda síncrona. E, com a zona no ar, a sonda soma cerca de 3 ms à requisição que a dispara
-(mediana medida), no máximo uma vez por segundo por processo do shell.
+A segunda exceção é a zona travada: processo vivo, porta aceitando conexão, sem resposta
+(medido com `SIGSTOP`). Uma requisição enviada dentro do mesmo intervalo de 1 s não recebe
+o 500 na hora: espera o timeout do proxy do Next, observado em 30 s (3 de 3), e só então
+recebe o 500 cru. Depois do intervalo, a requisição que dispara a sonda espera o timeout da
+sonda, 800 ms (815 a 817 ms medidos), e recebe 503. As seguintes recebem 503 do cache.
+
+Uma zona que já está fora quando o shell sobe, ou quando o cache já expirou, recebe 503 na
+primeira requisição, porque cache vazio força sonda síncrona. Quanto ao custo, a requisição
+que dispara a sonda paga de 3 a 6 ms a mais em localhost (medianas pareadas de cinco séries),
+com a zona no ar ou morta, no máximo uma vez por segundo por processo do shell: 30 clientes
+durante 6 s geraram 7 sondas.
 
 As duas últimas linhas da tabela são deliberadas. Store de sessão e shell são pontos únicos de
 falha, e fingir o contrário produziria um desenho pior — com sessão replicada por zona,

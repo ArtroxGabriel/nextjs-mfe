@@ -1,0 +1,3 @@
+{"run":1,"preStatus":503,"zoneHealthy200AtMs":1435,"hostFirst200SentAtMs":966,"lagMs":-469,"hostStatusesDuringRecovery":{"200":1,"503":27},"last3":[[895,503],[932,503],[966,200]],"next20":[200]}
+{"run":2,"preStatus":503,"zoneHealthy200AtMs":1401,"hostFirst200SentAtMs":992,"lagMs":-409,"hostStatusesDuringRecovery":{"200":1,"503":29},"last3":[[930,503],[961,503],[992,200]],"next20":[200]}
+{"run":3,"preStatus":503,"zoneHealthy200AtMs":1517,"hostFirst200SentAtMs":1001,"lagMs":-515,"hostStatusesDuringRecovery":{"200":1,"503":30},"last3":[[936,503],[968,503],[1001,200]],"next20":[200]}

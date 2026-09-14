@@ -1,0 +1,6 @@
+{"warm":200,"stalePathRequest":{"status":500,"ct":null,"body":"Internal Server Error","elapsedMs":30055},"nextRequestWhileStopped":{"status":503,"ms":817}}
+after SIGCONT 200
+{"warm":200,"stalePathRequest":{"status":500,"ct":null,"body":"Internal Server Error","elapsedMs":30030},"nextRequestWhileStopped":{"status":503,"ms":817}}
+after SIGCONT 200
+{"warm":200,"stalePathRequest":{"status":500,"ct":null,"body":"Internal Server Error","elapsedMs":30031},"nextRequestWhileStopped":{"status":503,"ms":815}}
+after SIGCONT 200
