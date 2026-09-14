@@ -176,11 +176,29 @@ Cada nível degrada sem levar o de cima junto:
 |---|---|---|
 | Fragmento de outra zona | o bloco não aparece | `try/catch` + timeout de 2 s no `FragmentoRemoto` |
 | Uma rota da zona | página de erro da zona | error boundary da rota |
-| Zona inteira fora | shell serve `/erro-de-zona` | rewrite falha, shell trata |
+| Zona inteira fora | shell serve `/erro-de-zona` | middleware do shell sonda a zona e trata (ver abaixo) |
 | Store de sessão fora | ninguém autentica | **sem degradação** — é núcleo |
 | Shell fora | nada funciona | aceito: é o gateway |
 
-As duas últimas linhas são deliberadas. Store de sessão e shell são pontos únicos de
+A terceira linha vale em regime, com uma exceção limitada. O `rewrites()` do Next não
+tem gancho para falha do destino: a zona morta vira um 500 cru do framework, sem
+`Content-Type`, antes de qualquer código do shell rodar. Por isso o shell decide antes do
+rewrite. O middleware consulta o health check da zona (§5.2), guarda o resultado por 1 s e,
+com a zona fora, responde 503 com `Retry-After` e a página de erro.
+
+A exceção é o intervalo logo após a queda. Enquanto o último resultado saudável está no
+cache, as requisições ainda chegam à zona morta e recebem o 500 cru. Medido com
+`next start` em localhost (2026-09-14), três quedas logo após uma sonda bem-sucedida
+levaram o primeiro 503 a 871, 929 e 940 ms; num laço sequencial isso foram de 110 a 190
+requisições. Com o cache de 3 s usado antes, a mesma medição deu 2,96 s. A janela é
+limitada por tempo, e quantas requisições caem nela depende da taxa.
+
+Duas situações ficam fora da exceção. Uma zona que já está fora quando o shell sobe, ou
+quando o cache já expirou, recebe 503 na primeira requisição, porque cache vazio força
+sonda síncrona. E, com a zona no ar, a sonda soma cerca de 3 ms à requisição que a dispara
+(mediana medida), no máximo uma vez por segundo por processo do shell.
+
+As duas últimas linhas da tabela são deliberadas. Store de sessão e shell são pontos únicos de
 falha, e fingir o contrário produziria um desenho pior — com sessão replicada por zona,
 que é a coisa que o §3.3 mostra ser perigosa.
 

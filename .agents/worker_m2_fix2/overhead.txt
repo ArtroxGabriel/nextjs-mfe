@@ -1,0 +1,4 @@
+direct zone :3001: n=200 statuses=200 p50=2.59ms p90=4.65ms
+via host, tight loop (cache mostly warm): n=200 statuses=200 p50=12.46ms p90=16.68ms
+via host, 1.1s apart (every request pays a synchronous probe): n=20 statuses=200 p50=15.08ms p90=23.78ms
+via host, 2nd request right after a probe (cache hit, same spacing): n=20 statuses=200 p50=11.75ms p90=15.74ms

@@ -1,7 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderZoneErrorHtml } from '../lib/zoneErrorPage.ts';
-import { ZONE_ERROR_HEADING, ZONE_ERROR_MESSAGE } from '../lib/zoneErrorContent.ts';
+import {
+  ZONE_ERROR_TITLE,
+  ZONE_ERROR_HEADING,
+  ZONE_ERROR_MESSAGE,
+  ZONE_ERROR_RETRY_HINT,
+} from '../lib/zoneErrorContent.ts';
 
 /**
  * The outage fallback rendered directly by middleware.ts (F1 fix) must be a
@@ -23,6 +28,8 @@ test('renderZoneErrorHtml() contains the shared shell error copy', () => {
 
   assert.ok(html.includes(ZONE_ERROR_HEADING), 'must include the shared heading text');
   assert.ok(html.includes(ZONE_ERROR_MESSAGE), 'must include the shared message text');
+  assert.ok(html.includes(ZONE_ERROR_RETRY_HINT), 'must include the shared retry hint');
+  assert.ok(html.includes(`<title>${ZONE_ERROR_TITLE}</title>`), 'must use the shared title');
 });
 
 test('renderZoneErrorHtml() is inert: no <script> tags, no domain/zone fetch calls', () => {
