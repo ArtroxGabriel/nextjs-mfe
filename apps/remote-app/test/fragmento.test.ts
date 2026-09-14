@@ -1,7 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import handler from '../pages/_fragmento/[name]/[id]';
+import './support/register-next-resolution.ts';
+
+// The runtime route the zone's `/_fragmento/:name/:id` rewrite points at. It
+// re-exports the handler from pages/_fragmento/[name]/[id].tsx, which needs the
+// resolution hooks above, so it is loaded after they are registered.
+let handler: (typeof import('../pages/api/fragmento/[name]/[id].ts'))['default'];
+
+test.before(async () => {
+  handler = (await import('../pages/api/fragmento/[name]/[id].ts')).default;
+});
 
 interface MockResponse {
   statusCode: number;

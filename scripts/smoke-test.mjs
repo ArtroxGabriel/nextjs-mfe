@@ -148,7 +148,7 @@ async function main() {
   let report = createTestReport();
 
   if (!options.isOnlineOnly) {
-    report = runStaticInvariantChecks(report);
+    report = await runStaticInvariantChecks(report);
   }
 
   if (options.isOfflineOnly) {

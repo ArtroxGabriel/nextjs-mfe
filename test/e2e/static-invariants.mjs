@@ -5,6 +5,8 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import {
   ANSI,
   recordTestResult,
@@ -12,7 +14,25 @@ import {
   assertNotRegex,
 } from './test-helpers.mjs';
 
-const PROJECT_ROOT = process.cwd();
+// Resolved from this file, not from process.cwd(): the checks must give the
+// same answer whichever directory the smoke test is started from.
+const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const requireFromRoot = createRequire(path.join(PROJECT_ROOT, 'package.json'));
+
+const ZONE_REWRITE_SOURCES = ['/remote-app', '/remote-app/:path*', '/remote-app-static/:path*'];
+
+/**
+ * Loads a Next config the way Next does, fresh, so checks read its values
+ * rather than its source text.
+ * @param {string} relativePath
+ * @returns {object}
+ */
+function loadNextConfig(relativePath) {
+  const fullPath = path.join(PROJECT_ROOT, relativePath);
+  delete requireFromRoot.cache[fullPath];
+  const loaded = requireFromRoot(fullPath);
+  return loaded.default ?? loaded;
+}
 
 /**
  * Reads file content safely or returns empty string if not found.
@@ -153,38 +173,60 @@ function testZoneRenameIntegrity() {
 }
 
 /**
- * Verifies apps/host rewrites configuration structure.
+ * Verifies apps/host rewrites: exactly the three zone rules, each sending its
+ * own path to the same zone origin. A substring check cannot do this, because
+ * '/remote-app' is contained in the other two sources.
  */
-function testHostRewritesConfig() {
-  const hostConfig = readFileSafe('apps/host/next.config.js');
-  if (!hostConfig.includes('rewrites')) {
+async function testHostRewritesConfig() {
+  const config = loadNextConfig('apps/host/next.config.js');
+  if (typeof config.rewrites !== 'function') {
     throw new Error('apps/host/next.config.js does not export async rewrites()');
   }
 
-  assertContains(hostConfig, '/remote-app', 'apps/host/next.config.js rewrites root');
-  assertContains(hostConfig, '/remote-app/:path*', 'apps/host/next.config.js rewrites subroutes');
-  assertContains(hostConfig, '/remote-app-static/:path*', 'apps/host/next.config.js rewrites static assets');
+  const rules = await config.rewrites();
+  if (!Array.isArray(rules)) {
+    throw new Error('apps/host/next.config.js rewrites() must return a flat array of rules');
+  }
+
+  const sources = rules.map((rule) => rule.source).sort();
+  const expected = [...ZONE_REWRITE_SOURCES].sort();
+  if (JSON.stringify(sources) !== JSON.stringify(expected)) {
+    throw new Error(`rewrite sources expected ${JSON.stringify(expected)}, found ${JSON.stringify(sources)}`);
+  }
+
+  const origins = new Set();
+  for (const rule of rules) {
+    if (!rule.destination.endsWith(rule.source)) {
+      throw new Error(`rewrite ${rule.source} must keep its path, found destination ${rule.destination}`);
+    }
+    origins.add(rule.destination.slice(0, -rule.source.length));
+  }
+  if (origins.size !== 1 || !/^https?:\/\/[^/]+$/.test([...origins][0])) {
+    throw new Error(`all rewrites must point at one zone origin, found ${JSON.stringify([...origins])}`);
+  }
 }
 
 /**
  * Verifies apps/remote-app basePath and assetPrefix configuration.
  */
 function testRemoteZoneConfig() {
-  const configPath = fs.existsSync(path.join(PROJECT_ROOT, 'apps/remote-app/next.config.js'))
-    ? 'apps/remote-app/next.config.js'
-    : 'apps/remote/next.config.js';
-
-  const remoteConfig = readFileSafe(configPath);
-  assertContains(remoteConfig, "basePath: '/remote-app'", `${configPath} basePath`);
-  assertContains(remoteConfig, "assetPrefix: '/remote-app-static'", `${configPath} assetPrefix`);
+  const config = loadNextConfig('apps/remote-app/next.config.js');
+  if (config.basePath !== '/remote-app') {
+    throw new Error(`apps/remote-app/next.config.js basePath expected "/remote-app", found ${JSON.stringify(config.basePath)}`);
+  }
+  if (config.assetPrefix !== '/remote-app-static') {
+    throw new Error(
+      `apps/remote-app/next.config.js assetPrefix expected "/remote-app-static", found ${JSON.stringify(config.assetPrefix)}`
+    );
+  }
 }
 
 /**
  * Executes all offline static invariant checks.
  * @param {object} initialReport
- * @returns {object} updated test report
+ * @returns {Promise<object>} updated test report
  */
-export function runStaticInvariantChecks(initialReport) {
+export async function runStaticInvariantChecks(initialReport) {
   let report = initialReport;
 
   const testDefinitions = [
@@ -201,7 +243,7 @@ export function runStaticInvariantChecks(initialReport) {
 
   for (const test of testDefinitions) {
     try {
-      test.fn();
+      await test.fn();
       console.log(`  ${ANSI.green}✓ PASS${ANSI.reset} [${test.id}] ${test.desc}`);
       report = recordTestResult(report, { id: test.id, description: test.desc, passed: true });
     } catch (err) {

@@ -5,6 +5,7 @@ dist
 build
 .DS_Store
 *.log
+*.tsbuildinfo
 .ai-jail
 .pnpm-store
 multi-zone-poc
