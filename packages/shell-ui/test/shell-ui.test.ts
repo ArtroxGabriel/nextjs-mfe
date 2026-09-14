@@ -72,3 +72,20 @@ test('shell-layout.css exists and defines critical shell layout selectors', () =
   assert.ok(css.includes('--header-height'));
   assert.ok(css.includes('--sidebar-width'));
 });
+
+test('globals.css in apps/host and apps/remote-app resolve shell-layout.css', () => {
+  const rootDir = path.resolve(__dirname, '..', '..', '..');
+  const hostCss = fs.readFileSync(path.join(rootDir, 'apps', 'host', 'styles', 'globals.css'), 'utf-8');
+  const remoteCss = fs.readFileSync(path.join(rootDir, 'apps', 'remote-app', 'styles', 'globals.css'), 'utf-8');
+
+  const hostMatch = hostCss.match(/@import\s+['"]([^'"]+)['"]/);
+  assert.ok(hostMatch, 'host globals.css must have @import');
+  const hostResolved = path.resolve(rootDir, 'apps', 'host', 'styles', hostMatch[1]);
+  assert.ok(fs.existsSync(hostResolved), `host CSS @import path must resolve: ${hostResolved}`);
+
+  const remoteMatch = remoteCss.match(/@import\s+['"]([^'"]+)['"]/);
+  assert.ok(remoteMatch, 'remote globals.css must have @import');
+  const remoteResolved = path.resolve(rootDir, 'apps', 'remote-app', 'styles', remoteMatch[1]);
+  assert.ok(fs.existsSync(remoteResolved), `remote CSS @import path must resolve: ${remoteResolved}`);
+});
+

@@ -1,4 +1,4 @@
-@import '../../packages/shell-ui/src/shell-layout.css';
+@import '../../../packages/shell-ui/src/shell-layout.css';
 
 :root {
   --bg-color: #030712;
