@@ -65,3 +65,13 @@ Gate Result: **FAIL** — auditor_m2_3 INTEGRITY VIOLATION is a binary veto (rev
 | auditor_m2_4 | general-purpose (forensic) | CLEAN | auditor_m2_4/handoff.md | 8/8 required variants and 30/36 adversarial mutations fail. Non-blocking survivors: A20 probe timeout untested, A32 `includes('')`, A17 env precedence untested and origin hardcoded; A35/A36 hook swaps (by construction); A27 effect fetch |
 
 Gate Result: **FAIL** — reviewer_m2_5 F1 and challenger_m2_5 A1 (REQUEST_CHANGES). Auditor CLEAN: the iteration 3 veto is lifted. Human authorized iteration 5 corrections on 2026-09-14.
+
+## Gate — Milestone 2 (Iteration 5 — case-sensitive routes, F1 guards, §5.1 exceptions)
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| worker_m2_fix3 | controller session (worker) | DONE | worker_m2_fix3/handoff.md | Commit 94ccdc2. `experimental.caseSensitiveRoutes`; module-load fetch guard; probe timeout constant + silent-zone test; env isolation; non-empty copy; §5.1 crash vs hung zone. 33/33, 10/11 mutations fail (M6 declared) |
+| reviewer_m2_6 | revisor-mfe | REQUEST_CHANGES | reviewer_m2_6/handoff.md | A1 fix correct (Next source read). F1 blocking: §5.1 presented the hung-zone 800 ms wait as one-off; it recurs every expiry, ≈40% of a stream. Low: F2 flag guard only a config value, experimental unmentioned; F3 precedence not compared with rewrites; F4 "chegou"/"pareadas" wording; F5 deferred module-load fetch escapes; F6 100/100 unbacked |
+| challenger_m2_6 | simulador-condicoes | APPROVE | challenger_m2_6/handoff.md | 248 variants × 4 runs (oracle stub sick/healthy, real zone up/down): 0 bypasses, 0 zone-path 500s; 9540 case-variant requests under outage load, 0 × 500. No regression (smoke 16/16, SSE streams, fragments, assets byte-identical). Crash window 902–950 ms over 5 new kills → D-1/D-2 wording. Observations O1–O4 outside the gate |
+| auditor_m2_5 | general-purpose (forensic) | CLEAN | auditor_m2_5/handoff.md | 56 mutations; all required caught; M6 honestly declared. Non-blocking: F-1 no lower bound on probe timeout, F-2 = reviewer F3, F-3 = F6, F-4 title uncovered, F-5 M6 not in DEFERRED, F-6 = F5 |
+
+Gate Result: **FAIL** — reviewer_m2_6 F1 (documentation accuracy on the hung zone). Challenger APPROVE and auditor CLEAN. Every finding from the three verifiers is addressed in commit bda529a (worker_m2_fix4), which the final combined gate verifies.
