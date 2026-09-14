@@ -1,7 +1,7 @@
 # Challenger Progress — Defect D2 (@mfe/shell-ui)
 
 ## Status
-Last visited: 2026-09-14T20:20:00Z
+Last visited: 2026-09-14T21:40:00Z
 - [x] Initialized challenger state (DISPATCH.md, BRIEFING.md, progress.md)
 - [x] Step 1: Baseline inspection of `packages/shell-ui` and affected files
 - [x] Step 2: Run verification commands (TypeScript check across workspaces, existing unit tests)
@@ -11,4 +11,5 @@ Last visited: 2026-09-14T20:20:00Z
 - [x] Step 6: Adversarial challenge — Cross-zone session and state handling
 - [x] Step 7: Compile handoff report (handoff.md) and notify parent
 - [x] Step 8: Remediate type and runtime defects, aggregate and commit changes (commit ed9aa05)
-- [x] Step 9: Fix CSS relative import path off-by-one (`../../..` from styles/) and add regression test
+- [x] Step 9: Fix CSS relative import path off-by-one (`../../..` from styles/) and add regression test (commit fa990ec)
+- [x] Step 10: Unify shell header (toast button and fallback), embed ToastContainer in ShellLayout, and add active session visualization in remote-app

@@ -1,5 +1,6 @@
 import React from 'react';
 import { PRESET_USERS, DEFAULT_SESSION, type UserSession } from './types';
+import { emitToast } from './events';
 
 export interface HeaderProps {
   readonly currentSession?: UserSession | undefined;
@@ -24,6 +25,18 @@ export const Header = ({
     const selected = PRESET_USERS.find((u) => u.userId === e.target.value);
     if (!selected) return;
     onSessionChange?.(selected);
+  };
+
+  const handlePing = () => {
+    if (onToastPing) {
+      onToastPing();
+    } else {
+      emitToast(
+        'Shell Notification',
+        `Ping from ${brandTitle} Header`,
+        'info'
+      );
+    }
   };
 
   return (
@@ -58,11 +71,11 @@ export const Header = ({
           </select>
         </div>
 
-        {showToastButton && onToastPing && (
+        {showToastButton && (
           <button
             type="button"
             className="header-toast-btn"
-            onClick={onToastPing}
+            onClick={handlePing}
           >
             🔔 Ping Toast
           </button>

@@ -1,7 +1,7 @@
-# BRIEFING — 2026-09-14T19:53:00Z
+# BRIEFING — 2026-09-14T21:40:00Z
 
 ## Mission
-Empirically stress-test and challenge the `@mfe/shell-ui` shared chrome implementation (Defect D2) for compilation errors, cross-zone routing violations, session bugs, and runtime packaging failures.
+Empirically stress-test and resolve defect D2 shared chrome (@mfe/shell-ui) visual parity, toast notification mechanics, and remote session observability across host and remote-app.
 
 ## 🔒 My Identity
 - Archetype: empirical-challenger
@@ -19,39 +19,34 @@ Empirically stress-test and challenge the `@mfe/shell-ui` shared chrome implemen
 
 ## Current Parent
 - Conversation ID: 012e9e76-2bff-4cfd-a734-2b498b65bab2
-- Updated: 2026-09-14T19:53:00Z
+- Updated: 2026-09-14T21:40:00Z
 
 ## Review Scope
 - **Files to review**:
-  - `packages/shell-ui/**`
+  - `packages/shell-ui/**` (Header, SideNavigation, ShellLayout, ToastContainer, events, CSS, types)
   - `apps/host/components/HostLayout.tsx`
-  - `apps/host/next.config.js`
-  - `apps/host/pages/index.tsx`
-  - `apps/host/tsconfig.json`
-  - `apps/remote-app/next.config.js`
   - `apps/remote-app/pages/index.tsx`
+  - `apps/remote-app/components/ServerCard.tsx`
   - `apps/remote-app/styles/globals.css`
-  - `apps/remote-app/tsconfig.json`
-  - `pnpm-workspace.yaml`
+  - `apps/host/styles/globals.css`
 - **Interface contracts**: `PROJECT.md`, `DEFERRED.md` (D2)
-- **Review criteria**: Multi-Zones invariants (plain `<a>` tags for cross-zone, no Next `<Link>`), TypeScript strictness (`noImplicitAny`, exact shapes), zero Module Federation residue, session handling, CSS containment, Next.js `transpilePackages` integration.
+- **Review criteria**: Multi-Zones invariants (plain `<a>` tags for cross-zone, no Next `<Link>`), visual header parity across zones, toast propagation via CustomEvent (`mfe:toast`), remote active session visibility, zero Module Federation residue.
 
 ## Attack Surface
 - **Hypotheses tested**:
-  - [x] Hypothesis 1: TypeScript typecheck fails due to missing React module resolution, implicit `any` parameter types, and `tenant` mismatch in `UserSession`. CONFIRMED (16 errors in host, 15 in remote-app).
-  - [x] Hypothesis 2: Package structure in `packages/shell-ui` lacks proper build/types configuration and exports for monorepo consumption. CONFIRMED (no tsconfig, no tests, missing workspace:* dependency in apps).
-  - [x] Hypothesis 3: Cross-zone navigation in `SideNavigation` or `ShellLayout` introduces SPA client-side routing across zones or breaks zone basePaths. PARTIALLY CONFIRMED (plain `<a>` invariant kept, but standalone 3001 access to `/` 404s).
-  - [x] Hypothesis 4: CSS styling conflict or broken styles when loaded in `apps/remote-app` (`shell-layout.css`). CONFIRMED (host duplicates styles, doesn't consume shell-layout.css; remote uses relative import).
-  - [x] Hypothesis 5: Session synchronization between host and remote-app is simulated or broken across zone transitions. CONFIRMED (remote index has isolated in-memory state; mock user IDs disjoint between host and shell-ui).
-- **Vulnerabilities found**: 7 challenges documented (1 Critical, 3 High, 2 Medium, 1 Low).
-- **Untested angles**: Full production Next.js build (`next build`) execution blocked by permission timeout; tested via node TS compiler harness.
+  - [x] Hypothesis 1: Header was visually divergent between host and remote because showToastButton guarded on onToastPing prop. RESOLVED with default handlePing calling emitToast.
+  - [x] Hypothesis 2: Remote app had no active user change visualization in zone body. RESOLVED by adding session-banner in remote index and passing session to ServerCard.
+  - [x] Hypothesis 3: Toast notification failed to appear when trigger clicked because ToastContainer was only mounted in host HostLayout. RESOLVED by embedding ToastContainer in ShellLayout and extracting toast CSS into shell-layout.css.
+- **Vulnerabilities found**: 3 UI/UX discrepancies addressed.
+- **Untested angles**: Full multi-zone production build in CI.
 
 ## Loaded Skills
 - None required directly.
 
 ## Key Decisions Made
-- Maintained strict review-only stance: zero edits to source code.
-- Successfully verified TS diagnostics and simulated clean fixes via isolated Node TypeScript compiler harness.
+- Embedded `ToastContainer` in `ShellLayout` so all zones automatically inherit toast display without requiring local boilerplate.
+- Unified `Header.tsx` to render the toast button by default with fallback `emitToast` dispatch.
+- Added visual session banner and wired `session={session}` to `ServerCard` in `apps/remote-app/pages/index.tsx`.
 
 ## Artifact Index
 - `.agents/challenger_d2_1/DISPATCH.md` — dispatch log

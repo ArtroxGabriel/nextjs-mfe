@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { ShellLayout, type UserSession } from '@mfe/shell-ui';
-import ToastContainer from './ToastContainer';
 import { emitToast } from '../lib/events';
 import { hostLog } from '../lib/logger';
 
@@ -32,18 +31,15 @@ export const HostLayout: React.FC<HostLayoutProps> = ({
   };
 
   return (
-    <>
-      <ShellLayout
-        currentSession={currentSession}
-        onSessionChange={onSessionChange}
-        onToastPing={handleToastPing}
-        onNavigate={handleNavigate}
-        activeRoute={activeRoute}
-      >
-        {children}
-      </ShellLayout>
-      <ToastContainer />
-    </>
+    <ShellLayout
+      currentSession={currentSession}
+      onSessionChange={onSessionChange}
+      onToastPing={handleToastPing}
+      onNavigate={handleNavigate}
+      activeRoute={activeRoute}
+    >
+      {children}
+    </ShellLayout>
   );
 };
 

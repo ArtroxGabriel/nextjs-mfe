@@ -54,7 +54,15 @@ const RemoteHomePage: NextPage<RemoteHomeProps> = ({ serverData }) => {
             <p>Running natively on port 3001 using Next.js 15 Pages Router with SSR.</p>
           </header>
 
-          <ServerCard initialData={serverData} title="Remote Standalone SSR Card" />
+          <div className="session-banner" data-testid="remote-active-session">
+            <span className="session-badge">Active Zone Session</span>
+            <p>
+              User: <strong>{session.userName}</strong> ({session.email}) | Tenant: <code>{session.tenant}</code> | Role:{' '}
+              <span className={`role-tag role-${session.role}`}>{session.role}</span>
+            </p>
+          </div>
+
+          <ServerCard initialData={serverData} title="Remote Standalone SSR Card" session={session} />
         </div>
       </ShellLayout>
     </>

@@ -37,9 +37,9 @@ export const ServerCard: React.FC<ServerCardProps> = ({
       <div className="card-body">
         {activeSession && (
           <div className="session-banner">
-            <span className="session-badge">Inherited Host Session</span>
+            <span className="session-badge">Active Session</span>
             <p>
-              User: <strong>{activeSession.userName}</strong> ({activeSession.email}) | Role:{' '}
+              User: <strong>{activeSession.userName}</strong> ({activeSession.email}) | Tenant: <strong>{activeSession.tenant}</strong> | Role:{' '}
               <span className={`role-tag role-${activeSession.role}`}>{activeSession.role}</span>
             </p>
           </div>

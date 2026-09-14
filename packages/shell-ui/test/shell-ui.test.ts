@@ -63,7 +63,7 @@ test('ShellLayout wraps Header, SideNavigation, and children main container', ()
   assert.match(source, /className="layout-main"/);
 });
 
-test('shell-layout.css exists and defines critical shell layout selectors', () => {
+test('shell-layout.css exists and defines critical shell layout and toast selectors', () => {
   const css = readSource('shell-layout.css');
 
   assert.ok(css.includes('.layout-root'));
@@ -71,6 +71,23 @@ test('shell-layout.css exists and defines critical shell layout selectors', () =
   assert.ok(css.includes('.side-navigation'));
   assert.ok(css.includes('--header-height'));
   assert.ok(css.includes('--sidebar-width'));
+  assert.ok(css.includes('.toast-portal'));
+  assert.ok(css.includes('.toast-card'));
+  assert.ok(css.includes('.toast-success'));
+});
+
+test('ShellLayout embeds ToastContainer to ensure toasts render across all zones', () => {
+  const source = readSource('ShellLayout.tsx');
+
+  assert.match(source, /<ToastContainer/);
+});
+
+test('Header always renders Ping Toast button with default emitToast fallback', () => {
+  const source = readSource('Header.tsx');
+
+  assert.match(source, /className="header-toast-btn"/);
+  assert.match(source, /🔔 Ping Toast/);
+  assert.match(source, /emitToast/);
 });
 
 test('globals.css in apps/host and apps/remote-app resolve shell-layout.css', () => {
@@ -88,4 +105,14 @@ test('globals.css in apps/host and apps/remote-app resolve shell-layout.css', ()
   const remoteResolved = path.resolve(rootDir, 'apps', 'remote-app', 'styles', remoteMatch[1]);
   assert.ok(fs.existsSync(remoteResolved), `remote CSS @import path must resolve: ${remoteResolved}`);
 });
+
+test('remote-app index page has active session visualization and passes session to ServerCard', () => {
+  const rootDir = path.resolve(__dirname, '..', '..', '..');
+  const remoteIndex = fs.readFileSync(path.join(rootDir, 'apps', 'remote-app', 'pages', 'index.tsx'), 'utf-8');
+
+  assert.match(remoteIndex, /className="session-banner"/);
+  assert.match(remoteIndex, /data-testid="remote-active-session"/);
+  assert.match(remoteIndex, /<ServerCard[^>]*session=\{session\}/);
+});
+
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import Header from './Header';
 import SideNavigation from './SideNavigation';
+import ToastContainer from './ToastContainer';
 import type { UserSession } from './types';
 
 export interface ShellLayoutProps {
@@ -52,6 +53,8 @@ export const ShellLayout = ({
           {children}
         </main>
       </div>
+
+      <ToastContainer />
     </div>
   );
 };
