@@ -52,3 +52,22 @@ Each was escalated to the human, who decided the round it belongs to.
   already dead) serves a correct 503 on the very first request, because an empty cache forces a synchronous probe.
 - **Meaning**: `01-operacao.md` §5.1 reads as an unconditional guarantee ("Zona inteira fora → shell serve /erro-de-zona").
   In reality the guarantee holds in steady state, with a window bounded by the liveness TTL right after an outage begins.
+
+- **Update 2026-09-14 (challenger_m2_5)**: the window is bounded by time for a crashed zone (871–940 ms over 11
+  sequential kills at TTL 1 s). For a hung zone see D7. §5.1 records both.
+
+## D7 — A hung zone holds requests inside the stale window for Next's proxy timeout
+- **Found by**: challenger_m2_5 (M2 gate, iteration 4), finding D-b
+- **Evidence**: zone frozen with SIGSTOP right after a healthy probe; a request inside the 1 s window waited 30.03,
+  30.03 and 30.06 s and then got the bare 500 (3/3). The next request paid the 800 ms probe timeout (815–817 ms) and got
+  503; later requests got 503 from the cache.
+- **Why not fixed**: the lever is `experimental.proxyTimeout` on the host, which applies to every proxied request,
+  including SSE streams and slow legitimate responses through the rewrite. Choosing a value is an operational
+  decision, not a gate remediation. Documented in `01-operacao.md` §5.1 instead.
+- **Owner**: a later round, together with D1 (SSE) since both touch long-lived proxied responses.
+
+## D8 — Static invariant checks resolve paths from the current directory
+- **Found by**: controller, M2 gate iteration 5. `test/e2e/static-invariants.mjs` uses `process.cwd()` as the
+  project root; `node ../../scripts/smoke-test.mjs --strict` from `apps/host` fails STATIC-02/03/05/06/07 (11/16)
+  with the tree correct.
+- **Routed to**: M3, with D4.

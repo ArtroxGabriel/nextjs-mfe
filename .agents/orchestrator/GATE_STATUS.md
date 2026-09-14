@@ -55,3 +55,13 @@ Gate Result: **FAIL** (challenger_m2_3 REQUEST_CHANGES: F1 zone-outage error pag
 Gate Result: **PENDING**
 
 Gate Result: **FAIL** — auditor_m2_3 INTEGRITY VIOLATION is a binary veto (reviewer APPROVE, challenger APPROVE). The F1 fix works in every live condition tested, but its tests are textual, not behavioral: a silent revert to the bare 500 keeps the suite green. Iteration 4 remediates the TESTS, not the mechanism.
+
+## Gate — Milestone 2 (Iteration 4 — behavioral tests, TTL 1 s, §5.1)
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| worker_m2_fix2 | controller session (worker) | DONE | worker_m2_fix2/handoff.md | Commit 59507e4. Real middleware.ts + real NextResponse under node --test via a test-only `module.registerHooks` resolver; page rendered with react-dom/server; TTL 1 s named constant; §5.1 bounded exception. 5/5 required mutations fail; 29/29, tsc clean, builds clean, smoke 16/16 |
+| reviewer_m2_5 | revisor-mfe | REQUEST_CHANGES | reviewer_m2_5/handoff.md | Veto fix holds (5 required + 9 extra mutations caught). F1: page "no fetch" guard weaker than the deleted one — fetch at module load (M15) or in useEffect (M6) passes 29/29, and the handoff claimed coverage it lacked. F2: "a mesma medição deu 2,96 s" overstates the source |
+| challenger_m2_5 | simulador-condicoes | REQUEST_CHANGES | challenger_m2_5/handoff.md | A1: `/REMOTE-APP`, `/Remote-App/api/health`, `/REMOTE-APP-STATIC/...` reach the zone via case-insensitive rewrites but skip the case-sensitive middleware matcher → 100/100 bare 500 for the whole outage. D-b: hung zone (SIGSTOP) → requests inside the 1 s window wait Next's 30 s proxy timeout, then bare 500. Crash window, cold cache, recovery, 7 probes/6 s at 30 clients, smoke 16/16 all confirmed |
+| auditor_m2_4 | general-purpose (forensic) | CLEAN | auditor_m2_4/handoff.md | 8/8 required variants and 30/36 adversarial mutations fail. Non-blocking survivors: A20 probe timeout untested, A32 `includes('')`, A17 env precedence untested and origin hardcoded; A35/A36 hook swaps (by construction); A27 effect fetch |
+
+Gate Result: **FAIL** — reviewer_m2_5 F1 and challenger_m2_5 A1 (REQUEST_CHANGES). Auditor CLEAN: the iteration 3 veto is lifted. Human authorized iteration 5 corrections on 2026-09-14.
