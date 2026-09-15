@@ -1,7 +1,23 @@
-# Retomada — parado em 2026-09-12, a pedido do humano
+# Retomada — atualizado em 2026-09-15
 
 Leia este arquivo primeiro. Depois `BRIEFING.md` (estado persistente), `GATE_STATUS.md`
 (vereditos por rodada) e `DEFERRED.md` (o que foi deliberadamente adiado, com evidência).
+
+## 0. Estado atual (sobrepõe as seções 1–4, que ficam como histórico da parada de 2026-09-12)
+
+| Milestone | Estado |
+|---|---|
+| E2E | ✅ |
+| M1 | ✅ |
+| M2 | iterações 4 e 5 reprovadas e corrigidas (`59507e4`, `94ccdc2`, `bda529a`); aguarda o gate final |
+| M3 | worker concluído (`38a204c`, `2088139`, `c930a08`); aguarda o gate final |
+| D2 | implementado pelo Gabriel em `packages/shell-ui`, mesclado em `90e8319`; aguarda o gate final |
+
+Próximo passo: gate final combinado (M2 it. 6 + M3 + D2) sobre `90e8319`, tríade nova
+(`reviewer_final_1`, `challenger_final_1`, `auditor_final_1`). Depois: D3, D1/D7 (Rodada 2).
+
+O `pnpm` 11 roda a verificação de dependências antes de scripts e cria sozinho os symlinks de
+workspace (`apps/*/node_modules/@mfe/shell-ui`); o lockfile não muda.
 
 ---
 

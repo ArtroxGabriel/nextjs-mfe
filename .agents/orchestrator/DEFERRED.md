@@ -24,6 +24,10 @@ Each was escalated to the human, who decided the round it belongs to.
 - **Conflicts with**: `POC.md` — "remote é uma parte interna da tela do host (host com header e sidenavigation)".
 - **Why deferred** (human decision, 2026-09-12): Rodada 2, after M3. Restoring the chrome means the zone
   re-implements it; that is new design work, not a gate remediation.
+- **Update 2026-09-15**: Gabriel implemented it ahead of schedule as `packages/shell-ui` (commits `ed9aa05`,
+  `fa990ec`, `9dbca4c`), merged in `90e8319`. Under verification in the final combined gate; not closed until it passes.
+  The zone page now also mirrors the session through `localStorage['host_user_session']` on the shared origin — a
+  client-side stand-in, not the cookie + store mechanism D3 asks for.
 
 ## D3 — Cross-zone session inheritance is non-functional end to end
 - **Found by**: reviewer_m2_3 (M2 gate, iteration 2), POC.md regression 2

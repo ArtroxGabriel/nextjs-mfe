@@ -90,8 +90,8 @@ Orchestrate the refactor of nextjs-mfe PoC from Module Federation to native Next
 ## Succession Status
 - Succession status: Generation 2 operating (resumed 2026-09-11 on Wilson Castro's machine, from Gabriel's WIP commit 355111e)
 - Generation 1: 26 spawns; ended mid-M2-gate with 5 verifiers pending and no handoffs
-- Generation 2 spawn count: 8 / 16
-- Pending subagents: none — execution paused, see RETOMADA.md
+- Generation 2 spawn count: see GATE_STATUS (gen 2 continued as controller session from iteration 4)
+- Pending subagents: final combined gate triad (2026-09-15)
 - Predecessor: Generation 1 (012e9e76-2bff-4cfd-a734-2b498b65bab2)
 - Successor: none
 

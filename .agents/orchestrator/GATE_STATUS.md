@@ -75,3 +75,23 @@ Gate Result: **FAIL** — reviewer_m2_5 F1 and challenger_m2_5 A1 (REQUEST_CHANG
 | auditor_m2_5 | general-purpose (forensic) | CLEAN | auditor_m2_5/handoff.md | 56 mutations; all required caught; M6 honestly declared. Non-blocking: F-1 no lower bound on probe timeout, F-2 = reviewer F3, F-3 = F6, F-4 title uncovered, F-5 M6 not in DEFERRED, F-6 = F5 |
 
 Gate Result: **FAIL** — reviewer_m2_6 F1 (documentation accuracy on the hung zone). Challenger APPROVE and auditor CLEAN. Every finding from the three verifiers is addressed in commit bda529a (worker_m2_fix4), which the final combined gate verifies.
+
+## Merge — origin/bff-multizone (Gabriel, 2026-09-14), recorded 2026-09-15
+Gabriel worked in parallel from `c1ac90e` without iterations 4–5 or M3: `bd5509b` extracted `lib/zoneDecision.ts`
+and a pathname guard in `middleware.ts`; `225b996` purged Federation and fixed STATIC-06 by regex; `ed9aa05`,
+`fa990ec`, `9dbca4c` built `packages/shell-ui` (shared Header, SideNavigation, ShellLayout, ToastContainer) and
+wrapped the zone page in it (D2), verified only by challenger_d2_1 in his session (no reviewer, no auditor).
+Merge commit `90e8319`: gate-verified side kept where both overlapped (tests, static checks, §5.1, `.npmrc`,
+workspace purge); origin's middleware adapter, `zoneDecision.ts` and `@mfe/shell-ui` taken. Source-regex middleware
+tests not revived; decision unit tests moved to `zone-decision.test.ts`. Controller verification after merge:
+zone 13/13, host 39/39, shell-ui 10/10, typecheck clean, builds clean, strict smoke 17/17, zone killed → 503 +
+Retry-After, zone page renders `app-header`/`layout-sidebar`.
+
+## Gate — Final combined (M2 iteration 6 + M3 + D2 merge), HEAD 90e8319
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_final_1 | revisor-mfe | PENDING | reviewer_final_1/handoff.md | |
+| challenger_final_1 | simulador-condicoes | PENDING | challenger_final_1/handoff.md | |
+| auditor_final_1 | general-purpose (forensic) | PENDING | auditor_final_1/handoff.md | |
+
+Gate Result: **PENDING**
