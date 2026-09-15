@@ -6,3 +6,7 @@
 	path = repos/erp-nucleo
 	url = git@github.com:wilson-castro/erp-nucleo.git
 	branch = master
+[submodule "repos/erp-dominio-stub"]
+	path = repos/erp-dominio-stub
+	url = git@github.com:wilson-castro/erp-dominio-stub.git
+	branch = master

@@ -3,6 +3,11 @@
 Leia este arquivo primeiro. Depois `BRIEFING.md` (estado persistente), `GATE_STATUS.md`
 (vereditos por rodada) e `DEFERRED.md` (o que foi deliberadamente adiado, com evidência).
 
+**Revisão de 2026-09-15 (prioridade):** `docs/revisao/2026-09-15-revisao-base-generica.md` — o objetivo passou a ser validar uma base BFF + Multi-Zones genérica (shell, zona 1, zona 2, gestão de acesso). Task 8 pausada até as decisões D1–D9.
+
+**Manutenção:** `MANUTENCAO-GITLAB.md` diz quando avisar o humano para atualizar ou criar
+atividades no GitLab. Cheque os gatilhos ao fim de cada gate, task ou decisão do humano.
+
 ## 0. Estado atual (sobrepõe as seções 1–4, que ficam como histórico da parada de 2026-09-12)
 
 Atualizado em 2026-09-15.

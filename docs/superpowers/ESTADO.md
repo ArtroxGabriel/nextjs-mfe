@@ -15,12 +15,12 @@ e `.agents/orchestrator/RETOMADA.md`.
 | 4 — porta de dados + adaptadores | ✅ completa, revisada |
 | 5 — sessão, identidade, fábricas | ✅ **fix completo** (isolamento token, `entrar()`, `this` desacoplado, `prefixo` no proxy, 32/32 testes) |
 | 6 — exports restritos + linter de fronteira | ✅ **completa** (4 subpaths, linter `scripts/fronteira.mjs`, 37/37 testes, publicado) |
-| 7 — stub de domínio (`erp-dominio-stub`) | ⏸ **próxima tarefa a ser implementada** (porta 4000) |
+| 7 — stub de domínio (`erp-dominio-stub`) | ✅ **completa, revisada** (`5367642` + `fix` de revisão; 16/16 testes, 16/16 mutações pegas; revisor-mfe APPROVE; 2 defeitos do plano corrigidos, ver §5.1) |
 | 8 a 11 | não iniciadas |
 
 **O ponto exato da parada:** As Tasks 1 a 6 do `@erp/nucleo` e `@erp/contratos` estão 100% implementadas,
 testadas e publicadas no registro Verdaccio local (`localhost:4873`). Os submódulos estão configurados via SSH.
-O próximo passo imediato é iniciar a **Task 7 (`erp-dominio-stub`)**, conforme especificado em
+A Task 7 (`erp-dominio-stub`) foi concluída e revisada em 2026-09-15. **A Task 8 está pausada**: a revisão `docs/revisao/2026-09-15-revisao-base-generica.md` mostrou que o plano acopla a base ao caso; retomar só depois das decisões da §7 dela e do replanejamento. Texto anterior: a próxima era a Task 8 (`erp-shell`), que instala `next`, `react`, `react-dom`, `typescript` e `@types/*` e exige aprovação antes do install. Texto histórico: o próximo passo era iniciar a Task 7, conforme especificado em
 `docs/superpowers/plans/2026-09-09-base-mfe-fatia-1.md` linha 1836.
 
 ### O primeiro passo da retomada
@@ -110,6 +110,31 @@ Não bloqueiam, mas a revisão final do branch deve triá-los:
 - **Task 3** — `sanitizarSupportId` é allowlist de formato, não de semântica.
 
 ---
+
+### 5.1 Defeitos do plano encontrados na Task 7 (2026-09-15)
+
+- **Guarda anti-navegador bloqueava o próprio BFF.** O plano recusa `Origin` ou `Sec-Fetch-Mode`
+  e afirma que o fetch de servidor não manda nenhum dos dois. O fetch do Node 24.7 (undici)
+  manda `sec-fetch-mode: cors` em toda requisição: o `upstream()` do núcleo levaria 403 e o C1
+  falharia nas Tasks 9/10. A verificação do Step 7 usa `curl`, que não manda o cabeçalho, e por
+  isso não pegava. Implementado: `Origin || Sec-Fetch-Site || Sec-Fetch-Dest`. **Divergência em
+  aberto:** o spec §6 invariante 3 descreve outro mecanismo (cabeçalho de dev injetado pelo
+  adaptador), que exigiria mudar e republicar o `@erp/nucleo`.
+- **Uma requisição derrubava o stub.** `decodeURIComponent('%E0')` e `JSON.parse` de corpo
+  inválido em `/_dev/revogar` lançavam dentro do listener. Agora 404 e 400, com teste.
+- Revisão (revisor-mfe, Sonnet): **APPROVE**. Confirmou as duas correções empiricamente e que a
+  guarda nova recusa fetch cross-site, navegação direta, `<img>`/`<script>` e formulário POST.
+  Menores corrigidos no commit seguinte: `/pedidos/:id` aceitava POST/PUT/DELETE com 200;
+  `projetar()` devolvia referências ao fixture compartilhado.
+- **Risco conhecido, herdado do plano:** `/_dev/revogar` não exige credencial; qualquer processo
+  local que não mande cabeçalhos de navegador altera os grupos de qualquer ator. Aceito para stub
+  de dev (é o gatilho do C7).
+- **Decisão pendente (invariante 3):** a guarda é uma denylist de cabeçalhos de navegador e deixa
+  passar qualquer chamador que não seja navegador (curl, outro processo local, SSRF). O spec
+  promete allowlist positiva (cabeçalho que só o adaptador injeta), que exige acoplar segredo
+  entre `erp-nucleo` e o stub e republicar o núcleo. Até decidir, a invariante 3 não pode ser
+  marcada como provada: o teste prova outro mecanismo.
+- O plano ainda mostra o código antigo da Task 7.
 
 ## 6. Lições do processo, para não repetir
 
