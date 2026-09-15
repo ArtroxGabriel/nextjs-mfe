@@ -1,7 +1,7 @@
-# Estado da execução — pausada em 2026-09-09
+# Estado da execução — atualizado em 2026-09-15
 
-Retomada: leia este arquivo, depois `.superpowers/sdd/2026-09-09-base-mfe-fatia-1/progress.md`
-(ledger detalhado, ignorado pelo git — pode não existir numa máquina nova).
+Retomada: leia este arquivo, `O que falta para finalizar a arquitetura.md` (fonte da verdade)
+e `.agents/orchestrator/RETOMADA.md`.
 
 ---
 
@@ -9,32 +9,26 @@ Retomada: leia este arquivo, depois `.superpowers/sdd/2026-09-09-base-mfe-fatia-
 
 | Task | Estado |
 |---|---|
-| 1 — Verdaccio | ✅ completa, revisada |
+| 1 — Verdaccio | ✅ completa, migrado para Docker Compose (`repos/docker-compose.yml`) com volume |
 | 2 — `@erp/contratos` | ✅ completa, revisada, **publicada** no Verdaccio |
 | 3 — núcleo: erros + allowlist | ✅ completa, revisada |
 | 4 — porta de dados + adaptadores | ✅ completa, revisada |
-| 5 — sessão, identidade, fábricas | ⏸ **implementada e revisada; fix NÃO despachado** |
-| 6 a 11 | não iniciadas |
+| 5 — sessão, identidade, fábricas | ✅ **fix completo** (isolamento token, `entrar()`, `this` desacoplado, `prefixo` no proxy, 32/32 testes) |
+| 6 — exports restritos + linter de fronteira | ✅ **completa** (4 subpaths, linter `scripts/fronteira.mjs`, 37/37 testes, publicado) |
+| 7 — stub de domínio (`erp-dominio-stub`) | ⏸ **próxima tarefa a ser implementada** (porta 4000) |
+| 8 a 11 | não iniciadas |
 
-**O ponto exato da parada:** a revisão do Task 5 devolveu *Needs fixes* com duas Important.
-O plano já foi corrigido (commit `2a1635f`), os briefs 5 e 8 foram regenerados, **mas a
-mensagem de fix nunca foi enviada ao implementador**. O código em `repos/erp-nucleo` está
-em `0a6622f`, que é o estado *antes* dessas correções, com 29/29 testes passando.
+**O ponto exato da parada:** As Tasks 1 a 6 do `@erp/nucleo` e `@erp/contratos` estão 100% implementadas,
+testadas e publicadas no registro Verdaccio local (`localhost:4873`). Os submódulos estão configurados via SSH.
+O próximo passo imediato é iniciar a **Task 7 (`erp-dominio-stub`)**, conforme especificado em
+`docs/superpowers/plans/2026-09-09-base-mfe-fatia-1.md` linha 1836.
 
 ### O primeiro passo da retomada
 
-Despachar o fix round 1/5 do Task 5, com estas três mudanças (todas já no brief):
-
-1. **`Nucleo` perde `identidade`.** `autenticar()` devolve `SessaoArmazenada`, com o
-   `accessToken` dentro, então qualquer código com um `Nucleo` chegava ao token cru. A
-   fábrica agora autentica, cunha o id opaco, grava e devolve **só o id**:
-   `sessao.entrar(credencial): Promise<string | null>`.
-2. **`exigir()` deixa de usar `this`.** Era `this.atual()`, então
-   `const { exigir } = nucleo.sessao` quebrava. Nenhuma das três operações de sessão tinha
-   teste — a que mais provavelmente protege uma rota era a mais frágil do arquivo.
-3. **`criarProxy` passa a usar `cfg.prefixo`**, que aceitava e ignorava.
-
-Exigir na mensagem: que os testes novos **reprovem** contra a implementação anterior.
+Iniciar a **Task 7**:
+1. Criar o repositório/submódulo `repos/erp-dominio-stub` (ou diretório conforme o plano).
+2. Implementar o servidor falso do domínio na porta 4000, com projeção dos 4 atores do caso e suporte a pedidos com ETag.
+3. Testar via `node --test` e verificar que simula o sistema de negócio perfeitamente.
 
 ---
 
@@ -42,9 +36,10 @@ Exigir na mensagem: que os testes novos **reprovem** contra a implementação an
 
 ```
 repos/
-  erp-contratos/   45d04af   ✅ publicado @erp/contratos@0.1.0
-  erp-nucleo/      0a6622f   ⏸ 29/29, aguardando o fix do Task 5
-  scripts/registry.mjs        node repos/scripts/registry.mjs up|down
+  erp-contratos/   45d04af   ✅ publicado @erp/contratos@0.1.0 (SSH)
+  erp-nucleo/      b9bbbed   ✅ publicado @erp/nucleo@0.1.0 (SSH, Tasks 5 e 6 concluídas)
+  docker-compose.yml         docker compose up -d / down (volume gerenciado repos_verdaccio_storage)
+  scripts/registry.mjs       node repos/scripts/registry.mjs up|down (invoca docker compose)
 ```
 
 `erp-dominio-stub`, `erp-shell` e `erp-mfe-pedidos` ainda **não existem** — são as tasks
