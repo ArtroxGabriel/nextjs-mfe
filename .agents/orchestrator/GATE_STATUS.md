@@ -124,3 +124,12 @@ challenger re-runs and narrow re-reviews on Sonnet. Research that another AI can
 | auditor_final_3 | general-purpose (forensic, opus) | **INTEGRITY VIOLATION** | auditor_final_3/handoff.md | V1: zone `emitToast` dispatching a literal `'mfe:toasts'` keeps every suite green (auditor_final_1 D7b emitter side; events.test only checks constant identity). V2: D10 claims U1 and X-D9b need a DOM renderer, but a react/jsx-runtime capture test catches both with no new dependency; X-D9b mislabelled as effect-bound. Worker evidence reproduces exactly (40/40, hung.mts); no fabrication. Low survivors: conditional preventDefault, try/catch-swallowed guard, CSS regex under @media/strings/unterminated comment, computed import |
 
 Gate Result: **FAIL** — auditor_final_3 INTEGRITY VIOLATION (V1, V2), a binary veto. Reviewer APPROVE and challenger APPROVE (R1 closed live, no regression). Remediation folded into the next work item: the human asked (2026-09-15) to prioritise a basic working base whose MFE integration and base features can be checked by hand, which also restores the PoC features lost in the migration (dashboard tabs by query, SSE telemetry, map, path route).
+
+## Gate — Final combined, iteration 4 (Base features restored + V1/V2 remediation, HEAD d128dff / 69fc11d)
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_final_4 | revisor-mfe | APPROVE | live run | 98 unit tests pass (host 47/47, zone 36/36, shell-ui 15/15), typecheck clean across workspace, static smoke 7/7 pass. Dashboard query tabs (?tab=), path route (/mapa/[cidade]), SSE telemetry with basePath, and shared shell chrome verified without regressions |
+| challenger_final_4 | simulador-condicoes | APPROVE | live-verification.txt | Clean builds, strict smoke 17/17. Live HTTP verified via shell :3000: all tabs 200, /mapa/tokyo 200 with banner, /mapa/atlantis 404, unknown tab fallback 200. SSE streaming text/event-stream active, MapLibre chunk isolated, zone down 503 + Retry-After outage page |
+| auditor_final_4 | general-purpose (forensic) | CLEAN | mutations3.txt | V1 closed: zone & host emitToast verified on stand-in window (literal mutants caught). V2 closed: react/jsx-runtime capture test verifies zone onSessionChange wiring without DOM renderer dependency. 23/23 mutants in mutations3.txt caught. Authentic, zero cheating |
+
+Gate Result: **PASS** — Milestone 2, Milestone 3, and D2 Complete. PoC verified, fully testable and approved for push to fork.

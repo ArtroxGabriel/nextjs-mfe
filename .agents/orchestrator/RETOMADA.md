@@ -10,13 +10,12 @@ Atualizado em 2026-09-15.
 | Item | Estado |
 |---|---|
 | E2E, M1 | ✅ |
-| M2 + M3 + D2 | gate final combinado: iteração 3 reprovada só pelo veto do auditor (V1, V2); revisor e challenger aprovaram |
-| Funcionalidades base da PoC | religadas na zona em `d128dff` (abas por query, rota `/mapa/[cidade]`, SSE, mapa); V1 e V2 corrigidos no mesmo commit |
-| Documentação | `README.md`, `docs/arquitetura/atual.md`, `docs/arquitetura/alvo.md`, `docs/ROTEIRO-DE-VERIFICACAO.md` (português, com diagramas) |
+| M2 + M3 + D2 | ✅ gate final combinado: iteração 4 APROVADA (V1 e V2 sanados, 98 unit tests + 7 static + builds limpos) |
+| Funcionalidades base da PoC | ✅ religadas na zona em `d128dff` (abas por query, rota `/mapa/[cidade]`, SSE, mapa); V1 e V2 corrigidos |
+| Documentação | ✅ `README.md`, `docs/arquitetura/atual.md`, `docs/arquitetura/alvo.md`, `docs/ROTEIRO-DE-VERIFICACAO.md`, `O que falta para finalizar a arquitetura.md` |
+| @erp/nucleo | ✅ Task 5 fix implementado, 32/32 testes passando, publicado no Verdaccio local |
 
-Próximo passo: gate 4 sobre o commit das funcionalidades base (auditor em Opus, challenger e revisor em Sonnet),
-e só depois push para o `fork`. Decisões do humano em 2026-09-15: priorizar base funcionando e testável; alternar
-modelos; pedidos de pesquisa em `pedidos/`; documentação em português com diagramas atual × alvo.
+Próximo passo: push do branch `bff-multizone` para o `fork`, e dar andamento às tarefas 6 a 11 do `@erp/nucleo` e Rodada 1. Decisões do humano em 2026-09-15: priorizar base funcionando e testável; alternar modelos; pedidos de pesquisa em `pedidos/`; documentação em português com diagramas atual × alvo.
 
 ---|---|
 | E2E | ✅ |
