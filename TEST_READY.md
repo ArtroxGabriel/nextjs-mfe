@@ -37,18 +37,22 @@ HOST_URL=http://localhost:3000 ZONE_URL=http://localhost:3001 node scripts/smoke
 
 ---
 
-## 3. Test Methodology & Tiered Coverage Summary
+## 3. What Actually Runs
 
-The test infrastructure is designed around a 4-Tier opaque-box methodology detailed in `TEST_INFRA.md`:
+`TEST_INFRA.md` specifies a broader 4-tier matrix (173 documented cases). That document is a
+specification: most of its cases are **not** automated. What runs today:
 
-| Tier | Category | Scope | Test Count | Key Invariants Verified |
-|---|---|---|---|---|
-| **Tier 1** | Feature Coverage | F1 through F16 | 80 tests (>=5 per feature) | Core functionality: rewrites, health check, fragment endpoint, basePath, assetPrefix, tsconfig |
-| **Tier 2** | Boundary & Corner | F1 through F16 | 80 tests (>=5 per feature) | Edge cases: encoded URIs, deep paths, traversal attacks, timeout handling, query strings, headers |
-| **Tier 3** | Cross-Feature Interactions | Inter-zone contracts | 8 composite flows | Gateway proxying + asset pipeline, SSR fragment composition, cookie forwarding, circuit breaker |
-| **Tier 4** | Real-World Application Scenarios | Production journeys | 5 comprehensive scenarios | Navigation from host to zone, fragment injection, security masking (204), zone outage resilience |
+| Layer | Command | Count | Needs servers |
+|---|---|---|---|
+| Unit — shared chrome | `node --test test/*.test.ts` in `packages/shell-ui` | 15 | no |
+| Unit — zone | same, in `apps/remote-app` | 17 | no |
+| Unit — shell | same, in `apps/host` | 46 | no |
+| Static invariants | `node scripts/smoke-test.mjs --offline` | 7 (STATIC-01..07) | no |
+| Online smoke | `node scripts/smoke-test.mjs --strict` | 17 (7 static + ONLINE-01..10) | yes, 3000 and 3001 |
 
-**Total Test Specification Coverage:** 173 documented test cases mapping 100% of features F1–F16.
+`pnpm check` runs typecheck, all unit suites and the static invariants. `pnpm smoke` runs the
+strict smoke. Zone-outage behaviour is covered by the host unit suite against a simulated zone;
+the live outage checks are manual (see `README.md` §3.3).
 
 ---
 
