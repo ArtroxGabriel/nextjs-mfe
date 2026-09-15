@@ -5,8 +5,20 @@ Leia este arquivo primeiro. Depois `BRIEFING.md` (estado persistente), `GATE_STA
 
 ## 0. Estado atual (sobrepõe as seções 1–4, que ficam como histórico da parada de 2026-09-12)
 
-| Milestone | Estado |
+Atualizado em 2026-09-15.
+
+| Item | Estado |
 |---|---|
+| E2E, M1 | ✅ |
+| M2 + M3 + D2 | gate final combinado: iteração 3 reprovada só pelo veto do auditor (V1, V2); revisor e challenger aprovaram |
+| Funcionalidades base da PoC | religadas na zona em `d128dff` (abas por query, rota `/mapa/[cidade]`, SSE, mapa); V1 e V2 corrigidos no mesmo commit |
+| Documentação | `README.md`, `docs/arquitetura/atual.md`, `docs/arquitetura/alvo.md`, `docs/ROTEIRO-DE-VERIFICACAO.md` (português, com diagramas) |
+
+Próximo passo: gate 4 sobre o commit das funcionalidades base (auditor em Opus, challenger e revisor em Sonnet),
+e só depois push para o `fork`. Decisões do humano em 2026-09-15: priorizar base funcionando e testável; alternar
+modelos; pedidos de pesquisa em `pedidos/`; documentação em português com diagramas atual × alvo.
+
+---|---|
 | E2E | ✅ |
 | M1 | ✅ |
 | M2 | iterações 4 e 5 reprovadas e corrigidas (`59507e4`, `94ccdc2`, `bda529a`); aguarda o gate final |

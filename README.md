@@ -13,7 +13,35 @@ versão anterior com Module Federation (histórico em `WALKTHROUGH.md`).
 O usuário acessa tudo por `http://localhost:3000`. `/remote-app/**` e `/remote-app-static/**`
 são repassados à zona; se ela estiver fora, o shell responde 503 com a página `/erro-de-zona`.
 
----
+| Quer… | Leia |
+|---|---|
+| entender como as peças se ligam hoje (com diagramas) | [`docs/arquitetura/atual.md`](docs/arquitetura/atual.md) |
+| ver para onde a base vai e o que falta | [`docs/arquitetura/alvo.md`](docs/arquitetura/alvo.md) |
+| conferir com as próprias mãos a integração e as funcionalidades | [`docs/ROTEIRO-DE-VERIFICACAO.md`](docs/ROTEIRO-DE-VERIFICACAO.md) |
+
+```mermaid
+flowchart LR
+    B["Navegador :3000"] --> S["Shell apps/host<br/>middleware + rewrites"]
+    S -->|"/remote-app/**"| Z["Zona apps/remote-app :3001<br/>SSR · abas · SSE · mapa · cache · fragmento"]
+    S -.->|"zona fora → 503 /erro-de-zona"| B
+    U[["packages/shell-ui<br/>moldura comum"]] -. compilado em .-> S
+    U -. compilado em .-> Z
+```
+
+### Funcionalidades base
+
+| Funcionalidade | Onde ver | Estado |
+|---|---|---|
+| Zona dentro da moldura do shell (header + navegação) | `/remote-app` | ✅ |
+| Server-Side Rendering | `/`, `/remote-app` | ✅ |
+| Query params e rota de caminho | `/remote-app?tab=telemetry&filter=warn`, `/remote-app/mapa/tokyo` | ✅ |
+| SSE | `/remote-app?tab=telemetry` | ⚠️ vazamento no servidor (D1) |
+| Mapa MapLibre GL | `/remote-app?tab=map` | ✅ |
+| Toast global | botão **Ping Toast** | ✅ |
+| Sessão do shell herdada pela zona | seletor do header | ⚠️ só no cliente (D3) |
+| Cache de servidor (5 s) e `Cache-Control` | `/remote-app/api/server-data` | ✅ |
+| Queda isolada da zona | pare a zona | ✅ |
+| Fragmento HTML inerte (200/204/405) | `/remote-app/_fragmento/demo/42` | ✅ |
 
 ## 1. Requisitos
 
@@ -70,11 +98,11 @@ cd apps/host && node --test test/*.test.ts
 
 O que cada suíte cobre:
 
-| Suíte | Cobre |
-|---|---|
-| `packages/shell-ui/test` | Moldura renderizada com `react-dom/server`: header, seletor de sessão, botão de toast, links `<a>` e link ativo, layout com `children` e portal de toasts; handlers chamados de verdade; imports só de `react`; CSS de toda classe renderizada |
-| `apps/remote-app/test` | Health `{ok:true}`, contrato do fragmento (200 inerte / 204 / 405), `next.config` da zona, página da zona dentro da moldura, nomes de evento compartilhados |
-| `apps/host/test` | Middleware real contra zona simulada (503 com `Retry-After`, TTL de 1 s, recuperação, timeout da sonda, caminhos que o rewrite repassa), rewrites, página `/erro-de-zona` sem rede, página inicial dentro da moldura |
+| Suíte | Testes | Cobre |
+|---|---|---|
+| `packages/shell-ui/test` | 15 | Moldura renderizada com `react-dom/server`: header, seletor de sessão, botão de toast, links `<a>` e link ativo, layout com `children` e portal de toasts; handlers chamados de verdade; imports só de `react`; CSS de toda classe renderizada |
+| `apps/remote-app/test` | 36 | Health, contrato do fragmento (200 inerte / 204 / 405), `next.config`, página dentro da moldura, abas por query, rota `/mapa/[cidade]`, caminho do SSE no `basePath`, espelho de sessão, emissão de toast |
+| `apps/host/test` | 47 | Middleware real contra zona simulada (503 com `Retry-After`, TTL de 1 s, recuperação, timeout da sonda, caminhos que o rewrite repassa, não lê a requisição), rewrites, `/erro-de-zona` sem rede, página inicial na moldura, emissão de toast |
 
 ### 3.2 Smoke com as apps no ar
 
@@ -90,32 +118,21 @@ shell, a zona pelo shell e direto, health, fragmento, assets pela `/remote-app-s
 
 `HOST_URL` e `ZONE_URL` mudam os alvos. Detalhe de cada checagem em `TEST_READY.md`.
 
-### 3.3 Testes manuais que valem a pena
+### 3.3 Verificação manual
 
-Com `pnpm start` no ar:
-
-**Moldura na zona.** `http://localhost:3000/remote-app` mostra o mesmo header e a mesma
-navegação do shell, com **Remote App** ativo.
-
-**Queda da zona.** Pare só a zona (Ctrl+C no processo da 3001, ou `pnpm start:host` sozinho) e:
+O que depende de JavaScript no navegador (SSE chegando, mapa, toast, sessão entre páginas) não
+tem teste automático. O passo a passo, com o resultado esperado de cada item, está em
+[`docs/ROTEIRO-DE-VERIFICACAO.md`](docs/ROTEIRO-DE-VERIFICACAO.md). O mínimo:
 
 ```bash
-curl -si http://localhost:3000/remote-app | head -5          # 503, text/html, Retry-After: 5
-curl -si http://localhost:3000/remote-app-static | head -1   # 503
-curl -si http://localhost:3000/ | head -1                    # 200: o shell continua no ar
+# zona no ar
+curl -s http://localhost:3000/remote-app/mapa/tokyo | grep -o 'Tokyo Datacenter' | head -1
+curl -sN --max-time 4 http://localhost:3000/remote-app/api/sse-events | head -3
+
+# zona fora (pnpm start:host sozinho)
+curl -si http://localhost:3000/remote-app | head -1      # HTTP/1.1 503 Service Unavailable
+curl -si http://localhost:3000/ | head -1                # HTTP/1.1 200 OK
 ```
-
-Ao subir a zona de novo, a primeira resposta 200 vem em cerca de 1 s (TTL da sonda).
-
-**Fragmento.**
-
-```bash
-curl -si http://localhost:3000/remote-app/_fragmento/demo/42      # 200, HTML sem <script>
-curl -si http://localhost:3000/remote-app/_fragmento/unknown/1    # 204
-```
-
-**Toast.** Clique em **Ping Toast** no header, no shell e na zona: deve aparecer uma notificação
-no canto. Isto só é verificável no navegador (D10).
 
 ---
 
@@ -131,7 +148,8 @@ Registradas com evidência em `.agents/orchestrator/DEFERRED.md`. As que afetam 
   segura requisições por até 30 s nessa janela (D7).
 - **SSE (D1):** o intervalo do servidor não é liberado quando o cliente desconecta.
 - **Sem renderizador de DOM nos testes (D9, D10):** o que roda só em `useEffect` no navegador
-  (leitura do `localStorage`, assinatura do toast) não é coberto.
+  (leitura do `localStorage`, assinatura do toast, abertura do `EventSource`) não é coberto.
+- **Mapa:** os ladrilhos vêm de `tile.openstreetmap.org`; sem internet o mapa fica vazio.
 - **Visual (D11):** o CSS do shell sobrescreve parte da moldura compartilhada; o espaçamento difere
   entre shell e zona.
 
@@ -171,9 +189,12 @@ O desenho completo (mapa de zonas, contrato de fragmento, sessão, deploy) está
 
 | Documento | Para quê |
 |---|---|
+| `docs/arquitetura/atual.md` | Arquitetura atual com diagramas: visão geral, pedido com a zona no ar e fora, moldura compartilhada, zona por dentro, estado entre páginas, mapa de testes |
+| `docs/arquitetura/alvo.md` | Arquitetura alvo com diagramas e a tabela do que falta |
+| `docs/ROTEIRO-DE-VERIFICACAO.md` | Verificação manual, item a item, da integração e das funcionalidades base |
 | `TEST_READY.md` | Cada checagem STATIC/ONLINE e semântica de saída do smoke |
 | `TEST_INFRA.md` | Especificação ampla de testes (4 camadas); nem tudo ali está automatizado |
-| `docs/design-bff/mfe/00-arquitetura.md`, `01-operacao.md`, `02-zonas.md` | Desenho de arquitetura, operação e zonas |
+| `docs/design-bff/mfe/00-arquitetura.md`, `01-operacao.md`, `02-zonas.md` | Desenho completo que a arquitetura alvo resume |
 | `.agents/orchestrator/` | Estado da migração: `RETOMADA.md`, `GATE_STATUS.md` (vereditos), `DEFERRED.md` (dívidas com evidência) |
 | `pedidos/` | Pedidos de pesquisa/elucidação para outra IA, aguardando resposta |
 | `WALKTHROUGH.md`, `POC.md` | Histórico: a PoC com Module Federation e o pedido original |
