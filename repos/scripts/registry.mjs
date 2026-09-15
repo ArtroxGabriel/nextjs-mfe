@@ -1,25 +1,16 @@
-import { spawn } from 'node:child_process'
-import { writeFileSync, readFileSync, existsSync, unlinkSync } from 'node:fs'
+import { execSync } from 'node:child_process'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const raiz = dirname(dirname(fileURLToPath(import.meta.url)))
-const pid = join(raiz, '.verdaccio', 'verdaccio.pid')
 const acao = process.argv[2]
+const composeFile = join(raiz, 'docker-compose.yml')
 
 if (acao === 'up') {
-  const p = spawn('pnpm', ['dlx', 'verdaccio', '--config', join(raiz, '.verdaccio', 'config.yaml'),
-                            '--listen', '4873'],
-                  { detached: true, stdio: 'ignore', cwd: raiz })
-  p.unref()
-  writeFileSync(pid, String(p.pid))
-  console.log(`verdaccio subindo, pid ${p.pid}, http://localhost:4873`)
+  execSync(`docker compose -f "${composeFile}" up -d`, { stdio: 'inherit', cwd: raiz })
+  console.log('verdaccio subindo via docker compose, http://localhost:4873')
 } else if (acao === 'down') {
-  if (!existsSync(pid)) { console.log('nada rodando'); process.exit(0) }
-  // Negative PID kills the process group; detached: true makes spawn() its own group leader.
-  // Without the negative sign, only the pnpm wrapper dies, leaving the actual Verdaccio running.
-  try { process.kill(-Number(readFileSync(pid, 'utf8')), 'SIGTERM') } catch {}
-  unlinkSync(pid)
+  execSync(`docker compose -f "${composeFile}" down`, { stdio: 'inherit', cwd: raiz })
   console.log('verdaccio derrubado')
 } else {
   console.error('uso: node repos/scripts/registry.mjs up|down')
