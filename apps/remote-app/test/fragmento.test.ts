@@ -4,7 +4,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import './support/register-next-resolution.ts';
 
 // The runtime route the zone's `/_fragmento/:name/:id` rewrite points at. It
-// re-exports the handler from pages/_fragmento/[name]/[id].tsx, which needs the
+// re-exports the handler from pages/_fragmento/[name]/[id].ts, which needs the
 // resolution hooks above, so it is loaded after they are registered.
 let handler: (typeof import('../pages/api/fragmento/[name]/[id].ts'))['default'];
 

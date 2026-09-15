@@ -10,6 +10,7 @@
     "test": "node --test test/*.test.ts"
   },
   "dependencies": {
+    "@mfe/shell-ui": "workspace:*",
     "maplibre-gl": "^6.6.0",
     "next": "^15.1.7",
     "react": "18.3.1",

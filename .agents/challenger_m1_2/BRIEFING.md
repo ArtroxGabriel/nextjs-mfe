@@ -1,4 +1,4 @@
-# BRIEFING — 2026-09-11T13:16:00Z
+# BRIEFING — 2026-09-14T17:53:00Z
 
 ## Mission
 Adversarially and empirically challenge Milestone 1 (Remote App Zone: R1, R2, R5) deliverables: verify build, bundle, and configuration invariants for apps/remote-app.
@@ -21,7 +21,7 @@ Adversarially and empirically challenge Milestone 1 (Remote App Zone: R1, R2, R5
 
 ## Current Parent
 - Conversation ID: 012e9e76-2bff-4cfd-a734-2b498b65bab2
-- Updated: 2026-09-11T13:16:00Z
+- Updated: 2026-09-14T17:53:00Z
 
 ## Review Scope
 - **Files to review**: `apps/remote-app/next.config.js`, `apps/remote-app/tsconfig.json`, `apps/remote-app/package.json`, `.next/` build outputs, removal of `apps/remote`
@@ -29,18 +29,23 @@ Adversarially and empirically challenge Milestone 1 (Remote App Zone: R1, R2, R5
 - **Review criteria**: Empirical correctness, strict conformance to M1 invariants (R1, R2, R5), bundle hygiene, zero TS errors, clean build
 
 ## Key Decisions Made
-- Fresh start: reviewing artifacts and establishing empirical test plan
+- Confirmed next.config.js basePath, assetPrefix, and _fragmento rewrites dynamically
+- Confirmed exactOptionalPropertyTypes: true present in tsconfig.json
+- Confirmed pnpm --filter remote-app typecheck and tsc --noEmit pass with zero errors
+- Confirmed next build compiles cleanly and produces 0 remoteEntry.js / MF chunks
+- Verified absence of apps/remote
+- Explicit Verdict: APPROVE
 
 ## Artifact Index
-- DISPATCH.md — Initial dispatch log
+- DISPATCH.md — Initial dispatch and resume log
 - BRIEFING.md — Working memory and context
 - progress.md — Heartbeat and test progress
 - handoff.md — Final evaluation report
 
 ## Attack Surface
-- **Hypotheses tested**: [TBD]
-- **Vulnerabilities found**: [TBD]
-- **Untested angles**: [TBD]
+- **Hypotheses tested**: Module Federation residue, bundle chunk leaks, missing exactOptionalPropertyTypes, broken rewrites, XSS in fragmento, non-GET fragmento bypass, non-existence of apps/remote
+- **Vulnerabilities found**: None in M1 scope. Everything verified solid.
+- **Untested angles**: Host gateway integration (scoped to M2)
 
 ## Loaded Skills
 - None required directly beyond core critic methodology

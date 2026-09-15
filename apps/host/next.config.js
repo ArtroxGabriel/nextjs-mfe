@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  transpilePackages: ['@mfe/shell-ui'],
   experimental: {
     // Rewrites match case-insensitively by default, but the middleware matcher
     // is case-sensitive. Without this, /REMOTE-APP reached the zone around

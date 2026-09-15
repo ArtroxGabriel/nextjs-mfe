@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   createZoneLivenessCache,
   createFetchProbe,
+  ZONE_LIVENESS_TTL_MS,
 } from '../lib/zoneLiveness.ts';
 
 /**
@@ -167,4 +168,8 @@ test('createFetchProbe() aborts and returns false when the probe exceeds its tim
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test('ZONE_LIVENESS_TTL_MS is bounded to 1000ms (1s outage window)', () => {
+  assert.equal(ZONE_LIVENESS_TTL_MS, 1000, 'production liveness TTL must be exactly 1000ms, not infinite or 3000ms');
 });
