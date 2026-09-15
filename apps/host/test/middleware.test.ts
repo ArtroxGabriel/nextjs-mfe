@@ -165,6 +165,25 @@ test('a dot-segment path the matcher accepted gets the 503 although nextUrl norm
   assert.equal(response.status, 503);
 });
 
+test('the middleware decides on zone liveness alone and never reads the request', async () => {
+  stubZone('down');
+
+  // Any use of the request (pathname, url, headers) would let some raw path
+  // the matcher accepted skip the probe, as the removed pathname guard did.
+  const untouchable = new Proxy(
+    {},
+    {
+      get(_target, property) {
+        throw new Error(`middleware read request.${String(property)}`);
+      },
+    }
+  ) as unknown as Parameters<typeof middleware>[0];
+
+  const response = await middleware(untouchable);
+
+  assert.equal(response.status, 503);
+});
+
 test('an outage is detected once the liveness TTL of one second elapses, and not before', async () => {
   const zone = stubZone('up');
 

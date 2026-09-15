@@ -26,3 +26,22 @@ rendered class, federation token in packages/ (STATIC-01). **4 declared survivor
 toast-portal. Zone killed (`r1-live-zone-down.txt`): `/remote-app-static` (GET, `?x=1`, HEAD, POST, OPTIONS),
 `/remote-app/..`, `/remote-app/%2e%2e`, `/remote-app/../REMOTE-APP`, `/remote-app-static/..`, `/remote-app-static/x`,
 `/remote-app` all 503 text/html; `/` 200. Ports freed.
+
+---
+
+# Addendum — worker_final_fix2 (gate iteration 3), 2026-09-15
+
+Addresses reviewer_final_2 F1–F5. Challenger/auditor of iteration 2 died on the rate limit with no verdict.
+
+| Finding | Change |
+|---|---|
+| F1 (blocking) | `apps/host/test/host-page.test.ts`: host page rendered (chrome, `/` active, remote link inactive, content in `<main>`); hook-free `HostLayout` called as a function (returns `ShellLayout`, passes session, handler, route, children); its `onToastPing` dispatches `MFE_EVENTS.TOAST` on a stand-in window. D10 reworded and U1 added. |
+| F2 | `middleware.test.ts`: middleware called with a Proxy that throws on any property read, zone down → 503. |
+| F3 | component check ignores Fragment (symbol type); zone-page class regex `nav-link\s*"`. |
+| F4 | import allow-list: relative imports must resolve inside `packages/shell-ui/src`. |
+| F5 | CSS comments stripped before matching; boundary `(?![\w-])`; `@import` scan also strips comments. |
+
+Falsification (`mutations2.txt`, `mut.py`): control shell 15, zone 17, host 46, static 7. **40/40 required caught**, including
+U2–U6 (host 41–45 pass), F2a `/erro-de-zona`+`/_next` guard, F2b `.ico` guard, F2c `request.url` guard, F4 `./../` import,
+F5/F5b/F5c CSS. **5 declared survivors (D10)**: X-D9, X-D9b, X-D11, X-TC, U1. **Harmless changes stay green**: Fragment
+around the nav list, className without trailing space.

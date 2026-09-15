@@ -29,7 +29,7 @@ test('the zone page renders inside the shared shell chrome', () => {
 });
 
 test('the zone page links back to the shell and marks itself as the active zone', () => {
-  assert.match(html, /<a href="\/" class="nav-link "/);
+  assert.match(html, /<a href="\/" class="nav-link\s*"/);
   assert.match(html, /<a href="\/remote-app" class="nav-link nav-link-active"/);
 });
 

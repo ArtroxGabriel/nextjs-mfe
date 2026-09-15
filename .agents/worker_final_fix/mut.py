@@ -44,6 +44,27 @@ M=[
  ("X-D11 banner shows DEFAULT_SESSION",ZP,[("<strong>{session.userName}</strong>","<strong>{DEFAULT_SESSION.userName}</strong>")]),
  ("X-TC listener on a literal name",TC,[("window.addEventListener(MFE_EVENTS.TOAST, handleToastEvent);","window.addEventListener('mfe:toasts', handleToastEvent);")]),
 ]
+
+HL='apps/host/components/HostLayout.tsx'; HP='apps/host/pages/index.tsx'; SLL='packages/shell-ui/src/SideNavigation.tsx'
+M += [
+ ("U1 zone selector handler not passed (declared D10)",ZP,[("        onSessionChange={handleSessionChange}\n","")]),
+ ("U2 HostLayout drops onSessionChange",HL,[("      onSessionChange={onSessionChange}\n","")]),
+ ("U3 HostLayout drops onToastPing and onNavigate",HL,[("      onToastPing={handleToastPing}\n      onNavigate={handleNavigate}\n","")]),
+ ("U3b HostLayout ping emits nothing",HL,[("    emitToast(\n      'Host Notification',","    void (\n      'Host Notification',")]),
+ ("U4 host page marks the zone active",HP,[('activeRoute="/">','activeRoute="/remote-app">')]),
+ ("U5 host page without chrome",HP,[("<HostLayout currentSession={currentSession} onSessionChange={handleSessionChange} activeRoute=\"/\">","<>"),("      </HostLayout>","      </>")]),
+ ("U6 HostLayout drops children",HL,[("      {children}\n","")]),
+ ("F2a guard for /erro-de-zona and /_next",MW,[("export async function middleware(_request: NextRequest): Promise<NextResponse> {\n","export async function middleware(request: NextRequest): Promise<NextResponse> {\n  const p = request.nextUrl.pathname;\n  if (p === '/erro-de-zona' || p.startsWith('/_next/')) { return NextResponse.next(); }\n")]),
+ ("F2b guard for .ico",MW,[("export async function middleware(_request: NextRequest): Promise<NextResponse> {\n","export async function middleware(request: NextRequest): Promise<NextResponse> {\n  if (request.nextUrl.pathname.endsWith('.ico')) { return NextResponse.next(); }\n")]),
+ ("F2c guard on request.url",MW,[("export async function middleware(_request: NextRequest): Promise<NextResponse> {\n","export async function middleware(request: NextRequest): Promise<NextResponse> {\n  if (!request.url.includes('/remote-app')) { return NextResponse.next(); }\n")]),
+ ("F4 import escapes the package",HD,[("import React from 'react';","import React from 'react';\nimport type { ServerPayload } from './../../../apps/remote-app/types';\nexport type Leak = ServerPayload;")]),
+ ("F5 class styled only in a comment",'packages/shell-ui/src/shell-layout.css',[(".toast-portal","/* .toast-portal */ .toast-portalx")]),
+ ("F5b class styled only by a longer selector",'packages/shell-ui/src/shell-layout.css',[(".toast-portal",".toast-portal-wide")]),
+ ("F5c @import commented out in host CSS",'apps/host/styles/globals.css',[("@import","/* @import"),("shell-layout.css';","shell-layout.css'; */")]),
+ ("HARMLESS fragment around the nav list",SLL,[('      <ul className="nav-list">','      <>\n      <ul className="nav-list">'),("      </ul>\n","      </ul>\n      </>\n")]),
+ ("HARMLESS className without trailing space",SLL,[("className={`nav-link ${isHomeActive ? 'nav-link-active' : ''}`}","className={isHomeActive ? 'nav-link nav-link-active' : 'nav-link'}")]),
+]
+
 rows=[]
 for name,f,reps in M:
     p=os.path.join(T,f); orig=open(p).read(); s=orig

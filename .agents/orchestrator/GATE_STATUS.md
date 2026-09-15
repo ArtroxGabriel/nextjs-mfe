@@ -106,8 +106,21 @@ versions already locked, and `pnpm install`. Push to fork only after a gate pass
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
 | worker_final_fix | controller session (worker) | DONE | worker_final_fix/handoff.md | Guard removed (2 red-first tests); shell-ui tests rendered/handler-level; zone page render test; single MFE_EVENTS; STATIC-01/03 on packages/; dead host components deleted; shell-ui in root scripts with pinned typescript/@types/react; §5.1 wait wording. 27/27 mutants caught, 4 effect-driven survivors declared (D10). shell 15, zone 17, host 42, static 7, smoke 17/17, R1 variants 503 live |
-| reviewer_final_2 | revisor-mfe | PENDING | reviewer_final_2/handoff.md | |
-| challenger_final_2 | simulador-condicoes | PENDING | challenger_final_2/handoff.md | |
-| auditor_final_2 | general-purpose (forensic) | PENDING | auditor_final_2/handoff.md | |
+| reviewer_final_2 | revisor-mfe | REQUEST_CHANGES | reviewer_final_2/handoff.md | R1 fix correct and complete. F1 blocking: D10 incomplete — host page without chrome, HostLayout dropping onSessionChange/onToastPing/onNavigate, host page marking zone active all keep every suite green (no host page test); zone page selector handler removal needs DOM. Low: R1 tests miss other pathname early returns (.ico, /erro-de-zona); Fragment counted as component; trailing-space regex; import allow-list accepts ./../; CSS regex satisfied by comments |
+| challenger_final_2 | simulador-condicoes | ABANDONED (session rate limit, HTTP 429) | — (partial evidence committed by the human in 9416ab3) | No handoff. Partial data, not a verdict: 406 variants × 4 conditions, sick zoneReached 0, zone-down bare 500 0; bypass load 6363 × 503; steady outage 6038, 0 × 500; mixed case 16022, any500 0; crash window first 503 910–954 ms (5 seq); cold cache 3/3 503; recovery 3 runs. Over-blocking of shell-owned encoded paths (`/%72emote-app`, `/remote-app.json`) returns to the pre-guard 94ccdc2 behaviour (O3, previously accepted) |
+| auditor_final_2 | general-purpose (forensic) | ABANDONED (session rate limit, HTTP 429) | — | No handoff, no evidence |
+
+Gate Result: **FAIL** — reviewer_final_2 F1 (blocking). Challenger and auditor died on the session rate limit without verdicts; the gate is re-run in full with a fresh triad after worker_final_fix2.
+
+**Human decision 2026-09-15** (mid-iteration): alternate models to reduce cost — forensic auditor and orchestration on Opus;
+challenger re-runs and narrow re-reviews on Sonnet. Research that another AI can do goes to `pedidos/` and waits for the human.
+
+## Gate — Final combined, iteration 3 (reviewer_final_2 F1–F5)
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| worker_final_fix2 | controller session (worker) | DONE | worker_final_fix/handoff.md (addendum) | host-page.test.ts (page chrome, HostLayout wiring and ping by function call); middleware never-reads-request Proxy test; Fragment-tolerant component check; `\s*` class regex; import allow-list confined to src/; CSS comments stripped, `(?![\w-])`. mutations2.txt: 40 required caught (27 previous + U2–U6, F2a–c, F4, F5, F5b, F5c), 5 declared survivors (D10: X-D9, X-D9b, X-D11, X-TC, U1), 2 harmless changes stay green |
+| reviewer_final_3 | revisor-mfe (sonnet) | PENDING | reviewer_final_3/handoff.md | |
+| challenger_final_3 | simulador-condicoes (sonnet) | PENDING | challenger_final_3/handoff.md | |
+| auditor_final_3 | general-purpose (forensic, opus) | PENDING | auditor_final_3/handoff.md | |
 
 Gate Result: **PENDING**

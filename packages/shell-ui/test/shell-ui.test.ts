@@ -156,7 +156,9 @@ test('the side navigation links both zones with plain anchors that do not interc
   const anchors = hostElements(tree, 'a');
   assert.deepEqual(anchors.map((a) => a.props.href), ['/', '/remote-app']);
   // A component in place of a host <a> (next/link or a wrapper) would not be counted above.
-  assert.equal(collect(tree).filter((e) => typeof e.type !== 'string').length, 0);
+  // Fragments (a symbol type) are harmless and allowed.
+  const components = collect(tree).filter((e) => typeof e.type === 'function' || typeof e.type === 'object');
+  assert.equal(components.length, 0);
 
   for (const anchor of anchors) {
     let prevented = false;
@@ -208,18 +210,23 @@ test('the package imports nothing but react and its own modules', () => {
   for (const file of fs.readdirSync(sourceDir).filter((f) => /\.tsx?$/.test(f))) {
     const { importedFiles } = ts.preProcessFile(fs.readFileSync(path.join(sourceDir, file), 'utf-8'), true, true);
     for (const { fileName } of importedFiles) {
-      assert.ok(fileName === 'react' || fileName.startsWith('./'), `${file} imports ${fileName}`);
+      if (fileName === 'react') continue;
+      const resolved = path.resolve(sourceDir, fileName);
+      assert.ok(
+        fileName.startsWith('.') && path.dirname(resolved) === sourceDir,
+        `${file} imports ${fileName}, outside packages/shell-ui/src`
+      );
     }
   }
 });
 
 test('shell-layout.css defines the selectors the components render', () => {
-  const css = fs.readFileSync(path.join(PACKAGE_DIR, 'src', 'shell-layout.css'), 'utf-8');
+  const css = fs.readFileSync(path.join(PACKAGE_DIR, 'src', 'shell-layout.css'), 'utf-8').replace(/\/\*[\s\S]*?\*\//g, '');
   const html = render(createElement(shell.ShellLayout, { children: null }));
-  const classes = new Set([...html.matchAll(/class="([^"]+)"/g)].flatMap((m) => m[1]!.split(/\s+/)));
+  const classes = new Set([...html.matchAll(/class="([^"]+)"/g)].flatMap((m) => m[1]!.split(/\s+/).filter(Boolean)));
 
   for (const name of classes) {
-    assert.match(css, new RegExp(`\\.${name}\\b`), `.${name} is rendered but not styled`);
+    assert.match(css, new RegExp(`\\.${name}(?![\\w-])`), `.${name} is rendered but not styled`);
   }
 });
 
@@ -228,7 +235,7 @@ test('each app stylesheet imports shell-layout.css, and every @import resolves',
 
   for (const app of ['host', 'remote-app']) {
     const stylesDir = path.join(ROOT_DIR, 'apps', app, 'styles');
-    const css = fs.readFileSync(path.join(stylesDir, 'globals.css'), 'utf-8');
+    const css = fs.readFileSync(path.join(stylesDir, 'globals.css'), 'utf-8').replace(/\/\*[\s\S]*?\*\//g, '');
     const targets = [...css.matchAll(/@import\s+['"]([^'"]+)['"]/g)].map((m) => path.resolve(stylesDir, m[1]!));
 
     assert.ok(targets.length > 0, `apps/${app} globals.css has no @import`);
