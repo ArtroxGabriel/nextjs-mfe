@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { RemoteTelemetryProps, TelemetryEvent } from '../types';
 import { emitToast } from '../lib/events';
 import { remoteLog } from '../lib/logger';
+import { SSE_EVENTS_PATH } from '../lib/sseUrl';
 
 const MAX_BUFFER_SIZE = 8;
 
@@ -25,9 +26,7 @@ export const RemoteTelemetry: React.FC<RemoteTelemetryProps> = ({
       return;
     }
 
-    const sseUrl = typeof window !== 'undefined' && window.location.port === '3001'
-      ? '/api/sse-events'
-      : 'http://localhost:3001/api/sse-events';
+    const sseUrl = SSE_EVENTS_PATH;
 
     remoteLog.client('SSE_STREAM_CONNECTING', { sseUrl });
     const es = new EventSource(sseUrl);

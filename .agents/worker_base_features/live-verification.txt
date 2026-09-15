@@ -1,0 +1,22 @@
+## abas por query e rota de caminho, via shell :3000
+/remote-app                                200 active=Visão geral (SSR) cards=federated-card" federated-card-header"  banner=
+/remote-app?tab=telemetry                  200 active=Telemetria (SSE) cards=federated-card-header" federated-card telemetry-card"  banner=
+/remote-app?tab=telemetry&filter=warn      200 active=Telemetria (SSE) cards=federated-card-header" federated-card telemetry-card"  banner=
+/remote-app?tab=map                        200 active=Mapa (MapLibre) cards=federated-card-header" federated-card map-card"  banner=
+/remote-app?tab=metrics                    200 active=Métricas cards=federated-card" federated-card-header" federated-card telemetry-card"  banner=
+/remote-app/mapa/tokyo                     200 active=Mapa (MapLibre) cards=federated-card-header" federated-card map-card"  banner=Tokyo Datacenter
+/remote-app/mapa/atlantis                  404 active= cards= banner=
+/remote-app?tab=hack&filter=x              200 active=Visão geral (SSR) cards=federated-card" federated-card-header"  banner=
+## SSE via shell (4 s)
+HTTP/1.1 200 OK
+content-type: text/event-stream
+data: {"status":"connected","ts":1789477771094}
+data: {"id":"evt_1789477772595_j103","timestamp":"2026-09-15T13:09:32.595Z","level":"critical","source":"gateway-east","message":"gateway-ea
+## maplibre no bundle da zona
+chunk com o motor: c9541793.016124566191833d.js -> 200
+## sessão / telemetria no HTML
+Connecting to remote SSE stream...
+## smoke
+  Total tests:   17
+  [32mPassed:[0m        17
+  [31mFailed:[0m        0

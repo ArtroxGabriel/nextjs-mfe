@@ -330,3 +330,48 @@ dd.mono {
 }
 .selected-marker-banner h4 { font-size: 1rem; color: #f8fafc; }
 .selected-marker-banner p { font-size: 0.85rem; color: #94a3b8; margin: 0.25rem 0; }
+
+/* Abas do painel da zona (query params e rota de caminho) */
+.zone-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 1.25rem 0;
+}
+
+.zone-tab-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.zone-tab-label {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.zone-tab,
+.zone-filter,
+.zone-city {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #334155;
+  border-radius: 999px;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.zone-tab:hover,
+.zone-filter:hover,
+.zone-city:hover {
+  border-color: #60a5fa;
+}
+
+.zone-tab-active,
+.zone-filter-active,
+.zone-city-active {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #fff;
+}

@@ -18,8 +18,11 @@ test.before(async () => {
   const { renderToStaticMarkup } = await import('react-dom/server');
   const { default: RemoteHomePage } = await import('../pages/index.tsx');
   const { getServerData } = await import('../lib/getServerData.ts');
+  const { parseDashboardQuery } = await import('../lib/dashboardQuery.ts');
 
-  html = renderToStaticMarkup(createElement(RemoteHomePage, { serverData: await getServerData() }));
+  html = renderToStaticMarkup(
+    createElement(RemoteHomePage, { serverData: await getServerData(), dashboard: parseDashboardQuery({}) })
+  );
 });
 
 test('the zone page renders inside the shared shell chrome', () => {

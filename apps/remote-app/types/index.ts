@@ -56,8 +56,6 @@ export interface ServerCardProps {
 
 export interface RemoteMapProps {
   readonly selectedCity?: string | undefined;
-  readonly lat?: number | undefined;
-  readonly lng?: number | undefined;
   readonly zoom?: number | undefined;
   readonly onMarkerClick?: ((marker: MapMarker) => void) | undefined;
   readonly session?: UserSession | undefined;

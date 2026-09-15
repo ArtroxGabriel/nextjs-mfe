@@ -91,17 +91,22 @@ Each was escalated to the human, who decided the round it belongs to.
   down; the call would run only in the browser. Declared in the test file header.
 - **Owner**: whoever adds a DOM test renderer to the workspace.
 
-## D10 — Effects, and handlers wired inside hooked page components, are untested
-- **Found by**: worker_final_fix falsification (2026-09-15), completed by reviewer_final_2 F1.
-- **Evidence**: `.agents/worker_final_fix/mutations2.txt` — five mutants survive every suite: the zone page stops reading
-  (`X-D9`) or writing (`X-D9b`) `localStorage['host_user_session']`; the zone banner shows `DEFAULT_SESSION` instead of the
-  mirrored session (`X-D11`); `ToastContainer` subscribes under a literal event name (`X-TC`); the zone page stops passing
-  `onSessionChange={handleSessionChange}` to `ShellLayout` (`U1`). The first four live in `useEffect` or in state it sets; U1
-  is a handler defined inside a page component that has hooks, so it can be neither rendered into markup nor called as a
-  function. react-dom/server never runs effects and no DOM renderer is installed (same cause as D9). The same wiring in the
-  host goes through hook-free `HostLayout` and is tested (`apps/host/test/host-page.test.ts`).
-- **Owner**: whoever adds a DOM test renderer; declared in the headers of `packages/shell-ui/test/shell-ui.test.ts`,
-  `apps/remote-app/test/zone-page.test.ts` and `apps/host/test/host-page.test.ts`.
+## D10 — Code that runs only inside effects is untested
+- **Found by**: worker_final_fix (2026-09-15), corrected after auditor_final_3 V2.
+- **Evidence**: `.agents/worker_final_fix/mutations2.txt` and `.agents/worker_base_features/mutations3.txt`. Survivors that
+  live only in `useEffect` (react-dom/server never runs effects; no DOM renderer installed, same cause as D9):
+  - `X-D9`: the zone page stops calling `readMirroredSession` in its mount effect (the read logic itself is tested in
+    `apps/remote-app/test/session-mirror.test.ts`);
+  - `X-D11`: the zone banner shows `DEFAULT_SESSION` instead of the mirrored session (state set by that effect);
+  - `X-TC`: `ToastContainer` subscribes under a literal event name;
+  - `X-TL`: `RemoteTelemetry` opens its EventSource on a literal URL instead of `SSE_EVENTS_PATH` (the constant is tested
+    against the zone basePath).
+- **No longer here**: U1 and X-D9b (handler wiring inside the hooked zone page) are caught since auditor_final_3 showed a
+  dependency-free technique: `apps/remote-app/test/zone-session-wiring.test.ts` wraps `react/jsx-runtime` before the page
+  loads, captures the props given to `ShellLayout` and calls `onSessionChange` against a stub storage. Stubbing React's
+  `useEffect` the same way would reach the four above, but it replaces a core React export for every module in the
+  process, so it was rejected (auditor_final_3 judged it a hack too).
+- **Owner**: whoever adds a DOM test renderer.
 
 ## D11 — Shared chrome hardening (human decision 2026-09-15: not in the final-gate remediation)
 - **Session mirror unvalidated** (reviewer_final_1 B3, challenger_final_1 D2-1): `JSON.parse(raw) as UserSession` checks only

@@ -2,37 +2,43 @@ import React, { useState, useEffect } from 'react';
 import type { GetServerSideProps, NextPage } from 'next';
 import Head from 'next/head';
 import { ShellLayout, DEFAULT_SESSION, type UserSession } from '@mfe/shell-ui';
-import ServerCard from '../components/ServerCard';
+import RemoteDashboard from '../components/RemoteDashboard';
+import DashboardTabs from '../components/DashboardTabs';
+import { parseDashboardQuery, type DashboardQuery } from '../lib/dashboardQuery';
+import { readMirroredSession, writeMirroredSession } from '../lib/sessionMirror';
 import { getServerData } from '../lib/getServerData';
 import type { ServerPayload } from '../types';
 
-interface RemoteHomeProps {
+export interface RemoteHomeProps {
   readonly serverData: ServerPayload;
+  readonly dashboard: DashboardQuery;
 }
 
-const RemoteHomePage: NextPage<RemoteHomeProps> = ({ serverData }) => {
+// Em modo privado ou com cookies bloqueados, só ler `window.localStorage` já lança.
+function browserStorage(): Storage | null {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+const RemoteHomePage: NextPage<RemoteHomeProps> = ({ serverData, dashboard }) => {
   const [session, setSession] = useState<UserSession>(DEFAULT_SESSION);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('host_user_session');
-      if (raw) {
-        const parsed = JSON.parse(raw) as UserSession;
-        if (parsed.userId) {
-          setSession(parsed);
-        }
-      }
-    } catch {
-      // localStorage unavailable during SSR or restricted context
+    const storage = browserStorage();
+    const mirrored = storage && readMirroredSession(storage);
+    if (mirrored) {
+      setSession(mirrored);
     }
   }, []);
 
   const handleSessionChange = (nextSession: UserSession) => {
     setSession(nextSession);
-    try {
-      localStorage.setItem('host_user_session', JSON.stringify(nextSession));
-    } catch {
-      // localStorage write fallback
+    const storage = browserStorage();
+    if (storage) {
+      writeMirroredSession(storage, nextSession);
     }
   };
 
@@ -62,18 +68,26 @@ const RemoteHomePage: NextPage<RemoteHomeProps> = ({ serverData }) => {
             </p>
           </div>
 
-          <ServerCard initialData={serverData} title="Remote Standalone SSR Card" session={session} />
+          <DashboardTabs dashboard={dashboard} />
+
+          <RemoteDashboard
+            activeTab={dashboard.tab}
+            serverData={serverData}
+            session={session}
+            queryParams={{ filter: dashboard.filter, ...(dashboard.city ? { city: dashboard.city } : {}) }}
+          />
         </div>
       </ShellLayout>
     </>
   );
 };
 
-export const getServerSideProps: GetServerSideProps<RemoteHomeProps> = async () => {
+export const getServerSideProps: GetServerSideProps<RemoteHomeProps> = async (context) => {
   const serverData = await getServerData();
   return {
     props: {
       serverData,
+      dashboard: parseDashboardQuery(context.query),
     },
   };
 };

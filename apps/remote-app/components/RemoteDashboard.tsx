@@ -13,8 +13,6 @@ export interface RemoteDashboardProps {
   readonly queryParams?: {
     readonly filter?: 'all' | 'info' | 'warn' | 'critical';
     readonly city?: string;
-    readonly lat?: number;
-    readonly lng?: number;
   };
 }
 
@@ -44,8 +42,6 @@ export const RemoteDashboard: React.FC<RemoteDashboardProps> = ({
       {activeTab === 'map' && (
         <div className="tab-pane">
           <RemoteMap
-            lat={queryParams?.lat}
-            lng={queryParams?.lng}
             selectedCity={queryParams?.city}
             session={session}
           />
