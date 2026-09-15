@@ -32,8 +32,8 @@ O plano foi dividido em 4 rodadas:
 
 O trabalho corre em duas frentes:
 
-- A. Prova de conceito (PoC) no repositório nextjs-mfe. É uma versão simplificao funciona.
-- B. Pacotes comuns nos repositórios erp-nucleo e erp-contratos, que são a base
+- A. Prova de conceito (PoC) no repositório nextjs-mfe. É uma versão simplificada para provar como o mecanismo funciona (Multi-Zones, rewrites, isolamento de falha com 503, moldura visual compartilhada via @mfe/shell-ui).
+- B. Pacotes comuns nos repositórios erp-nucleo e erp-contratos, que são a base do sistema real.
 
 3. O que falta
 
@@ -41,26 +41,23 @@ A. Fechar a prova de conceito (perto do fim)
 
 Já está provado que:
 - o shell repassa as requisições para a zona;
-- a queda da zona fica isolada;
-- cabeçalho e menu são compartilhados;
-- as telas antigas voltaram (abas, mapa e dados em tempo real).
+- a queda da zona fica isolada (503 com Retry-After e página /erro-de-zona);
+- cabeçalho e menu são compartilhados (@mfe/shell-ui);
+- as telas antigas voltaram (abas por query ?tab=, mapa com rota /mapa/[cidade] e dados em tempo real via SSE).
 
 Falta:
 
-1. Passar pela última revisão automática. Três verificadores independentes conferem cada mudança: um revisa o código, outro testa o sistema sob estresse e o terceiro confere se os testes
-   pegam erros de verdade. Na última rodada, o terceiro barrou dois pontos. Os  a revisão ainda não rodou de novo para confirmar.
-2. Corrigir problemas conhecidos que foram adiados:
-   - Vazamento no SSE. O SSE (Server-Sent Events) é o canal em que o servidor e a tela. Quando o usuário fecha a tela, o servidor continua enviando dados sem
-     parar.
-   - Zona travada. Se a zona trava sem cair de vez, uma requisição pode esperaro.
-   - Moldura compartilhada. Há diferenças visuais entre o shell e a zona, e a vilidade ainda são frágeis.
-3. Cobrir o que só roda no navegador. Esse código não tem teste porque falta umramenta que simula o navegador nos testes. Instalar essa ferramenta depende da
-   sua aprovação.
+1. Passar pela última revisão automática (Gate 4). Três verificadores independentes conferem cada mudança: um revisa o código, outro testa o sistema sob estresse e o terceiro confere se os testes pegam erros de verdade. Na última rodada (iteração 3), o auditor barrou dois pontos (V1: teste comportamental do emitToast na zona; V2: teste de wiring do onSessionChange na zona). Ambos foram corrigidos no commit d128dff, mas a revisão formal (Gate 4) ainda não rodou de novo para confirmar e autorizar o push para o fork.
+2. Corrigir problemas conhecidos que foram adiados (DEFERRED.md):
+   - Vazamento no SSE (D1). O SSE (Server-Sent Events) é o canal em que o servidor envia dados em tempo real para a tela. Quando o usuário fecha a tela, o servidor continua enviando dados sem parar (ocorre tanto via proxy quanto direto na porta 3001).
+   - Zona travada (D7). Se a zona trava sem cair de vez (ex.: loop ou SIGSTOP), uma requisição dentro da janela de cache pode esperar até 30 segundos pelo timeout do proxy do Next.js antes de devolver 500.
+   - Moldura compartilhada (D11). Há pequenas diferenças visuais de CSS entre o shell e a zona, e a validação de sessão e acessibilidade ainda são frágeis.
+3. Cobrir o que só roda no navegador (D9, D10). Código que executa exclusivamente em useEffect não é coberto nos testes porque o react-dom/server não roda efeitos e falta uma ferramenta que simula o navegador nos testes (ex.: jsdom ou React Testing Library). Instalar essa ferramenta depende de aprovação.
 
 B. Rodada 1 real (parada desde 9 de setembro)
 
 - @erp/contratos: pronto e publicado.
-- @erp/nucleo: metade feita. A tarefa 5 (sessão e identidade) foi revisada e voo foram aplicados. O mais importante deles impede que qualquer código chegue aotoken de acesso do usuário. As tarefas 6 a 11 não começaram.
+- @erp/nucleo: metade feita. A tarefa 5 (sessão e identidade) foi revisada e novos ajustes foram aplicados. O mais importante deles impede que qualquer código chegue ao token de acesso do usuário. As tarefas 6 a 11 não começaram.
 - Ainda não existem:
   - o shell real;
   - a zona Pedidos;
@@ -68,36 +65,28 @@ B. Rodada 1 real (parada desde 9 de setembro)
 
 C. Rodadas 2 a 4
 
-┌─────────────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│          Tema           │                                                                                                                      │
-├─────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ Login e permissões      │ OIDC, cookie e Redis funcionando, com a permissão cuário é simulado e fica só no navegador.                          │
-├─────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ Escrita                 │ Editar e excluir com proteção contra duas pessoas amesmo tempo.                                                      │
-├─────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ Várias zonas            │ Uma lista única de zonas da qual se geram rotas e m o nome escrito à mão em seis lugares.                            │
-├─────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ Fragmentos              │ Primeiro uso real, com timeout e circuit breaker.                                                                    │
-├─────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ Tempo real centralizado │ Uma única conexão SSE por aba, gerenciada pelo shelso do navegador que várias páginas abertas podem compartilhar).   │
-├─────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ Pacote visual           │ Publicar o @erp/ui. Hoje os componentes ficam copia                                                                  │
-├─────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ Tecnologia              │ Migrar para Next.js 16 com App Router, o modelo mais novo de rotas do framework.                                     │
-├─────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ Publicação              │ Deploy independente por time, com uma checagem autoede uma zona de rodar com versão incompatível dos pacotes comuns. │
-└─────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+| Tema | Hoje (PoC em nextjs-mfe) | Alvo / O que falta |
+|---|---|---|
+| Login e permissões | Usuário simulado espelhado no localStorage só no navegador (D3) | OIDC, cookie opaco __Host-session e Redis funcionando, com a permissão checada no servidor por toda zona |
+| Escrita | Somente leitura | Editar e excluir com proteção de concorrência contra duas pessoas alterando o mesmo registro ao mesmo tempo |
+| Várias zonas | Apenas uma zona (/remote-app), com o nome escrito à mão em seis lugares | Uma lista única de zonas da qual se geram rotas, rewrites, matcher e menus dinamicamente |
+| Fragmentos | Fragmento de demonstração sem consumidor | Primeiro uso real via FragmentoRemoto, com timeout de 2s e circuit breaker |
+| Tempo real centralizado | Conexão SSE direta na zona por página, com vazamento de intervalo (D1) | Uma única conexão SSE por aba via /api/stream no shell, gerenciada por SharedWorker compartilhado |
+| Pacote visual | @mfe/shell-ui copiado e compilado no workspace de cada app | Publicar o @erp/ui em registry com controle de semver tolerante |
+| Tecnologia | Next.js 15 com Pages Router | Migrar para Next.js 16 com App Router (React Server Components, proxy.ts) |
+| Publicação e Deploy | Deploy local via pnpm start | Deploy independente por time, com checagem automática no CI (lockstep) que impede versão incompatível do núcleo |
 
 D. Perguntas que o próprio desenho deixou em aberto
 
-- Renovação do login ao mesmo tempo. Várias zonas podem tentar renovar a mesma a ida para produção e depende de respostas do provedor de identidade.
-- Limite de requisições. Falta limitar quantas requisições um usuário pode fazercorra registros testando identificadores em sequência.
-- Rastreamento entre zonas. Não há como seguir uma mesma ação do usuário de umas de monitoramento.
-- Código repetido entre zonas. O navegador baixa de novo o mesmo código-base (fna para outra, cerca de 45 kB por travessia. Ainda falta medir se isso importana prática.
+- Renovação do login ao mesmo tempo. Várias zonas podem tentar renovar a mesma sessão simultaneamente; isso precisa ser coordenado antes da ida para produção e depende de respostas do provedor de identidade.
+- Limite de requisições. Falta rate limiting na borda para limitar quantas requisições um usuário pode fazer por segundo e evitar que percorra registros testando identificadores em sequência ou crie tempestade de reconexão SSE.
+- Rastreamento entre zonas. Não há como seguir uma mesma ação do usuário de uma zona para outra nas ferramentas de monitoramento (falta propagação de trace_id / OpenTelemetry).
+- Código repetido entre zonas. O navegador baixa de novo o mesmo código-base (framework e libs) ao navegar de uma zona para outra, cerca de 45 kB por travessia. Ainda falta medir se isso importa na prática com cache de CDN.
+- Topologia de rede fora da Vercel. Operar proxy reverso L7 (nginx/Traefik com proxy_buffering off para SSE) e garantir co-localização dos serviços na mesma VPC para manter RTT_lan < 5ms.
 
 Ordem sugerida
 
-1. Rodar de novo a revisão da PoC e fechá-la.
-2. Retomar o @erp/nucleo a partir dos ajustes da tarefa 5.
-3. Construir o shell real, a zona Pedidos e o stub de domínio, o que conclui a
-4. Seguir para o login real e as rodadas 2 a 4.
+1. Rodar de novo a revisão da PoC (Gate 4 sobre d128dff) e fechá-la, enviando para o fork.
+2. Retomar o @erp/nucleo a partir dos ajustes da tarefa 5.
+3. Construir o shell real, a zona Pedidos e o stub de domínio, o que conclui a Rodada 1.
+4. Seguir para o login real e as rodadas 2 a 4.
