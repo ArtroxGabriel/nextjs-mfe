@@ -24,6 +24,9 @@ Each was escalated to the human, who decided the round it belongs to.
 - **Conflicts with**: `POC.md` — "remote é uma parte interna da tela do host (host com header e sidenavigation)".
 - **Why deferred** (human decision, 2026-09-12): Rodada 2, after M3. Restoring the chrome means the zone
   re-implements it; that is new design work, not a gate remediation.
+- **Update 2026-09-15 (2)**: final combined gate FAILED on D2 test integrity (auditor_final_1 veto). worker_final_fix replaced the
+  source-regex tests with rendered and handler-level tests (27/27 mutants caught); effect-driven residue is D10, hardening is D11.
+  Closes when a gate passes.
 - **Update 2026-09-15**: Gabriel implemented it ahead of schedule as `packages/shell-ui` (commits `ed9aa05`,
   `fa990ec`, `9dbca4c`), merged in `90e8319`. Under verification in the final combined gate; not closed until it passes.
   The zone page now also mirrors the session through `localStorage['host_user_session']` on the shared origin — a
@@ -87,3 +90,30 @@ Each was escalated to the human, who decided the round it belongs to.
 - **Why not fixed**: covering it needs a new test dependency. On the server the page still renders with the zone
   down; the call would run only in the browser. Declared in the test file header.
 - **Owner**: whoever adds a DOM test renderer to the workspace.
+
+## D10 — Effect-driven behaviour of the shared chrome is untested
+- **Found by**: worker_final_fix falsification (2026-09-15), following reviewer_final_1 B1 and auditor_final_1 §B.
+- **Evidence**: `.agents/worker_final_fix/mutations.txt` — four mutants survive every suite: the zone page stops reading
+  (`X-D9`) or writing (`X-D9b`) `localStorage['host_user_session']`, the zone banner shows `DEFAULT_SESSION` instead of the
+  mirrored session (`X-D11`), and `ToastContainer` subscribes under a literal event name (`X-TC`). All four live in
+  `useEffect` or in state set by it; react-dom/server never runs effects and no DOM renderer is installed (same cause as D9).
+- **Owner**: whoever adds a DOM test renderer; declared in the headers of `packages/shell-ui/test/shell-ui.test.ts` and
+  `apps/remote-app/test/zone-page.test.ts`.
+
+## D11 — Shared chrome hardening (human decision 2026-09-15: not in the final-gate remediation)
+- **Session mirror unvalidated** (reviewer_final_1 B3, challenger_final_1 D2-1): `JSON.parse(raw) as UserSession` checks only
+  `userId`; an object-valued `userName`/`role` throws `Objects are not valid as a React child` on the zone and host pages
+  (shared key, persists until cleared); `{"userId":"usr_viewer_03","role":"admin"}` shows viewer in the header and admin in the
+  banner; SSR always renders the default admin (D3). Pre-existing: JSON `null` throws in `apps/host/pages/index.tsx` effect.
+  Fix: `readStoredSession`/`writeStoredSession` in shell-ui with the key as a constant, resolving `userId` against
+  `PRESET_USERS`; relabel the zone banner as client-side only until D3.
+- **Chrome not visually identical** (reviewer_final_1 B4, challenger_final_1 D2-2): `apps/host/styles/globals.css` redefines 13
+  shell-ui selectors and `:root` after its `@import` (`.layout-main` 2rem + max-width vs 2.5rem, `.nav-*`, `.toast-card`
+  animation, `--border-color`, `--bg-color`).
+- **Accessibility and robustness** (reviewer_final_1 B5): no `aria-current` on the active nav link; two `<h1>` on the zone page;
+  `ToastContainer` accepts any `CustomEvent` detail and never clears its timers on unmount; zone header shows "(Port 3000)"
+  labels.
+- **Build-only checks** (auditor_final_1 A.4): a non-literal middleware `matcher` passes the unit suites; only `next build`
+  or a live check sees it. `apps/*/lib/logger.test.mjs` sit outside the `test/*.test.ts` glob and never run.
+- **Duplicate download** (challenger_final_1 II.3): ≈45 kB gzip of identical framework bytes re-downloaded on the first
+  cross-zone navigation, because the browser cache is keyed by URL prefix.

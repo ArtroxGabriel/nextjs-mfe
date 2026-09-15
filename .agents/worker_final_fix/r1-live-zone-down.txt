@@ -1,0 +1,13 @@
+# zone killed, host up (90e8319 + worker_final_fix tree)
+/remote-app-static               503 text/html; charset=utf-8
+/remote-app-static?x=1           503 text/html; charset=utf-8
+/remote-app/..                   503 text/html; charset=utf-8
+/remote-app/%2e%2e               503 text/html; charset=utf-8
+/remote-app/../REMOTE-APP        503 text/html; charset=utf-8
+/remote-app-static/..            503 text/html; charset=utf-8
+/remote-app-static/x             503 text/html; charset=utf-8
+/remote-app                      503 text/html; charset=utf-8
+/                                200 text/html; charset=utf-8
+HEAD /remote-app-static          503
+POST /remote-app-static          503
+OPTIONS /remote-app-static       503

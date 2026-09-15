@@ -80,7 +80,6 @@ function scanForBannedTokens(dir, bannedPatterns) {
  * Verifies zero Module Federation references in application code.
  */
 function testZeroFederationReferences() {
-  const appsDir = path.join(PROJECT_ROOT, 'apps');
   const bannedPatterns = [
     '@module-federation',
     'remoteEntry',
@@ -88,7 +87,9 @@ function testZeroFederationReferences() {
     'remote/ServerCard',
     'remote/RemoteDashboard',
   ];
-  const violations = scanForBannedTokens(appsDir, bannedPatterns);
+  const violations = ['apps', 'packages'].flatMap((dir) =>
+    scanForBannedTokens(path.join(PROJECT_ROOT, dir), bannedPatterns)
+  );
 
   if (violations.length > 0) {
     const summary = violations.map((v) => `${v.file} (contains "${v.match}")`).join(', ');
@@ -123,15 +124,19 @@ function testExactOptionalPropertyTypes() {
  */
 function testPlainHtmlNavigation() {
   const hostIndex = readFileSafe('apps/host/pages/index.tsx');
-  const sideNav = readFileSafe('apps/host/components/SideNavigation.tsx');
-
-  assertContains(hostIndex, 'href="/remote-app"', 'apps/host/pages/index.tsx');
-  assertNotRegex(hostIndex, /<Link[^>]*href=["']\/remote-app/i, 'apps/host/pages/index.tsx');
-
-  if (sideNav) {
-    assertContains(sideNav, 'href="/remote-app"', 'apps/host/components/SideNavigation.tsx');
-    assertNotRegex(sideNav, /<Link[^>]*href=["']\/remote-app/i, 'apps/host/components/SideNavigation.tsx');
+  // The side navigation every zone renders lives in the shared shell package.
+  const sideNavPath = 'packages/shell-ui/src/SideNavigation.tsx';
+  const sideNav = readFileSafe(sideNavPath);
+  if (!sideNav) {
+    throw new Error(`${sideNavPath} not found`);
   }
+
+  for (const [source, file] of [[hostIndex, 'apps/host/pages/index.tsx'], [sideNav, sideNavPath]]) {
+    assertContains(source, 'href="/remote-app"', file);
+    assertNotRegex(source, /<Link[^>]*href=["']\/remote-app/i, file);
+  }
+  // The host page may use next/head; the shared navigation has no reason to import from Next at all.
+  assertNotRegex(sideNav, /from\s+['"]next\//, sideNavPath);
 }
 
 /**
@@ -230,7 +235,7 @@ export async function runStaticInvariantChecks(initialReport) {
   let report = initialReport;
 
   const testDefinitions = [
-    { id: 'STATIC-01', desc: 'Zero Module Federation references in apps/', fn: testZeroFederationReferences },
+    { id: 'STATIC-01', desc: 'Zero Module Federation references in apps/ and packages/', fn: testZeroFederationReferences },
     { id: 'STATIC-02', desc: 'tsconfig exactOptionalPropertyTypes: true in remote zone', fn: testExactOptionalPropertyTypes },
     { id: 'STATIC-03', desc: 'Cross-zone navigation uses plain <a> tags (no <Link>)', fn: testPlainHtmlNavigation },
     { id: 'STATIC-04', desc: 'Shell contains no DAL or database packages', fn: testShellDalExclusion },

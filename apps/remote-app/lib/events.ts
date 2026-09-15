@@ -1,11 +1,10 @@
 import type { ToastPayload, UserSession, MapMarker } from '../types';
 import { remoteLog } from './logger';
+import { MFE_EVENTS } from '@mfe/shell-ui';
 
-export const MFE_EVENTS = {
-  TOAST: 'mfe:toast',
-  SESSION_CHANGE: 'mfe:session-change',
-  MAP_SELECT: 'mfe:map-select',
-} as const;
+// The event names are the contract between every zone and the shell's
+// ToastContainer, so they come from the one definition in @mfe/shell-ui.
+export { MFE_EVENTS };
 
 /**
  * Dispatches a toast notification to the host application.

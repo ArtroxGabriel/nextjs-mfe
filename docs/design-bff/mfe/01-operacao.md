@@ -205,10 +205,11 @@ A segunda exceção é a zona travada: processo vivo, porta aceitando conexão, 
 o 500 na hora: espera o timeout do proxy do Next, observado em 30 s (3 de 3), e só então
 recebe o 500 cru. Depois do intervalo, a requisição que dispara a sonda espera o timeout da
 sonda, 800 ms (815 a 817 ms medidos), e recebe 503. O custo não é único: o cache vale 1 s a
-partir do fim de cada sonda, então, enquanto a zona seguir travada, cada expiração repete
-a espera de 800 ms para toda requisição que chega durante ela. Num fluxo contínuo isso é
-cerca de 40% das requisições (175 de 443, uma a cada 20 ms durante 9 s, com o cache e a
-sonda reais contra um destino que nunca responde).
+partir do fim de cada sonda, então, enquanto a zona seguir travada, cada expiração abre uma
+nova sonda, e toda requisição que chega durante ela espera o restante dessa sonda, até
+800 ms. Num fluxo contínuo isso é cerca de 40% das requisições, com espera mediana de
+454 ms entre as que esperam mais de 100 ms (175 de 443, uma a cada 20 ms durante 9 s, com
+o cache e a sonda reais contra um destino que nunca responde).
 
 Uma zona que já está fora quando o shell sobe, ou quando o cache já expirou, recebe 503 na
 primeira requisição, porque cache vazio força sonda síncrona. Quanto ao custo, com a zona no

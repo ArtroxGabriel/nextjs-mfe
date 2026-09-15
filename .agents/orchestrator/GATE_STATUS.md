@@ -95,3 +95,19 @@ Retry-After, zone page renders `app-header`/`layout-sidebar`.
 | auditor_final_1 | general-purpose (forensic) | **INTEGRITY VIOLATION** (D2 only) | auditor_final_1/handoff.md | M2/M3 CLEAN: every required mutation caught against the merged middleware (≈45 mutants; survivors M6=D9, equivalent guard mutants G3/G7, non-literal matcher MS). D2 veto: reintroducing the exact Header defect challenger_d2_1 declared fixed keeps shell 10/10, host 39/39, zone 13/13; 16 more D2 mutants survive (select onChange, event rename one side, localStorage read/write, comment-satisfied regexes). STATIC-03 checks dead host SideNavigation; STATIC-01 skips packages/ |
 
 Gate Result: **FAIL** — challenger_final_1 R1 (merge regression in `middleware.ts`, blocking), auditor_final_1 INTEGRITY VIOLATION on D2 (veto), reviewer_final_1 B1 (D2 tests not behavioural). The three verifiers independently separate the parts: M2 iteration 6 + M3 are CLEAN and APPROVE except for R1, which the merge introduced; D2 stays open. Controller confirmed R1 logic independently (`new URL(raw).pathname` → guard false for `/remote-app-static`, `/remote-app/..`, `/remote-app/%2e%2e`, `/remote-app/../REMOTE-APP`). Remediation scope escalated to the human.
+
+**Human decisions 2026-09-15** (after the final combined gate): remediation scope = R1 + D2 behavioural tests (single
+MFE_EVENTS source, STATIC-03/01 on packages/shell-ui, delete dead host components, shell-ui in root scripts, reviewer
+A1/A2 wording); D2 hardening (validated session store, host CSS overrides, a11y, toast validation) NOT in scope —
+recorded as deferred. Approved: pinned `typescript` + `@types/react` devDependencies in packages/shell-ui at the
+versions already locked, and `pnpm install`. Push to fork only after a gate passes.
+
+## Gate — Final combined, iteration 2 (R1 + D2 behavioural tests)
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| worker_final_fix | controller session (worker) | DONE | worker_final_fix/handoff.md | Guard removed (2 red-first tests); shell-ui tests rendered/handler-level; zone page render test; single MFE_EVENTS; STATIC-01/03 on packages/; dead host components deleted; shell-ui in root scripts with pinned typescript/@types/react; §5.1 wait wording. 27/27 mutants caught, 4 effect-driven survivors declared (D10). shell 15, zone 17, host 42, static 7, smoke 17/17, R1 variants 503 live |
+| reviewer_final_2 | revisor-mfe | PENDING | reviewer_final_2/handoff.md | |
+| challenger_final_2 | simulador-condicoes | PENDING | challenger_final_2/handoff.md | |
+| auditor_final_2 | general-purpose (forensic) | PENDING | auditor_final_2/handoff.md | |
+
+Gate Result: **PENDING**

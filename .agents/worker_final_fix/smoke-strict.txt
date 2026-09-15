@@ -1,0 +1,37 @@
+
+[1m====================================================[0m
+[1m🚀 Next.js Multi-Zones Opaque-Box E2E Smoke Suite[0m
+[1m====================================================[0m
+
+[36m[1m--- Tier 1/2 Static Invariant Checks ---[0m
+  [32m✓ PASS[0m [STATIC-01] Zero Module Federation references in apps/ and packages/
+  [32m✓ PASS[0m [STATIC-02] tsconfig exactOptionalPropertyTypes: true in remote zone
+  [32m✓ PASS[0m [STATIC-03] Cross-zone navigation uses plain <a> tags (no <Link>)
+  [32m✓ PASS[0m [STATIC-04] Shell contains no DAL or database packages
+  [32m✓ PASS[0m [STATIC-05] Zone directory renamed to apps/remote-app with updated name
+  [32m✓ PASS[0m [STATIC-06] Host next.config.js declares 3 rewrite rules (root, subroutes, static)
+  [32m✓ PASS[0m [STATIC-07] Remote zone next.config.js sets basePath and assetPrefix
+
+[36m[1m--- Probing Target Servers ---[0m
+  Host Shell (http://localhost:3000): [32mONLINE[0m
+  Remote Zone (http://localhost:3001): [32mONLINE[0m
+
+[36m[1m--- Tier 1/2/3 Online Smoke Checks ---[0m
+  [32m✓ PASS[0m [ONLINE-01] Host Shell Home (GET /) returns 200 with diagnostics & link
+  [32m✓ PASS[0m [ONLINE-02] Zone Index via Shell Rewrite (GET /remote-app) returns 200
+  [32m✓ PASS[0m [ONLINE-03] Zone Health via Shell (GET /remote-app/api/health) returns {"ok":true}
+  [32m✓ PASS[0m [ONLINE-04] Zone Health Direct on port 3001 returns {"ok":true}
+  [32m✓ PASS[0m [ONLINE-05] Fragment Demo via Shell returns 200, text/html, inert body
+  [32m✓ PASS[0m [ONLINE-06] Fragment Demo Direct on port 3001 returns 200 inert HTML
+  [32m✓ PASS[0m [ONLINE-07] Fragment Unknown via Shell returns 204 No Content
+  [32m✓ PASS[0m [ONLINE-08] Fragment POST returns 405 Method Not Allowed
+  [32m✓ PASS[0m [ONLINE-09] Static asset proxying (/remote-app-static/**) resolves without 5xx
+  [32m✓ PASS[0m [ONLINE-10] Mixed-case zone prefix (/REMOTE-APP) gets the shell 404, not the zone
+
+[1m----------------------------------------------------[0m
+[1mExecution Summary:[0m
+  Total tests:   17
+  [32mPassed:[0m        17
+  [31mFailed:[0m        0
+  [33mSkipped:[0m       0
+[1m----------------------------------------------------[0m

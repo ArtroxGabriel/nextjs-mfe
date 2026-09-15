@@ -11,18 +11,11 @@ export const config = {
   matcher: ['/remote-app', '/remote-app/:path*', '/remote-app-static/:path*'],
 };
 
-export async function middleware(request: NextRequest): Promise<NextResponse> {
-  const pathname = request.nextUrl?.pathname || '';
-  const isZonePath =
-    pathname === '/remote-app' ||
-    pathname.startsWith('/remote-app/') ||
-    pathname.startsWith('/remote-app-static/');
-
-  // Defensive guard: shell routes (including '/') must never be blocked by zone liveness
-  if (!isZonePath) {
-    return NextResponse.next();
-  }
-
+// No pathname check here: the matcher and the rewrites test the raw path,
+// while `request.nextUrl.pathname` is normalised (`/remote-app/..` is `/`), so
+// any check on it lets zone-bound requests skip the liveness probe. The matcher
+// alone decides which requests get here.
+export async function middleware(_request: NextRequest): Promise<NextResponse> {
   const liveness = getSharedZoneLivenessCache();
   const isZoneHealthy = await liveness.isHealthy();
   const decision = decideZoneResponse(isZoneHealthy);

@@ -1,4 +1,5 @@
 import { hostLog } from './logger';
+import { MFE_EVENTS } from '@mfe/shell-ui';
 
 export interface ToastPayload {
   readonly id: string;
@@ -8,11 +9,9 @@ export interface ToastPayload {
   readonly timestamp: number;
 }
 
-export const MFE_EVENTS = {
-  TOAST: 'mfe:toast',
-  SESSION_CHANGE: 'mfe:session-change',
-  MAP_SELECT: 'mfe:map-select',
-} as const;
+// The event names are the contract between every zone and the shell's
+// ToastContainer, so they come from the one definition in @mfe/shell-ui.
+export { MFE_EVENTS };
 
 export function emitToast(
   title: string,

@@ -141,6 +141,30 @@ test('a zone whose health route answers non-2xx is treated as down', async () =>
   assert.equal(response.status, 503);
 });
 
+test('the bare static prefix, which the rewrite also proxies, gets the 503 during an outage', async () => {
+  stubZone('down');
+
+  // `/remote-app-static/:path*` matches zero segments, so the rewrite sends
+  // `/remote-app-static` itself to the zone.
+  const response = await middleware(zoneRequest('/remote-app-static'));
+
+  assert.equal(response.status, 503);
+});
+
+test('a dot-segment path the matcher accepted gets the 503 although nextUrl normalises it out of the zone', async () => {
+  stubZone('down');
+
+  // The matcher and the rewrite test the raw path; `nextUrl.pathname` is
+  // already `/` here. Which paths reach the middleware is the matcher's call,
+  // so the middleware must not second-guess it by pathname.
+  const request = zoneRequest('/remote-app/..');
+  assert.equal(request.nextUrl.pathname, '/');
+
+  const response = await middleware(request);
+
+  assert.equal(response.status, 503);
+});
+
 test('an outage is detected once the liveness TTL of one second elapses, and not before', async () => {
   const zone = stubZone('up');
 

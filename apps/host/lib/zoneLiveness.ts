@@ -84,7 +84,7 @@ export function createZoneLivenessCache(options: ZoneLivenessCacheOptions): Zone
  * How long a probe result is trusted. This is also the bound on the window
  * right after an outage starts in which requests still reach the dead zone
  * and get the framework's bare 500. Measured live, that window lasted 2.96 s
- * at the earlier 3 s and 0.87-0.94 s at 1 s (docs/design-bff/mfe/01-operacao.md
+ * at the earlier 3 s and 871-950 ms at 1 s (docs/design-bff/mfe/01-operacao.md
  * section 5.1). A lower value narrows it further at the cost of one probe per
  * interval while the zone is up.
  */

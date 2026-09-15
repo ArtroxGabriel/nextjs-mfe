@@ -11,7 +11,7 @@ The test suite validates the architectural transition from Webpack Module Federa
 
 The primary test runner is `scripts/smoke-test.mjs`. It requires no external dependencies beyond Node.js v18+ (tested on Node v26.8.1 and v24.7.0). Paths resolve from the script's own location, so it can be started from any directory.
 
-Unit suites run on Node's native test runner, with no `tsx`: `pnpm test` at the root, or `node --test test/*.test.ts` inside an app. Use the explicit glob: on Node 24.7, `node --test <dir>` runs zero tests and exits 0.
+Unit suites run on Node's native test runner, with no `tsx`: `pnpm test` at the root (packages/shell-ui, then both apps), or `node --test test/*.test.ts` inside a package or app. Use the explicit glob: on Node 24.7, `node --test <dir>` runs zero tests and exits 0.
 
 ### 2.1 Quick Commands
 
@@ -57,9 +57,9 @@ The test infrastructure is designed around a 4-Tier opaque-box methodology detai
 `scripts/smoke-test.mjs` executes both static AST/grep invariant audits and dynamic live HTTP probes:
 
 ### 4.1 Static Invariant Checks (`STATIC-*`)
-- `[STATIC-01]` **Zero Module Federation references**: Scans `apps/` for banned tokens (`@module-federation`, `remoteEntry`, `NextFederationPlugin`, `remote/ServerCard`, `remote/RemoteDashboard`).
+- `[STATIC-01]` **Zero Module Federation references**: Scans `apps/` and `packages/` for banned tokens (`@module-federation`, `remoteEntry`, `NextFederationPlugin`, `remote/ServerCard`, `remote/RemoteDashboard`).
 - `[STATIC-02]` **TypeScript strict optional properties**: Verifies `compilerOptions.exactOptionalPropertyTypes === true` in `apps/remote-app/tsconfig.json`.
-- `[STATIC-03]` **Plain HTML `<a>` navigation**: Enforces that cross-zone navigation to `/remote-app` in `apps/host` uses native `<a>` tags and never Next.js `<Link>`.
+- `[STATIC-03]` **Plain HTML `<a>` navigation**: Enforces that cross-zone navigation to `/remote-app` in `apps/host/pages/index.tsx` and in the shared `packages/shell-ui/src/SideNavigation.tsx` uses native `<a>` tags and never Next.js `<Link>`; the shared navigation may not import from `next/` at all.
 - `[STATIC-04]` **Shell DAL exclusion**: Verifies zero database packages or domain access layers in `apps/host/package.json` or `apps/host/pages/`.
 - `[STATIC-05]` **Zone directory rename**: Verifies `apps/remote` is renamed to `apps/remote-app` and `package.json` name is updated.
 - `[STATIC-06]` **Host rewrites configuration**: Loads `apps/host/next.config.js`, calls `rewrites()`, and requires exactly the sources `/remote-app`, `/remote-app/:path*` and `/remote-app-static/:path*`, each keeping its path on one zone origin. (Before 2026-09-14 this was a substring check that passed with the root rule removed, D4.)

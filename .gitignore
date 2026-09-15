@@ -11,7 +11,6 @@ build
 multi-zone-poc
 .worktrees
 .docs
-*.tsbuildinfo
 
 # base MFE: os cinco repositórios entram como submódulos; só o scratch é ignorado
 repos/.verdaccio/storage/
