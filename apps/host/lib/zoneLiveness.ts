@@ -90,11 +90,37 @@ export function createZoneLivenessCache(options: ZoneLivenessCacheOptions): Zone
  */
 export const ZONE_LIVENESS_TTL_MS = 1000;
 /**
+ * Default duration in milliseconds one probe may take before the zone is treated as down.
+ */
+export const DEFAULT_ZONE_PROBE_TIMEOUT_MS = 800;
+
+/**
+ * Resolves the probe timeout in milliseconds.
+ * Reads `process.env.ZONE_PROBE_TIMEOUT_MS` if present, valid and positive;
+ * otherwise falls back to `DEFAULT_ZONE_PROBE_TIMEOUT_MS`.
+ *
+ * @example
+ * resolveZoneProbeTimeoutMs() // -> 800 (default)
+ */
+export function resolveZoneProbeTimeoutMs(): number {
+  const configured = process.env.ZONE_PROBE_TIMEOUT_MS;
+  if (configured === undefined || configured.trim() === '') {
+    return DEFAULT_ZONE_PROBE_TIMEOUT_MS;
+  }
+  const parsed = Number(configured);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return DEFAULT_ZONE_PROBE_TIMEOUT_MS;
+  }
+  return Math.floor(parsed);
+}
+
+/**
  * How long one probe may take before the zone is treated as down. A zone
  * that drops packets instead of refusing connections holds every request
  * that pays a probe for this long before it gets the 503.
+ * Preserved as constant pointing to the default for backward compatibility.
  */
-export const ZONE_PROBE_TIMEOUT_MS = 800;
+export const ZONE_PROBE_TIMEOUT_MS = DEFAULT_ZONE_PROBE_TIMEOUT_MS;
 
 /**
  * Builds a probe function that hits a zone's own `/api/health` endpoint
@@ -104,7 +130,7 @@ export const ZONE_PROBE_TIMEOUT_MS = 800;
  */
 export function createFetchProbe(
   healthUrl: string,
-  timeoutMs: number = ZONE_PROBE_TIMEOUT_MS
+  timeoutMs: number = resolveZoneProbeTimeoutMs()
 ): () => Promise<boolean> {
   return async () => {
     const controller = new AbortController();
@@ -135,7 +161,7 @@ export function getSharedZoneLivenessCache(): ZoneLivenessCache {
       process.env.REMOTE_ZONE_URL || process.env.REMOTE_APP_URL || 'http://localhost:3001';
     const healthUrl = `${remoteZoneUrl}/remote-app/api/health`;
     sharedCache = createZoneLivenessCache({
-      probe: createFetchProbe(healthUrl),
+      probe: createFetchProbe(healthUrl, resolveZoneProbeTimeoutMs()),
       ttlMs: ZONE_LIVENESS_TTL_MS,
     });
   }

@@ -4,6 +4,8 @@ import {
   createZoneLivenessCache,
   createFetchProbe,
   ZONE_LIVENESS_TTL_MS,
+  DEFAULT_ZONE_PROBE_TIMEOUT_MS,
+  resolveZoneProbeTimeoutMs,
 } from '../lib/zoneLiveness.ts';
 
 /**
@@ -173,3 +175,49 @@ test('createFetchProbe() aborts and returns false when the probe exceeds its tim
 test('ZONE_LIVENESS_TTL_MS is bounded to 1000ms (1s outage window)', () => {
   assert.equal(ZONE_LIVENESS_TTL_MS, 1000, 'production liveness TTL must be exactly 1000ms, not infinite or 3000ms');
 });
+
+test('resolveZoneProbeTimeoutMs returns DEFAULT_ZONE_PROBE_TIMEOUT_MS when unset or empty', () => {
+  const saved = process.env.ZONE_PROBE_TIMEOUT_MS;
+  try {
+    delete process.env.ZONE_PROBE_TIMEOUT_MS;
+    assert.equal(resolveZoneProbeTimeoutMs(), DEFAULT_ZONE_PROBE_TIMEOUT_MS);
+
+    process.env.ZONE_PROBE_TIMEOUT_MS = '   ';
+    assert.equal(resolveZoneProbeTimeoutMs(), DEFAULT_ZONE_PROBE_TIMEOUT_MS);
+  } finally {
+    if (saved !== undefined) process.env.ZONE_PROBE_TIMEOUT_MS = saved;
+    else delete process.env.ZONE_PROBE_TIMEOUT_MS;
+  }
+});
+
+test('resolveZoneProbeTimeoutMs parses valid positive numeric values from environment', () => {
+  const saved = process.env.ZONE_PROBE_TIMEOUT_MS;
+  try {
+    process.env.ZONE_PROBE_TIMEOUT_MS = '450';
+    assert.equal(resolveZoneProbeTimeoutMs(), 450);
+
+    process.env.ZONE_PROBE_TIMEOUT_MS = '1200';
+    assert.equal(resolveZoneProbeTimeoutMs(), 1200);
+  } finally {
+    if (saved !== undefined) process.env.ZONE_PROBE_TIMEOUT_MS = saved;
+    else delete process.env.ZONE_PROBE_TIMEOUT_MS;
+  }
+});
+
+test('resolveZoneProbeTimeoutMs falls back to default on invalid or negative values', () => {
+  const saved = process.env.ZONE_PROBE_TIMEOUT_MS;
+  try {
+    process.env.ZONE_PROBE_TIMEOUT_MS = 'invalid-ms';
+    assert.equal(resolveZoneProbeTimeoutMs(), DEFAULT_ZONE_PROBE_TIMEOUT_MS);
+
+    process.env.ZONE_PROBE_TIMEOUT_MS = '-100';
+    assert.equal(resolveZoneProbeTimeoutMs(), DEFAULT_ZONE_PROBE_TIMEOUT_MS);
+
+    process.env.ZONE_PROBE_TIMEOUT_MS = '0';
+    assert.equal(resolveZoneProbeTimeoutMs(), DEFAULT_ZONE_PROBE_TIMEOUT_MS);
+  } finally {
+    if (saved !== undefined) process.env.ZONE_PROBE_TIMEOUT_MS = saved;
+    else delete process.env.ZONE_PROBE_TIMEOUT_MS;
+  }
+});
+
