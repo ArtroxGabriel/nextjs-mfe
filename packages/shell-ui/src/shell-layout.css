@@ -2,12 +2,21 @@
   --header-height: 68px;
   --sidebar-width: 260px;
   --sidebar-bg: #0b0f19;
+  --bg-color: #030712;
   --shell-bg: #030712;
+  --card-bg: #111827;
+  --host-card-bg: #111827;
   --shell-card-bg: #111827;
+  --text-color: #f9fafb;
   --shell-text: #f9fafb;
+  --text-muted: #9ca3af;
   --shell-muted: #9ca3af;
+  --border-color: #1f2937;
   --shell-border: #1f2937;
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
   --shell-primary: #6366f1;
+  --accent-remote: #38bdf8;
   --shell-accent: #38bdf8;
 }
 
@@ -245,7 +254,7 @@
 
 .layout-main {
   flex: 1;
-  padding: 2.5rem;
+  padding: 2rem;
   overflow-y: auto;
 }
 

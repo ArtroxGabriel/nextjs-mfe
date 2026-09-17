@@ -245,3 +245,65 @@ test('each app stylesheet imports shell-layout.css, and every @import resolves',
     assert.ok(targets.some((t) => fs.realpathSync(t) === sharedCss), `apps/${app} does not import shell-layout.css`);
   }
 });
+
+test('apps do not override or redeclare shell chrome selectors locally', () => {
+  // Selectors that belong exclusively to the shared shell frame package
+  const forbiddenSelectors = [
+    '\\.app-header',
+    '\\.layout-root',
+    '\\.layout-body',
+    '\\.layout-sidebar',
+    '\\.side-navigation',
+    '\\.nav-link',
+    '\\.nav-list',
+    '\\.nav-section-title',
+    '\\.header-brand',
+    '\\.brand-logo',
+    '\\.brand-title',
+    '\\.header-actions',
+    '\\.system-pill',
+    '\\.session-selector',
+    '\\.toast-portal',
+    '\\.toast-card',
+  ];
+
+  for (const app of ['host', 'remote-app']) {
+    const cssPath = path.join(ROOT_DIR, 'apps', app, 'styles', 'globals.css');
+    const cssContent = fs
+      .readFileSync(cssPath, 'utf-8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/@import\s+[^;]+;/g, '');
+
+    for (const selector of forbiddenSelectors) {
+      const regex = new RegExp(`(^|\\n|[{},;\\s])${selector}[\\s,{]`, 'm');
+      assert.ok(
+        !regex.test(cssContent),
+        `apps/${app}/styles/globals.css locally redefines shared chrome selector ${selector.replace('\\', '')}`
+      );
+    }
+  }
+});
+
+test('apps do not define conflicting base background or border tokens', () => {
+  for (const app of ['host', 'remote-app']) {
+    const cssPath = path.join(ROOT_DIR, 'apps', app, 'styles', 'globals.css');
+    const cssContent = fs
+      .readFileSync(cssPath, 'utf-8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/@import\s+[^;]+;/g, '');
+
+    // Any :root in app-level globals.css must not conflict with canonical shell tokens
+    const rootMatches = cssContent.match(/:root\s*\{([^}]+)\}/g) || [];
+    for (const rootBlock of rootMatches) {
+      assert.ok(
+        !rootBlock.includes('--bg-color: #0f172a'),
+        `apps/${app} defines conflicting --bg-color #0f172a, must match shell`
+      );
+      assert.ok(
+        !rootBlock.includes('--border-color: #334155'),
+        `apps/${app} defines conflicting --border-color #334155, must match shell`
+      );
+    }
+  }
+});
+
