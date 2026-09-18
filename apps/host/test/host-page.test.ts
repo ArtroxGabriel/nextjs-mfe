@@ -16,20 +16,23 @@ type ShellUi = typeof import('@mfe/shell-ui');
 
 let shell: ShellUi;
 let HostLayout: (typeof import('../components/HostLayout.tsx'))['default'];
-let renderHostPage: () => string;
+let renderHostPage: (initialSession?: typeof shell.DEFAULT_SESSION) => string;
+let getServerSideProps: (typeof import('../pages/index.tsx'))['getServerSideProps'];
 
 test.before(async () => {
   const { createElement } = await import('react');
   const { renderToStaticMarkup } = await import('react-dom/server');
   shell = await import('@mfe/shell-ui');
   HostLayout = (await import('../components/HostLayout.tsx')).default;
-  const { default: HostHomePage } = await import('../pages/index.tsx');
+  const pageModule = await import('../pages/index.tsx');
+  const HostHomePage = pageModule.default;
+  getServerSideProps = pageModule.getServerSideProps;
 
-  renderHostPage = () =>
+  renderHostPage = (initialSession = shell.DEFAULT_SESSION) =>
     renderToStaticMarkup(
       createElement(HostHomePage, {
         hostRenderTimestamp: '2026-09-15T00:00:00.000Z',
-        initialSession: shell.DEFAULT_SESSION,
+        initialSession,
         initialRoute: '/',
       })
     );
@@ -87,4 +90,56 @@ test('HostLayout pings through the shared toast event and reports navigation', (
   }
 
   assert.deepEqual(titles, ['Host Notification']);
+});
+
+test('getServerSideProps resolves user session from request cookie header', async () => {
+  // Arrange
+  const viewer = shell.PRESET_USERS[2]!;
+  const fakeContext = {
+    req: {
+      headers: {
+        cookie: `host_user_session=${viewer.userId}`,
+      },
+    },
+    resolvedUrl: '/',
+  } as unknown as Parameters<typeof getServerSideProps>[0];
+
+  // Act
+  const result = (await getServerSideProps(fakeContext)) as {
+    props: { initialSession: typeof shell.DEFAULT_SESSION };
+  };
+
+  // Assert
+  assert.equal(result.props.initialSession.userId, viewer.userId);
+  assert.equal(result.props.initialSession.userName, viewer.userName);
+});
+
+test('getServerSideProps falls back to DEFAULT_SESSION when cookie header is missing', async () => {
+  // Arrange
+  const fakeContext = {
+    req: {
+      headers: {},
+    },
+    resolvedUrl: '/',
+  } as unknown as Parameters<typeof getServerSideProps>[0];
+
+  // Act
+  const result = (await getServerSideProps(fakeContext)) as {
+    props: { initialSession: typeof shell.DEFAULT_SESSION };
+  };
+
+  // Assert
+  assert.equal(result.props.initialSession.userId, shell.DEFAULT_SESSION.userId);
+});
+
+test('the host page renders with the initialSession without flashing default session', () => {
+  // Arrange
+  const viewer = shell.PRESET_USERS[2]!;
+
+  // Act
+  const html = renderHostPage(viewer);
+
+  // Assert
+  assert.match(html, new RegExp(`<option value="${viewer.userId}" selected="">`));
+  assert.match(html, /Mariana Lima \(Viewer\) \(viewer\)/);
 });

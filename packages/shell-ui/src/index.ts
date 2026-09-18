@@ -13,3 +13,10 @@ export type { ToastPayload } from './events';
 
 export { PRESET_USERS, DEFAULT_SESSION } from './types';
 export type { UserSession, UserRole } from './types';
+
+export {
+  SESSION_COOKIE_NAME,
+  SESSION_STORAGE_KEY,
+  parseSessionFromCookieHeader,
+  writeSessionCookie,
+} from './session';

@@ -1,28 +1,36 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import './support/register-next-resolution.ts';
-
-/**
- * The zone page is rendered for real, with the real server data, so taking the
- * shell chrome off `/remote-app` fails here and not only in a live check.
- *
- * The session the page mirrors from localStorage is read in an effect, which
- * react-dom/server never runs; the server render always shows the default
- * session. See D10 in .agents/orchestrator/DEFERRED.md.
- */
+type ShellUi = typeof import('@mfe/shell-ui');
 
 let html: string;
+let shell: ShellUi;
+let RemoteHomePage: typeof import('../pages/index.tsx').default;
+let getServerSideProps: typeof import('../pages/index.tsx').getServerSideProps;
+let getServerData: typeof import('../lib/getServerData.ts').getServerData;
+let parseDashboardQuery: typeof import('../lib/dashboardQuery.ts').parseDashboardQuery;
+let renderPage: (session?: typeof shell.DEFAULT_SESSION) => Promise<string>;
 
 test.before(async () => {
   const { createElement } = await import('react');
   const { renderToStaticMarkup } = await import('react-dom/server');
-  const { default: RemoteHomePage } = await import('../pages/index.tsx');
-  const { getServerData } = await import('../lib/getServerData.ts');
-  const { parseDashboardQuery } = await import('../lib/dashboardQuery.ts');
+  shell = await import('@mfe/shell-ui');
+  const pageModule = await import('../pages/index.tsx');
+  RemoteHomePage = pageModule.default;
+  getServerSideProps = pageModule.getServerSideProps;
+  getServerData = (await import('../lib/getServerData.ts')).getServerData;
+  parseDashboardQuery = (await import('../lib/dashboardQuery.ts')).parseDashboardQuery;
 
-  html = renderToStaticMarkup(
-    createElement(RemoteHomePage, { serverData: await getServerData(), dashboard: parseDashboardQuery({}) })
-  );
+  renderPage = async (session = shell.DEFAULT_SESSION) =>
+    renderToStaticMarkup(
+      createElement(RemoteHomePage, {
+        serverData: await getServerData(session),
+        dashboard: parseDashboardQuery({}),
+        initialSession: session,
+      })
+    );
+
+  html = await renderPage();
 });
 
 test('the zone page renders inside the shared shell chrome', () => {
@@ -41,4 +49,66 @@ test('the zone content sits in the shell main area with its session banner and s
 
   assert.match(main, /<div class="session-banner" data-testid="remote-active-session">/);
   assert.match(main, /<div class="federated-card">/);
+});
+
+test('getServerSideProps resolves user session from request cookie header', async () => {
+  // Arrange
+  const viewer = shell.PRESET_USERS[2]!;
+  const fakeContext = {
+    req: {
+      headers: {
+        cookie: `host_user_session=${viewer.userId}`,
+      },
+    },
+    query: {},
+    resolvedUrl: '/remote-app',
+  } as unknown as Parameters<typeof getServerSideProps>[0];
+
+  // Act
+  const result = (await getServerSideProps(fakeContext)) as {
+    props: {
+      initialSession: typeof shell.DEFAULT_SESSION;
+      serverData: { session: typeof shell.DEFAULT_SESSION | null };
+    };
+  };
+
+  // Assert
+  assert.equal(result.props.initialSession.userId, viewer.userId);
+  assert.equal(result.props.initialSession.userName, viewer.userName);
+  assert.equal(result.props.serverData.session?.userId, viewer.userId);
+});
+
+test('getServerSideProps falls back to DEFAULT_SESSION when cookie header is missing', async () => {
+  // Arrange
+  const fakeContext = {
+    req: {
+      headers: {},
+    },
+    query: {},
+    resolvedUrl: '/remote-app',
+  } as unknown as Parameters<typeof getServerSideProps>[0];
+
+  // Act
+  const result = (await getServerSideProps(fakeContext)) as {
+    props: {
+      initialSession: typeof shell.DEFAULT_SESSION;
+      serverData: { session: typeof shell.DEFAULT_SESSION | null };
+    };
+  };
+
+  // Assert
+  assert.equal(result.props.initialSession.userId, shell.DEFAULT_SESSION.userId);
+  assert.equal(result.props.serverData.session?.userId, shell.DEFAULT_SESSION.userId);
+});
+
+test('the zone page renders with the initialSession without flashing default session', async () => {
+  // Arrange
+  const viewer = shell.PRESET_USERS[2]!;
+
+  // Act
+  const renderedHtml = await renderPage(viewer);
+
+  // Assert
+  assert.match(renderedHtml, new RegExp(`<option value="${viewer.userId}" selected="">`));
+  assert.match(renderedHtml, /Mariana Lima \(Viewer\)/);
 });

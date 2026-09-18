@@ -6,6 +6,7 @@ import {
   DEFAULT_SESSION,
   getSessionFromStorage,
   saveSessionToStorage,
+  parseSessionFromCookieHeader,
   type UserSession,
 } from '../lib/session';
 import { hostLog } from '../lib/logger';
@@ -122,7 +123,7 @@ const HostHomePage: NextPage<HostHomePageProps> = ({
 
 export const getServerSideProps: GetServerSideProps<HostHomePageProps> = async (context) => {
   const hostRenderTimestamp = new Date().toISOString();
-  const session = DEFAULT_SESSION;
+  const session = parseSessionFromCookieHeader(context.req?.headers?.cookie);
   const initialRoute = context.resolvedUrl || '/';
 
   // Shell contains zero DAL/business data fetches — only shell runtime metadata

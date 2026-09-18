@@ -1,7 +1,7 @@
-import type { UserSession } from '@mfe/shell-ui';
+import { writeSessionCookie, SESSION_STORAGE_KEY, type UserSession } from '@mfe/shell-ui';
 
 /** Chave que o shell usa no localStorage; a zona só espelha o que o shell gravou (D3). */
-export const SESSION_MIRROR_KEY = 'host_user_session';
+export const SESSION_MIRROR_KEY = SESSION_STORAGE_KEY;
 
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 
@@ -24,4 +24,5 @@ export function writeMirroredSession(storage: StorageLike, session: UserSession)
   } catch {
     // storage indisponível (modo privado, cota): a sessão continua só na memória da página
   }
+  writeSessionCookie(session);
 }

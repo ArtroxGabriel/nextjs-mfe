@@ -1,4 +1,5 @@
 import type { GetServerSideProps } from 'next';
+import { parseSessionFromCookieHeader } from '@mfe/shell-ui';
 import RemoteHomePage, { type RemoteHomeProps } from '../index';
 import { getServerData } from '../../lib/getServerData';
 import { parseDashboardQuery } from '../../lib/dashboardQuery';
@@ -13,7 +14,9 @@ export const getServerSideProps: GetServerSideProps<RemoteHomeProps> = async (co
   if (!dashboard.city) {
     return { notFound: true };
   }
-  return { props: { serverData: await getServerData(), dashboard } };
+  const session = parseSessionFromCookieHeader(context.req?.headers?.cookie);
+  const serverData = await getServerData(session);
+  return { props: { serverData, dashboard, initialSession: session } };
 };
 
 export default RemoteHomePage;

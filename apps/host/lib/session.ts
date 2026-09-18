@@ -1,6 +1,9 @@
 import {
   PRESET_USERS,
   DEFAULT_SESSION,
+  SESSION_STORAGE_KEY,
+  parseSessionFromCookieHeader,
+  writeSessionCookie,
   type UserSession,
   type UserRole,
 } from '@mfe/shell-ui';
@@ -8,6 +11,9 @@ import {
 export {
   PRESET_USERS,
   DEFAULT_SESSION,
+  SESSION_STORAGE_KEY,
+  parseSessionFromCookieHeader,
+  writeSessionCookie,
   type UserSession,
   type UserRole,
 };
@@ -15,7 +21,7 @@ export {
 export function getSessionFromStorage(): UserSession {
   if (typeof window === 'undefined') return DEFAULT_SESSION;
   try {
-    const raw = localStorage.getItem('host_user_session');
+    const raw = localStorage.getItem(SESSION_STORAGE_KEY);
     if (!raw) return DEFAULT_SESSION;
     return JSON.parse(raw) as UserSession;
   } catch {
@@ -25,5 +31,6 @@ export function getSessionFromStorage(): UserSession {
 
 export function saveSessionToStorage(session: UserSession): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem('host_user_session', JSON.stringify(session));
+  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  writeSessionCookie(session);
 }

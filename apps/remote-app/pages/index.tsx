@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import type { GetServerSideProps, NextPage } from 'next';
 import Head from 'next/head';
-import { ShellLayout, DEFAULT_SESSION, type UserSession } from '@mfe/shell-ui';
+import {
+  ShellLayout,
+  DEFAULT_SESSION,
+  parseSessionFromCookieHeader,
+  writeSessionCookie,
+  type UserSession,
+} from '@mfe/shell-ui';
 import RemoteDashboard from '../components/RemoteDashboard';
 import DashboardTabs from '../components/DashboardTabs';
 import { parseDashboardQuery, type DashboardQuery } from '../lib/dashboardQuery';
@@ -12,6 +18,7 @@ import type { ServerPayload } from '../types';
 export interface RemoteHomeProps {
   readonly serverData: ServerPayload;
   readonly dashboard: DashboardQuery;
+  readonly initialSession?: UserSession;
 }
 
 // Em modo privado ou com cookies bloqueados, só ler `window.localStorage` já lança.
@@ -23,16 +30,20 @@ function browserStorage(): Storage | null {
   }
 }
 
-const RemoteHomePage: NextPage<RemoteHomeProps> = ({ serverData, dashboard }) => {
-  const [session, setSession] = useState<UserSession>(DEFAULT_SESSION);
+const RemoteHomePage: NextPage<RemoteHomeProps> = ({
+  serverData,
+  dashboard,
+  initialSession = DEFAULT_SESSION,
+}) => {
+  const [session, setSession] = useState<UserSession>(initialSession);
 
   useEffect(() => {
     const storage = browserStorage();
     const mirrored = storage && readMirroredSession(storage);
-    if (mirrored) {
+    if (mirrored && mirrored.userId !== session.userId) {
       setSession(mirrored);
     }
-  }, []);
+  }, [session.userId]);
 
   const handleSessionChange = (nextSession: UserSession) => {
     setSession(nextSession);
@@ -40,6 +51,7 @@ const RemoteHomePage: NextPage<RemoteHomeProps> = ({ serverData, dashboard }) =>
     if (storage) {
       writeMirroredSession(storage, nextSession);
     }
+    writeSessionCookie(nextSession);
   };
 
   return (
@@ -83,11 +95,13 @@ const RemoteHomePage: NextPage<RemoteHomeProps> = ({ serverData, dashboard }) =>
 };
 
 export const getServerSideProps: GetServerSideProps<RemoteHomeProps> = async (context) => {
-  const serverData = await getServerData();
+  const session = parseSessionFromCookieHeader(context.req?.headers?.cookie);
+  const serverData = await getServerData(session);
   return {
     props: {
       serverData,
       dashboard: parseDashboardQuery(context.query),
+      initialSession: session,
     },
   };
 };

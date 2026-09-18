@@ -46,13 +46,20 @@ test('escolher um usuário no header da zona grava a sessão para o shell', asyn
   assert.equal(typeof onSessionChange, 'function', 'a página deve entregar onSessionChange ao ShellLayout');
 
   const storage = memoryStorage();
+  const fakeDoc = { cookie: '' };
   const saved = (globalThis as { window?: unknown }).window;
+  const savedDoc = (globalThis as { document?: unknown }).document;
   (globalThis as { window?: unknown }).window = { localStorage: storage };
+  (globalThis as { document?: unknown }).document = fakeDoc;
   try {
     onSessionChange!(PRESET_USERS[2]);
   } finally {
     (globalThis as { window?: unknown }).window = saved;
+    (globalThis as { document?: unknown }).document = savedDoc;
   }
 
   assert.deepEqual(JSON.parse(storage.data.get('host_user_session') ?? 'null'), PRESET_USERS[2]);
+  assert.match(fakeDoc.cookie, /^host_user_session=usr_viewer_03;/);
+  assert.match(fakeDoc.cookie, /path=\//);
+  assert.match(fakeDoc.cookie, /SameSite=Lax/);
 });
