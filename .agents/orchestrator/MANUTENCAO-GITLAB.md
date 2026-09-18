@@ -79,7 +79,7 @@ repositório prova.
 | 2 | Corrigir o encerramento do SSE — Gerenciamento de conexões e liberação de recursos | D1 | Aberto, sem trabalho |
 | 3 | Tratar zonas travadas — Gestão de timeouts e isolamento de falhas no shell | D7 (e D6 como contexto) | Aberto; exceção documentada em `01-operacao.md` §5.1 |
 | 4 | Padronizar a moldura compartilhada — Unificação de estrutura visual e estilos base | D11 (D2 fechado no gate 4) | Aberto |
-| 5 | Adicionar testes no navegador — Cobertura de APIs do cliente e DOM | D9, D10 | Aberto; depende de aprovar dependência de DOM |
+| 5 | Adicionar testes no navegador — Cobertura de APIs do cliente e DOM | D9, D10 | Concluído em `bb3d051`; happy-dom adicionado; suíte DOM integrada ao CI; docs em `docs/testes-navegador.md` |
 | 6 | Retomar a implementação do @erp/nucleo — Definição de portas, adaptadores e proteção | Fatia 1, tasks 3 a 6 | Tasks 3–6 concluídas e publicadas (`erp-nucleo` `b9bbbed`); minors em `ESTADO.md` §5 |
 | 7 | Construir o shell real — Ponto de entrada e gateway das zonas da aplicação | Fatia 1, task 8 (`erp-shell`) | Não iniciado |
 | 8 | Construir a zona inicial e stub de domínio — Prova de integração completa | Fatia 1, tasks 7 e 9 (`erp-dominio-stub`, `erp-mfe-pedidos`) | Task 7 concluída e revisada (stub `erp-dominio-stub`, APPROVE); task 9 não iniciada |
