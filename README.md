@@ -100,9 +100,15 @@ O que cada suíte cobre:
 
 | Suíte | Testes | Cobre |
 |---|---|---|
-| `packages/shell-ui/test` | 15 | Moldura renderizada com `react-dom/server`: header, seletor de sessão, botão de toast, links `<a>` e link ativo, layout com `children` e portal de toasts; handlers chamados de verdade; imports só de `react`; CSS de toda classe renderizada |
-| `apps/remote-app/test` | 36 | Health, contrato do fragmento (200 inerte / 204 / 405), `next.config`, página dentro da moldura, abas por query, rota `/mapa/[cidade]`, caminho do SSE no `basePath`, espelho de sessão, emissão de toast |
-| `apps/host/test` | 47 | Middleware real contra zona simulada (503 com `Retry-After`, TTL de 1 s, recuperação, timeout da sonda, caminhos que o rewrite repassa, não lê a requisição), rewrites, `/erro-de-zona` sem rede, página inicial na moldura, emissão de toast |
+| `packages/shell-ui/test` | 18 | Moldura renderizada com `react-dom/server` + 3 testes de DOM (`happy-dom`): header, seletor de sessão, botão de toast, links `<a>` e link ativo, layout com `children` e portal de toasts; despacho de eventos `mfe:toast` e cleanup de listeners/timers |
+| `apps/remote-app/test` | 42 | Health, contrato do fragmento (200 inerte / 204 / 405), `next.config`, página dentro da moldura, abas por query, rota `/mapa/[cidade]`, caminho do SSE no `basePath`, espelho de sessão + 6 testes de DOM: persistência multi-abas em `localStorage`, resiliência a `SecurityError`, ciclo de vida do `EventSource` e motor MapLibre GL com `flyTo` |
+| `apps/host/test` | 52 | Middleware real contra zona simulada (503 com `Retry-After`, TTL de 1 s, recuperação, timeout da sonda, caminhos que o rewrite repassa, não lê a requisição), rewrites, `/erro-de-zona` sem rede, página inicial na moldura + 3 testes de DOM: reconciliação de sessão e garantia de zero rede na queda (D9) |
+
+Para rodar apenas a suíte de testes de cliente/DOM:
+```bash
+pnpm test:dom
+```
+Documentação detalhada sobre o escopo, arquitetura e limitações dos testes de navegador em [`docs/testes-navegador.md`](docs/testes-navegador.md).
 
 ### 3.2 Smoke com as apps no ar
 
@@ -120,8 +126,7 @@ shell, a zona pelo shell e direto, health, fragmento, assets pela `/remote-app-s
 
 ### 3.3 Verificação manual
 
-O que depende de JavaScript no navegador (SSE chegando, mapa, toast, sessão entre páginas) não
-tem teste automático. O passo a passo, com o resultado esperado de cada item, está em
+O passo a passo com o resultado esperado de cada item está em
 [`docs/ROTEIRO-DE-VERIFICACAO.md`](docs/ROTEIRO-DE-VERIFICACAO.md). O mínimo:
 
 ```bash
@@ -140,18 +145,17 @@ curl -si http://localhost:3000/ | head -1                # HTTP/1.1 200 OK
 
 Registradas com evidência em `.agents/orchestrator/DEFERRED.md`. As que afetam quem usa a base:
 
-- **Sessão entre zonas (D3):** não há cookie nem store de sessão. A zona espelha o usuário
-  escolhido via `localStorage` depois de carregar; o HTML do servidor sempre mostra o usuário
-  padrão. Um valor malformado nessa chave pode quebrar a página (D11).
 - **Janela após a queda (§5.1 de `docs/design-bff/mfe/01-operacao.md`):** por até ~1 s depois que a
   zona cai, requisições ainda recebem o 500 cru do Next. Zona travada (processo vivo, sem resposta)
   segura requisições por até 30 s nessa janela (D7).
 - **SSE (D1):** o intervalo do servidor não é liberado quando o cliente desconecta.
-- **Sem renderizador de DOM nos testes (D9, D10):** o que roda só em `useEffect` no navegador
-  (leitura do `localStorage`, assinatura do toast, abertura do `EventSource`) não é coberto.
 - **Mapa:** os ladrilhos vêm de `tile.openstreetmap.org`; sem internet o mapa fica vazio.
 - **Visual (D11):** o CSS do shell sobrescreve parte da moldura compartilhada; o espaçamento difere
   entre shell e zona.
+- **Nota sobre testes de navegador (resolvidos D9 e D10):** a suíte de cliente/DOM (`happy-dom`)
+  cobre `localStorage`, toasts, `EventSource`, `RemoteMap` e a proteção contra efeitos de rede na página
+  de queda. Limitações de renderização WebGL pura e navegações cross-zone em hardware real estão
+  documentadas em [`docs/testes-navegador.md`](docs/testes-navegador.md).
 
 ---
 
@@ -194,6 +198,7 @@ O desenho completo (mapa de zonas, contrato de fragmento, sessão, deploy) está
 | `docs/ROTEIRO-DE-VERIFICACAO.md` | Verificação manual, item a item, da integração e das funcionalidades base |
 | `TEST_READY.md` | Cada checagem STATIC/ONLINE e semântica de saída do smoke |
 | `TEST_INFRA.md` | Especificação ampla de testes (4 camadas); nem tudo ali está automatizado |
+| `docs/testes-navegador.md` | Escopo, arquitetura, limitações e guia da suíte de testes de cliente/DOM (`happy-dom`) |
 | `docs/design-bff/mfe/00-arquitetura.md`, `01-operacao.md`, `02-zonas.md` | Desenho completo que a arquitetura alvo resume |
 | `.agents/orchestrator/` | Estado da migração: `RETOMADA.md`, `GATE_STATUS.md` (vereditos), `DEFERRED.md` (dívidas com evidência) |
 | `pedidos/` | Pedidos de pesquisa/elucidação para outra IA, aguardando resposta |

@@ -82,31 +82,22 @@ Each was escalated to the human, who decided the round it belongs to.
   with the tree correct.
 - **Routed to**: M3, with D4.
 
-## D9 — The outage page's no-network guard does not see a fetch inside an effect
+## D9 — The outage page's no-network guard does not see a fetch inside an effect [RESOLVED 2026-09-18]
 - **Found by**: reviewer_m2_5 (M6), confirmed by auditor_m2_4 (A27) and auditor_m2_5.
 - **Evidence**: `useEffect(() => { fetch(...) }, [])` in `pages/erro-de-zona.tsx` keeps the host suite green.
   `react-dom/server` never runs effects, and no DOM renderer (jsdom, happy-dom, react-test-renderer,
   @testing-library) is installed.
-- **Why not fixed**: covering it needs a new test dependency. On the server the page still renders with the zone
-  down; the call would run only in the browser. Declared in the test file header.
-- **Owner**: whoever adds a DOM test renderer to the workspace.
+- **Resolved (2026-09-18)**: Covered by `apps/host/test/dom-outage-page.test.ts` using `happy-dom`. Mounts `ErroDeZonaPage` in DOM with a mocked `fetch` and asserts 0 network calls occur during mount or unmount effects.
 
-## D10 — Code that runs only inside effects is untested
+## D10 — Code that runs only inside effects is untested [RESOLVED 2026-09-18]
 - **Found by**: worker_final_fix (2026-09-15), corrected after auditor_final_3 V2.
-- **Evidence**: `.agents/worker_final_fix/mutations2.txt` and `.agents/worker_base_features/mutations3.txt`. Survivors that
-  live only in `useEffect` (react-dom/server never runs effects; no DOM renderer installed, same cause as D9):
-  - `X-D9`: the zone page stops calling `readMirroredSession` in its mount effect (the read logic itself is tested in
-    `apps/remote-app/test/session-mirror.test.ts`);
-  - `X-D11`: the zone banner shows `DEFAULT_SESSION` instead of the mirrored session (state set by that effect);
-  - `X-TC`: `ToastContainer` subscribes under a literal event name;
-  - `X-TL`: `RemoteTelemetry` opens its EventSource on a literal URL instead of `SSE_EVENTS_PATH` (the constant is tested
-    against the zone basePath).
-- **No longer here**: U1 and X-D9b (handler wiring inside the hooked zone page) are caught since auditor_final_3 showed a
-  dependency-free technique: `apps/remote-app/test/zone-session-wiring.test.ts` wraps `react/jsx-runtime` before the page
-  loads, captures the props given to `ShellLayout` and calls `onSessionChange` against a stub storage. Stubbing React's
-  `useEffect` the same way would reach the four above, but it replaces a core React export for every module in the
-  process, so it was rejected (auditor_final_3 judged it a hack too).
-- **Owner**: whoever adds a DOM test renderer.
+- **Evidence**: Survivors that live only in `useEffect` (react-dom/server never runs effects; no DOM renderer installed, same cause as D9).
+- **Resolved (2026-09-18)**: Covered by DOM test suite (`happy-dom` + `node --test`):
+  - `apps/remote-app/test/dom-session-storage.test.ts`: multi-tab session persistence and fallback.
+  - `packages/shell-ui/test/dom-toast-and-header.test.ts`: ToastContainer `mfe:toast` event subscription and auto-dismiss timer cleanup.
+  - `apps/remote-app/test/dom-telemetry-sse.test.ts`: RemoteTelemetry EventSource instantiation, stream parsing, and socket closure.
+  - `apps/remote-app/test/dom-map.test.ts`: MapLibre GL map container lifecycle, pins, and `flyTo` navigation.
+  - Documented in `docs/testes-navegador.md`.
 
 ## D11 — Shared chrome hardening (human decision 2026-09-15: not in the final-gate remediation)
 - **Session mirror unvalidated** (reviewer_final_1 B3, challenger_final_1 D2-1): `JSON.parse(raw) as UserSession` checks only

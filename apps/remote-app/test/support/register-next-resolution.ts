@@ -49,6 +49,12 @@ function isModuleNotFound(error: unknown): boolean {
 
 registerHooks({
   resolve(specifier, context, nextResolve) {
+    if (specifier === 'maplibre-gl') {
+      return {
+        url: new URL('./mock-maplibre.ts', import.meta.url).href,
+        shortCircuit: true,
+      };
+    }
     try {
       return nextResolve(specifier, context);
     } catch (error) {

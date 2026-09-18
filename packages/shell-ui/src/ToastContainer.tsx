@@ -7,6 +7,8 @@ export const ToastContainer = (): React.ReactElement => {
   const [toasts, setToasts] = useState<readonly ToastPayload[]>([]);
 
   useEffect(() => {
+    const activeTimers = new Set<ReturnType<typeof setTimeout>>();
+
     const handleToastEvent = (e: Event) => {
       const customEvent = e as CustomEvent<ToastPayload>;
       if (!customEvent.detail) return;
@@ -14,14 +16,18 @@ export const ToastContainer = (): React.ReactElement => {
       const toast = customEvent.detail;
       setToasts((prev) => [...prev, toast]);
 
-      setTimeout(() => {
+      const timerId = setTimeout(() => {
+        activeTimers.delete(timerId);
         setToasts((prev) => prev.filter((t) => t.id !== toast.id));
       }, AUTO_DISMISS_MS);
+      activeTimers.add(timerId);
     };
 
     window.addEventListener(MFE_EVENTS.TOAST, handleToastEvent);
     return () => {
       window.removeEventListener(MFE_EVENTS.TOAST, handleToastEvent);
+      activeTimers.forEach((id) => clearTimeout(id));
+      activeTimers.clear();
     };
   }, []);
 

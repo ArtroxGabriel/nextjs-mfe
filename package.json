@@ -14,11 +14,13 @@
     "start": "concurrently -k -p \"[{name}]\" -n \"REMOTE,HOST\" -c \"cyan,magenta\" \"pnpm start:remote\" \"pnpm start:host\"",
     "typecheck": "pnpm --filter @mfe/shell-ui typecheck && pnpm --filter remote-app typecheck && pnpm --filter @mfe/host typecheck",
     "test": "pnpm --filter @mfe/shell-ui test && pnpm --filter remote-app test && pnpm --filter @mfe/host test",
+    "test:dom": "pnpm --filter @mfe/shell-ui test:dom && pnpm --filter remote-app test:dom && pnpm --filter @mfe/host test:dom",
     "smoke": "node scripts/smoke-test.mjs --strict",
     "smoke:offline": "node scripts/smoke-test.mjs --offline",
     "check": "pnpm typecheck && pnpm test && pnpm smoke:offline"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "happy-dom": "^20.14.5"
   }
 }

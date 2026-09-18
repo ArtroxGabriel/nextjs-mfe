@@ -376,3 +376,21 @@ The test harness is implemented in `scripts/smoke-test.mjs` supported by modular
 3. **Hybrid Mode (Default `node scripts/smoke-test.mjs`)**:
    - Runs all offline static checks.
    - Probes for server responsiveness on port 3000 and 3001. If active, runs full online suite; if offline, reports status clearly without failure unless `--strict` / `--ci` is specified.
+
+---
+
+## 9. Client & Browser API Testing (DOM Suite)
+
+To exercise behaviors that depend directly on browser APIs and lifecycle hooks (`useEffect`) without introducing the weight or latency of full browser automation engines, the test infrastructure integrates `happy-dom` alongside React 18 `createRoot` / `act` with native `node --test`.
+
+### 9.1 Covered Areas
+- **Storage & Tab Simulation**: Multi-tab `localStorage` read/write cycles and graceful degradation on storage restrictions (`SecurityError`).
+- **Notification Bus**: `mfe:toast` emission, rendering in `ToastContainer`, manual dismiss, and unmount listener/timer cleanup.
+- **EventSource (SSE)**: Lifecycle of SSE connections (`/remote-app/api/sse-events`), message parsing, critical alert toasts, pause/resume, and socket closure on unmount.
+- **MapLibre GL Integration**: Lifecycle of `RemoteMap`, loading overlay, marker pins, navigation jump (`flyTo`), and container teardown.
+- **Shell Host Isolation (D9)**: Verification that mounting `ErroDeZonaPage` triggers zero network side-effects.
+
+### 9.2 Execution & Scope
+- **Command**: `pnpm test:dom` (also automatically executed during `pnpm test` and `pnpm check`).
+- **Detailed Specification & Limitations**: Complete scope, limitations (headless WebGL, hard document reload), and design rationale are documented in [`docs/testes-navegador.md`](docs/testes-navegador.md).
+
