@@ -71,6 +71,7 @@ glossário (`13`), variantes de cache (`14`).
 | [0009](adr/0009-base-generica.md) | Base genérica: sem domínio no núcleo; shell + 2 zonas + gestão de acesso |
 | [0010](adr/0010-reconciliacao-do-nucleo.md) | Reconciliação de dois `@erp/nucleo` 0.3.1; versão nunca republicada |
 | [0011](adr/0011-fragmento-entre-zonas.md) | Fragmento entre zonas: fábrica do núcleo, cookie como identidade, ausência é 204 |
+| [0012](adr/0012-kit-de-app-no-nucleo.md) | Kit de app `@erp/nucleo/app` no lugar das 4 cópias; o núcleo não importa a moldura |
 
 ## Regras para esta pasta
 
