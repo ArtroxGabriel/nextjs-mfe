@@ -134,3 +134,17 @@ Each was escalated to the human, who decided the round it belongs to.
   or a live check sees it. `apps/*/lib/logger.test.mjs` sit outside the `test/*.test.ts` glob and never run.
 - **Duplicate download** (challenger_final_1 II.3): ≈45 kB gzip of identical framework bytes re-downloaded on the first
   cross-zone navigation, because the browser cache is keyed by URL prefix.
+
+## D12 — Menores da fatia 1 que só estavam em `ESTADO.md` (recuperados em 2026-09-21)
+
+A revisão das premissas encontrou seis menores que a fatia 1 adiou "para a revisão final" e que
+nunca chegaram a este arquivo. Conferidos no código de 2026-09-21:
+
+| Item | Estado |
+|---|---|
+| `sessaoArquivo`: diretório criado sem permissão restritiva (arquivos `0o600`, diretório herda o umask) | **aberto** — `sessao-arquivo.ts:18`. Adaptador de desenvolvimento; some quando o Redis for ligado |
+| `sessaoArquivo.ler`: TOCTOU entre `existsSync` e `readFileSync` | **aberto** — `sessao-arquivo.ts:23-24`; inofensivo (o `catch` devolve `null`), mas é um `existsSync` a menos |
+| `sanitizarSupportId` é allowlist de formato, não de semântica | **aberto, aceito** — um id bem formado mas inventado pelo domínio passa; não vaza detalhe |
+| teste de namespace passa se `caminhos` ficar vazio | a conferir no gate do núcleo |
+| `servidor.close()` sem `try/finally` em testes | **resolvido** — `destinos.test.mjs` fecha no `after` |
+| `pode()` aceita `Partial` | **resolvido** — a assinatura atual não usa `Partial` |

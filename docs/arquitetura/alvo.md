@@ -162,12 +162,64 @@ flowchart LR
 | Store de sessão | arquivo em disco compartilhado; adaptador `sessaoRedis` **pronto** no núcleo 0.4.0 (leitor na raiz, escritor em `/shell`), ainda não ligado | Redis compartilhado (`noeviction`, AOF) | ligar nas apps: instalar `redis` (node-redis), subir um Redis local no `docker-compose` e trocar o adaptador em `lib/nucleo.ts` — depois do gate do shell |
 | Renovação de token | não existe; sessão de dev dura 30 min | endpoint interno do shell (ADR-0009, decisão 3) | depende das respostas do IdP (PENDENCIAS §4) |
 | Acesso a módulo | gestão de acesso federada, 404 para módulo negado | igual, com cache por versão de política se a medição pedir | medir a consulta por renderização |
-| Falha isolada de zona | 503 com `Retry-After` e página própria, sonda de saúde por zona com cache de 1 s — **implementado, sem gate** | igual, com zona travada limitada pelo timeout da sonda e sem janela de 500 cru | gate do shell: caminho normalizado × cru (R1 da PoC), zona travada, janela logo após a queda |
+| Falha isolada de zona | 503 com `Retry-After` e página própria, sonda de saúde por zona com cache de 1 s — **implementado, gate reprovou** (C1: caminho com maiúsculas escapa da sonda). A sonda bate na página da zona; **não existe `/{zona}/api/health`** | igual, com zona travada limitada pelo timeout da sonda e sem janela de 500 cru | gate do shell: caminho normalizado × cru (R1 da PoC), zona travada, janela logo após a queda |
 | Composição | núcleo 0.5.0 tem `criarFragmento` (consumidor) e `responderFragmento` (dono), ADR-0011; nenhuma zona usa ainda | `FragmentoRemoto` com timeout e circuit breaker | rota `_fragmento` na zona 2, bloco na zona 1, recusa de `/{zona}/_fragmento/` no shell |
 | SSE | não há | `/api/stream` no shell + `SharedWorker` | — |
 | Design system | `@erp/moldura` (moldura e toast) | `@erp/ui` publicado com semver tolerante | medir duplicação de bundle entre zonas antes |
 | Deploy | 8 repositórios como submódulos; hook `pre-push` recusa submódulo não enviado; um Verdaccio **por máquina** | repositórios e deploys independentes, lockstep do núcleo no CI, um registro único | publicar pelos pacotes num registro compartilhado (ou pelo CI): hoje cada máquina republica e os hashes dos lockfiles divergem (ADR-0010) |
-| Operação | gateway de telemetria `/api/otel/v1/traces` no shell (sem gate), com limite de 60 lotes/min por usuário em memória; nenhuma zona envia traces ainda | rate limiting na borda, `trace_id` entre zonas | gate do gateway (corpo sem `Content-Length`, crescimento do mapa do limitador); instrumentar uma zona |
+| **Trace contínuo sem dado pessoal (elemento 8 do núcleo)** | **ausente**: nenhum `traceparent` do navegador ao domínio; só o gateway `/api/otel/v1/traces` do shell existe (sem gate) | trace contínuo dentro de cada zona, navegador → BFF → domínio, sem PII; coletor OTLP (`02-nucleo` §2.6) | propagar `traceparent` no registro de destinos do núcleo e instrumentar uma zona. **É núcleo, não extensão** (ADR-0008): não descrever como opcional |
+| Lockstep do núcleo | **ausente**: nenhum gate compara a versão do `@erp/nucleo` entre as apps (hoje todas em 0.3.2 por disciplina) | toda app na mesma minor; PR que diverge falha (`desenho/mfe/01-operacao.md` §7.2) | `verificar-lockstep.mjs` + dist-tag `lockstep`, como a spec de 09/09 §7 previa; ligar no `pre-push` |
+| Operação | limite de 60 lotes/min só no gateway de telemetria, em memória | rate limiting na borda e por sessão nas leituras (`06-seguranca` §2) | — |
+
+## 7. Premissas da base que precisam de rastreio
+
+Revisão de 2026-09-21 dos documentos antigos (pedido original, ADR-0008/0009, `02-nucleo`,
+`06-seguranca`, `08-desempenho`, `mfe/00`–`02`, spec de 09/09, revisão de 15/09). O que segue
+**não está implementado** e não aparecia em nenhum documento vivo. Nada disto foi descartado por
+decisão; foi perdido na troca da PoC pela base.
+
+### 7.1 Requisitos do pedido original da PoC
+
+O pedido que abriu o projeto (`POC.md`, na tag `poc-final`) tinha sete perguntas de viabilidade.
+A PoC respondeu todas; a base genérica refez só parte delas.
+
+| Pergunta original | PoC (`poc-final`) | Base hoje |
+|---|---|---|
+| sessão no host, herdada pelo remote | ✅ | ✅ N3 |
+| remote dentro da tela do host (header e navegação) | ✅ | ✅ `@erp/moldura` |
+| SSR | ✅ | ✅ |
+| estados globais (toast) | ✅ | ✅ N4 |
+| **conexões SSE mantidas pelo remote** | ✅ (com vazamento D1) | ❌ — linha SSE acima |
+| **cache de servidor e de cliente** | ✅ | ❌ servidor sem cache é decisão (ADR-0007); **cache de cliente** (ADR-0005, TanStack Query com escopo limitado) não existe |
+| **query params e path routes** | ✅ (`?tab=`, `/mapa/[cidade]`) | ⚠️ path routes sim (`/zona1/recursos/[id]`); query params em zona, não |
+| **remote com MapLibre GL** | ✅ | ❌ nenhuma zona com biblioteca pesada de cliente |
+
+Decisão pendente do humano: refazer na base (SSE, cache de cliente, query params, MapLibre numa
+zona) ou declarar que a PoC já provou e a base não precisa repetir.
+
+### 7.2 Parâmetros do desenho que a base ainda não aplica
+
+| Parâmetro | Valor do desenho | Base hoje | Origem |
+|---|---|---|---|
+| duração da sessão | 8 h | 30 min (identidade de desenvolvimento) | `06-seguranca` §5 |
+| renovação do token | quando faltar < 30 s | não há renovação | `mfe/01-operacao` §3.4 |
+| timeout padrão ao domínio | 10 s | 5 s por destino (configurável) | `02-nucleo` §2.2 |
+| co-localização BFF ↔ domínio | `RTT_lan ≈ 1 ms`; **alarme acima de 5 ms**, p50 e p99 | não medido | `08-desempenho` §8 — "a premissa assassina": com 120 ms a tela vai de ~115 ms para ~675 ms |
+| entrega de evento SSE | ≤ 2 s | não há SSE | `08-desempenho` §7 |
+| `Cache-Control` do HTML autenticado | `private, no-store` | padrão do Next para rota dinâmica; **sem teste** | `mfe/01-operacao` §1.3 |
+| versão de `@erp/contratos` | contrato só cresce; remover só depois de 2 minors | sem regra escrita nos repositórios | `mfe/01-operacao` §7.3 |
+| CSP | modo relatório por duas semanas antes de bloquear | bloqueia direto | `02-nucleo` §4 |
+| health check | `/{zona}/api/health`, sem tocar o domínio | sonda na página da zona | `mfe/01-operacao` §5.2 |
+| circuit breaker do fragmento | timeout 2 s **e** breaker; `<Suspense>` em volta | timeout sim (0.5.0); breaker e `<Suspense>` não | `mfe/00-arquitetura` §6.2 |
+
+### 7.3 Verificações que a spec de 09/09 exigia e a base não tem
+
+| Verificação | Estado |
+|---|---|
+| importar módulo `server-only` de dentro de `'use client'` **falha o build** (invariante 3/6) | sem teste |
+| lint proibindo DTO sensível como prop de `'use client'` (invariante 2) | sem teste (a verificação ponta a ponta varre o HTML, não o código) |
+| nenhum `<Link>` para fora da própria zona | hoje nenhum `next/link` existe; **sem guarda** que impeça o primeiro |
+| gate de lockstep (`verificar-lockstep.mjs`) | ausente (ver §6) |
 
 Referências: `docs/desenho/mfe/00-arquitetura.md` (solução), `01-operacao.md`
 (roteamento, sessão, falha, deploy), `02-zonas.md` (estrutura e criação de zona),
