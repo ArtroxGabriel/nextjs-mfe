@@ -9,7 +9,7 @@
 | O quê | Estado | Evidência |
 |---|---|---|
 | Base em `repos/` (Next 16) | funcionando; ponta a ponta **26/26** com build novo | `pnpm verificar:construir` |
-| `@erp/nucleo` | **0.3.2** nas apps (árvore dos gates, ADR-0010); **0.4.0** publicado com o adaptador `sessaoRedis` (72 testes, 9 mutações pegas), ainda não consumido | `38d7277`, `3a7b80c` |
+| `@erp/nucleo` | **0.3.2** nas apps (árvore dos gates, ADR-0010); **0.5.0** publicado, ainda não consumido: `sessaoRedis` (0.4.0) e fragmentos `criarFragmento`/`responderFragmento` (ADR-0011); 90 testes; 25 mutações, todas pegas ou equivalentes provadas | `3a7b80c`, `1841771` |
 | Envio seguro | hook `pre-push` recusa principal apontando para submódulo não enviado | `repos/scripts/checar-envio.mjs` |
 | Apps (`erp-shell`, `erp-zona-*`) | consomem o 0.3.2; lockfiles com os hashes do Verdaccio compartilhado | `666216c`, `530225d`, `e2b3ffc`, `da97b70` |
 | Shell novo do Gabriel (503 de zona, sonda, telemetria) | implementado, **gate em andamento** | `erp-shell` `6de4939`, `dab5ffd`, `a63b995` |
@@ -20,7 +20,7 @@
 
 | Papel | Agente | Estado |
 |---|---|---|
-| Revisor | `reviewer_shell_1` (revisor-mfe, Sonnet) | despachado |
+| Revisor | `reviewer_shell_1` (revisor-mfe, Sonnet) | **REQUEST_CHANGES** — ver abaixo |
 | Challenger | `challenger_shell_1` (simulador-condicoes, Sonnet), dono das portas | despachado |
 | Auditor forense | `auditor_shell_1` (general-purpose, Opus) | entra quando o challenger liberar as portas |
 
@@ -28,10 +28,23 @@ Suspeitos passados aos verificadores: a decisão do proxy usa `req.nextUrl.pathn
 R1 da PoC); o gateway de telemetria lê o corpo inteiro sem `Content-Length`; o mapa do limitador
 de taxa cresce sem limite; a sonda bate numa página que exige sessão.
 
-## Em andamento: desenho da #10 (fragmentos)
+Achados do revisor (`.agents/reviewer_shell_1/handoff.md`), a corrigir quando o challenger liberar:
+1. **Grave:** `exigirModulo` em `lib/pagina.ts` do shell e das zonas (`a63b995`, `bac6d37`…) libera
+   o módulo quando a gestão de acesso falha (fail-open): `/zona1/relatorios` restrito fica visível.
+   Tem de negar (`notFound()`).
+2. `proxy.ts` do shell reimplementa CSP em vez de `criarProxy`: faltam `form-action 'self'` e
+   `img-src 'self' data:`.
+3. Telemetria sem `Content-Length` bufferiza o corpo inteiro, antes de checar sessão.
+4. Mapa do limitador de taxa nunca expira.
+Refutados: R1 (caminho normalizado × cru, o Next 16 usa o mesmo parser); sonda numa página com
+sessão (307 conta como saudável). Suspeita aberta para o challenger: dois `Content-Security-Policy`
+(shell e zona) na mesma resposta.
 
-`arquiteto-mfe` (Sonnet) decidindo onde mora o `FragmentoRemoto`, como a identidade chega à zona
-dona e o que o proxy faz com `/_fragmento/`. Nada de código antes da decisão.
+## Feito: fatia de núcleo da #10 (fragmentos)
+
+Decisão do `arquiteto-mfe` registrada no ADR-0011. `@erp/nucleo` 0.5.0 traz `criarFragmento` e
+`responderFragmento`. Falta ligar: rota `_fragmento` na zona 2, bloco na zona 1, recusa de
+`/{zona}/_fragmento/` no shell e teste ponta a ponta — depois do gate.
 
 ## Próximos passos
 
