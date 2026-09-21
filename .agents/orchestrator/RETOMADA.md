@@ -21,8 +21,8 @@
 | Papel | Agente | Estado |
 |---|---|---|
 | Revisor | `reviewer_shell_1` (revisor-mfe, Sonnet) | **REQUEST_CHANGES** — ver abaixo |
-| Challenger | `challenger_shell_1` (simulador-condicoes, Sonnet), dono das portas | despachado |
-| Auditor forense | `auditor_shell_1` (general-purpose, Opus) | entra quando o challenger liberar as portas |
+| Challenger | `challenger_shell_1` (simulador-condicoes, Sonnet) | **REQUEST_CHANGES** — C1: `/ZONA2` (maiúsculas) escapa da sonda e dá 500 cru; janela de 500 cru até ~1 s após a queda; telemetria de 20 MB sem `Content-Length` aceita |
+| Auditor forense | `auditor_shell_1` (general-purpose, Opus), dono das portas | despachado |
 
 Suspeitos passados aos verificadores: a decisão do proxy usa `req.nextUrl.pathname` (normalizado;
 R1 da PoC); o gateway de telemetria lê o corpo inteiro sem `Content-Length`; o mapa do limitador
@@ -60,9 +60,8 @@ Decisão do `arquiteto-mfe` registrada no ADR-0011. `@erp/nucleo` 0.5.0 traz `cr
 
 ## Pedido do humano para depois da saída do challenger (2026-09-21)
 
-Avaliar a reorganização do projeto, documentação **e** código, para ficar mais clara,
-autoexplicativa e simples. Entregar a avaliação com proposta antes de mover código; a mudança de
-pastas em `docs/` (passo 5 acima) entra nessa avaliação.
+Feito: avaliação em `PROPOSTA-REORGANIZACAO.md` (10 problemas medidos; propostas de código C1–C3 e
+de documentação D1–D8). **Aguardando decisão do humano** nos itens marcados ❓.
 
 ## Pendências com o humano
 

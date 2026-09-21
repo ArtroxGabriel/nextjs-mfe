@@ -11,6 +11,7 @@ depender de conversa anterior. Leia nesta ordem:
 | 4 | [`GATE_STATUS.md`](GATE_STATUS.md) | veredito de cada rodada de gate, com o handoff de cada verificador | ao fechar um gate |
 | 5 | [`DEFERRED.md`](DEFERRED.md) | o que foi adiado de propósito, com evidência | ao adiar ou resolver um item |
 | 6 | [`MANUTENCAO-GITLAB.md`](MANUTENCAO-GITLAB.md) | regras de quando e como avisar sobre o GitLab | raramente |
+| — | [`PROPOSTA-REORGANIZACAO.md`](PROPOSTA-REORGANIZACAO.md) | proposta de reorganização de docs e código, aguardando decisão | ao decidir; depois vai para `historico/` |
 
 `historico/` guarda o que não vale mais como estado: a retomada de 2026-09-11 a 2026-09-21 e os
 arquivos da geração 1 do harness (que citam `/home/gabrigas/...` e a PoC já removida).
