@@ -10,7 +10,7 @@
 |---|---|---|
 | Base em `repos/` (Next 16) | funcionando; ponta a ponta **26/26** com build novo | `pnpm verificar:construir` |
 | `@erp/nucleo` | **0.3.2** nas apps (árvore dos gates, ADR-0010); **0.5.0** publicado, ainda não consumido: `sessaoRedis` (0.4.0) e fragmentos `criarFragmento`/`responderFragmento` (ADR-0011); 90 testes; 25 mutações, todas pegas ou equivalentes provadas | `3a7b80c`, `1841771` |
-| Envio seguro | hook `pre-push` recusa principal apontando para submódulo não enviado | `repos/scripts/checar-envio.mjs` |
+| Envio seguro | hook `pre-push` recusa principal apontando para submódulo não enviado | `base/scripts/checar-envio.mjs` |
 | Apps (`erp-shell`, `erp-zona-*`) | consomem o 0.3.2; lockfiles com os hashes do Verdaccio compartilhado | `666216c`, `530225d`, `e2b3ffc`, `da97b70` |
 | Shell novo do Gabriel (503 de zona, sonda, telemetria) | implementado, **gate em andamento** | `erp-shell` `6de4939`, `dab5ffd`, `a63b995` |
 | PoC `apps/` | removida; preservada na tag `poc-final` | `73bdc8b` |
@@ -24,7 +24,7 @@ veto: vazamento de módulo no payload RSC com a gestão de acesso fora).
 Correção (`erp-shell` `f3d8803`, zonas `a0d9bc1`/`831d128`/`b24b078`): `exigirModulo` volta a
 negar; `/ZONA2` passa pela sonda; telemetria anônima descartada sem ler, limite em streaming,
 limitador expira, repasse pelo registro de destinos; CSP igual à do núcleo. Os quatro testes do
-auditor (L1–L4) entraram em `repos/verificacao`: vermelhos antes, verdes depois. Ponta a ponta
+auditor (L1–L4) entraram em `base/verificacao`: vermelhos antes, verdes depois. Ponta a ponta
 **30/30** com build novo; shell 29/29. O teste N8 foi endurecido: o código original escapava dele
 com `globalThis['fetch']`.
 
@@ -45,9 +45,8 @@ Decisão do `arquiteto-mfe` registrada no ADR-0011. `@erp/nucleo` 0.5.0 traz `cr
 4. Depois do gate: ligar o `sessaoRedis` nas apps (#9; exige instalar `redis` e subir um Redis no
    `docker-compose` — pedir aprovação), implementar a fatia de fragmentos (#10) conforme o arquiteto,
    instrumentar uma zona para a telemetria (#18), registro de pacotes único (#14).
-5. Mover `docs/historico/MULTI_ZONES_RESEARCH.md`, `docs/historico/revisao/` e `docs/historico/superpowers/` para `docs/historico/`
-   e commitar `docs/README.md` — **só depois que o challenger terminar** (a definição dele lê
-   `docs/historico/superpowers/specs/`); atualizar essa referência em `.claude/agents/simulador-condicoes.md`.
+5. Reorganização: docs, `base/` e `.agents/arquivo/` feitos; falta só o código (C1 kit
+   `@erp/nucleo/app`, C2 shell com `criarProxy`).
 
 ## Pedido do humano para depois da saída do challenger (2026-09-21)
 

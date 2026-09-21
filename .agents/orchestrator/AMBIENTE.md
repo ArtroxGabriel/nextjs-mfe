@@ -5,7 +5,7 @@
 
 ## 1. Pacotes, Verdaccio e lockfiles
 
-- **Cada máquina tem o próprio Verdaccio** (`localhost:4873`, `repos/.verdaccio/`). O que um publica
+- **Cada máquina tem o próprio Verdaccio** (`localhost:4873`, `base/.verdaccio/`). O que um publica
   não existe no do outro.
 - **Nunca publique o mesmo número de versão duas vezes**, nem em máquinas diferentes. `npm pack` não
   é reproduzível byte a byte: o mesmo commit republicado gera outro hash, e o `pnpm install` recusa o
@@ -27,7 +27,7 @@
 - Os 8 `repos/erp-*` são submódulos. **Envie o submódulo antes do principal.** Se o principal apontar
   para um commit que só existe na sua máquina, quem clona não consegue buscá-lo e acaba refazendo o
   trabalho. Foi a causa do ADR-0010.
-- **O hook `pre-push` checa isso sozinho** (`repos/scripts/checar-envio.mjs`): recusa o push do
+- **O hook `pre-push` checa isso sozinho** (`base/scripts/checar-envio.mjs`): recusa o push do
   principal se algum commit fixado de submódulo não está em nenhum branch remoto. Ative uma vez
   por clone: `git config core.hooksPath .githooks`. À mão: `pnpm checar-envio`.
 - HEAD destacado num submódulo esconde commits: trabalhe no `master` (`git checkout master`) antes de

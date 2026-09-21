@@ -1,7 +1,7 @@
 // Recusa enviar o repositório principal se ele aponta para um commit de submódulo que
 // nenhum branch remoto contém. Foi o que causou o ADR-0010: quem clonou não achou o
 // commit do núcleo e o reescreveu.
-//   node repos/scripts/checar-envio.mjs          (também roda no hook .githooks/pre-push)
+//   node base/scripts/checar-envio.mjs          (também roda no hook .githooks/pre-push)
 import { execFileSync } from 'node:child_process'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'

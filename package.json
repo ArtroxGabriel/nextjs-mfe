@@ -4,11 +4,11 @@
   "private": true,
   "description": "Base BFF + Multi-Zones: cada parte é um repositório próprio em repos/ (submódulos)",
   "scripts": {
-    "registry:up": "node repos/scripts/registry.mjs up",
-    "registry:down": "node repos/scripts/registry.mjs down",
-    "base": "node repos/scripts/subir-base.mjs",
-    "verificar": "node --test repos/verificacao/*.test.mjs",
-    "verificar:construir": "CONSTRUIR=1 node --test repos/verificacao/*.test.mjs",
-    "checar-envio": "node repos/scripts/checar-envio.mjs"
+    "registry:up": "node base/scripts/registry.mjs up",
+    "registry:down": "node base/scripts/registry.mjs down",
+    "base": "node base/scripts/subir-base.mjs",
+    "verificar": "node --test base/verificacao/*.test.mjs",
+    "verificar:construir": "CONSTRUIR=1 node --test base/verificacao/*.test.mjs",
+    "checar-envio": "node base/scripts/checar-envio.mjs"
   }
 }

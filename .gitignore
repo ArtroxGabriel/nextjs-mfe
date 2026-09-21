@@ -12,5 +12,6 @@ build
 .docs
 
 # base MFE: os cinco repositórios entram como submódulos; só o scratch é ignorado
-repos/.verdaccio/storage/
-repos/.verdaccio/verdaccio.pid
+base/.verdaccio/storage/
+base/.verdaccio/verdaccio.pid
+repos/.verdaccio/

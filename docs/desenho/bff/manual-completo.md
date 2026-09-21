@@ -59,7 +59,7 @@ mas se apresenta como opcional é a fonte de erro mais cara já registrada aqui 
 ## Invariantes — nunca viole
 
 Cada item tem verificação em [`docs/11-testes.md`](11-testes.md); os itens 4 e 15–17, na
-verificação da base (`repos/verificacao/base.test.mjs`) e nos testes de `erp-nucleo`, `erp-contratos` e `erp-dominio-stub`.
+verificação da base (`base/verificacao/base.test.mjs`) e nos testes de `erp-nucleo`, `erp-contratos` e `erp-dominio-stub`.
 Se não tiver, não é invariante — é intenção.
 
 1. **NUNCA** exponha `access_token`, `refresh_token` ou lista de grupos ao navegador.

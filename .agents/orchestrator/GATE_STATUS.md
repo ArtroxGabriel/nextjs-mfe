@@ -137,8 +137,8 @@ Gate Result: **PASS** — Milestone 2, Milestone 3, and D2 Complete. PoC verifie
 ## Gate — Base genérica (ADR-0009), iteração 1, HEAD 1b9e811
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
-| reviewer_base_1 | revisor-mfe (opus) | REQUEST_CHANGES | .agents/reviewer_base_1/handoff.md | 0 bloqueantes; 5 importantes: repositórios sem remoto; manifesto `plataforma` cria perfil global (inv. 17); escrita de sessão na raiz do núcleo (inv. 15); host de toast ignora flash novo; erro de sessão em action vira tela genérica (inv. 12) |
-| challenger_base_1 | simulador-condicoes (sonnet) | REQUEST_CHANGES | .agents/challenger_base_1/handoff.md | A1: action executa sem `Origin` (checagem do Next fail-open); sem boundary de erro; gestão de acesso fora = página vazia; domínio A fora derruba /zona1; 20/20 automáticos; p95 192 ms em GET /zona1 |
+| reviewer_base_1 | revisor-mfe (opus) | REQUEST_CHANGES | .agents/arquivo/reviewer_base_1/handoff.md | 0 bloqueantes; 5 importantes: repositórios sem remoto; manifesto `plataforma` cria perfil global (inv. 17); escrita de sessão na raiz do núcleo (inv. 15); host de toast ignora flash novo; erro de sessão em action vira tela genérica (inv. 12) |
+| challenger_base_1 | simulador-condicoes (sonnet) | REQUEST_CHANGES | .agents/arquivo/challenger_base_1/handoff.md | A1: action executa sem `Origin` (checagem do Next fail-open); sem boundary de erro; gestão de acesso fora = página vazia; domínio A fora derruba /zona1; 20/20 automáticos; p95 192 ms em GET /zona1 |
 | auditor | — | não despachado | — | aguardou a correção |
 
 Gate Result: **FAIL**. Correções: contratos b10d55f, núcleo d5912ce (0.3.0, `@erp/nucleo/shell`), moldura fd618c9,
@@ -148,8 +148,8 @@ Pendente de decisão do humano: remotos dos cinco repositórios só locais (acha
 ## Gate — Base genérica, iteração 2, HEAD 8aa5a3e
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
-| reviewer_base_2 | revisor-mfe (sonnet) | REQUEST_CHANGES (condicional) | .agents/reviewer_base_2/handoff.md | todos os achados da iteração 1 resolvidos; nenhuma regressão; faltava só rodar a ponta a ponta, bloqueada pelas portas |
-| auditor_base_1 | general-purpose forense (opus) | **INTEGRITY VIOLATION** | .agents/auditor_base_1/handoff.md, mutacoes.txt | números reproduzidos (15/58/11/16, 23/23); 20 mutações exigidas pegas; veto: V1 Origin só testado na zona de acesso (X1 sobrevive na zona 2), V2 "uma vez" do toast não verificado (X5), V3 degradação sem teste, V4 ilhas sem teste (X3, X4, X6, X22) |
+| reviewer_base_2 | revisor-mfe (sonnet) | REQUEST_CHANGES (condicional) | .agents/arquivo/reviewer_base_2/handoff.md | todos os achados da iteração 1 resolvidos; nenhuma regressão; faltava só rodar a ponta a ponta, bloqueada pelas portas |
+| auditor_base_1 | general-purpose forense (opus) | **INTEGRITY VIOLATION** | .agents/arquivo/auditor_base_1/handoff.md, mutacoes.txt | números reproduzidos (15/58/11/16, 23/23); 20 mutações exigidas pegas; veto: V1 Origin só testado na zona de acesso (X1 sobrevive na zona 2), V2 "uma vez" do toast não verificado (X5), V3 degradação sem teste, V4 ilhas sem teste (X3, X4, X6, X22) |
 | challenger | — | não despachado | — | aguardou a correção |
 
 Gate Result: **FAIL** (veto do auditor). Correções: núcleo 78980a4 (0.3.1: proxy consome o flash; testes de parâmetro

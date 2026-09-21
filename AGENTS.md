@@ -14,7 +14,7 @@ cada regra, está em [`docs/desenho/bff/manual-completo.md`](docs/desenho/bff/ma
 ## Invariantes — nunca viole
 
 Invariante sem teste não é invariante, é intenção: cada um tem verificação nos testes dos
-pacotes ou em `repos/verificacao/`.
+pacotes ou em `base/verificacao/`.
 
 1. **NUNCA** exponha `access_token`, `refresh_token` ou lista de grupos ao navegador.
 2. **NUNCA** passe DTO sensível como prop para componente `'use client'`. O objeto inteiro

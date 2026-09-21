@@ -6,7 +6,7 @@
 > **Decisões do humano (2026-09-21):** C1 — evitar duplicação e manter consistência → opção A
 > (`@erp/nucleo/app`), confirmada com o `arquiteto-mfe` antes de codar; C3 — mover para `base/` junto
 > com o resto; D8 — só o aviso no topo (D6). Execução: itens que não tocam o que o auditor usa
-> (`repos/scripts`, `repos/verificacao`, `.agents/`) primeiro; C3 e D7 depois que ele terminar.
+> (`repos/scripts`, `base/verificacao`, `.agents/`) primeiro; C3 e D7 depois que ele terminar.
 
 ## 1. Diagnóstico (medido, não opinado)
 
@@ -45,7 +45,7 @@ roda antes dele, e a CSP sai de um lugar só. Entra na rodada de correção do g
 
 ### C3. `repos/` só com submódulos (resolve P9) — ❓ vale o custo
 
-Mover `repos/scripts`, `repos/verificacao`, `repos/docker-compose.yml` e `repos/.verdaccio` para
+Mover `repos/scripts`, `base/verificacao`, `base/docker-compose.yml` e `repos/.verdaccio` para
 `base/` na raiz. Custo: atualizar caminhos em `package.json`, README, roteiro, `AMBIENTE.md` e nos
 scripts. Ganho: `repos/` passa a significar "os 8 repositórios". Pode esperar.
 
@@ -100,8 +100,8 @@ repos/erp-*/README.md  NOVO em cada repositório: o que é, como testar, de quem
 | D4 histórico em `docs/historico/` | ✅ feito |
 | D5 | ✅ **corrigido:** as duas listas **não eram duplicatas** (uma é do framework, outra de infraestrutura fora da Vercel). Foram renomeadas pelo que são: `limitacoes-do-multizones.md` e `infraestrutura-fora-da-vercel.md` |
 | D6 aviso "Pedidos é ilustração" em 16 documentos de desenho | ✅ feito |
-| D7 `.agents/` de gates encerrados → `.agents/arquivo/` | ⏳ depois do auditor |
-| C3 `repos/{scripts,verificacao,docker-compose.yml,.verdaccio}` → `base/` | ⏳ depois do auditor |
+| D7 `.agents/` de gates encerrados → `.agents/arquivo/` (58 pastas) | ✅ feito |
+| C3 `repos/{scripts,verificacao,docker-compose.yml,.verdaccio}` → `base/` | ✅ feito; compose com `name: repos` para manter os volumes do Verdaccio; `base/verificacao` 30/30 |
 | C2 shell volta a usar `criarProxy` | ⏳ rodada de correção do gate |
 | C1 kit de app `@erp/nucleo/app` | ⏳ depois do gate, com o arquiteto |
 

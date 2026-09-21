@@ -13,6 +13,9 @@ depender de conversa anterior. Leia nesta ordem:
 | 6 | [`MANUTENCAO-GITLAB.md`](MANUTENCAO-GITLAB.md) | regras de quando e como avisar sobre o GitLab | raramente |
 | — | [`PROPOSTA-REORGANIZACAO.md`](PROPOSTA-REORGANIZACAO.md) | proposta de reorganização de docs e código, aguardando decisão | ao decidir; depois vai para `historico/` |
 
+`.agents/arquivo/` guarda as pastas dos verificadores de gates encerrados (M1, M2, final, base) e
+o pedido original da geração 1; na raiz de `.agents/` ficam só o orquestrador e o gate em andamento.
+
 `historico/` guarda o que não vale mais como estado: a retomada de 2026-09-11 a 2026-09-21 e os
 arquivos da geração 1 do harness (que citam `/home/gabrigas/...` e a PoC já removida).
 

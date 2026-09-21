@@ -167,7 +167,7 @@ por isso a falha passa em teste que não emula o cliente.
 
 **Regra:** action que precisa terminar em outra zona devolve o destino, e uma ilha cliente troca
 o documento com `window.location.assign`. `redirect()` só para a própria zona. Verificado em
-`repos/verificacao/base.test.mjs` (casos N4 e "mesma zona"), que chama a action com `Next-Action`
+`base/verificacao/base.test.mjs` (casos N4 e "mesma zona"), que chama a action com `Next-Action`
 e `encodeReply`, como o navegador.
 
 ## 12. A checagem de origem das Server Actions aceita requisição sem `Origin` — medido em 2026-09-21
@@ -177,7 +177,7 @@ requisição que não traz `Origin` nenhum (challenger_base_1 executou uma muta�
 Navegadores modernos sempre mandam `Origin` em POST, e o cookie `SameSite=Lax` cobre o caso
 real, mas a checagem isolada é fail-open. **Regra:** `acaoProtegida` exige `Origin` presente e
 num host do shell (`SHELL_HOSTS`), e recusa `Sec-Fetch-Site` diferente de `same-origin`.
-Verificado em `repos/verificacao/base.test.mjs`.
+Verificado em `base/verificacao/base.test.mjs`.
 
 ---
 

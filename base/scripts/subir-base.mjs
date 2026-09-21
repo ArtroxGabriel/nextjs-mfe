@@ -1,4 +1,4 @@
-// Sobe a base para uso manual: node repos/scripts/subir-base.mjs [--construir]
+// Sobe a base para uso manual: node base/scripts/subir-base.mjs [--construir]
 // Abra http://localhost:3000 e entre como ana, bruno, carla ou davi. Ctrl-C derruba tudo.
 import { subir, SHELL } from './ambiente.mjs'
 

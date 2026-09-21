@@ -189,9 +189,9 @@ sequenceDiagram
 | `erp-moldura` | `pnpm test` (16) | menu e `aria-current`, um `<h1>`, barramento e host de toast (executado com hooks falsos), flash, `FormularioDeAcao` |
 | `erp-dominio-stub` | `pnpm test` (16) | projeção e escopo do domínio A, If-Match no C, regras da gestão de acesso |
 | `erp-shell` | `pnpm test` (29) | decisão do proxy (rotas públicas, telemetria, zona fora, login), prefixo de zona sem diferenciar maiúsculas, sonda de saúde com cache de 1 s, mapa de zonas e rotas reservadas, limite de tamanho em streaming e expiração do limitador |
-| ponta a ponta | `node --test repos/verificacao/*.test.mjs` (30) | N3–N8 pelo shell, com os quatro atores; toda Server Action pelo caminho do navegador (`Next-Action`), sem `Origin`, com sessão expirada e por quem não tem o módulo; toast uma vez só; domínios derrubados um a um; gestão de acesso fora sem vazar módulo no payload; zona 2 derrubada (503 em qualquer caixa, volta); telemetria anônima não repassada |
+| ponta a ponta | `node --test base/verificacao/*.test.mjs` (30) | N3–N8 pelo shell, com os quatro atores; toda Server Action pelo caminho do navegador (`Next-Action`), sem `Origin`, com sessão expirada e por quem não tem o módulo; toast uma vez só; domínios derrubados um a um; gestão de acesso fora sem vazar módulo no payload; zona 2 derrubada (503 em qualquer caixa, volta); telemetria anônima não repassada |
 
-## 8. Quando uma peça cai (medido em 2026-09-21; verificado em `repos/verificacao`)
+## 8. Quando uma peça cai (medido em 2026-09-21; verificado em `base/verificacao`)
 
 | Cai | O usuário vê |
 |---|---|

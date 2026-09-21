@@ -13,6 +13,6 @@ if (acao === 'up') {
   execSync(`docker compose -f "${composeFile}" down`, { stdio: 'inherit', cwd: raiz })
   console.log('verdaccio derrubado')
 } else {
-  console.error('uso: node repos/scripts/registry.mjs up|down')
+  console.error('uso: node base/scripts/registry.mjs up|down')
   process.exit(1)
 }

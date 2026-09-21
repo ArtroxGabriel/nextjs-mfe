@@ -1,5 +1,5 @@
 // Verificação ponta a ponta da base genérica (ADR-0009). Tudo pelo shell, como no navegador.
-//   node --test repos/verificacao/*.test.mjs
+//   node --test base/verificacao/*.test.mjs
 // Sobe domínios, registra manifestos, sobe shell e zonas; derruba no fim.
 import { test, before, after } from 'node:test'
 import assert from 'node:assert/strict'

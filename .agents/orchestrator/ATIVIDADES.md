@@ -25,7 +25,7 @@
 | 10 | Implementar composição por fragmentos | núcleo pronto (`@erp/nucleo` 0.5.0, 18 testes, 16 mutações); falta ligar zona 1 ← zona 2 e bloquear no shell | mover para **em andamento** | pendente | ADR-0011; `erp-nucleo` `1841771` |
 | 11 | Centralizar o tempo real no shell | não iniciado | manter; tirar a dependência da #2 | pendente | `alvo.md` §6 (SSE) |
 | 12 | Publicar o pacote visual @erp/ui | não iniciado; depende de medir duplicação de bundle | manter | — | `alvo.md` §6 |
-| 14 | Definir estratégia de publicação e compatibilidade | submódulos **feitos**; hook `pre-push` que recusa submódulo não enviado **feito** (`repos/scripts/checar-envio.mjs`, provado com commit só local); falta registro único ou publicação pelo CI | acrescentar critérios: **gate de lockstep do núcleo** (`verificar-lockstep.mjs`, perdido desde a spec de 09/09), registro único, nunca republicar a mesma versão,  checar submódulo não enviado antes do push, mapa de zonas vindo do domínio de acesso | pendente | ADR-0010; `AMBIENTE.md` §1–2; `4eb128b` |
+| 14 | Definir estratégia de publicação e compatibilidade | submódulos **feitos**; hook `pre-push` que recusa submódulo não enviado **feito** (`base/scripts/checar-envio.mjs`, provado com commit só local); falta registro único ou publicação pelo CI | acrescentar critérios: **gate de lockstep do núcleo** (`verificar-lockstep.mjs`, perdido desde a spec de 09/09), registro único, nunca republicar a mesma versão,  checar submódulo não enviado antes do push, mapa de zonas vindo do domínio de acesso | pendente | ADR-0010; `AMBIENTE.md` §1–2; `4eb128b` |
 | 18 | Centralizar a telemetria das zonas no shell *(nova)* — **ampliar para "Trace contínuo sem dado pessoal (núcleo 8)"**: o elemento 8 é núcleo e está ausente (`alvo.md` §6) | gateway implementado; gate 1 reprovado (lote anônimo repassado, corpo sem limite em streaming, limitador sem expiração); **correção feita** (`f3d8803`); nenhuma zona envia traces | **criar** em andamento (texto em §3) | pendente | `erp-shell` `6de4939`; `alvo.md` §6 (Operação) |
 
 ### Fechar — entregues ou substituídas
@@ -35,14 +35,14 @@
 | 1 | Finalizar a validação da prova de conceito | substituída pela base; PoC removida | pendente | tag `poc-final`; `73bdc8b` |
 | 2 | Corrigir o encerramento do SSE | substituída (era da PoC); SSE da base é a #11 | pendente | `DEFERRED.md` D1 |
 | 4 | Padronizar a moldura compartilhada | entregue | pendente | `@erp/moldura` 0.3.0 |
-| 5 | Adicionar testes no navegador | substituída; a base testa as actions pelo caminho do navegador | pendente | `repos/verificacao` |
+| 5 | Adicionar testes no navegador | substituída; a base testa as actions pelo caminho do navegador | pendente | `base/verificacao` |
 | 6 | Retomar a implementação do @erp/nucleo | entregue | pendente | `@erp/nucleo` 0.3.2, 60 testes, ADR-0010 |
 | 7 | Construir o shell real | entregue | pendente | `repos/erp-shell` |
 | 8 | Construir a zona inicial e stub de domínio | entregue | pendente | `erp-zona-1`, `erp-zona-2`, `erp-dominio-stub` |
 | 13 | Criar o mapa central de zonas | entregue (`zonas.json`); resíduo foi para a #14 | pendente | `repos/erp-shell/zonas.json` |
 | 15 | Migrar para Next.js 16 e App Router | entregue | pendente | Next 16.3.4 + `proxy.ts` |
 | 16 | Documentar riscos e decisões em aberto | entregue | pendente | ADR-0009, ADR-0010, `alvo.md` §6 |
-| 17 | Validar a base genérica BFF + Multi-Zones *(nova)* | **criar já fechada**, para registro (texto em §3) | pendente | ADR-0009; `repos/verificacao` 26/26; `GATE_STATUS.md` |
+| 17 | Validar a base genérica BFF + Multi-Zones *(nova)* | **criar já fechada**, para registro (texto em §3) | pendente | ADR-0009; `base/verificacao` 26/26; `GATE_STATUS.md` |
 
 As quatro atividades do anexo de `docs/historico/revisao/2026-09-15-revisao-base-generica.md` não
 serão criadas: o trabalho delas está na #17.
@@ -109,7 +109,7 @@ Decisões no ADR-0011. Falta: rota _fragmento na zona 2, bloco na zona 1, recusa
 ### #14 — critérios a acrescentar
 
 ```
-Feito: os 8 repositórios são submódulos (4eb128b); hook pre-push recusa enviar o principal apontando para commit de submódulo que só existe localmente (repos/scripts/checar-envio.mjs).
+Feito: os 8 repositórios são submódulos (4eb128b); hook pre-push recusa enviar o principal apontando para commit de submódulo que só existe localmente (base/scripts/checar-envio.mjs).
 
 Critérios novos:
 - Um único registro de pacotes (ou publicação pelo CI); hoje cada máquina tem o seu Verdaccio e os hashes dos lockfiles divergem
@@ -148,7 +148,7 @@ Queda de um domínio degrada só o bloco dele
 
 🧪 Casos de Teste
 
-Cenário 1: node --test repos/verificacao/*.test.mjs → 26/26
+Cenário 1: node --test base/verificacao/*.test.mjs → 26/26
 
 Cenário 2: roteiro manual docs/ROTEIRO-DE-VERIFICACAO.md, itens A1–A11
 

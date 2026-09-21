@@ -14,6 +14,7 @@ sem código de domínio no núcleo. Decisões no
 | Zona de acesso | `repos/erp-zona-acesso` | 3003 | perfil × módulo, restrição e usuário × perfil |
 | Pacotes | `repos/erp-{contratos,nucleo,moldura}` | — | publicados no Verdaccio local `:4873` |
 | Domínios falsos | `repos/erp-dominio-stub` | 4001–4004, 4010 | A, B, C, plataforma e gestão de acesso |
+| Ferramentas da base | `base/` | — | subir tudo (`scripts/`), verificação ponta a ponta (`verificacao/`), Verdaccio (`docker-compose.yml`) |
 
 ```mermaid
 flowchart LR
@@ -95,7 +96,7 @@ A verificação manual, item a item, está em
 3. **Shell**: acrescente `"<zona>": "<origem>"` em `repos/erp-shell/zonas.json`. Rewrites, sonda de
    saúde e 503 saem desse mapa.
 4. **Submódulo e verificação**: registre o repositório em `.gitmodules` e inclua a app em
-   `repos/scripts/ambiente.mjs` e nas listas de `repos/verificacao/base.test.mjs`.
+   `base/scripts/ambiente.mjs` e nas listas de `base/verificacao/base.test.mjs`.
 
 O desenho completo (mapa de zonas, contrato de fragmento, sessão, deploy) está em
 `docs/desenho/mfe/`; o checklist organizacional em `02-zonas.md` §4.

@@ -3,10 +3,10 @@
 ## Base genérica em `repos/`
 
 Leva uns 10 minutos. A verificação automática faz o mesmo por HTTP:
-`node --test repos/verificacao/*.test.mjs` (esperado: `tests 30`, `pass 30`).
+`node --test base/verificacao/*.test.mjs` (esperado: `tests 30`, `pass 30`).
 
-**Preparar.** `node repos/scripts/registry.mjs up`, instale cada app (README) e rode
-`node repos/scripts/subir-base.mjs`. Use `http://localhost:3000`, não `127.0.0.1`: o cookie
+**Preparar.** `node base/scripts/registry.mjs up`, instale cada app (README) e rode
+`node base/scripts/subir-base.mjs`. Use `http://localhost:3000`, não `127.0.0.1`: o cookie
 `__Host-session` exige origem segura, e o navegador só trata `localhost` assim.
 
 | # | Faça | Deve acontecer | Requisito |

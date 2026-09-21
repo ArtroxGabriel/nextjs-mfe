@@ -49,7 +49,7 @@ reescrito.
    Republicar 0.3.1 deixaria os dois tarballs em circulação sob o mesmo nome. O 0.3.2
    torna a troca explícita em qualquer máquina.
 4. **Os lockfiles do shell e das zonas são regenerados contra o 0.3.2** do Verdaccio. A
-   verificação de ponta a ponta (`repos/verificacao`) roda antes de qualquer commit no
+   verificação de ponta a ponta (`base/verificacao`) roda antes de qualquer commit no
    repositório principal.
 5. **O código novo do shell e das zonas passa por gate** (revisor, challenger, auditor
    forense com veto), porque nunca passou por nenhum.

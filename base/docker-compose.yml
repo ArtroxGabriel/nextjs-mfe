@@ -1,4 +1,6 @@
-version: "3.1"
+# Nome fixo: os volumes nasceram como repos_verdaccio_* quando este arquivo morava em repos/.
+# Sem isto, mudar de pasta criaria volumes novos e vazios e os pacotes publicados sumiriam.
+name: repos
 
 services:
   verdaccio:

@@ -13,19 +13,19 @@ intenção**. Você a torna verificação.
 `AGENTS.md` (invariantes),
 `docs/desenho/bff/11-testes.md` (verificações já definidas),
 `docs/adr/0009-base-generica.md` e a verificação ponta a ponta em
-`repos/verificacao/base.test.mjs`.
+`base/verificacao/base.test.mjs`.
 
 ## O mapa obrigatório da base genérica
 
 | # | Invariante | Verificação | Onde |
 |---|---|---|---|
-| 1 | credencial nunca no navegador | varre o HTML de toda página, para cada ator, por token de dev e `accessToken` | `repos/verificacao` |
-| 2 | DTO sensível não vira prop de ilha | como `carla` e `davi`, nada do bloco `custo` no HTML nem no payload RSC | `repos/verificacao` |
+| 1 | credencial nunca no navegador | varre o HTML de toda página, para cada ator, por token de dev e `accessToken` | `base/verificacao` |
+| 2 | DTO sensível não vira prop de ilha | como `carla` e `davi`, nada do bloco `custo` no HTML nem no payload RSC | `base/verificacao` |
 | 4 | registro de destinos | destino, modelo, método ou parâmetro fora do registro → `DestinoInvalido` **sem chamada de rede**; `//`, `..`, byte de controle; redirect não seguido | `erp-nucleo/test/destinos` |
-| 5 | Server Action reverifica | action de módulo alheio executada por quem não o tem não muda estado | `repos/verificacao` |
+| 5 | Server Action reverifica | action de módulo alheio executada por quem não o tem não muda estado | `base/verificacao` |
 | 6 | If-Match em mutação | PUT/PATCH/DELETE sem versão recusado no núcleo; domínio responde 428/409 | núcleo e stub |
-| 15 | zona não grava sessão | leitor sem `gravar`/`remover`; núcleo de zona sem `entrar`/`encerrar`; varredura das zonas | núcleo e `repos/verificacao` |
-| 16 | módulo na camada 2 | URL direta de módulo não permitido → `404` para cada ator; menu só com permitidos | `repos/verificacao` |
+| 15 | zona não grava sessão | leitor sem `gravar`/`remover`; núcleo de zona sem `entrar`/`encerrar`; varredura das zonas | núcleo e `base/verificacao` |
+| 16 | módulo na camada 2 | URL direta de módulo não permitido → `404` para cada ator; menu só com permitidos | `base/verificacao` |
 | 17 | prefixo de zona | manifesto com módulo/perfil/concessão de outra zona recusado | `erp-contratos`, stub |
 | E1 | fronteira entre camadas | `scripts/fronteira.mjs` | `erp-nucleo` |
 | E2 | exports restritos | a raiz não exporta `criarTransporte`, `montarUrl`, `validarRegistro` | `erp-nucleo` |

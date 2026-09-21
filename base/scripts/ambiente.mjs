@@ -4,7 +4,8 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-export const RAIZ = dirname(dirname(fileURLToPath(import.meta.url)))
+/** Onde moram os repositórios (submódulos): `repos/`, ao lado de `base/`. */
+export const RAIZ = join(dirname(dirname(dirname(fileURLToPath(import.meta.url)))), 'repos')
 export const SHELL = 'http://localhost:3000'
 export const APPS = [
   { dir: 'erp-shell', porta: 3000, saude: '/login' },
