@@ -75,8 +75,8 @@ flowchart LR
 ```
 
 Ordem de publicação e deploy: **contratos → núcleo → ui → zonas → shell**. Zonas revertem
-de forma independente, mas nunca abaixo do lockstep do núcleo. Contrato só cresce (janela de
-depreciação de duas minors).
+de forma independente, mas nunca abaixo do lockstep do núcleo. ("Contrato só cresce" é prática
+documentada, não critério: §7.2.1.)
 
 ## 3. Composição entre zonas: `FragmentoRemoto`
 
@@ -194,23 +194,33 @@ A PoC respondeu todas; a base genérica refez só parte delas.
 | **query params e path routes** | ✅ (`?tab=`, `/mapa/[cidade]`) | ⚠️ path routes sim (`/zona1/recursos/[id]`); query params em zona, não |
 | **remote com MapLibre GL** | ✅ | ❌ nenhuma zona com biblioteca pesada de cliente |
 
-Decisão pendente do humano: refazer na base (SSE, cache de cliente, query params, MapLibre numa
-zona) ou declarar que a PoC já provou e a base não precisa repetir.
+**Decisão do humano (2026-09-21): a PoC já provou.** A base não refaz SSE, cache de cliente,
+query params nem MapLibre só para repetir a prova; a evidência fica na tag `poc-final`. SSE continua
+no alvo (§6) por ser parte da arquitetura final, não da prova de viabilidade.
 
 ### 7.2 Parâmetros do desenho que a base ainda não aplica
 
 | Parâmetro | Valor do desenho | Base hoje | Origem |
 |---|---|---|---|
-| duração da sessão | 8 h | 30 min (identidade de desenvolvimento) | `06-seguranca` §5 |
 | renovação do token | quando faltar < 30 s | não há renovação | `mfe/01-operacao` §3.4 |
 | timeout padrão ao domínio | 10 s | 5 s por destino (configurável) | `02-nucleo` §2.2 |
 | co-localização BFF ↔ domínio | `RTT_lan ≈ 1 ms`; **alarme acima de 5 ms**, p50 e p99 | não medido | `08-desempenho` §8 — "a premissa assassina": com 120 ms a tela vai de ~115 ms para ~675 ms |
 | entrega de evento SSE | ≤ 2 s | não há SSE | `08-desempenho` §7 |
 | `Cache-Control` do HTML autenticado | `private, no-store` | padrão do Next para rota dinâmica; **sem teste** | `mfe/01-operacao` §1.3 |
-| versão de `@erp/contratos` | contrato só cresce; remover só depois de 2 minors | sem regra escrita nos repositórios | `mfe/01-operacao` §7.3 |
-| CSP | modo relatório por duas semanas antes de bloquear | bloqueia direto | `02-nucleo` §4 |
 | health check | `/{zona}/api/health`, sem tocar o domínio | sonda na página da zona | `mfe/01-operacao` §5.2 |
 | circuit breaker do fragmento | timeout 2 s **e** breaker; `<Suspense>` em volta | timeout sim (0.5.0); breaker e `<Suspense>` não | `mfe/00-arquitetura` §6.2 |
+
+### 7.2.1 Práticas documentadas, não exigidas
+
+O desenho descreve práticas que **não são critério** desta base (decisão do humano,
+2026-09-21). Ficam registradas para quem quiser adotá-las, sem gate nem teste:
+
+| Prática | Onde está descrita |
+|---|---|
+| contrato só cresce; remover campo de `@erp/contratos` só depois de duas versões minor | `mfe/01-operacao` §7.3, `mfe/00-arquitetura` §10.1 |
+| CSP em modo relatório por duas semanas antes de bloquear | `02-nucleo` §4 |
+
+A duração da sessão é **30 minutos** (decisão do humano); o desenho original dizia 8 h.
 
 ### 7.3 Verificações que a spec de 09/09 exigia e a base não tem
 

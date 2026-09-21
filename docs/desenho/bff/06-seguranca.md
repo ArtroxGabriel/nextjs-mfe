@@ -141,7 +141,7 @@ de runtime. Aplicado obrigatoriamente em: `auth.ts`, `session.ts`, `cache.ts`, `
 | `httpOnly` | `true` | invisível a JavaScript |
 | `sameSite` | `lax` | permite o retorno do redirect do SSO |
 | Estratégia | `database` | cookie é identificador opaco; token fica no Redis |
-| Duração | 8 h | revisar conforme política |
+| Duração | **30 min** | decisão do humano em 2026-09-21; este documento dizia 8 h |
 
 `SameSite=Strict` seria preferível, mas quebraria o callback do SSO. Um endpoint de
 callback dedicado permitiria `Strict` no cookie principal — melhoria pendente.
