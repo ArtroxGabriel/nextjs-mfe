@@ -74,14 +74,7 @@ Decisão do `arquiteto-mfe` registrada no ADR-0011. `@erp/nucleo` 0.5.0 traz `cr
 
 ## Próximos passos
 
-1. Fechar o gate (três handoffs), registrar em `GATE_STATUS.md`, corrigir o que reprovar.
-2. Atualizar `ATIVIDADES.md` (#3 e #18 dependem do gate).
-3. Avisar o Gabriel: buscar o `@erp/nucleo` 0.3.2, descartar o 0.3.1 dele e ler `AMBIENTE.md` §1–2.
-4. Depois do gate: ligar o `sessaoRedis` nas apps (#9; exige instalar `redis` e subir um Redis no
-   `docker-compose` — pedir aprovação), implementar a fatia de fragmentos (#10) conforme o arquiteto,
-   instrumentar uma zona para a telemetria (#18), registro de pacotes único (#14).
-5. Reorganização: docs, `base/` e `.agents/arquivo/` feitos; falta só o código (C1 kit
-   `@erp/nucleo/app`, C2 shell com `criarProxy`).
+Ver "Plano até o objetivo" abaixo: a fase A (fechar o gate do shell) vem primeiro.
 
 ## Pedido do humano para depois da saída do challenger (2026-09-21)
 

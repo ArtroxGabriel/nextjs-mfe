@@ -16,17 +16,17 @@
 	branch = master
 [submodule "repos/erp-shell"]
 	path = repos/erp-shell
-	url = git@github.com:wilson-castro/erp-shell
+	url = git@github.com:wilson-castro/erp-shell.git
 	branch = master
 [submodule "repos/erp-zona-1"]
 	path = repos/erp-zona-1
-	url = git@github.com:wilson-castro/erp-zona-1
+	url = git@github.com:wilson-castro/erp-zona-1.git
 	branch = master
 [submodule "repos/erp-zona-2"]
 	path = repos/erp-zona-2
-	url = git@github.com:wilson-castro/erp-zona-2
+	url = git@github.com:wilson-castro/erp-zona-2.git
 	branch = master
 [submodule "repos/erp-zona-acesso"]
 	path = repos/erp-zona-acesso
-	url = git@github.com:wilson-castro/erp-zona-acesso
+	url = git@github.com:wilson-castro/erp-zona-acesso.git
 	branch = master

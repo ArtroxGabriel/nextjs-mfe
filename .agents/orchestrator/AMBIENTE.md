@@ -17,6 +17,9 @@
   2. se for, troque só a linha `integrity` pelo hash do seu Verdaccio (o do lockfile anterior serve);
   3. se não for, é conteúdo diferente: pare e decida qual vale (foi o caso do núcleo, ADR-0010).
   Nunca use `--update-checksums` às cegas: ele aceita qualquer conteúdo.
+- **Quem tem no Verdaccio local um `@erp/nucleo` 0.3.1 publicado antes de 2026-09-21** (a reescrita
+  paralela) não deve usá-lo: publique o `erp-nucleo` atual (`pnpm publicar`) e reinstale as apps.
+  O 0.3.1 válido é o da árvore reconciliada no ADR-0010; as apps hoje fixam 0.3.2.
 - Ordem de publicação: `erp-contratos` → `erp-nucleo` → `erp-moldura` → consumidores.
 - O pnpm acrescenta sozinho a versão nova em `minimumReleaseAgeExclude` (`pnpm-workspace.yaml` de cada
   app). É esperado: pacote local recém-publicado não tem "idade".
