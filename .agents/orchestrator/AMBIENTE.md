@@ -30,6 +30,9 @@
 - **O hook `pre-push` checa isso sozinho** (`base/scripts/checar-envio.mjs`): recusa o push do
   principal se algum commit fixado de submódulo não está em nenhum branch remoto. Ative uma vez
   por clone: `git config core.hooksPath .githooks`. À mão: `pnpm checar-envio`.
+- **O mesmo hook checa o lockstep do núcleo** (`base/scripts/verificar-lockstep.mjs`): as quatro
+  apps têm de usar a mesma versão exata do `@erp/nucleo`, e o lockfile tem de concordar. Ao subir o
+  núcleo, suba nas quatro juntas. À mão: `pnpm lockstep`.
 - HEAD destacado num submódulo esconde commits: trabalhe no `master` (`git checkout master`) antes de
   commitar lá.
 - `git merge -s ours X` **mantém a árvore do branch atual**. Para ficar com o seu conteúdo e absorver

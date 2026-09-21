@@ -168,7 +168,7 @@ flowchart LR
 | Design system | `@erp/moldura` (moldura e toast) | `@erp/ui` publicado com semver tolerante | medir duplicação de bundle entre zonas antes |
 | Deploy | 8 repositórios como submódulos; hook `pre-push` recusa submódulo não enviado; um Verdaccio **por máquina** | repositórios e deploys independentes, lockstep do núcleo no CI, um registro único | publicar pelos pacotes num registro compartilhado (ou pelo CI): hoje cada máquina republica e os hashes dos lockfiles divergem (ADR-0010) |
 | **Trace contínuo sem dado pessoal (elemento 8 do núcleo)** | **ausente**: nenhum `traceparent` do navegador ao domínio; só o gateway `/api/otel/v1/traces` do shell existe (sem gate) | trace contínuo dentro de cada zona, navegador → BFF → domínio, sem PII; coletor OTLP (`02-nucleo` §2.6) | propagar `traceparent` no registro de destinos do núcleo e instrumentar uma zona. **É núcleo, não extensão** (ADR-0008): não descrever como opcional |
-| Lockstep do núcleo | **ausente**: nenhum gate compara a versão do `@erp/nucleo` entre as apps (hoje todas em 0.3.2 por disciplina) | toda app na mesma minor; PR que diverge falha (`desenho/mfe/01-operacao.md` §7.2) | `verificar-lockstep.mjs` + dist-tag `lockstep`, como a spec de 09/09 §7 previa; ligar no `pre-push` |
+| Lockstep do núcleo | **local:** `base/scripts/verificar-lockstep.mjs` no hook `pre-push` recusa apps com versões diferentes do `@erp/nucleo`, versão não exata ou `package.json` discordando do lockfile | o mesmo gate no CI de cada repositório (`desenho/mfe/01-operacao.md` §7.2) | levar para o CI quando houver |
 | Operação | limite de 60 lotes/min só no gateway de telemetria, em memória | rate limiting na borda e por sessão nas leituras (`06-seguranca` §2) | — |
 
 ## 7. Premissas da base que precisam de rastreio
@@ -229,7 +229,7 @@ A duração da sessão é **30 minutos** (decisão do humano); o desenho origina
 | importar módulo `server-only` de dentro de `'use client'` **falha o build** (invariante 3/6) | sem teste |
 | lint proibindo DTO sensível como prop de `'use client'` (invariante 2) | sem teste (a verificação ponta a ponta varre o HTML, não o código) |
 | nenhum `<Link>` para fora da própria zona | hoje nenhum `next/link` existe; **sem guarda** que impeça o primeiro |
-| gate de lockstep (`verificar-lockstep.mjs`) | ausente (ver §6) |
+| gate de lockstep (`verificar-lockstep.mjs`) | ✅ local, no `pre-push` (ver §6) |
 
 Referências: `docs/desenho/mfe/00-arquitetura.md` (solução), `01-operacao.md`
 (roteamento, sessão, falha, deploy), `02-zonas.md` (estrutura e criação de zona),

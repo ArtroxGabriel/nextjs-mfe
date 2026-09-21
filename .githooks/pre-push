@@ -1,3 +1,4 @@
 #!/bin/sh
 # Ativar uma vez por clone: git config core.hooksPath .githooks
-exec node "$(git rev-parse --show-toplevel)/base/scripts/checar-envio.mjs"
+raiz="$(git rev-parse --show-toplevel)"
+node "$raiz/base/scripts/checar-envio.mjs" && node "$raiz/base/scripts/verificar-lockstep.mjs"
