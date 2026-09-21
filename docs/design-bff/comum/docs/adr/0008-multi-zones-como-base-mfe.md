@@ -1,6 +1,6 @@
 # ADR-0008 — Multi-Zones como base MFE, em multi-repo
 
-**Status:** aceita · **Data:** 2026-09-09 · **Afeta:** [AGENTS.md](../../AGENTS.md), [02](../02-nucleo.md), [04](../04-servicos.md)
+**Status:** aceita, decisões 5, 9 e 10 substituídas pelo [ADR-0009](0009-base-generica.md) em 2026-09-21 · **Data:** 2026-09-09 · **Afeta:** [AGENTS.md](../../AGENTS.md), [02](../02-nucleo.md), [04](../04-servicos.md)
 
 ## Contexto
 

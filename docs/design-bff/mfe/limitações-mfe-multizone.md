@@ -154,6 +154,19 @@ O R-3 (retry storm) e o R-4 (tempestade de reconexão) do documento 06 assumem q
 
 O documento 06 conclusão 5 diz que a zona pública sai do CDN e não sofre com a localização da origem. Isso pressupõe **ter um CDN configurado** — na Vercel, automático. Fora dela, você precisa contratar/operar CloudFront, Cloudflare ou Fastly na frente das rotas `(publico)`, com invalidação de cache no deploy. Sem isso, a "vantagem de latência da zona estática" do documento 06 simplesmente não existe — ela vira apenas mais uma rota dinâmica servida pelo mesmo processo Node do shell.
 
+## 11. `redirect()` de Server Action não atravessa zona — medido em 2026-09-21
+
+Numa Server Action chamada pelo JavaScript do cliente, `redirect('/outra-zona')` faz o Next
+buscar o payload RSC do destino **no próprio processo** (`http://<esta zona>/outra-zona`), para
+poupar uma ida e volta. A zona não tem a rota, e o navegador recebe o 404 da zona atual no
+endereço da outra. Sem JavaScript (formulário nativo) o mesmo código devolve `303` e funciona,
+por isso a falha passa em teste que não emula o cliente.
+
+**Regra:** action que precisa terminar em outra zona devolve o destino, e uma ilha cliente troca
+o documento com `window.location.assign`. `redirect()` só para a própria zona. Verificado em
+`repos/verificacao/base.test.mjs` (casos N4 e "mesma zona"), que chama a action com `Next-Action`
+e `encodeReply`, como o navegador.
+
 ---
 
 # Tabela de decisão — o que precisa virar documento novo ou ADR

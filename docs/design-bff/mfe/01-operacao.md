@@ -8,6 +8,10 @@ status: desenho completo; ver §8 para o que continua aberto
 
 # 01 — Operação: roteamento, ambientes, sessão, falha e deploy
 
+> **Atualização 2026-09-21 — [ADR-0009](../comum/docs/adr/0009-base-generica.md).** Onde este documento fala de porta de dados, `lerPedido`,
+> `API_BASE_URL` único, "uma zona fala com um domínio", o caso como critério de aceite ou fatia
+> somente leitura, vale o ADR-0009 e a base em `repos/` ([arquitetura atual](../../arquitetura/atual.md)).
+
 Segunda metade do desenho. [`00-arquitetura.md`](00-arquitetura.md) responde *como a
 solução é feita*; este responde *como ela roda, falha e evolui*.
 

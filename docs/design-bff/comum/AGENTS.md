@@ -53,15 +53,18 @@ mas se apresenta como opcional é a fonte de erro mais cara já registrada aqui 
 
 ## Invariantes — nunca viole
 
-Cada item tem verificação em [`docs/11-testes.md`](docs/11-testes.md).
+Cada item tem verificação em [`docs/11-testes.md`](docs/11-testes.md); os itens 4 e 15–17, na
+verificação da base (`repos/verificacao/base.test.mjs`) e nos testes de `erp-nucleo`, `erp-contratos` e `erp-dominio-stub`.
 Se não tiver, não é invariante — é intenção.
 
 1. **NUNCA** exponha `access_token`, `refresh_token` ou lista de grupos ao navegador.
 2. **NUNCA** passe DTO sensível como prop para componente `'use client'`. O objeto inteiro
    é serializado no payload RSC, inclusive campos não renderizados.
 3. **SEMPRE** inclua `import 'server-only'` em módulo que toque credencial ou sessão.
-4. **SEMPRE** valide o destino outbound contra `API_BASE_URL`. Nenhuma parte da URL pode
-   vir da requisição recebida — exigência da RFC 10017.
+4. **SEMPRE** chame domínio por um destino do **registro de destinos** do núcleo
+   (`nucleo.destino(nome)`), nunca com `fetch` direto. A zona escolhe o modelo de caminho
+   declarado e preenche parâmetros; origem, método e credencial são do registro — RFC 10017.
+   Ver ADR-0009.
 5. **SEMPRE** revalide sessão no primeiro bloco de toda Server Action. Ela é endpoint público.
 6. **SEMPRE** use `If-Match` em mutação, com a versão que o cliente conhece.
 7. Responda **`401`** sem credencial, **`404`** para recurso fora do escopo de grupo,
@@ -75,6 +78,12 @@ Se não tiver, não é invariante — é intenção.
 12. **SEMPRE** normalize erro para `{ codigo, supportId }`. Sem stacktrace, sem nome de classe.
 13. **NUNCA** cacheie payload protegido no BFF. Ver ADR-0007.
 14. **NUNCA** deixe uma extensão alterar semântica de campo já usado pelo núcleo.
+15. **NUNCA** grave, renove ou encerre sessão fora do shell. Zona monta o núcleo com
+    `sessaoArquivo({ modo: 'leitura' })` (ou o leitor do store real) e sem `escrita`.
+16. **SEMPRE** verifique o módulo na camada 2 (`exigirModulo`) em toda página e em toda
+    Server Action. Módulo não permitido é `404`, como recurso fora do escopo.
+17. **NUNCA** declare perfil ou módulo fora do prefixo da própria zona. Perfil de zona só
+    concede módulo dela; perfil global é `plataforma.*` e nasce no domínio de gestão de acesso.
 
 ---
 

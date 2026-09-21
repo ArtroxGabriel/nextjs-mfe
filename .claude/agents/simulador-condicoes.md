@@ -41,18 +41,21 @@ que você mesmo subiu.
 
 | Sonda | Afirmação testada | Aprova se |
 |---|---|---|
-| Cookie forjado em `/pedidos/*` | camada 1 não valida token, camada 2 pega | camada 2 recusa; camada 1 sozinha nunca autoriza |
+| Cookie forjado em qualquer zona | camada 1 não valida token, camada 2 pega | camada 2 recusa; camada 1 sozinha nunca autoriza |
 | `curl` direto ao stub, sem `Authorization` | domínio rejeita sem credencial | recusa, e a recusa não descreve o motivo |
 | Requisição ao stub a partir da origem do navegador | elemento 3, composição no servidor | `403`; o domínio é inalcançável fora do processo Node |
 | Recurso de outro usuário, id sequencial | `404` uniforme mascara existência | `404` idêntico em corpo, headers **e** distribuição de tempo |
 | **Tempo de resposta, existente × inexistente**, n ≥ 500 | ameaça declarada **não mitigada** | reporte a diferença medida e se ela é distinguível; não conclua que "está seguro" |
-| Caminhos `//evil.com`, `../`, origin divergente | allowlist outbound, elemento 7 | `DestinoInvalido` em todos |
+| Parâmetro `//evil.com`, `..`, byte de controle; destino fora do registro | registro de destinos (ADR-0009) | `DestinoInvalido` sem chamada de rede |
 | Fuzzing de erro | critério 5: nada de framework vaza | ausência de `org.springframework`, `at java.`, `SELECT`, `X-Powered-By`, stacktrace |
 | Varredura de HTML e de todo JS servido | invariante 1 | ausência de `access_token`, `refresh_token`, `groups` |
-| Sessão de `gabrigas` em `/pedidos/8821` | C1 e resultado observável 1 de `00-caso.md` | nenhum campo de `CondicaoComercial` no HTML, no flight payload, em prop serializada ou em `data-*` |
-| Sessão de `rafael` (`ADMIN`) na mesma rota | role não concede grupo | idem — `ADMIN` não vê o bloco comercial |
-| `404` de `carla` × `404` de id inexistente | enumeração mascarada por `404` uniforme | corpo, headers **e** distribuição de tempo indistinguíveis |
-| Mutação por `curl`, sem `If-Match` e sem origem válida | CSRF e concorrência | recusa — **e, na rodada 1, a rota não deve existir** |
+| Sessão de `carla` (admin de acesso) em `/zona1/recursos/r-1` | perfil administrativo não concede dado | nenhum campo de `custo` no HTML, no flight payload, em prop serializada ou em `data-*` |
+| `404` de `r-3` para `carla` × `404` de id inexistente | enumeração mascarada por `404` uniforme | corpo, headers **e** distribuição de tempo indistinguíveis |
+| URL direta de módulo restrito sem concessão | módulo na camada 2 (invariante 16) | `404`, sem página de "sem acesso"; o menu também não o mostra |
+| Revogar concessão e navegar de novo, sem novo login | D7 do ADR-0009 | o módulo some já na próxima requisição |
+| Zona tentando gravar sessão ou registrar manifesto de outra zona | invariantes 15 e 17 | impossível pelo núcleo; o domínio de acesso recusa `403` |
+| Server Action com `Origin` de outro site, ou por quem não tem o módulo | CSRF e invariante 5 | recusa, sem mudança de estado |
+| Mutação sem `If-Match` ou com versão velha | concorrência | `428`/`409` do domínio, erro normalizado na tela |
 
 Achado adversário é **binário e bloqueante**. Nunca o misture com número de desempenho,
 nunca o dilua numa média, nunca produza um "veredito geral" que some os dois.
@@ -66,7 +69,8 @@ significa que o documento está errado.
 | Derrube | Declarado | Verifique também |
 |---|---|---|
 | stub de domínio | erro normalizado, sem detalhe de implementação | nenhum stacktrace; `supportId` presente |
-| zona `pedidos` | shell serve página de erro própria | não um `502` cru do gateway |
+| uma zona | **não declarado na base genérica** (a PoC tinha 503 com `Retry-After`) | reporte o que o shell devolve; é lacuna conhecida |
+| domínio de gestão de acesso | toda página depende dele (ADR-0009, consequências) | o que o usuário vê; nada de detalhe de implementação |
 | store de sessão (Redis) | — **não declarado** | é isso que você vai descobrir; reporte como lacuna de documento |
 | Verdaccio | instalação falha cedo | falha explícita, não resolução silenciosa para outra versão |
 | rede lenta entre BFF e domínio | §5 de `08` prevê colapso: `n=4`, `RTT_lan` 1 ms → 120 ms leva 115 ms → 675 ms | injete latência e confirme ou refute a previsão |

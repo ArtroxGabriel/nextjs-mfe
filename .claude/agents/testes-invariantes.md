@@ -11,43 +11,40 @@ intenção**. Você a torna verificação.
 ## Leia antes
 
 `docs/design-bff/comum/AGENTS.md` (invariantes),
-`docs/design-bff/comum/docs/11-testes.md` (verificações já definidas) e
-`docs/superpowers/specs/2026-09-09-base-mfe-multizone-design.md` §6.
+`docs/design-bff/comum/docs/11-testes.md` (verificações já definidas),
+`docs/design-bff/comum/docs/adr/0009-base-generica.md` e a verificação ponta a ponta em
+`repos/verificacao/base.test.mjs`.
 
-## O mapa obrigatório da rodada 1
+## O mapa obrigatório da base genérica
 
-| # | Invariante | Verificação | Precisa de rede? |
+| # | Invariante | Verificação | Onde |
 |---|---|---|---|
-| 1 | credencial nunca no navegador | varre o HTML e todo JS servido em `/pedidos/*` por `access_token`, `refresh_token`, `groups` | sim |
-| 2 | DTO sensível não vira prop de ilha | como `gabrigas` e como `rafael`, nenhum campo de `CondicaoComercial` no HTML, no flight payload, em prop serializada ou em `data-*`; lint proíbe DTO em props de `'use client'` | sim |
-| 3 | composição no servidor | o stub escuta só em `127.0.0.1` e exige cabeçalho de dev que apenas o adaptador injeta; requisição do navegador recebe `403` | sim |
-| 6 | `server-only` é fronteira de build | importar adaptador de dentro de `'use client'` **deve falhar o build** | não |
-| 7 | allowlist outbound | `//evil.com`, `../`, origin divergente → `DestinoInvalido` | não |
-| E1 | fronteira entre camadas | lint: `interno/` não importa `adaptadores/` nem `portas/`; `testing/` só em teste | não |
-| E2 | exports restritos | `import '@erp/nucleo/interno/upstream'` **deve quebrar** | não |
+| 1 | credencial nunca no navegador | varre o HTML de toda página, para cada ator, por token de dev e `accessToken` | `repos/verificacao` |
+| 2 | DTO sensível não vira prop de ilha | como `carla` e `davi`, nada do bloco `custo` no HTML nem no payload RSC | `repos/verificacao` |
+| 4 | registro de destinos | destino, modelo, método ou parâmetro fora do registro → `DestinoInvalido` **sem chamada de rede**; `//`, `..`, byte de controle; redirect não seguido | `erp-nucleo/test/destinos` |
+| 5 | Server Action reverifica | action de módulo alheio executada por quem não o tem não muda estado | `repos/verificacao` |
+| 6 | If-Match em mutação | PUT/PATCH/DELETE sem versão recusado no núcleo; domínio responde 428/409 | núcleo e stub |
+| 15 | zona não grava sessão | leitor sem `gravar`/`remover`; núcleo de zona sem `entrar`/`encerrar`; varredura das zonas | núcleo e `repos/verificacao` |
+| 16 | módulo na camada 2 | URL direta de módulo não permitido → `404` para cada ator; menu só com permitidos | `repos/verificacao` |
+| 17 | prefixo de zona | manifesto com módulo/perfil/concessão de outra zona recusado | `erp-contratos`, stub |
+| E1 | fronteira entre camadas | `scripts/fronteira.mjs` | `erp-nucleo` |
+| E2 | exports restritos | a raiz não exporta `criarTransporte`, `montarUrl`, `validarRegistro` | `erp-nucleo` |
 
-Testes que usam `@erp/nucleo/testing` rodam sem rede e sem stub. Os demais exigem o stub
-no ar.
+## Atores
 
-## O caso é o alvo
+A matriz é genérica, mas precisa continuar falsificável. Rode leitura e acesso contra os quatro:
 
-O alvo funcional é o ERP de [`00-caso.md`](docs/design-bff/comum/docs/00-caso.md), tela
-`/pedidos/8821`. Toda verificação de leitura roda contra os quatro atores do caso, porque
-são eles que tornam a projeção falsificável:
-
-| Ator | Espera-se | O que o teste pega se falhar |
-|---|---|---|
-| `gabrigas` (`OPS-NORDESTE`) | sem `CondicaoComercial` | mascaramento no BFF em vez de projeção no domínio |
-| `marina` (+ `COMERCIAL-NORDESTE`) | com `CondicaoComercial` | projeção estrita demais, negando a quem tem direito |
-| `rafael` (`ADMIN`, `OPS-NORDESTE`) | sem `CondicaoComercial` | **role tratada como grupo** — o erro mais provável |
-| `carla` (`OPS-SUL`) | `404` neutro | `403` em vez de `404`, ou `404` distinguível por tempo |
-
-Um teste de projeção que só usa dois atores não pega o erro de `rafael`. Use os quatro.
+| Ator | Perfis | Espera-se | O que pega se falhar |
+|---|---|---|---|
+| `ana` | `plataforma.usuario`, `zona2.operador` | zona 2 sim; relatórios e acesso `404` | concessão vazando entre zonas |
+| `bruno` | `plataforma.usuario`, `zona1.analista`; grupo FINANCEIRO no domínio A | relatórios e `custo` | projeção estrita demais |
+| `carla` | `plataforma.usuario`, `plataforma.admin-acesso` | tela de acesso; **sem `custo`** e `404` em `r-3` | **perfil administrativo tratado como grupo de dado** — o erro mais provável |
+| `davi` | nenhum | só módulos livres | módulo livre tratado como restrito, ou o contrário |
 
 ## Como trabalhar
 
-1. **Leia a mudança** e diga quais linhas do mapa ela toca. Uma mudança em `upstream/`
-   toca 7; uma porta nova toca E1 e E2; uma página nova toca 1, 2 e 3.
+1. **Leia a mudança** e diga quais linhas do mapa ela toca. Uma mudança em `interno/destinos`
+   toca 4; uma porta nova toca E1 e E2; uma página nova toca 1, 2 e 3.
 2. **Verifique se o teste existe.** Rode-o. Um teste que nunca falhou não prova nada —
    quebre deliberadamente o que ele deveria pegar e confirme que ele reprova. Se passar
    com o defeito presente, o teste está errado, não o código.

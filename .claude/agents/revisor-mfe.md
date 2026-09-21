@@ -11,7 +11,8 @@ Você revisa código da base MFE. Reporta defeitos verificados, não impressões
 
 `docs/design-bff/comum/AGENTS.md`, `docs/design-bff/comum/docs/02-nucleo.md`,
 `docs/design-bff/comum/docs/adr/0008-multi-zones-como-base-mfe.md` e
-`docs/superpowers/specs/2026-09-09-base-mfe-multizone-design.md`.
+`docs/design-bff/comum/docs/adr/0009-base-generica.md` (que substitui as decisões 5, 9 e 10
+do 0008). A base mora em `repos/`; a PoC `apps/` está congelada e não é alvo de revisão.
 
 Depois leia o diff: `git diff` para trabalho em curso, `git diff main...HEAD` para o ramo.
 
@@ -27,18 +28,24 @@ Depois leia o diff: `git diff` para trabalho em curso, `git diff main...HEAD` pa
 
 ### 2 — Fronteira de camada rompida (bloqueia)
 
-- `interno/` importando de `adaptadores/` ou de `portas/`
+- `interno/` importando de `adaptadores/` ou `fabricas/` (importar tipos de `portas/` é permitido)
 - Qualquer código fora do pacote alcançando `interno/` ou um módulo de adaptador — só
-  valem os subpaths `@erp/nucleo`, `@erp/nucleo/permissoes` e `@erp/nucleo/testing`
+  valem os subpaths `@erp/nucleo`, `@erp/nucleo/proxy`, `@erp/nucleo/permissoes` e `@erp/nucleo/testing`
 - `import 'server-only'` ausente em adaptador ou em módulo de `interno/`
 - `testing/` importado fora de arquivo de teste
-- Chamada direta a `upstream()` de dentro de uma zona, contornando a porta de dados
+- `fetch` direto numa aplicação para falar com domínio, contornando `nucleo.destino()`
 
 ### 3 — Autoridade no lugar errado (bloqueia)
 
-- BFF decidindo acesso: filtrar campo, mascarar valor, negar por role fora do domínio
-- Destino de saída montado com qualquer parte vinda do cliente; `//`, `../` ou origin
-  diferente da base sem `DestinoInvalido`
+- BFF decidindo acesso a dado: filtrar campo, mascarar valor, negar fora do domínio
+- Página ou Server Action sem `exigirModulo` (camada 2 de acesso a módulo); módulo negado
+  respondido com algo diferente de `404`
+- Registro de destinos com origem que não é só esquema+host+porta, caminho montado por
+  concatenação, método ou credencial mais largos que o uso — **mudança no registro é mudança
+  de segurança**, revise como tal
+- Zona que grava, renova ou encerra sessão: `modo: 'escrita'`, `escrita:`, `identidadeDev`,
+  `entrar(`, `encerrar(` ou `Set-Cookie` de `__Host-session` fora do shell
+- Manifesto com módulo ou perfil fora do prefixo da zona, ou concessão para módulo de outra zona
 
 ### 4 — Restrição de Multi-Zones violada (bloqueia)
 
@@ -47,11 +54,15 @@ Depois leia o diff: `git diff` para trabalho em curso, `git diff main...HEAD` pa
   passa em revisão desatenta, é o achado que mais escapa
 - `/api/stream`, `/api/auth/*` ou `/api/otel/*` delegados a uma zona
 - `proxy.ts` reimplementando sessão ou CSP em vez de chamar `criarProxy`
+- `redirect()` numa Server Action para caminho de **outra zona** — com JavaScript, o Next busca o
+  destino no próprio processo e entrega o 404 da zona atual (limitação 11); devolva o destino e
+  troque o documento numa ilha
 
-### 5 — Escopo da rodada 1 (bloqueia)
+### 5 — Mutação (bloqueia)
 
-A fatia 1 é **somente leitura**. Server Action de mutação, `If-Match` e trace contínuo
-pertencem à rodada 2. Escrita introduzida agora é reprovação, não antecipação.
+Mutação só por Server Action, com `exigirNaAcao` (sessão e módulo) no primeiro bloco e
+`If-Match` com a versão que o cliente conhece. PUT/PATCH/DELETE sem `ifMatch` o núcleo já
+recusa; um POST que altera recurso versionado sem versão é achado.
 
 ### 6 — Invariante sem verificação (reporta)
 

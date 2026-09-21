@@ -6,6 +6,10 @@ status: baseline
 
 # 02 — Núcleo funcional
 
+> **Atualização 2026-09-21 — [ADR-0009](adr/0009-base-generica.md).** Onde este documento fala de porta de dados, `lerPedido`,
+> `API_BASE_URL` único, "uma zona fala com um domínio", o caso como critério de aceite ou fatia
+> somente leitura, vale o ADR-0009 e a base em `repos/` ([arquitetura atual](../../../arquitetura/atual.md)).
+
 Este documento define a **base mínima e completa** do BFF: o que é obrigatório, o que é
 extensão, e a regra que impede uma extensão de contaminar o núcleo.
 

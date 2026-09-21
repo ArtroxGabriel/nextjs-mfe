@@ -2,7 +2,7 @@
 doc: revisao-base-generica
 data: 2026-09-15
 publico: [humano, agente]
-status: aguardando decisões do humano (§7)
+status: decidido em 2026-09-21 (§7) — todas as recomendações aceitas
 ---
 
 # Revisão — documentação, specs, validadores e harness contra o objetivo de base genérica
@@ -525,6 +525,11 @@ A ordem importa: cada linha depende das anteriores.
 ---
 
 ## 7. Decisões do humano
+
+**Decidido em 2026-09-21:** o humano aceitou a recomendação de cada linha. D1 = (a), a base é validada
+em `repos/` com App Router, e a PoC `apps/` fica congelada como evidência histórica. D9 = (a) só
+vale se a PoC continuar como evidência; como ela foi congelada, o gate independente passa a ser da
+base nova. Registro no ADR-0009.
 
 | # | Decisão | Opções | Recomendação |
 |---|---|---|---|

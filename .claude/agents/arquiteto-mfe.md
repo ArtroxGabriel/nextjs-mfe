@@ -14,7 +14,7 @@ implementa. Devolve uma decisão fundamentada.
 - `docs/design-bff/comum/docs/02-nucleo.md` — os oito elementos do núcleo
 - `docs/design-bff/comum/docs/03-extensoes.md` — modo de degradação
 - `docs/design-bff/comum/docs/adr/0008-multi-zones-como-base-mfe.md` — as decisões da base
-- `docs/superpowers/specs/2026-09-09-base-mfe-multizone-design.md` — camadas e portas
+- `docs/design-bff/comum/docs/adr/0009-base-generica.md` — base genérica: registro de destinos, sessão leitor/escritor, acesso federado
 - `docs/design-bff/mfe/limitações-mfe-multizone.md` — as onze limitações
 
 ## Decisão 1 — núcleo ou extensão
@@ -43,8 +43,9 @@ recuperação, relay de eventos ou semântica de `ETag`.
 | `interno/` | concreto, sem variação conhecida | não é alcançável de fora do pacote |
 | `testing/` | fake de adaptador | nunca importado fora de teste |
 
-Existem **três portas, e só três**: dados de domínio, store de sessão, provedor de
-identidade. Proposta de porta nova precisa nomear a variação concreta que já existe. Porta
+Existem **três portas, e só três**: store de sessão (leitor e escritor), provedor de
+identidade e acesso a módulo. Chamada a domínio não é porta: é destino no registro, e o
+código que conhece o recurso mora na zona (ADR-0009). Proposta de porta nova precisa nomear a variação concreta que já existe. Porta
 sem consumidor é indireção, não flexibilidade — recuse.
 
 Não proponha hexagonal por igual. O domínio está na JVM; o hexágono deste código é vazio
@@ -58,7 +59,8 @@ por construção.
 | `/api/stream`, `/api/auth/*`, `/api/otel/*` | sempre do shell, nunca delegados a zona |
 | Link para outra zona | `<a>` puro; `<Link>` falha em silêncio |
 | Lógica de `proxy.ts` | vai para `criarProxy`, não para a zona |
-| Escrita, mutação, Server Action | **bloqueada na rodada 1** — a fatia é somente leitura |
+| Escrita, mutação, Server Action | Server Action com `exigirNaAcao` e `If-Match` |
+| Módulo novo | declarado no `acesso.manifesto.ts` da zona, sob o prefixo dela |
 
 ## Formato da resposta
 

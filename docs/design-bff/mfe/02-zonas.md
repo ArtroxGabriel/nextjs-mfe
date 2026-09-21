@@ -8,6 +8,10 @@ status: desenho completo
 
 # 02 — Zonas: estrutura, contrato e propriedade
 
+> **Atualização 2026-09-21 — [ADR-0009](../comum/docs/adr/0009-base-generica.md).** Onde este documento fala de porta de dados, `lerPedido`,
+> `API_BASE_URL` único, "uma zona fala com um domínio", o caso como critério de aceite ou fatia
+> somente leitura, vale o ADR-0009 e a base em `repos/` ([arquitetura atual](../../arquitetura/atual.md)).
+
 Terceira parte do desenho. [`00-arquitetura.md`](00-arquitetura.md) diz como a solução é
 feita e [`01-operacao.md`](01-operacao.md) como ela roda. Este diz o que **cada time**
 precisa saber para construir uma zona sem divergir das outras.

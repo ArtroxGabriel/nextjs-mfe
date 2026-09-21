@@ -8,6 +8,10 @@ status: aprovado para plano
 
 # Base MFE Multi-Zones — desenho da rodada 1
 
+> **Atualização 2026-09-21 — [ADR-0009](../../design-bff/comum/docs/adr/0009-base-generica.md).** Onde este documento fala de porta de dados, `lerPedido`,
+> `API_BASE_URL` único, "uma zona fala com um domínio", o caso como critério de aceite ou fatia
+> somente leitura, vale o ADR-0009 e a base em `repos/` ([arquitetura atual](../../arquitetura/atual.md)).
+
 Este documento desenha a **base** sobre a qual os micro front-ends do produto passam a ser
 construídos: quais repositórios existem, que camadas o núcleo tem, como uma camada é
 trocada ou estendida sem tocar em código de aplicação, e o que precisa estar rodando para

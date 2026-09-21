@@ -1,3 +1,7 @@
+> **Atualização 2026-09-21 — [ADR-0009](docs/design-bff/comum/docs/adr/0009-base-generica.md).** Onde este documento fala de porta de dados, `lerPedido`,
+> `API_BASE_URL` único, "uma zona fala com um domínio", o caso como critério de aceite ou fatia
+> somente leitura, vale o ADR-0009 e a base em `repos/` ([arquitetura atual](docs/arquitetura/atual.md)).
+
 O que falta para finalizar a arquitetura
 
 1. O que a arquitetura prometia

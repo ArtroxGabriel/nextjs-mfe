@@ -1,268 +1,162 @@
-# Arquitetura atual
+# Arquitetura atual — base genérica em `repos/`
 
-> **O que isto descreve:** o código que está no branch `bff-multizone` hoje, e nada além.
-> Para onde a base deve chegar, veja [`alvo.md`](alvo.md). A distância entre os dois está
-> no fim de `alvo.md`.
->
-> Diagramas em Mermaid: o GitHub e a maioria dos editores os renderizam direto.
+> **O que isto descreve:** o código de `repos/` hoje, e nada além. Decisões no
+> [ADR-0009](../design-bff/comum/docs/adr/0009-base-generica.md). Para onde a base ainda vai,
+> veja [`alvo.md`](alvo.md); a distância entre os dois está no fim dele. A PoC `apps/`, congelada,
+> está em [`poc-congelada.md`](poc-congelada.md).
 
 ---
 
 ## 1. Visão geral
 
-Dois processos Next.js independentes e um pacote de código-fonte compartilhado. O navegador
-só conversa com o **shell**; o shell repassa por HTTP tudo o que é da **zona**.
-
-```mermaid
-flowchart LR
-    B["🌐 Navegador<br/>http://localhost:3000"]
-
-    subgraph SHELL["apps/host — Shell · porta 3000"]
-        MW["middleware.ts<br/>sonda a zona antes do rewrite"]
-        RW["next.config.js · rewrites()<br/>/remote-app · /remote-app/:path* · /remote-app-static/:path*"]
-        HP["páginas do shell<br/>/ · /erro-de-zona"]
-    end
-
-    subgraph ZONA["apps/remote-app — Zona · porta 3001<br/>basePath /remote-app · assetPrefix /remote-app-static"]
-        ZP["páginas<br/>/ (abas por ?tab=) · /mapa/[cidade]"]
-        API["APIs<br/>/api/health · /api/server-data · /api/sse-events"]
-        FR["/_fragmento/[name]/[id]<br/>HTML inerte"]
-    end
-
-    UI[["packages/shell-ui<br/>Header · SideNavigation · ShellLayout · ToastContainer · MFE_EVENTS"]]
-
-    B -->|"/"| HP
-    B -->|"/remote-app/**"| MW
-    MW -->|"zona saudável"| RW
-    MW -->|"zona fora: 503"| B
-    RW -->|"proxy HTTP"| ZP
-    RW -->|"proxy HTTP"| API
-    RW -->|"proxy HTTP"| FR
-    MW -.->|"GET /remote-app/api/health<br/>cache de 1 s"| API
-
-    UI -. "compilado dentro (transpilePackages)" .-> SHELL
-    UI -. "compilado dentro (transpilePackages)" .-> ZONA
-```
-
-| Peça | Responsabilidade | Não faz |
-|---|---|---|
-| **Shell** (`apps/host`) | Porta de entrada; página inicial; repassa `/remote-app/**` à zona; responde a queda da zona com `/erro-de-zona` | Não acessa dados de domínio (sem DAL); não renderiza nada da zona |
-| **Zona** (`apps/remote-app`) | Painel com SSR, abas por query, rota de caminho, SSE, mapa, cache de servidor, fragmento, health | Não conhece o shell; só sabe que vive sob `/remote-app` |
-| **`@mfe/shell-ui`** | A moldura visual idêntica nas duas apps e o nome dos eventos entre elas | Não é carregado em runtime: é código-fonte compilado separadamente em cada app |
-
----
-
-## 2. Um pedido com a zona no ar
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant N as Navegador
-    participant S as Shell :3000<br/>(middleware + rewrites)
-    participant C as Cache de vivacidade<br/>(1 s, no processo do shell)
-    participant Z as Zona :3001
-
-    N->>S: GET /remote-app?tab=map
-    S->>C: a zona está saudável?
-    alt cache vazio ou vencido
-        C->>Z: GET /remote-app/api/health (timeout 800 ms)
-        Z-->>C: 200 {"ok":true}
-    end
-    C-->>S: saudável
-    S->>Z: proxy GET /remote-app?tab=map
-    Note over Z: getServerSideProps lê ?tab=map<br/>renderiza ShellLayout + abas + mapa
-    Z-->>S: 200 HTML
-    S-->>N: 200 HTML
-    N->>S: GET /remote-app-static/_next/static/chunks/…
-    S->>Z: proxy (sem passar pela página)
-    Z-->>N: JS/CSS da zona
-```
-
-Pontos que o diagrama mostra e que costumam surpreender:
-
-- **O navegador nunca vê a porta 3001.** Assets da zona saem por `/remote-app-static/…`,
-  não por `/_next/…`, porque as duas apps teriam `/_next` e colidiriam.
-- **O middleware não olha o caminho.** Quem decide se o pedido é da zona é o `matcher`
-  (os mesmos três literais dos rewrites). Olhar `request.nextUrl.pathname` já deixou pedidos
-  como `/remote-app/..` chegarem à zona morta sem sonda; há teste que proíbe ler a requisição.
-- **Rotas diferenciam maiúsculas** (`experimental.caseSensitiveRoutes`): `/REMOTE-APP` fica
-  no shell e recebe 404.
-
-## 3. Um pedido com a zona fora
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant N as Navegador
-    participant S as Shell :3000
-    participant C as Cache de vivacidade
-    participant Z as Zona :3001 (fora)
-
-    N->>S: GET /remote-app
-    S->>C: a zona está saudável?
-    C->>Z: GET /remote-app/api/health
-    Z--xC: conexão recusada / timeout 800 ms
-    C-->>S: fora (guardado por 1 s)
-    S-->>N: 503 · text/html · Retry-After: 5<br/>página /erro-de-zona (sem JS, sem rede)
-    N->>S: GET /
-    S-->>N: 200 — o shell continua no ar
-```
-
-**Exceções medidas** (detalhe em `docs/design-bff/mfe/01-operacao.md` §5.1):
-
-| Situação | O que acontece |
-|---|---|
-| Até ~1 s depois de a zona **cair** | o cache ainda diz "saudável": o pedido vai à zona e volta 500 cru do Next |
-| Zona **travada** (processo vivo, sem resposta) dentro dessa janela | o pedido espera o timeout do proxy do Next (30 s) e recebe 500 |
-| Zona travada fora da janela | a cada expiração do cache, quem chega espera o resto da sonda (até 800 ms) e recebe 503 |
-| Zona sobe de novo | a primeira resposta 200 vem em ~1 s |
-
----
-
-## 4. Como a moldura é compartilhada
-
-Não há Module Federation nem bundle compartilhado em runtime. O pacote é **código-fonte**,
-e cada app o compila no próprio build.
+O navegador fala só com o shell (`:3000`). O shell repassa cada prefixo de zona por rewrite. Cada
+aplicação tem o próprio BFF e só chama domínio pelo **registro de destinos** do `@erp/nucleo`.
 
 ```mermaid
 flowchart TB
-    subgraph PKG["packages/shell-ui/src"]
-        H[Header.tsx]
-        SN[SideNavigation.tsx]
-        SL[ShellLayout.tsx]
-        TC[ToastContainer.tsx]
-        EV["events.ts<br/>MFE_EVENTS.TOAST = 'mfe:toast'"]
-        CSS[shell-layout.css]
-    end
+    B["🌐 Navegador<br/>cookie __Host-session (id opaco)"]
 
-    subgraph HB["build do shell (.next de apps/host)"]
-        HL["components/HostLayout.tsx"]
-        HE["lib/events.ts<br/>re-exporta MFE_EVENTS"]
+    subgraph SHELL["erp-shell :3000"]
+        GW["rewrites gerados de zonas.json<br/>/zona1 · /zona2 · /acesso (+ /&lt;id&gt;-static)"]
+        AUTH["/login · /api/auth/entrar · /api/auth/sair<br/>ÚNICO escritor da sessão"]
+        SH["/ (shell.inicio)"]
     end
+    Z1["erp-zona-1 :3001<br/>/zona1 · /zona1/relatorios · /zona1/recursos/[id]"]
+    Z2["erp-zona-2 :3002<br/>/zona2 (Server Action com If-Match)"]
+    ZA["erp-zona-acesso :3003<br/>/acesso"]
 
-    subgraph ZB["build da zona (.next de apps/remote-app)"]
-        ZI["pages/index.tsx"]
-        ZE["lib/events.ts<br/>re-exporta MFE_EVENTS"]
-    end
+    ST[("store de sessão<br/>arquivo em SESSAO_DIR<br/>shell escreve · todos leem")]
+    DP[("plataforma :4004")]
+    DA[("domínio A :4001")]
+    DB[("domínio B :4002")]
+    DC[("domínio C :4003")]
+    GA[("gestão de acesso :4010")]
 
-    PKG ==>|"transpilePackages: ['@mfe/shell-ui']"| HB
-    PKG ==>|"transpilePackages: ['@mfe/shell-ui']"| ZB
-    HL --> SL
-    ZI --> SL
-    EV --> HE
-    EV --> ZE
+    B --> SHELL
+    GW --> Z1 & Z2 & ZA
+    AUTH --> ST
+    SH & Z1 & Z2 & ZA -. lê .-> ST
+    SH --> DP
+    Z1 --> DA & DB
+    Z2 --> DC
+    ZA --> GA
+    SH & Z1 & Z2 & ZA -. "módulos permitidos" .-> GA
 ```
 
-Consequências práticas:
+Todos os domínios são falsos (`repos/erp-dominio-stub`), escutam só em `127.0.0.1` e recusam
+requisição com cabeçalho de navegador (`Origin`, `Sec-Fetch-*`).
 
-- **Mudou a moldura? Rebuild das duas apps.** Cada uma leva uma cópia compilada.
-- **O nome dos eventos tem uma definição só** (`events.ts`). Emissor e ouvinte não podem
-  divergir sem um teste falhar.
-- **Custo:** no primeiro salto shell → zona o navegador baixa de novo o framework do React
-  (~45 kB gzip), porque o cache do navegador é por URL e cada app serve o seu.
-- **Diferença visual conhecida (D11):** `apps/host/styles/globals.css` ainda redefine parte
-  das classes da moldura, então o espaçamento difere entre shell e zona.
+## 2. Pacotes
 
----
+| Pacote | Versão | O que tem | Quem usa |
+|---|---|---|---|
+| `@erp/contratos` | 0.2.0 | códigos de erro e mensagens; `ManifestoDeZona`, `ModuloPermitido`, `validarManifesto` | todos |
+| `@erp/nucleo` | 0.2.2 | `criarNucleo`, registro de destinos, sessão leitor/escritor, `acessoHttp`, `identidadeDev`, `criarProxy`, `pode` | shell e zonas |
+| `@erp/moldura` | 0.1.1 | `<Moldura>` (topo, menu com `aria-current`, host de toast), `emitirToast`, flash | shell e zonas |
 
-## 5. O que acontece dentro da zona
+Publicados no Verdaccio local (`:4873`). Cada aplicação é um repositório com lockfile próprio.
+
+## 3. Uma navegação, do login ao módulo
+
+```mermaid
+sequenceDiagram
+    participant N as Navegador
+    participant S as Shell
+    participant ST as Store de sessão
+    participant Z as Zona 1
+    participant GA as Gestão de acesso
+    participant A as Domínio A
+
+    N->>S: POST /api/auth/entrar (usuario)
+    S->>ST: grava { sub, nome, token, expira } — só o shell
+    S-->>N: 303 · Set-Cookie __Host-session=<uuid> HttpOnly Secure
+    N->>S: GET /zona1/relatorios
+    S->>Z: rewrite (cookie repassado)
+    Note over Z: camada 1 — proxy: cookie existe? senão 307 /login
+    Z->>ST: lê a sessão pelo id (modo leitura)
+    Z->>GA: GET /v1/modulos-permitidos (Bearer do usuário)
+    Note over Z: camada 2 — módulo na lista? senão 404
+    Z->>A: GET /v1/recursos (destino do registro)
+    A-->>Z: projeção do ator (custo só para FINANCEIRO)
+    Z-->>N: HTML com <Moldura> e menu dos módulos permitidos
+```
+
+## 4. Registro de destinos (N8)
+
+Cada aplicação declara, em `lib/nucleo.ts`, os destinos que pode chamar:
+
+```ts
+'dominio-a': {
+  origem: process.env.DOMINIO_A_URL ?? 'http://127.0.0.1:4001',
+  caminhos: ['/v1/recursos', '/v1/recursos/:id'], metodos: ['GET'], credencial: 'usuario', timeoutMs: 2000,
+}
+```
+
+A página chama `nucleo.destino('dominio-a').get('/v1/recursos/:id', { params: { id } })`. O núcleo:
+
+- recusa destino, modelo ou método não declarado, **antes de qualquer chamada de rede**;
+- codifica o parâmetro e recusa `.`, `..`, vazio e byte de controle;
+- confere que a URL final tem a origem e o caminho esperados;
+- exige `If-Match` em PUT, PATCH e DELETE;
+- injeta `Authorization` e `x-erp-chamador`; nunca segue redirecionamento; aplica timeout;
+- normaliza o erro para `{ codigo, supportId }`.
+
+## 5. Gestão de acesso (N5, N6)
 
 ```mermaid
 flowchart LR
-    subgraph URL["O que vem na URL"]
-        Q1["/remote-app"]
-        Q2["/remote-app?tab=telemetry&filter=warn"]
-        Q3["/remote-app?tab=map"]
-        Q4["/remote-app/mapa/tokyo"]
-        Q5["/remote-app/mapa/atlantis"]
+    subgraph ZONAS["cada aplicação"]
+        M["acesso.manifesto.ts<br/>módulos · perfis · concessões padrão"]
     end
-
-    PQ["lib/dashboardQuery.ts<br/>valida tab · filter · city<br/>(valor desconhecido → padrão)"]
-
-    subgraph ABAS["Aba renderizada no servidor"]
-        A1["overview<br/>ServerCard (SSR + cache 5 s)"]
-        A2["telemetry<br/>RemoteTelemetry → EventSource"]
-        A3["map<br/>RemoteMap (MapLibre)"]
-        A4["metrics<br/>ServerCard + telemetria"]
-    end
-
-    Q1 --> PQ --> A1
-    Q2 --> PQ --> A2
-    Q3 --> PQ --> A3
-    Q4 -->|"pages/mapa/[cidade].tsx"| PQ
-    PQ -->|"cidade conhecida"| A3
-    Q5 -->|"cidade desconhecida"| NF["404"]
-
-    A2 -. "GET /remote-app/api/sse-events<br/>(mesma origem, passa pelo shell)" .-> SSE[("/api/sse-events<br/>text/event-stream")]
-    A1 -. "getServerData()" .-> CACHE[("cache em memória<br/>TTL 5 s por usuário")]
+    M -- "pnpm registrar<br/>token de serviço svc.&lt;zona&gt;" --> GA[("gestão de acesso")]
+    ZA["zona /acesso<br/>(carla)"] -- "perfil × módulo · restrito · usuário × perfil" --> GA
+    GA -- "módulos permitidos do usuário" --> MENU["menu da moldura<br/>e exigirModulo (404)"]
 ```
 
-- **Troca de aba é navegação de documento** (`<a>` comum): o servidor relê a query e
-  renderiza de novo. Nada de estado de aba no cliente.
-- **SSE usa caminho com `basePath`** (`/remote-app/api/sse-events`): funciona pelo shell e
-  direto na zona. Sem o prefixo, o pedido cairia no 404.
-- **Mapa**: o motor MapLibre carrega no navegador; os ladrilhos vêm de
-  `tile.openstreetmap.org` (precisa de internet).
+- Uma zona só registra o **próprio** manifesto; módulos e perfis têm o prefixo dela.
+- Perfil de zona só concede módulo da própria zona; perfis globais são `plataforma.*`.
+- Módulo livre: toda sessão válida vê. Módulo restrito: só perfis com concessão.
+- Revogação vale na próxima navegação: os módulos são consultados a cada renderização.
 
----
+| Ator | Perfis | Vê |
+|---|---|---|
+| ana | plataforma.usuario, zona2.operador | Início, Painel da zona 1, Tarefas |
+| bruno | plataforma.usuario, zona1.analista | Início, Painel da zona 1, Relatórios; `custo` no domínio A |
+| carla | plataforma.usuario, plataforma.admin-acesso | Início, Painel da zona 1, Gestão de acesso; **sem `custo`** |
+| davi | — | Início, Painel da zona 1 |
 
-## 6. Estado entre as páginas
+## 6. Moldura e toast entre zonas (N4)
+
+Cada aplicação renderiza `<Moldura>` com o menu que a gestão de acesso devolveu. Toast no mesmo
+documento: `emitirToast({ tipo, texto })`. Toast que atravessa zona: a Server Action grava o
+cookie `__Host-flash` e devolve o destino; a ilha troca o documento com `location.assign`; o
+próximo documento, de qualquer zona, lê o cookie no servidor e o renderiza, e o host de toast o
+apaga ao montar. A action não usa `redirect()` para outra zona: ver a limitação 11 em
+`docs/design-bff/mfe/limitações-mfe-multizone.md`.
 
 ```mermaid
-flowchart TB
-    subgraph DOC1["Documento do shell (/)"]
-        H1["Header · seletor de sessão"]
-        T1["ToastContainer"]
-    end
-    subgraph DOC2["Documento da zona (/remote-app)"]
-        H2["Header · seletor de sessão"]
-        T2["ToastContainer"]
-        S2["RemoteTelemetry · EventSource"]
-    end
-
-    LS[("localStorage da origem :3000<br/>chave host_user_session")]
-
-    H1 -- "grava ao trocar usuário" --> LS
-    LS -- "lido depois de carregar (useEffect)" --> H2
-    H2 -- "grava ao trocar usuário" --> LS
-
-    H1 -- "CustomEvent 'mfe:toast' no window" --> T1
-    H2 -- "CustomEvent 'mfe:toast' no window" --> T2
-
-    DOC1 == "clique em <a href=/remote-app><br/>o documento é destruído" ==> DOC2
+sequenceDiagram
+    participant N as Navegador
+    participant Z2 as Zona 2
+    participant C as Domínio C
+    participant Z1 as Zona 1
+    N->>Z2: POST /zona2 · Next-Action (Server Action concluirTarefa)
+    Z2->>Z2: exigirNaAcao: sessão + módulo zona2.tarefas
+    Z2->>C: POST /v1/tarefas/t-1/concluir · If-Match "1"
+    Z2-->>N: { destino: "/zona1" } · Set-Cookie __Host-flash
+    N->>Z1: location.assign("/zona1") — novo documento
+    Z1-->>N: HTML com o toast "Tarefa concluída."
+    Note over N: host de toast apaga o cookie: aparece uma vez
 ```
-
-| Estado | Como vive hoje | Limite |
-|---|---|---|
-| **Sessão** | espelhada no `localStorage` da origem do shell | só no cliente e depois do carregamento; o HTML do servidor mostra sempre o usuário padrão (D3) |
-| **Toast** | `CustomEvent` no `window` do documento atual | não atravessa navegação (nem deve) |
-| **SSE** | um `EventSource` por documento | cai a cada troca de zona; o servidor não libera o intervalo quando o cliente sai (D1) |
-| **Cache de servidor** | `Map` em memória na zona, 5 s | por processo; some ao reiniciar |
-| **Aba, filtro, cidade** | na URL | é estado de tela: não precisa sobreviver |
-
----
 
 ## 7. O que cada teste protege
 
-```mermaid
-flowchart LR
-    subgraph T["pnpm check (sem servidores)"]
-        U1["packages/shell-ui/test<br/>15 testes"]
-        U2["apps/remote-app/test<br/>36 testes"]
-        U3["apps/host/test<br/>47 testes"]
-        ST["smoke --offline<br/>STATIC-01..07"]
-    end
-    subgraph O["pnpm smoke (apps no ar)"]
-        ON["ONLINE-01..10"]
-    end
+| Suíte | Comando | Protege |
+|---|---|---|
+| `erp-contratos` | `pnpm test` (13) | manifesto: prefixo de zona, concessão entre zonas (D8), duplicatas |
+| `erp-nucleo` | `pnpm test` (57) | registro de destinos, sessão leitor/escritor, acesso, fronteira entre camadas, exports |
+| `erp-moldura` | `pnpm test` (10) | menu e `aria-current`, um `<h1>`, barramento de toast, flash |
+| `erp-dominio-stub` | `pnpm test` (15) | projeção e escopo do domínio A, If-Match no C, regras da gestão de acesso |
+| ponta a ponta | `node --test repos/verificacao/*.test.mjs` (20) | N3–N8 pelo shell, com os quatro atores; Server Actions pelo caminho do navegador (`Next-Action`) |
 
-    U1 --> M1["moldura renderizada, handlers, imports, CSS"]
-    U2 --> M2["health, fragmento, abas/query, rota /mapa, SSE path, espelho de sessão, emissão de toast"]
-    U3 --> M3["middleware real: 503, TTL, recuperação, caminhos repassados; página inicial; /erro-de-zona"]
-    ST --> M4["sem Module Federation, <a> entre zonas, shell sem DAL, rewrites, basePath"]
-    ON --> M5["shell, zona via shell e direto, fragmento, assets, /REMOTE-APP no shell"]
-```
-
-Fora da cobertura automática: o que roda só em `useEffect` no navegador (leitura do
-`localStorage`, assinatura do toast, abertura do `EventSource`, motor do mapa) — D9/D10.
-Esses itens estão no [roteiro de verificação manual](../ROTEIRO-DE-VERIFICACAO.md).
+Como rodar e conferir à mão: [`../ROTEIRO-DE-VERIFICACAO.md`](../ROTEIRO-DE-VERIFICACAO.md) §0.

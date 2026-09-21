@@ -1,5 +1,9 @@
 # Base MFE Multi-Zones — Fatia 1 Implementation Plan
 
+> **Atualização 2026-09-21 — [ADR-0009](../../design-bff/comum/docs/adr/0009-base-generica.md).** Onde este documento fala de porta de dados, `lerPedido`,
+> `API_BASE_URL` único, "uma zona fala com um domínio", o caso como critério de aceite ou fatia
+> somente leitura, vale o ADR-0009 e a base em `repos/` ([arquitetura atual](../../arquitetura/atual.md)).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Erguer a base MFE Multi-Zones somente leitura em que o cenário C1 de `00-caso.md` passa — quatro atores abrem `/pedidos/8821` e recebem quatro resultados distintos, com a credencial nunca chegando ao navegador.

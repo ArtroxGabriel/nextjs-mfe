@@ -5,9 +5,9 @@
 > desenho manda; este arquivo é o mapa visual dele. O que existe hoje está em
 > [`atual.md`](atual.md). A tabela do fim mostra o que falta.
 
-A PoC atual prova o mecanismo (Multi-Zones, rewrites, queda isolada, moldura comum). O alvo
-é um ERP com **várias zonas de times diferentes**, cada uma com BFF próprio e um único
-domínio, com sessão, autorização e composição feitas no servidor.
+A base genérica em `repos/` (ADR-0009) já tem shell, três zonas, gestão de acesso, registro de
+destinos e moldura comum. O alvo é um ERP com **várias zonas de times diferentes**, cada uma com
+BFF próprio e um ou mais domínios, com sessão, autorização e composição feitas no servidor.
 
 ---
 
@@ -156,17 +156,18 @@ flowchart LR
 
 | Tema | Hoje (`atual.md`) | Alvo | Primeiro passo sugerido |
 |---|---|---|---|
-| Framework | Next 15, Pages Router | Next 16, App Router (RSC, `proxy.ts`) | migrar uma zona e manter os testes de contrato |
-| Zonas | uma (`/remote-app`), nomeada no código em 6 lugares (`README.md` §5) | várias, declaradas num **mapa de zonas** que gera rewrites, allowlist e menu | extrair o mapa para configuração e derivar rewrites, matcher e navegação dele |
-| Vivacidade | uma sonda, um cache, middleware não lê o pedido | uma sonda por zona | cache por zona escolhido pelo caminho **cru**, com testes de `..` e `%2e%2e` |
-| Sessão | usuário simulado espelhado no `localStorage`, só no cliente (D3) | OIDC + cookie opaco + Redis compartilhado, lida no servidor por toda zona | porta de sessão do `@erp/nucleo` com adaptador fake, depois Redis |
-| Autorização | nenhuma | só no domínio; fragmento responde 204 quando negado | contrato do fragmento já existe (200/204/405); falta a identidade |
-| Composição | fragmento de demonstração sem consumidor | `FragmentoRemoto` com timeout e circuit breaker | primeiro consumidor real numa segunda zona |
-| SSE | um `EventSource` por documento, direto na zona; vazamento de intervalo (D1) | `/api/stream` no shell + `SharedWorker` | corrigir D1 e mover o stream para o shell |
-| Moldura / design system | `@mfe/shell-ui` no workspace, código-fonte compilado em cada app | `@erp/ui` publicado com semver tolerante | publicar no registry local (`repos/`) |
-| Núcleo e contratos | não usados pela PoC | `@erp/nucleo` e `@erp/contratos` com lockstep no CI | já em desenvolvimento em `repos/erp-nucleo`, `repos/erp-contratos` |
-| Deploy | local, `pnpm start` | repositórios e deploys independentes, lockstep | — |
-| Testes | unitários + estáticos + smoke; efeitos no navegador sem cobertura (D9, D10) | suíte de invariantes por zona, rodando contra cada zona | adicionar renderizador de DOM ou E2E em navegador |
+| Framework | Next 16, App Router, `proxy.ts` | igual | — |
+| Zonas | shell + 3 zonas; rewrites gerados de `zonas.json` | mapa de zonas gerado dos manifestos registrados | ler prefixos e origens do domínio de gestão de acesso no boot do shell |
+| Login | `identidadeDev` (4 atores, sem senha) | OIDC + PKCE | adaptador OIDC da porta de identidade |
+| Store de sessão | arquivo em disco compartilhado | Redis compartilhado | adaptador `sessaoRedis` (leitor e escritor) |
+| Renovação de token | não existe; sessão de dev dura 30 min | endpoint interno do shell (ADR-0009, decisão 3) | depende das respostas do IdP (PENDENCIAS §4) |
+| Acesso a módulo | gestão de acesso federada, 404 para módulo negado | igual, com cache por versão de política se a medição pedir | medir a consulta por renderização |
+| Falha isolada de zona | **não existe**: zona fora devolve erro do gateway | shell serve página própria (a PoC fazia 503 com `Retry-After`) | portar a sonda de vivacidade da PoC para o `proxy.ts` do shell |
+| Composição | não há fragmento | `FragmentoRemoto` com timeout e circuit breaker | primeiro consumidor entre zona 1 e zona 2 |
+| SSE | não há | `/api/stream` no shell + `SharedWorker` | — |
+| Design system | `@erp/moldura` (moldura e toast) | `@erp/ui` publicado com semver tolerante | medir duplicação de bundle entre zonas antes |
+| Deploy | local; Verdaccio local | repositórios e deploys independentes, lockstep do núcleo no CI | gate de lockstep (task 11 do plano antigo) |
+| Operação | sem rate limiting nem rastreamento | rate limiting na borda, `trace_id` entre zonas | — |
 
 Referências: `docs/design-bff/mfe/00-arquitetura.md` (solução), `01-operacao.md`
 (roteamento, sessão, falha, deploy), `02-zonas.md` (estrutura e criação de zona),

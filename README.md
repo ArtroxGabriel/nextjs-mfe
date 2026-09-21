@@ -1,5 +1,36 @@
 # nextjs-mfe — base Multi-Zones com Next.js
 
+## Base genérica BFF + Multi-Zones (`repos/`) — o que vale hoje
+
+Desde 2026-09-21 ([ADR-0009](docs/design-bff/comum/docs/adr/0009-base-generica.md)) a arquitetura é
+validada em `repos/`, com Next 16 e App Router: um shell, duas zonas de negócio e uma zona de
+gestão de acesso, sem código de domínio no núcleo. A PoC `apps/` abaixo está **congelada** como
+evidência histórica.
+
+| Parte | Onde | Porta | Papel |
+|---|---|---|---|
+| Shell | `repos/erp-shell` | 3000 | login, único escritor da sessão, rewrites das zonas, domínio próprio (avisos) |
+| Zona 1 | `repos/erp-zona-1` | 3001 | domínios A e B; módulo livre `/zona1` e restrito `/zona1/relatorios` |
+| Zona 2 | `repos/erp-zona-2` | 3002 | domínio C; Server Action com `If-Match` que leva o toast para a zona 1 |
+| Zona de acesso | `repos/erp-zona-acesso` | 3003 | perfil × módulo, restrição e usuário × perfil |
+| Pacotes | `repos/erp-{contratos,nucleo,moldura}` | — | publicados no Verdaccio local `:4873` |
+| Domínios falsos | `repos/erp-dominio-stub` | 4001–4004, 4010 | A, B, C, plataforma e gestão de acesso |
+
+```bash
+node repos/scripts/registry.mjs up                 # Verdaccio (docker compose)
+for d in repos/erp-{shell,zona-1,zona-2,zona-acesso,dominio-stub}; do (cd $d && pnpm install); done
+node --test repos/verificacao/*.test.mjs           # sobe tudo, verifica N3–N8 pelo shell, derruba (20 testes)
+node repos/scripts/subir-base.mjs                   # sobe tudo para uso manual em http://localhost:3000
+```
+
+Entre como `ana`, `bruno`, `carla` ou `davi`: cada um vê um menu diferente. O roteiro manual está
+em [`docs/ROTEIRO-DE-VERIFICACAO.md`](docs/ROTEIRO-DE-VERIFICACAO.md) §A e os diagramas em
+[`docs/arquitetura/atual.md`](docs/arquitetura/atual.md).
+
+---
+
+## PoC congelada (`apps/`)
+
 Prova de conceito de micro-frontends com **Next.js Multi-Zones nativo**: um shell (gateway) e
 uma zona autônoma, cada um em seu próprio processo, conversando só por HTTP. Substituiu a
 versão anterior com Module Federation (histórico em `WALKTHROUGH.md`).
@@ -15,7 +46,7 @@ são repassados à zona; se ela estiver fora, o shell responde 503 com a página
 
 | Quer… | Leia |
 |---|---|
-| entender como as peças se ligam hoje (com diagramas) | [`docs/arquitetura/atual.md`](docs/arquitetura/atual.md) |
+| entender como as peças da PoC se ligam (com diagramas) | [`docs/arquitetura/poc-congelada.md`](docs/arquitetura/poc-congelada.md) |
 | ver para onde a base vai e o que falta | [`docs/arquitetura/alvo.md`](docs/arquitetura/alvo.md) |
 | conferir com as próprias mãos a integração e as funcionalidades | [`docs/ROTEIRO-DE-VERIFICACAO.md`](docs/ROTEIRO-DE-VERIFICACAO.md) |
 
@@ -193,7 +224,8 @@ O desenho completo (mapa de zonas, contrato de fragmento, sessão, deploy) está
 
 | Documento | Para quê |
 |---|---|
-| `docs/arquitetura/atual.md` | Arquitetura atual com diagramas: visão geral, pedido com a zona no ar e fora, moldura compartilhada, zona por dentro, estado entre páginas, mapa de testes |
+| `docs/arquitetura/atual.md` | Base genérica em `repos/` com diagramas: topologia, navegação, registro de destinos, gestão de acesso, toast entre zonas, mapa de testes |
+| `docs/arquitetura/poc-congelada.md` | Arquitetura da PoC `apps/`, congelada em 2026-09-21 |
 | `docs/arquitetura/alvo.md` | Arquitetura alvo com diagramas e a tabela do que falta |
 | `docs/ROTEIRO-DE-VERIFICACAO.md` | Verificação manual, item a item, da integração e das funcionalidades base |
 | `TEST_READY.md` | Cada checagem STATIC/ONLINE e semântica de saída do smoke |

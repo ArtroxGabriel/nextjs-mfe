@@ -1,5 +1,23 @@
 # Deferred Defects & Scope Decisions
 
+## Congelamento da PoC `apps/` — decisão do humano em 2026-09-21
+
+A revisão `docs/revisao/2026-09-15-revisao-base-generica.md` §7 foi decidida: a base é validada em
+`repos/` (App Router) e a PoC `apps/` fica **congelada como evidência histórica** (ADR-0009). Nenhum
+item abaixo será corrigido na PoC. Cada um fecha como "encerrado por substituição" e o risco que ele
+descreve passa a ser requisito da base nova, verificado no gate dela.
+
+| Item | Trabalho feito na PoC (sem gate independente) | Onde o risco vive na base nova |
+|---|---|---|
+| D1 — SSE vaza intervalo | `23aecd1`: limpeza em `res`/`req`/`socket` + testes unitários; sem medição ao vivo com n>1 | Rodada 3 (SSE centralizado no shell); a base genérica não tem SSE |
+| D3 — sessão entre zonas | `53b7c9a`: cookie `host_user_session=<userId>`, legível por JS, escrito por host **e** zona | Resolvido pelo desenho: cookie opaco `__Host-session`, store compartilhado, shell escritor único |
+| D6/D7 — janela da sonda e zona travada | `aecd971` só torna o timeout da sonda configurável; o 500 após ~30 s (proxyTimeout) segue | Falha isolada de zona no shell da base nova; decisão operacional do `proxyTimeout` continua em aberto |
+| D9/D10 — testes de DOM | `bb3d051`: suíte happy-dom; exige `pnpm install --frozen-lockfile` | Moldura nova (`@erp/moldura`) testa o barramento de toast sem DOM |
+| D11 — moldura | `9b1a0b9` (CSS) e `bb3d051` (timers do toast); sessão espelhada e acessibilidade seguem | `@erp/moldura`: menu com `aria-current`, um `<h1>` por página, toast tipado |
+
+Histórico original abaixo.
+
+
 Tracked items that are real, verified, and deliberately NOT fixed in the milestone that found them.
 Each was escalated to the human, who decided the round it belongs to.
 
