@@ -57,7 +57,7 @@ export function formularios(html) {
  */
 export async function acaoPeloCliente({ app, arquivo, nome, caminho, campos, cookie, origem = SHELL }) {
   const manifesto = JSON.parse(readFileSync(join(RAIZ, app, '.next/server/server-reference-manifest.json'), 'utf8'))
-  const id = Object.entries(manifesto.node).find(([, v]) => v.exportedName === nome && v.filename === arquivo)?.[0]
+  const id = Object.entries(manifesto.node).find(([, v]) => v.exportedName === nome && (v.filename === arquivo || v.filename.endsWith('/' + arquivo) || v.filename.endsWith(arquivo)))?.[0]
   if (!id) throw new Error(`action ${arquivo}#${nome} fora do manifesto de ${app}`)
   const exigir = createRequire(join(RAIZ, app, 'package.json'))
   const { encodeReply } = exigir('next/dist/compiled/react-server-dom-webpack/client.edge.js')

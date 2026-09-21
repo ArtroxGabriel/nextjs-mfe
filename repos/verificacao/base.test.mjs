@@ -151,8 +151,10 @@ test('Server Action e reverificada no servidor: quem nao tem o modulo nao execut
 function todasAsAcoes() {
   return ['erp-shell', 'erp-zona-1', 'erp-zona-2', 'erp-zona-acesso'].flatMap((app) => {
     const m = JSON.parse(readFileSync(join(RAIZ, app, '.next/server/server-reference-manifest.json'), 'utf8'))
-    return Object.values(m.node).map(({ filename, exportedName }) =>
-      ({ app, arquivo: filename, nome: exportedName, caminho: '/' + filename.split('/')[1] }))
+    return Object.values(m.node).map(({ filename, exportedName }) => {
+      const seg = (filename.includes('app/') ? filename.split('app/')[1] : filename).split('/')[0]
+      return { app, arquivo: filename, nome: exportedName, caminho: '/' + seg }
+    })
   })
 }
 /** Quem tem o módulo de cada app com action: sem a checagem de origem, a action rodaria. */
@@ -215,7 +217,8 @@ test('invariante 16: toda Server Action de toda app recusa quem nao tem o modulo
   for (const app of ['erp-shell', 'erp-zona-1', 'erp-zona-2', 'erp-zona-acesso']) {
     const manifesto = JSON.parse(readFileSync(join(RAIZ, app, '.next/server/server-reference-manifest.json'), 'utf8'))
     for (const { filename, exportedName } of Object.values(manifesto.node)) {
-      const caminho = '/' + filename.split('/')[1]
+      const seg = (filename.includes('app/') ? filename.split('app/')[1] : filename).split('/')[0]
+      const caminho = '/' + seg
       const r = await acaoPeloCliente({ app, arquivo: filename, nome: exportedName, caminho, campos: { id: 't-2', versao: '1' }, cookie: davi })
       assert.match(r.corpo, /"destino":"\/"/, `${app} ${exportedName} nao reverificou o modulo`)
       total++
