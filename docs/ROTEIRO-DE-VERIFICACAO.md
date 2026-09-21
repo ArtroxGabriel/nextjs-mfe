@@ -22,7 +22,7 @@ Leva uns 10 minutos. A verificação automática faz o mesmo por HTTP:
 | A9 | Em outra janela anônima, entre como **bruno** e abra `/zona1/relatorios` | 404 e o item sumiu do menu, sem novo login; religue em A8 e ele volta | D7 |
 | A10 | Em `/acesso`, procure a célula `zona1.analista` × Tarefas | não existe: perfil de zona não concede módulo de outra zona | D8 |
 | A11 | Clique **Sair** e use o botão Voltar do navegador | qualquer página volta ao login: a sessão acabou em todas as zonas | N3 |
-| A12 | Derrube só a zona 2 (Ctrl-C no processo dela ou `kill` na porta 3002) e abra `/zona2` | 503 com `Retry-After: 5` e a página "zona indisponível"; `/` e `/zona1` seguem funcionando. Suba a zona de volta: em ~1,5 s `/zona2` volta | falha isolada de zona (**sem gate ainda**) |
+| A12 | Derrube só a zona 2 (Ctrl-C no processo dela ou `kill` na porta 3002) e abra `/zona2` | 503 com `Retry-After: 5` e a página "zona indisponível"; `/` e `/zona1` seguem funcionando. Suba a zona de volta: em até ~1,5 s `/zona2` volta (medido 0,8–1,2 s) | falha isolada de zona (**sem gate ainda**) |
 
 Limites conhecidos: login de desenvolvimento sem senha, store de sessão em arquivo e sem
 renovação de token (ver `alvo.md` §6). O item A12 descreve o comportamento implementado no shell,

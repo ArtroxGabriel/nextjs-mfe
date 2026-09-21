@@ -197,7 +197,7 @@ sequenceDiagram
 |---|---|
 | um domínio de negócio (ex.: A) | a página abre; o bloco daquele domínio diz "indisponível no momento" |
 | o domínio de gestão de acesso | a moldura sem menu e "Serviço indisponível" no HTML do servidor, sem a página: sem ele ninguém entra em módulo. O status continua 200 (o layout não o define) |
-| uma zona | o shell responde 503 com `Retry-After: 5` e uma página própria, em qualquer caixa do caminho; as outras zonas seguem. **Exceção medida:** logo depois da queda, enquanto a última sonda boa vale (cache de 1 s), requisições recebem o 500 cru do Next (até ~0,8 s, challenger_shell_1). Zona travada segura a requisição ~0,6 s (timeout da sonda). Ao voltar, a zona responde de novo em ~1,2 s |
+| uma zona | o shell responde 503 com `Retry-After: 5` e uma página própria, em qualquer caixa do caminho; as outras zonas seguem. **Exceção medida:** logo depois da queda, enquanto a última sonda boa vale (cache de 1 s), requisições recebem o 500 cru do Next (até ~0,8 s, challenger_shell_1). Zona travada segura a requisição ~0,6 s (timeout da sonda). Ao voltar, a zona responde de novo em 0,8–1,2 s (0,8 s se a última sonda já venceu; até 1,2 s se ainda vale; challenger_shell_1 e _2) |
 | o domínio falso de gestão de acesso é reiniciado | perde manifestos e concessões (estado em memória); `pnpm registrar` em cada app os recria. O domínio real persiste |
 
 Como rodar e conferir à mão: [`../ROTEIRO-DE-VERIFICACAO.md`](../ROTEIRO-DE-VERIFICACAO.md).

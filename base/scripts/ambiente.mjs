@@ -1,5 +1,5 @@
 import { spawn, execFileSync } from 'node:child_process'
-import { existsSync, mkdtempSync } from 'node:fs'
+import { existsSync, mkdtempSync, readdirSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -18,6 +18,24 @@ export const PORTAS_DE_DOMINIO = {
   'dominio-a': 4001, 'dominio-b': 4002, 'dominio-c': 4003, plataforma: 4004, 'gestao-acesso': 4010,
 }
 
+/** O que entra no build de uma aplicação: fonte, configuração e as versões de pacote travadas. */
+const ENTRADAS_DO_BUILD = ['app', 'lib', 'proxy.ts', 'next.config.ts', 'package.json', 'pnpm-lock.yaml', 'zonas.json', 'acesso.manifesto.ts']
+
+function maisRecente(caminho) {
+  if (!existsSync(caminho)) return 0
+  const st = statSync(caminho)
+  if (!st.isDirectory()) return st.mtimeMs
+  return Math.max(0, ...readdirSync(caminho).map((n) => maisRecente(join(caminho, n))))
+}
+
+/** Constrói só se não há build ou se alguma entrada do build é mais nova que ele. */
+export function precisaConstruir(dirDaApp) {
+  const id = join(dirDaApp, '.next', 'BUILD_ID')
+  if (!existsSync(id)) return true
+  const build = statSync(id).mtimeMs
+  return ENTRADAS_DO_BUILD.some((e) => maisRecente(join(dirDaApp, e)) > build)
+}
+
 async function esperar(url, ms = 60_000) {
   const fim = Date.now() + ms
   while (Date.now() < fim) {
@@ -29,6 +47,9 @@ async function esperar(url, ms = 60_000) {
 /**
  * Sobe a base inteira: domínios falsos, manifestos registrados, shell e zonas em modo
  * produção (`next start`). Cada execução usa um diretório de sessão novo.
+ *
+ * `construir`: `false` só constrói app sem build; `true` reconstrói só as apps cujo fonte mudou
+ * desde o último build (uma mutação no shell não refaz as zonas); `'tudo'` reconstrói todas.
  */
 export async function subir({ construir = false, log = false } = {}) {
   // Um processo antigo numa porta faria a verificação falar com a base errada (outro
@@ -94,7 +115,8 @@ export async function subir({ construir = false, log = false } = {}) {
 
     for (const { dir } of APPS) {
       const cwd = join(RAIZ, dir)
-      if (construir || !existsSync(join(cwd, '.next', 'BUILD_ID'))) {
+      const precisa = construir === 'tudo' || (construir ? precisaConstruir(cwd) : !existsSync(join(cwd, '.next', 'BUILD_ID')))
+      if (precisa) {
         execFileSync('pnpm', ['build'], { cwd, env, stdio: log ? 'inherit' : 'ignore' })
       }
     }

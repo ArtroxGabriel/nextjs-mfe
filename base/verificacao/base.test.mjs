@@ -17,7 +17,8 @@ before(async () => {
   coletor = createServer((req, res) => { lotesNoColetor.push(req.url); req.resume(); req.on('end', () => res.end()) })
   await new Promise((ok) => coletor.listen(0, '127.0.0.1', ok))
   process.env.OTEL_EXPORTER_OTLP_ENDPOINT = `http://127.0.0.1:${coletor.address().port}`
-  ambiente = await subir({ construir: process.env.CONSTRUIR === '1' })
+  // CONSTRUIR=1 reconstrói só as apps com fonte mais novo que o build; CONSTRUIR=tudo, todas
+  ambiente = await subir({ construir: process.env.CONSTRUIR === 'tudo' ? 'tudo' : process.env.CONSTRUIR === '1' })
 }, { timeout: 600_000 })
 after(() => { ambiente?.derrubar(); coletor?.close() })
 
@@ -436,6 +437,7 @@ test('L4/V2: telemetria descarta lote anonimo sem repassar; 413 em streaming; 42
   await new Promise((r) => setTimeout(r, 200))
   assert.equal(lotesNoColetor.length, 0, 'lote sem sessao foi repassado ao coletor')
   const bruno = (await entrar('bruno')).cookie
+  assert.equal((await post(bruno, 'isto nao e json')).status, 400, 'corpo nao-JSON deveria dar 400')
   assert.equal((await post(bruno, '{"ok":1}')).status, 204)
   await new Promise((r) => setTimeout(r, 200))
   assert.equal(lotesNoColetor.length, 1, 'lote com sessao nao chegou ao coletor')
@@ -470,4 +472,17 @@ test('L2/V3/C1: zona fora da 503 proprio, em qualquer caixa; as outras seguem; e
     if (st !== 200) await new Promise((r) => setTimeout(r, 100))
   }
   assert.equal(st, 200, 'a zona 2 nao voltou em 5 s depois de reerguida')
+})
+
+test('L5 (reviewer_shell_2): o shell apaga o cookie de flash com Secure, senao o navegador ignora e o toast repete', async () => {
+  const ana = (await entrar('ana')).cookie
+  const flash = encodeURIComponent(JSON.stringify({ tipo: 'sucesso', texto: 'Uma vez so', id: 'f1' }))
+  for (const caminho of ['/', '/zona1']) {
+    const r = await fetch(`${SHELL_URL}${caminho}`, { headers: { cookie: `${ana}; __Host-flash=${flash}` }, redirect: 'manual' })
+    const apaga = r.headers.getSetCookie().find((c) => c.startsWith('__Host-flash='))
+    assert.ok(apaga, `${caminho} nao apagou o cookie de flash`)
+    assert.match(apaga, /Max-Age=0/i, caminho)
+    assert.match(apaga, /;\s*Secure/i, `${caminho}: remocao de __Host- sem Secure e ignorada pelo navegador`)
+    assert.match(apaga, /Path=\//i, caminho)
+  }
 })

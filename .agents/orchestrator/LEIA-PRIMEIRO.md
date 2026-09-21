@@ -32,6 +32,11 @@ flowchart LR
 ```
 
 - Cada verificador escreve `.agents/<nome>/handoff.md`. Nome: `<papel>_<gate>_<n>`.
+- **O handoff é escrito desde o começo e atualizado a cada etapa concluída**, com a marca
+  "(parcial)" até o fim. Duas rodadas morreram no limite de sessão sem deixar nada; com o
+  rascunho, a próxima retoma de onde parou.
+- Mutações rodam com `CONSTRUIR=1`, que reconstrói só as apps com fonte mais novo que o build
+  (`precisaConstruir` em `base/scripts/ambiente.mjs`); `CONSTRUIR=tudo` força todas.
 - Verificador que já entregou handoff não é reusado; a rodada seguinte usa agentes novos.
 - O auditor tem **veto**: uma correção cujo teste não reprova quando o código é revertido não conta.
 - Só o challenger usa as portas; o auditor espera por elas.
