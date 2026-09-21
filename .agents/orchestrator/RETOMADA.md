@@ -58,6 +58,12 @@ Decisão do `arquiteto-mfe` registrada no ADR-0011. `@erp/nucleo` 0.5.0 traz `cr
    e commitar `docs/README.md` — **só depois que o challenger terminar** (a definição dele lê
    `docs/superpowers/specs/`); atualizar essa referência em `.claude/agents/simulador-condicoes.md`.
 
+## Pedido do humano para depois da saída do challenger (2026-09-21)
+
+Avaliar a reorganização do projeto, documentação **e** código, para ficar mais clara,
+autoexplicativa e simples. Entregar a avaliação com proposta antes de mover código; a mudança de
+pastas em `docs/` (passo 5 acima) entra nessa avaliação.
+
 ## Pendências com o humano
 
 - Confirmar no GitLab os avisos de `ATIVIDADES.md` §3.
