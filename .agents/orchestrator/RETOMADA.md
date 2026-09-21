@@ -28,8 +28,8 @@ auditor (L1–L4) entraram em `base/verificacao`: vermelhos antes, verdes depois
 **30/30** com build novo; shell 29/29. O teste N8 foi endurecido: o código original escapava dele
 com `globalThis['fetch']`.
 
-**Próximo:** iteração 2 com tríade nova (`reviewer_shell_2`, `challenger_shell_2`,
-`auditor_shell_2`), focada no diff da correção e nas mutações que sobreviveram na iteração 1.
+**Iteração 2 em andamento:** `reviewer_shell_2` e `challenger_shell_2` (dono das portas)
+despachados; `auditor_shell_2` (Opus) entra quando o challenger liberar as portas.
 
 ## Feito: fatia de núcleo da #10 (fragmentos)
 
