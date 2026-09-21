@@ -32,6 +32,11 @@ com `globalThis['fetch']`.
 despachados; `auditor_shell_2` (Opus) entra quando o challenger liberar as portas.
 (A primeira tentativa caiu no limite de sessão às ~19h; redespachada às 19h34, sem escrita parcial.)
 
+`reviewer_shell_2`: **REQUEST_CHANGES** — os 7 achados da iteração 1 resolvidos; novos: (1) `proxy.ts`
+do shell apaga `__Host-flash` sem `Secure` (o navegador rejeita; toast pode repetir no shell);
+(2) id de zona com maiúscula em `zonas.json` reabriria o C1 (normalizar/validar em `carregarZonas`);
+(3) 400 da telemetria sem teste. Corrigir junto com o que challenger e auditor trouxerem.
+
 Kit de app (C1/C2) desenhado pelo `arquiteto-mfe` e registrado no ADR-0012; implementar depois do gate. Gate de lockstep do núcleo feito
 (`base/scripts/verificar-lockstep.mjs`, no `pre-push`).
 

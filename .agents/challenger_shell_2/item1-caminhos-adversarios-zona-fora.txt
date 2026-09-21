@@ -1,0 +1,46 @@
+=== ITEM 1: zona morta + variantes de caixa/caminho, para zona1, zona2 e acesso ===
+
+--- derrubando erp-zona-2 (zona2) ---
+erp-zona-2 derrubada, TTL vencido
+erp-zona-2 morta, caminho="/ZONA2": status=503 content-type=text/html; charset=utf-8 retry-after=5 tamanho_corpo=1893 pagina_propria=true raw_500=false
+erp-zona-2 morta, caminho="/Zona2/x": status=503 content-type=text/html; charset=utf-8 retry-after=5 tamanho_corpo=1893 pagina_propria=true raw_500=false
+erp-zona-2 morta, caminho="/zONA2-static/a.js": status=503 content-type=text/html; charset=utf-8 retry-after=5 tamanho_corpo=1893 pagina_propria=true raw_500=false
+erp-zona-2 morta, caminho="/zona2/..": status=200 content-type=text/html; charset=utf-8 retry-after=null tamanho_corpo=10163 pagina_propria=false raw_500=false
+erp-zona-2 morta, caminho="/zona2/../zona2": status=503 content-type=text/html; charset=utf-8 retry-after=5 tamanho_corpo=1893 pagina_propria=true raw_500=false
+erp-zona-2 morta, caminho="/zona2%2F..": status=404 content-type=text/html; charset=utf-8 retry-after=null tamanho_corpo=6870 pagina_propria=false raw_500=false
+erp-zona-2 morta, caminho="/%7Aona2": status=404 content-type=text/html; charset=utf-8 retry-after=null tamanho_corpo=6870 pagina_propria=false raw_500=false
+erp-zona-2 morta, caminho="/zona2-static/../zona2": status=503 content-type=text/html; charset=utf-8 retry-after=5 tamanho_corpo=1893 pagina_propria=true raw_500=false
+erp-zona-2 morta, caminho="//zona2": status=308 content-type=null retry-after=null tamanho_corpo=6 pagina_propria=false raw_500=false
+erp-zona-2 morta, controle /zona2: status=503 pagina_propria=true
+erp-zona-2 reerguida
+erp-zona-2 confirmada de volta: true
+
+--- derrubando erp-zona-1 (zona1) ---
+erp-zona-1 derrubada, TTL vencido
+erp-zona-1 morta, caminho="/ZONA1": status=503 content-type=text/html; charset=utf-8 retry-after=5 tamanho_corpo=1893 pagina_propria=true raw_500=false
+erp-zona-1 morta, caminho="/Zona1/x": status=503 content-type=text/html; charset=utf-8 retry-after=5 tamanho_corpo=1893 pagina_propria=true raw_500=false
+erp-zona-1 morta, caminho="/zONA1-static/a.js": status=503 content-type=text/html; charset=utf-8 retry-after=5 tamanho_corpo=1893 pagina_propria=true raw_500=false
+erp-zona-1 morta, caminho="/zona1/..": status=200 content-type=text/html; charset=utf-8 retry-after=null tamanho_corpo=10163 pagina_propria=false raw_500=false
+erp-zona-1 morta, caminho="/zona1/../zona1": status=503 content-type=text/html; charset=utf-8 retry-after=5 tamanho_corpo=1893 pagina_propria=true raw_500=false
+erp-zona-1 morta, caminho="/zona1%2F..": status=404 content-type=text/html; charset=utf-8 retry-after=null tamanho_corpo=6870 pagina_propria=false raw_500=false
+erp-zona-1 morta, caminho="/%7Aona1": status=404 content-type=text/html; charset=utf-8 retry-after=null tamanho_corpo=6870 pagina_propria=false raw_500=false
+erp-zona-1 morta, caminho="/zona1-static/../zona1": status=503 content-type=text/html; charset=utf-8 retry-after=5 tamanho_corpo=1893 pagina_propria=true raw_500=false
+erp-zona-1 morta, caminho="//zona1": status=308 content-type=null retry-after=null tamanho_corpo=6 pagina_propria=false raw_500=false
+erp-zona-1 morta, controle /zona1: status=503 pagina_propria=true
+erp-zona-1 reerguida
+erp-zona-1 confirmada de volta: true
+
+--- derrubando erp-zona-acesso (acesso) ---
+erp-zona-acesso derrubada, TTL vencido
+erp-zona-acesso morta, caminho="/ACESSO": status=503 content-type=text/html; charset=utf-8 retry-after=5 tamanho_corpo=1894 pagina_propria=true raw_500=false
+erp-zona-acesso morta, caminho="/Acesso/x": status=503 content-type=text/html; charset=utf-8 retry-after=5 tamanho_corpo=1894 pagina_propria=true raw_500=false
+erp-zona-acesso morta, caminho="/aCESSO-static/a.js": status=503 content-type=text/html; charset=utf-8 retry-after=5 tamanho_corpo=1894 pagina_propria=true raw_500=false
+erp-zona-acesso morta, caminho="/acesso/..": status=200 content-type=text/html; charset=utf-8 retry-after=null tamanho_corpo=10163 pagina_propria=false raw_500=false
+erp-zona-acesso morta, caminho="/acesso/../acesso": status=503 content-type=text/html; charset=utf-8 retry-after=5 tamanho_corpo=1894 pagina_propria=true raw_500=false
+erp-zona-acesso morta, caminho="/acesso%2F..": status=404 content-type=text/html; charset=utf-8 retry-after=null tamanho_corpo=6870 pagina_propria=false raw_500=false
+erp-zona-acesso morta, caminho="/%7Acesso": status=404 content-type=text/html; charset=utf-8 retry-after=null tamanho_corpo=6870 pagina_propria=false raw_500=false
+erp-zona-acesso morta, caminho="/acesso-static/../acesso": status=503 content-type=text/html; charset=utf-8 retry-after=5 tamanho_corpo=1894 pagina_propria=true raw_500=false
+erp-zona-acesso morta, caminho="//acesso": status=308 content-type=null retry-after=null tamanho_corpo=7 pagina_propria=false raw_500=false
+erp-zona-acesso morta, controle /acesso: status=503 pagina_propria=true
+erp-zona-acesso reerguida
+erp-zona-acesso confirmada de volta: false

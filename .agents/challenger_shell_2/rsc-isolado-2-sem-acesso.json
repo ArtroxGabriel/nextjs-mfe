@@ -1,0 +1,33 @@
+{
+  "rotulo": "gestao-acesso FORA",
+  "status": 307,
+  "location": "/zona1/relatorios?_rsc=aJomb3j2qxVk0Zax",
+  "cabecalhos": [
+    [
+      "connection",
+      "keep-alive"
+    ],
+    [
+      "content-security-policy",
+      "default-src 'self'; script-src 'self' 'nonce-d00121b0b74b40958b005afb8d67357e' 'strict-dynamic'; style-src 'self' 'nonce-d00121b0b74b40958b005afb8d67357e'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+    ],
+    [
+      "date",
+      "Mon, 21 Sep 2026 22:43:10 GMT"
+    ],
+    [
+      "keep-alive",
+      "timeout=5"
+    ],
+    [
+      "location",
+      "/zona1/relatorios?_rsc=aJomb3j2qxVk0Zax"
+    ],
+    [
+      "transfer-encoding",
+      "chunked"
+    ]
+  ],
+  "tamanho": 0,
+  "corpo": ""
+}

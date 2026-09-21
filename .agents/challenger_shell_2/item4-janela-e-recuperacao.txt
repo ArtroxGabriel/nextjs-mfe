@@ -1,0 +1,49 @@
+=== ITEM 4: janela pos-queda e tempo de recuperacao (zona 2) ===
+load average no inicio do item 4: 0.74, 0.6, 0.4
+4.1 janela pos-queda (40 requisicoes concorrentes):
+  dt=18ms status=500 corpo="Internal Server Error"
+  dt=26ms status=500 corpo="Internal Server Error"
+  dt=30ms status=500 corpo="Internal Server Error"
+  dt=35ms status=500 corpo="Internal Server Error"
+  dt=38ms status=500 corpo="Internal Server Error"
+  dt=42ms status=500 corpo="Internal Server Error"
+  dt=47ms status=500 corpo="Internal Server Error"
+  dt=53ms status=500 corpo="Internal Server Error"
+  dt=60ms status=500 corpo="Internal Server Error"
+  dt=67ms status=500 corpo="Internal Server Error"
+  dt=72ms status=500 corpo="Internal Server Error"
+  dt=76ms status=500 corpo="Internal Server Error"
+  dt=79ms status=500 corpo="Internal Server Error"
+  dt=83ms status=500 corpo="Internal Server Error"
+  dt=87ms status=500 corpo="Internal Server Error"
+  dt=91ms status=500 corpo="Internal Server Error"
+  dt=96ms status=500 corpo="Internal Server Error"
+  dt=100ms status=500 corpo="Internal Server Error"
+  dt=103ms status=500 corpo="Internal Server Error"
+  dt=107ms status=500 corpo="Internal Server Error"
+  dt=111ms status=500 corpo="Internal Server Error"
+  dt=115ms status=500 corpo="Internal Server Error"
+  dt=119ms status=500 corpo="Internal Server Error"
+  dt=123ms status=500 corpo="Internal Server Error"
+  dt=128ms status=500 corpo="Internal Server Error"
+  dt=132ms status=500 corpo="Internal Server Error"
+  dt=143ms status=500 corpo="Internal Server Error"
+  dt=149ms status=500 corpo="Internal Server Error"
+  dt=153ms status=500 corpo="Internal Server Error"
+  dt=161ms status=500 corpo="Internal Server Error"
+  dt=157ms status=500 corpo="Internal Server Error"
+  dt=165ms status=500 corpo="Internal Server Error"
+  dt=168ms status=500 corpo="Internal Server Error"
+  dt=172ms status=500 corpo="Internal Server Error"
+  dt=178ms status=500 corpo="Internal Server Error"
+  dt=182ms status=500 corpo="Internal Server Error"
+  dt=185ms status=500 corpo="Internal Server Error"
+  dt=188ms status=500 corpo="Internal Server Error"
+  dt=190ms status=500 corpo="Internal Server Error"
+  dt=192ms status=500 corpo="Internal Server Error"
+4.1 resumo: {"500":40}, n=40
+4.2 rodada 1: primeiro 200 em 767ms (load avg 0.74,0.6,0.4)
+4.2 rodada 2: primeiro 200 em 786ms (load avg 1.16,0.69,0.43)
+4.2 rodada 3: primeiro 200 em 779ms (load avg 1.16,0.69,0.43)
+4.2 resumo n=3: [767,786,779]
+zona 2 permanece no ar ao final deste item para os proximos passos do script

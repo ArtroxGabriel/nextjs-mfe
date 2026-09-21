@@ -1,0 +1,18 @@
+[
+  {
+    "rotulo": "so RSC:1, sem router-state-tree",
+    "status": 307,
+    "location": "/zona1/relatorios?_rsc",
+    "contentType": null,
+    "tamanho": 0,
+    "corpo": ""
+  },
+  {
+    "rotulo": "RSC:1 + Next-Url:/zona1 (sem router-state-tree)",
+    "status": 307,
+    "location": "/zona1/relatorios?_rsc=wPzUIc_pBBfyvxEC",
+    "contentType": null,
+    "tamanho": 0,
+    "corpo": ""
+  }
+]

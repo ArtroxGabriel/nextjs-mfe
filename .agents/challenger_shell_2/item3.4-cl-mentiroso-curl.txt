@@ -1,0 +1,13 @@
+Comando: curl -s -D - -o /tmp/resp-cl-mentiroso.txt --max-time 5 -X POST http://localhost:3000/api/otel/v1/traces \
+  -H "cookie: __Host-session=8baf9ae2-22d6-4520-b9ee-d057d579984a" -H "content-type: application/json" \
+  -H "content-length: 10" --data-binary @/tmp/corpo-300k.txt   (corpo real = 300 KB, Content-Length declarado = 10)
+
+Saida bruta:
+HTTP/1.1 400 Bad Request
+Connection: close
+
+curl encerrou com codigo de saida 56 (falha ao receber dados de rede) apos o servidor fechar a
+conexao logo depois do 400 -- o corpo de 300 KB nunca terminou de ser enviado porque o parser HTTP
+do Node rejeita o framing inconsistente (Content-Length menor que o corpo) antes de entregar a
+requisicao ao route handler. Nenhum detalhe de framework vazado no corpo (corpo vazio). Resultado
+identico ao medido pela iteracao 1 do challenger (D5 / item6 do handoff anterior). n=1.
