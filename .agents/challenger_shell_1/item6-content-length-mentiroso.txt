@@ -1,0 +1,7 @@
+=== Content-Length diz 10 mas corpo real tem 300KB ===
+HTTP/1.1 400 Bad Request
+Connection: close
+
+
+=== Content-Length diz 300000 (grande) mas corpo real tem so 5 bytes ===
+

@@ -1,0 +1,14 @@
+{
+  "SESSAO_DIR": "/tmp/erp-sessoes-challenger-xxd3Di",
+  "pids": {
+    "dominio-a": 264287,
+    "dominio-b": 264288,
+    "dominio-c": 264289,
+    "plataforma": 264290,
+    "gestao-acesso": 264291,
+    "erp-shell": 264567,
+    "erp-zona-1": 264568,
+    "erp-zona-2": 268816,
+    "erp-zona-acesso": 264572
+  }
+}

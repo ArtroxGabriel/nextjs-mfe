@@ -158,3 +158,15 @@ stub 1517c5e (um processo por domínio), shell 6e05e55, zona-1 a315918, zona-2 8
 (indisponibilidade no HTML do servidor). Verificação: pacotes 15/60/16/16; ponta a ponta 26/26, com Origin em toda action
 de toda app, toast uma vez com pote de cookies, domínios derrubados um a um e restrição de módulo comportamental.
 Mutantes do auditor conferidos pelo orquestrador: X22 e X6 agora reprovam a moldura.
+
+## Gate — Shell novo (Gabriel), iteração 1, erp-shell a63b995 / zonas bac6d37…
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_shell_1 | revisor-mfe (sonnet) | REQUEST_CHANGES | .agents/reviewer_shell_1/handoff.md | fail-open de `exigirModulo` nas 4 apps; `proxy.ts` do shell reimplementa CSP sem `form-action`/`img-src`; telemetria sem `Content-Length` bufferiza tudo; limitador não expira. Refutou R1 (caminho normalizado) e a sonda em página com sessão |
+| challenger_shell_1 | simulador-condicoes (sonnet) | REQUEST_CHANGES | .agents/challenger_shell_1/handoff.md | C1: `/ZONA2` (maiúsculas) escapa da sonda → 500 cru; janela de 500 cru até ~0,8 s após a queda; recuperação 1,2 s; zona travada segura ~0,6 s; telemetria aceita 20 MB sem `Content-Length`. 26/26 |
+| auditor_shell_1 | general-purpose forense (opus) | **INTEGRITY VIOLATION** | .agents/auditor_shell_1/handoff.md, mutacoes.txt | V1 **vazamento medido**: gestão de acesso fora → quem não tem módulo recebe o conteúdo restrito no payload RSC; fail-open e fail-closed indistinguíveis nas suítes. V2 `/api/otel` anônimo é repassado ao coletor. V3 503 só testado na função pura (500 cru, TTL infinito, sem timeout sobrevivem). Testes mínimos em `anexos/lacunas.test.mjs` |
+
+Gate Result: **FAIL** (veto do auditor + dois REQUEST_CHANGES). Rodada de correção: fail-closed nas 4 apps
+com o teste L1 do auditor; telemetria descarta anônimo e limita em streaming; C1 case-insensitive; CSP do
+shell alinhada; L2–L4 na verificação ponta a ponta.

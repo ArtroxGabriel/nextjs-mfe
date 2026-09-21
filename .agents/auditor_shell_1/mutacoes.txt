@@ -1,0 +1,78 @@
+auditor_shell_1 — mutações contra o shell novo (erp-shell 666216c = a63b995 + lockfile; zonas 530225d/e2b3ffc/da97b70)
+Cópia: scratchpad/repos-copia (cp -a de repos/, com node_modules; cada submódulo com .git próprio, symlinks
+conferidos dentro da cópia). A árvore real não foi editada.
+Método: anexos/muts.mjs (catálogo: arquivo, trecho, troca; falha se o trecho não existe), anexos/mutacoes.sh
+(aplica, grava o diff, roda, `git checkout -- .` na cópia), anexos/rodar.sh (unidade do shell:
+`node --test test/*.test.mjs`; e2e: `CONSTRUIR=1 node --test verificacao/*.test.mjs`, reconstrói as 4 apps).
+Linha de base na cópia: shell 22/22, e2e 26/26 (com CONSTRUIR=1).
+"—" = não rodado naquela suíte (mutação só em função pura, sem efeito no build além do que a unidade já vê).
+
+RESUMO  (PEGA = alguma suíte reprovou; SOBREVIVE = tudo verde)
+
+Sonda e decisão
+M1   sonda removida (saudavel = true)                              PEGA  unidade "Cenario 1"; e2e 26/26 verde
+M2   inverte saudável/indisponível na decisão                      PEGA  unidade (3) + e2e 19 falhas
+M2b  inverte o limiar da sonda (status >= 500 = saudável)          PEGA  unidade (5)
+M3   TTL infinito (expiraEm: Infinity)                             SOBREVIVE  unidade 22/22
+M3b  TTL ignorado (entrada vale para sempre)                       SOBREVIVE  unidade 22/22
+M13  asset estático antes da sonda (zona morta: rewrite cru)       SOBREVIVE  unidade 22/22
+M14  timeout da sonda 500 ms -> 600 s                              SOBREVIVE  unidade 22/22
+M14b sonda sem timeout nenhum                                      SOBREVIVE  unidade 22/22
+M15  qualquer resposta = saudável (status >= 500 não derruba)      SOBREVIVE  unidade 22/22
+M19  zona viva sem cookie prossegue (sem 307)                      PEGA  unidade "zona ativa sem cookie"
+
+503 e cabeçalhos
+M4a  decisão: 500 e sem Retry-After (literal; quebra o tsc)        PEGA  unidade "Cenario 1"; e2e = build falhou (não conta)
+M4a2 decisão: 500 e sem Retry-After (tipo-válido)                  PEGA  unidade "Cenario 1"; e2e 26/26 verde
+M4b  proxy.ts: 500 cru (com código morto; quebra o build)          e2e = build falhou (não conta); unidade 22/22
+M4b2 proxy.ts: 500 cru "Internal Server Error", sem cabeçalhos     SOBREVIVE  unidade 22/22, e2e 26/26
+M4c  proxy.ts: 503 sem cabeçalho nenhum (sem Retry-After/no-store) SOBREVIVE  unidade 22/22, e2e 26/26
+M5   decisão: sem cache-control no-store                           PEGA  unidade "Cenario 1"
+M5b  proxy.ts: no-store trocado por public, max-age=3600           SOBREVIVE  unidade 22/22, e2e 26/26
+
+Telemetria
+M6a  processarLote sem a checagem de sessão                        SOBREVIVE  unidade 22/22 (o teste de 204 passa porque o lote aceito também é 204)
+M6b  route.ts: sessaoValida sempre true                            SOBREVIVE  unidade 22/22, e2e 26/26
+     (o código atual já repassa ao coletor o lote sem sessão: ver V2 no handoff)
+M7a  processarLote sem o 413                                       PEGA  unidade "payload acima de 256 KB"
+M7b  route.ts: tamanho sempre 0 (413 nunca dispara na rota)        SOBREVIVE  unidade 22/22, e2e 26/26
+M8a  processarLote sem o 429                                       PEGA  unidade "taxa excedida"
+M8b  route.ts: limitador de 1e9 lotes (429 nunca dispara na rota)  SOBREVIVE  unidade 22/22, e2e 26/26
+M18  /api/* inteiro vira "telemetria" (sem cookie)                 SOBREVIVE  unidade 22/22, e2e 26/26
+
+exigirModulo (4 apps)
+M9   volta ao fail-closed (bac6d37^: sem try/catch)                e2e 26/26 verde — NENHUMA suíte distingue fail-open de fail-closed
+M9b  exigirModulo nunca nega (só consulta)                         PEGA  e2e N5/D6, N6/N5, invariante 16 comportamental
+
+proxy.ts do shell: CSP, flash, cabeçalhos
+M10  remove headers.delete('x-erp-flash')                          SOBREVIVE  e2e 26/26 (o teste só usa /zona1, onde o proxy da zona apaga)
+M11a remove o nonce do script-src                                  PEGA  e2e "CSP com nonce" (/: script sem nonce)
+M11b troca os dois nonces por 'unsafe-inline'                      PEGA  e2e "CSP com nonce"
+M11c x-nonce fixo na requisição                                    SOBREVIVE  e2e 26/26 (ninguém lê x-nonce; equivalente)
+M16  não apaga o cookie de flash no shell                          SOBREVIVE  e2e 26/26 (N4 consome em /zona1, pelo proxy da zona)
+M17  rotas públicas sem CSP                                        SOBREVIVE  e2e 26/26
+M20  x-erp-caminho fixo em '/'                                     SOBREVIVE  e2e 26/26
+
+C1
+M12  encontrarZonaPorCaminho case-insensitive (correção do C1)     unidade 22/22, e2e 26/26 — nenhum teste muda: a correção não seria protegida
+
+verificacao (commit 32083d6 do principal)
+V1   e2e com apoio.mjs e base.test.mjs de 32083d6^                 26/26 — a mudança é inócua nos builds atuais
+     (o manifesto traz filename 'app/zona2/acoes.ts'; o segmento sai igual nas duas versões)
+
+SONDA AO VIVO (anexos/sonda.mjs; builds da cópia; saída em anexos/sonda-base.txt e sonda-M9.txt)
+Código atual (fail-open), gestão de acesso (:4010) derrubada, davi sem módulo nenhum:
+  /zona1/relatorios -> 200, "Serviço indisponível" visível, e o payload RSC no mesmo HTML traz
+  ["$","h1",...,"Relatórios"],["$","p",...,[2," recursos no seu escopo; ",0," com custo visível."]]
+  /zona1 -> 200, payload RSC contém "Painel da zona 1"
+  bruno em /zona1/relatorios -> 3 recursos, 3 com custo
+Com M9 (fail-closed): as mesmas 4 requisições -> 200, "Serviço indisponível", nenhum dado de módulo no HTML.
+Zona 2 morta (SIGKILL, após 1,5 s): /zona2 503 Retry-After 5 no-store; /zona2-static/... 503; /ZONA2 500 cru;
+  / e /zona1 200. CSP em /zona1: um cabeçalho só, o da zona (com img-src e form-action).
+
+TESTES MÍNIMOS (anexos/lacunas.test.mjs, rodados só na cópia) contra as mutações (anexos/lacunas-vs-mutacoes.txt)
+Base atual:  L1 FALHA (vazamento acima); L2 passa sem /ZONA2, falha com CAIXA=1 (C1); L3 passa;
+             L4 passa sem REPASSE, falha com REPASSE=1 (lote sem sessão chega ao coletor)
+M9 (fail-closed): L1 passa
+M4b2 -> L2 falha | M4c -> L2 falha | M3 -> L2 falha | M5b -> L2 falha | M10 -> L3 falha
+M7b -> L4 falha | M8b -> L4 falha | M17 -> nenhum (falta um teste de CSP em /login)

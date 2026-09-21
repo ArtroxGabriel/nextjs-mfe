@@ -43,7 +43,8 @@
   `node --test <pasta>` roda zero testes e sai com 0.
 - Núcleo: `node --conditions react-server --test test/*.test.mjs`, depois de `tsc -p tsconfig.json`.
 - Ponta a ponta: `pnpm verificar` (usa os builds existentes) ou `pnpm verificar:construir` (refaz).
-  Esperado hoje: 26/26.
+  Esperado hoje: 30/30.
+- Um teste estático que dá para contornar (`globalThis['fetch']` no lugar de `fetch(`) foi contornado. Checagem por regex tem de cobrir as formas indiretas, e todo contorno achado vira caso do teste.
 - **Um dono por vez para as portas** 3000–3003, 4001–4004 e 4010. Num gate, só o challenger sobe
   servidores; o auditor espera. O Verdaccio (4873) ninguém derruba.
 - Não existe `tsx` nem `rtk` nesta máquina; não buscar.

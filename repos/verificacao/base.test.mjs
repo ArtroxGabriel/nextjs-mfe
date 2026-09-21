@@ -5,12 +5,21 @@ import { test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { subir, RAIZ } from '../scripts/ambiente.mjs'
+import { createServer } from 'node:http'
+import { subir, RAIZ, SHELL as SHELL_URL } from '../scripts/ambiente.mjs'
 import { pedir, entrar, menu, formularios, valorDoCookie, acaoPeloCliente } from './apoio.mjs'
 
 let ambiente
-before(async () => { ambiente = await subir({ construir: process.env.CONSTRUIR === '1' }) }, { timeout: 600_000 })
-after(() => ambiente?.derrubar())
+// Coletor OTLP falso: prova que o gateway de telemetria do shell só repassa lote de quem tem sessão.
+let coletor
+const lotesNoColetor = []
+before(async () => {
+  coletor = createServer((req, res) => { lotesNoColetor.push(req.url); req.resume(); req.on('end', () => res.end()) })
+  await new Promise((ok) => coletor.listen(0, '127.0.0.1', ok))
+  process.env.OTEL_EXPORTER_OTLP_ENDPOINT = `http://127.0.0.1:${coletor.address().port}`
+  ambiente = await subir({ construir: process.env.CONSTRUIR === '1' })
+}, { timeout: 600_000 })
+after(() => { ambiente?.derrubar(); coletor?.close() })
 
 const TOKEN = /dev\.(ana|bruno|carla|davi)\.[0-9a-f-]{36}/
 
@@ -345,7 +354,8 @@ test('N8: nenhuma zona monta URL; toda saida passa pelo registro de destinos do 
       const base = join(RAIZ, zona, dir)
       const fontes = (d) => readdirSync(d).flatMap((n) => statSync(join(d, n)).isDirectory() ? fontes(join(d, n)) : [join(d, n)])
       for (const f of fontes(base)) {
-        assert.ok(!/\bfetch\(/.test(readFileSync(f, 'utf8')), `${f} chama fetch direto`)
+        // também o acesso indireto (`globalThis['fetch']`), que escapava da primeira versão desta checagem
+        assert.ok(!/\bfetch\(|globalThis\s*(\.|\[)\s*['"`]?fetch/.test(readFileSync(f, 'utf8')), `${f} chama fetch direto`)
       }
     }
   }
@@ -388,4 +398,76 @@ test('D4: gestao de acesso fora da a pagina de servico indisponivel, sem detalhe
     }
   } finally { await ambiente.subirDominio('gestao-acesso') }
   assert.equal((await pedir('/zona1', { cookie: ana })).status, 200, 'voltou depois de reenviar os manifestos')
+})
+
+// ---------------------------------------------------------------------------------------------
+// Gate "Shell novo", iteração 1: testes mínimos do auditor_shell_1 (.agents/auditor_shell_1/),
+// cada um reprovando uma mutação que antes deixava todas as suítes verdes.
+
+test('L1/V1: gestao de acesso fora nao entrega pagina de modulo, nem no payload RSC', async () => {
+  const davi = (await entrar('davi')).cookie
+  const bruno = (await entrar('bruno')).cookie
+  await ambiente.derrubarDominio('gestao-acesso')
+  try {
+    for (const [quem, cookie] of [['davi', davi], ['bruno', bruno]]) {
+      for (const c of ['/zona1', '/zona1/relatorios']) {
+        const r = await pedir(c, { cookie })
+        assert.ok(!/Painel da zona 1|Relatórios|recursos no seu escopo|com custo/.test(r.html),
+          `${quem} ${c}: conteudo do modulo chegou com a gestao de acesso fora`)
+      }
+    }
+  } finally { await ambiente.subirDominio('gestao-acesso') }
+})
+
+test('L3: cabecalho de flash forjado pelo cliente nao aparece nas paginas do proprio shell', async () => {
+  const ana = (await entrar('ana')).cookie
+  const falso = encodeURIComponent(JSON.stringify({ tipo: 'erro', texto: 'Forjado pelo cliente', id: 'x1' }))
+  const r = await pedir('/', { cookie: ana, cabecalhos: { 'x-erp-flash': falso } })
+  assert.ok(!r.html.includes('Forjado pelo cliente'))
+})
+
+test('L4/V2: telemetria descarta lote anonimo sem repassar; 413 em streaming; 429 no 61o lote', async () => {
+  const post = (cookie, body) => fetch(`${SHELL_URL}/api/otel/v1/traces`, {
+    method: 'POST', body, duplex: 'half',
+    headers: { 'content-type': 'application/json', ...(cookie ? { cookie } : {}) },
+  })
+  lotesNoColetor.length = 0
+  assert.equal((await post(null, '{}')).status, 204)
+  await new Promise((r) => setTimeout(r, 200))
+  assert.equal(lotesNoColetor.length, 0, 'lote sem sessao foi repassado ao coletor')
+  const bruno = (await entrar('bruno')).cookie
+  assert.equal((await post(bruno, '{"ok":1}')).status, 204)
+  await new Promise((r) => setTimeout(r, 200))
+  assert.equal(lotesNoColetor.length, 1, 'lote com sessao nao chegou ao coletor')
+  // corpo em streaming, sem Content-Length: o limite vale enquanto le, nao depois
+  const grande = new ReadableStream({ start(c) { c.enqueue(new Uint8Array(300 * 1024)); c.close() } })
+  assert.equal((await post(bruno, grande)).status, 413)
+  const carla = (await entrar('carla')).cookie
+  let ultimo
+  for (let i = 0; i < 61; i++) ultimo = await post(carla, '{}')
+  assert.equal(ultimo.status, 429)
+  assert.equal(ultimo.headers.get('retry-after'), '60')
+})
+
+test('L2/V3/C1: zona fora da 503 proprio, em qualquer caixa; as outras seguem; ela volta', async () => {
+  const ana = (await entrar('ana')).cookie
+  await ambiente.derrubarApp('erp-zona-2')
+  try {
+    await new Promise((r) => setTimeout(r, 1200))   // passa do TTL de 1 s da sonda
+    for (const c of ['/zona2', '/zona2/x', '/ZONA2', '/Zona2/x']) {
+      const r = await fetch(`${SHELL_URL}${c}`, { headers: { cookie: ana }, redirect: 'manual' })
+      assert.equal(r.status, 503, c)
+      assert.equal(r.headers.get('retry-after'), '5', c)
+      assert.equal(r.headers.get('cache-control'), 'no-store', c)
+      assert.match(await r.text(), /indispon/i, c)
+    }
+    for (const c of ['/', '/zona1']) assert.equal((await pedir(c, { cookie: ana })).status, 200, c)
+  } finally { await ambiente.subirApp('erp-zona-2') }
+  const t0 = Date.now()
+  let st = 0
+  while (Date.now() - t0 < 5_000 && st !== 200) {
+    st = (await pedir('/zona2', { cookie: ana })).status
+    if (st !== 200) await new Promise((r) => setTimeout(r, 100))
+  }
+  assert.equal(st, 200, 'a zona 2 nao voltou em 5 s depois de reerguida')
 })

@@ -1,0 +1,21 @@
+=== zona2 no ar: variantes sem sessao (devem exigir login OU 404 nativo do Next, nunca vazar conteudo) ===
+--- /zona2%2F.. sem cookie ---
+HTTP/1.1 307 Temporary Redirect
+location: /login?de=%2Fzona2%252F..
+Date: Mon, 21 Sep 2026 20:39:56 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+corpo(80b): /login?de=%2Fzona2%252F..
+
+--- /%7Aona2 sem cookie ---
+HTTP/1.1 307 Temporary Redirect
+location: /login?de=%2F%257Aona2
+Date: Mon, 21 Sep 2026 20:39:56 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+corpo(80b): /login?de=%2F%257Aona2
+

@@ -1,0 +1,42 @@
+{
+  "contagem500": 0,
+  "primeiro503MsDesdeMorte": 103,
+  "totalAmostras": 7,
+  "registros": [
+    {
+      "i": 0,
+      "status": 503,
+      "msDesdeMorte": 103
+    },
+    {
+      "i": 1,
+      "status": 503,
+      "msDesdeMorte": 111
+    },
+    {
+      "i": 2,
+      "status": 503,
+      "msDesdeMorte": 117
+    },
+    {
+      "i": 3,
+      "status": 503,
+      "msDesdeMorte": 123
+    },
+    {
+      "i": 4,
+      "status": 503,
+      "msDesdeMorte": 129
+    },
+    {
+      "i": 5,
+      "status": 503,
+      "msDesdeMorte": 136
+    },
+    {
+      "i": 6,
+      "status": 503,
+      "msDesdeMorte": 141
+    }
+  ]
+}

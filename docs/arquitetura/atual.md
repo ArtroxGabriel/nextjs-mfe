@@ -58,7 +58,7 @@ flowchart TD
     R["requisição"] --> P{"/login, /api/auth,<br/>/erro-de-zona?"}
     P -- sim --> PUB["segue, com CSP e nonce"]
     P -- não --> T{"/api/otel?"}
-    T -- sim --> TEL["route handler de telemetria<br/>sem sessão: 204 e descarta<br/>> 256 KB: 413 · > 60 lotes/min: 429"]
+    T -- sim --> TEL["route handler de telemetria<br/>sem sessão: 204, descarta sem ler<br/>> 256 KB lidos: 413 · > 60 lotes/min: 429<br/>repasse pelo registro de destinos"]
     T -- não --> Z{"prefixo de zona<br/>(/zona1, /zona1-static…)?"}
     Z -- sim --> S{"sonda de saúde da zona<br/>(cache 1 s, timeout 500 ms)"}
     S -- "fora (erro de rede ou status ≥ 500)" --> E503["503 · Retry-After: 5<br/>página de zona indisponível"]
@@ -70,10 +70,11 @@ flowchart TD
     C -- sim --> OK["segue com CSP, x-erp-caminho<br/>e flash consumido"]
 ```
 
-Esta parte foi escrita pelo Gabriel em 2026-09-21 e **ainda não passou por gate**. Um ponto a
-conferir no gate: a decisão usa `req.nextUrl.pathname`, que o Next entrega normalizado, enquanto
-os rewrites olham o caminho cru (a armadilha R1 que a PoC registrou em
-`.agents/challenger_final_1/handoff.md`).
+Escrita pelo Gabriel em 2026-09-21. O primeiro gate reprovou e a correção entrou em `erp-shell`
+`f3d8803`; falta a segunda rodada de gate. O prefixo de zona é casado **sem diferenciar
+maiúsculas**, como o rewrite do Next (`/ZONA2` também passa pela sonda). O caminho que o Next
+entrega ao proxy já vem normalizado, e o revisor mediu que rewrite e proxy usam o mesmo parser:
+a armadilha R1 da PoC não se repete aqui.
 
 ## 2. Pacotes
 
@@ -187,8 +188,8 @@ sequenceDiagram
 | `erp-nucleo` | `pnpm test` (90) | registro de destinos, sessão leitor/escritor (arquivo e Redis: chave com hash, TTL, erro sem vazar), fragmentos (allowlist, cookie, timeout, HTML inerte, 204/404/500), acesso, fronteira entre camadas, exports |
 | `erp-moldura` | `pnpm test` (16) | menu e `aria-current`, um `<h1>`, barramento e host de toast (executado com hooks falsos), flash, `FormularioDeAcao` |
 | `erp-dominio-stub` | `pnpm test` (16) | projeção e escopo do domínio A, If-Match no C, regras da gestão de acesso |
-| `erp-shell` | `pnpm test` (22) | decisão do proxy (rotas públicas, telemetria, zona fora, login), sonda de saúde com cache de 1 s, mapa de zonas e rotas reservadas, limites do gateway de telemetria |
-| ponta a ponta | `node --test repos/verificacao/*.test.mjs` (26) | N3–N8 pelo shell, com os quatro atores; toda Server Action pelo caminho do navegador (`Next-Action`), sem `Origin`, com sessão expirada e por quem não tem o módulo; toast uma vez só; domínios derrubados um a um |
+| `erp-shell` | `pnpm test` (29) | decisão do proxy (rotas públicas, telemetria, zona fora, login), prefixo de zona sem diferenciar maiúsculas, sonda de saúde com cache de 1 s, mapa de zonas e rotas reservadas, limite de tamanho em streaming e expiração do limitador |
+| ponta a ponta | `node --test repos/verificacao/*.test.mjs` (30) | N3–N8 pelo shell, com os quatro atores; toda Server Action pelo caminho do navegador (`Next-Action`), sem `Origin`, com sessão expirada e por quem não tem o módulo; toast uma vez só; domínios derrubados um a um; gestão de acesso fora sem vazar módulo no payload; zona 2 derrubada (503 em qualquer caixa, volta); telemetria anônima não repassada |
 
 ## 8. Quando uma peça cai (medido em 2026-09-21; verificado em `repos/verificacao`)
 
@@ -196,7 +197,7 @@ sequenceDiagram
 |---|---|
 | um domínio de negócio (ex.: A) | a página abre; o bloco daquele domínio diz "indisponível no momento" |
 | o domínio de gestão de acesso | a moldura sem menu e "Serviço indisponível" no HTML do servidor, sem a página: sem ele ninguém entra em módulo. O status continua 200 (o layout não o define) |
-| uma zona | o shell responde 503 com `Retry-After: 5` e uma página própria; as outras zonas seguem. A sonda de saúde tem cache de 1 s por zona. **Implementado, ainda sem gate independente** |
+| uma zona | o shell responde 503 com `Retry-After: 5` e uma página própria, em qualquer caixa do caminho; as outras zonas seguem. **Exceção medida:** logo depois da queda, enquanto a última sonda boa vale (cache de 1 s), requisições recebem o 500 cru do Next (até ~0,8 s, challenger_shell_1). Zona travada segura a requisição ~0,6 s (timeout da sonda). Ao voltar, a zona responde de novo em ~1,2 s |
 | o domínio falso de gestão de acesso é reiniciado | perde manifestos e concessões (estado em memória); `pnpm registrar` em cada app os recria. O domínio real persiste |
 
 Como rodar e conferir à mão: [`../ROTEIRO-DE-VERIFICACAO.md`](../ROTEIRO-DE-VERIFICACAO.md).

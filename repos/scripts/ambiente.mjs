@@ -50,8 +50,9 @@ export async function subir({ construir = false, log = false } = {}) {
   const parar = (p) => { try { process.kill(-p.pid, 'SIGTERM') } catch { /* ja saiu */ } }
   const derrubar = () => { for (const p of processos) parar(p) }
 
-  // Um processo por domínio, para a verificação poder derrubar um de cada vez.
+  // Um processo por domínio e por aplicação, para a verificação poder derrubar um de cada vez.
   const dominios = new Map()
+  const apps = new Map()
   const registrar = () => {
     for (const { dir } of APPS) {
       execFileSync('pnpm', ['registrar'], { cwd: join(RAIZ, dir), env, stdio: log ? 'inherit' : 'ignore' })
@@ -70,6 +71,19 @@ export async function subir({ construir = false, log = false } = {}) {
     await new Promise((ok) => (p.exitCode !== null ? ok() : p.once('exit', ok)))
   }
 
+  /** Mata a aplicação de verdade (SIGKILL no grupo): simula a zona caindo, não desligando com calma. */
+  const derrubarApp = async (dir) => {
+    const p = apps.get(dir)
+    if (!p) return
+    try { process.kill(-p.pid, 'SIGKILL') } catch { /* ja saiu */ }
+    await new Promise((ok) => (p.exitCode !== null || p.signalCode !== null ? ok() : p.once('exit', ok)))
+  }
+  const subirApp = async (dir) => {
+    apps.set(dir, iniciar('pnpm', ['start'], join(RAIZ, dir)))
+    const { porta, saude } = APPS.find((a) => a.dir === dir)
+    await esperar(`http://localhost:${porta}${saude}`)
+  }
+
   try {
     for (const nome of Object.keys(PORTAS_DE_DOMINIO)) {
       dominios.set(nome, iniciar('node', ['src/servidor.mjs', nome], join(RAIZ, 'erp-dominio-stub')))
@@ -83,11 +97,11 @@ export async function subir({ construir = false, log = false } = {}) {
         execFileSync('pnpm', ['build'], { cwd, env, stdio: log ? 'inherit' : 'ignore' })
       }
     }
-    for (const { dir } of APPS) iniciar('pnpm', ['start'], join(RAIZ, dir))
+    for (const { dir } of APPS) apps.set(dir, iniciar('pnpm', ['start'], join(RAIZ, dir)))
     for (const { porta, saude } of APPS) await esperar(`http://localhost:${porta}${saude}`)
   } catch (e) {
     derrubar()
     throw e
   }
-  return { derrubar, derrubarDominio, subirDominio, sessaoDir: env.SESSAO_DIR }
+  return { derrubar, derrubarDominio, subirDominio, derrubarApp, subirApp, sessaoDir: env.SESSAO_DIR }
 }

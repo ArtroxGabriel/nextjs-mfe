@@ -16,29 +16,20 @@
 | PoC `apps/` | removida; preservada na tag `poc-final` | `73bdc8b` |
 | Envio | tudo enviado (principal, submódulos, tag) | `origin/bff-multizone` |
 
-## Em andamento: gate "Shell novo"
+## Gate "Shell novo": iteração 1 reprovada, correção feita, falta a iteração 2
 
-| Papel | Agente | Estado |
-|---|---|---|
-| Revisor | `reviewer_shell_1` (revisor-mfe, Sonnet) | **REQUEST_CHANGES** — ver abaixo |
-| Challenger | `challenger_shell_1` (simulador-condicoes, Sonnet) | **REQUEST_CHANGES** — C1: `/ZONA2` (maiúsculas) escapa da sonda e dá 500 cru; janela de 500 cru até ~1 s após a queda; telemetria de 20 MB sem `Content-Length` aceita |
-| Auditor forense | `auditor_shell_1` (general-purpose, Opus), dono das portas | despachado |
+Resultado da iteração 1 em `GATE_STATUS.md` (revisor e challenger REQUEST_CHANGES, auditor com
+veto: vazamento de módulo no payload RSC com a gestão de acesso fora).
 
-Suspeitos passados aos verificadores: a decisão do proxy usa `req.nextUrl.pathname` (normalizado;
-R1 da PoC); o gateway de telemetria lê o corpo inteiro sem `Content-Length`; o mapa do limitador
-de taxa cresce sem limite; a sonda bate numa página que exige sessão.
+Correção (`erp-shell` `f3d8803`, zonas `a0d9bc1`/`831d128`/`b24b078`): `exigirModulo` volta a
+negar; `/ZONA2` passa pela sonda; telemetria anônima descartada sem ler, limite em streaming,
+limitador expira, repasse pelo registro de destinos; CSP igual à do núcleo. Os quatro testes do
+auditor (L1–L4) entraram em `repos/verificacao`: vermelhos antes, verdes depois. Ponta a ponta
+**30/30** com build novo; shell 29/29. O teste N8 foi endurecido: o código original escapava dele
+com `globalThis['fetch']`.
 
-Achados do revisor (`.agents/reviewer_shell_1/handoff.md`), a corrigir quando o challenger liberar:
-1. **Grave:** `exigirModulo` em `lib/pagina.ts` do shell e das zonas (`a63b995`, `bac6d37`…) libera
-   o módulo quando a gestão de acesso falha (fail-open): `/zona1/relatorios` restrito fica visível.
-   Tem de negar (`notFound()`).
-2. `proxy.ts` do shell reimplementa CSP em vez de `criarProxy`: faltam `form-action 'self'` e
-   `img-src 'self' data:`.
-3. Telemetria sem `Content-Length` bufferiza o corpo inteiro, antes de checar sessão.
-4. Mapa do limitador de taxa nunca expira.
-Refutados: R1 (caminho normalizado × cru, o Next 16 usa o mesmo parser); sonda numa página com
-sessão (307 conta como saudável). Suspeita aberta para o challenger: dois `Content-Security-Policy`
-(shell e zona) na mesma resposta.
+**Próximo:** iteração 2 com tríade nova (`reviewer_shell_2`, `challenger_shell_2`,
+`auditor_shell_2`), focada no diff da correção e nas mutações que sobreviveram na iteração 1.
 
 ## Feito: fatia de núcleo da #10 (fragmentos)
 

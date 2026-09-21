@@ -1,0 +1,8 @@
+== M4b2: ✖ L1 gestao de acesso fora: nenhum dad;✖ L2 zona fora: 503 proprio (inclusive;
+== M4c: ✖ L1 gestao de acesso fora: nenhum dad;✖ L2 zona fora: 503 proprio (inclusive;
+== M3: ✖ L1 gestao de acesso fora: nenhum dad;✖ L2 zona fora: 503 proprio (inclusive;
+== M10: ✖ L1 gestao de acesso fora: nenhum dad;✖ L3 flash forjado pelo cliente nao ap;
+== M7b: ✖ L1 gestao de acesso fora: nenhum dad;✖ L4 telemetria: sem sessao descarta s;
+== M8b: ✖ L1 gestao de acesso fora: nenhum dad;✖ L4 telemetria: sem sessao descarta s;
+== M5b: ✖ L1 gestao de acesso fora: nenhum dad;✖ L2 zona fora: 503 proprio (inclusive;
+== M17: ✖ L1 gestao de acesso fora: nenhum dad;

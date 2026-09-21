@@ -1,0 +1,39 @@
+=== 1. sem sessao, corpo pequeno ===
+HTTP/1.1 204 No Content
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+Date: Mon, 21 Sep 2026 20:38:22 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+
+=== 2. com sessao (bruno), 300KB com Content-Length ===
+HTTP/1.1 413 Payload Too Large
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: text/plain;charset=UTF-8
+Date: Mon, 21 Sep 2026 20:38:27 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+
+=== 3. com sessao (bruno), 300KB SEM Content-Length (chunked) ===
+HTTP/1.1 413 Payload Too Large
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: text/plain;charset=UTF-8
+Date: Mon, 21 Sep 2026 20:38:41 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+
+=== 3b. sessao valida, 20MB SEM Content-Length (chunked) - mede tempo e memoria ===
+HTTP/1.1 100 Continue
+
+HTTP/1.1 413 Payload Too Large
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: text/plain;charset=UTF-8
+Date: Mon, 21 Sep 2026 20:38:50 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+

@@ -1,0 +1,6 @@
+M9 RELATORIOS (acesso no ar) davi: 404 vaza=false
+M9 RELATORIOS (acesso no ar) bruno: 200 vaza=true
+M9 ACESSO FORA davi /zona1/relatorios: 200 indisponivel=true relatorio_no_html=false  painel_no_flight=false
+M9 ACESSO FORA davi /zona1: 200 indisponivel=true relatorio_no_html=false  painel_no_flight=false
+M9 ACESSO FORA bruno /zona1/relatorios: 200 indisponivel=true relatorio_no_html=false  painel_no_flight=false
+M9 ACESSO FORA bruno /zona1: 200 indisponivel=true relatorio_no_html=false  painel_no_flight=false
