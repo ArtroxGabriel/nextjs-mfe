@@ -30,6 +30,10 @@ com `globalThis['fetch']`.
 
 **Iteração 2 em andamento:** `reviewer_shell_2` e `challenger_shell_2` (dono das portas)
 despachados; `auditor_shell_2` (Opus) entra quando o challenger liberar as portas.
+(A primeira tentativa caiu no limite de sessão às ~19h; redespachada às 19h34, sem escrita parcial.)
+
+Em paralelo: `arquiteto-mfe` desenhando o kit de app (C1/C2). Gate de lockstep do núcleo feito
+(`base/scripts/verificar-lockstep.mjs`, no `pre-push`).
 
 ## Feito: fatia de núcleo da #10 (fragmentos)
 
