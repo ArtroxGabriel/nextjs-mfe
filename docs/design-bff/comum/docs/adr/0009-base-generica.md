@@ -50,8 +50,8 @@ As nove decisões da §7 da revisão foram tomadas em 2026-09-21, todas na recom
 ```
 repos/
   erp-contratos      @erp/contratos 0.2.1 — erros, ManifestoDeZona, ModuloPermitido, validarManifesto
-  erp-nucleo         @erp/nucleo 0.3.0    — criarNucleo, registro de destinos, leitor de sessão, acesso, criarProxy; /shell: escrita e identidade
-  erp-moldura        @erp/moldura 0.2.0   — <Moldura>, host de toast, emitirToast, flash, FormularioDeAcao
+  erp-nucleo         @erp/nucleo 0.3.1    — criarNucleo, registro de destinos, leitor de sessão, acesso, criarProxy; /shell: escrita e identidade
+  erp-moldura        @erp/moldura 0.3.0   — <Moldura>, host de toast, emitirToast, flash, FormularioDeAcao
   erp-dominio-stub   domínios falsos: A :4001, B :4002, C :4003, plataforma :4004, gestão de acesso :4010
   erp-shell          :3000 — login, sessão (único escritor), gateway pelas zonas, domínio plataforma
   erp-zona-1         :3001 — domínios A e B; módulo livre e módulo restrito

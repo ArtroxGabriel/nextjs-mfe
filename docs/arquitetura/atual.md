@@ -51,8 +51,8 @@ requisição com cabeçalho de navegador (`Origin`, `Sec-Fetch-*`).
 | Pacote | Versão | O que tem | Quem usa |
 |---|---|---|---|
 | `@erp/contratos` | 0.2.1 | códigos de erro e mensagens; `ManifestoDeZona`, `ModuloPermitido`, `validarManifesto` | todos |
-| `@erp/nucleo` | 0.3.0 | `criarNucleo`, registro de destinos, leitor de sessão, `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell`, escritor de sessão, `identidadeDev` | shell e zonas (`/shell` só o shell) |
-| `@erp/moldura` | 0.2.0 | `<Moldura>` (topo, menu com `aria-current`, host de toast), `emitirToast`, flash, `FormularioDeAcao` | shell e zonas |
+| `@erp/nucleo` | 0.3.1 | `criarNucleo`, registro de destinos, leitor de sessão, `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell`, escritor de sessão, `identidadeDev` | shell e zonas (`/shell` só o shell) |
+| `@erp/moldura` | 0.3.0 | `<Moldura>` (topo, menu com `aria-current`, host de toast), `emitirToast`, flash, `FormularioDeAcao` | shell e zonas |
 
 Publicados no Verdaccio local (`:4873`). Cada aplicação é um repositório com lockfile próprio.
 
@@ -129,9 +129,10 @@ flowchart LR
 
 Cada aplicação renderiza `<Moldura>` com o menu que a gestão de acesso devolveu. Toast no mesmo
 documento: `emitirToast({ tipo, texto })`. Toast que atravessa zona: a Server Action grava o
-cookie `__Host-flash` e devolve o destino; a ilha troca o documento com `location.assign`; o
-próximo documento, de qualquer zona, lê o cookie no servidor e o renderiza, e o host de toast o
-apaga ao montar. A action não usa `redirect()` para outra zona: ver a limitação 11 em
+cookie `__Host-flash` e devolve o destino; a ilha `FormularioDeAcao` troca o documento com
+`location.assign`; no documento seguinte, de qualquer zona, o **proxy consome o cookie**: entrega
+o toast ao layout num cabeçalho interno e apaga o cookie na mesma resposta. Por isso o toast
+aparece uma vez só, com ou sem JavaScript. A action não usa `redirect()` para outra zona: ver a limitação 11 em
 `docs/design-bff/mfe/limitações-mfe-multizone.md`.
 
 ```mermaid
@@ -145,8 +146,8 @@ sequenceDiagram
     Z2->>C: POST /v1/tarefas/t-1/concluir · If-Match "1"
     Z2-->>N: { destino: "/zona1" } · Set-Cookie __Host-flash
     N->>Z1: location.assign("/zona1") — novo documento
-    Z1-->>N: HTML com o toast "Tarefa concluída."
-    Note over N: host de toast apaga o cookie: aparece uma vez
+    Note over Z1: proxy: lê __Host-flash, passa ao layout, apaga o cookie
+    Z1-->>N: HTML com o toast "Tarefa concluída." · Set-Cookie __Host-flash Max-Age=0
 ```
 
 ## 7. O que cada teste protege
@@ -154,17 +155,17 @@ sequenceDiagram
 | Suíte | Comando | Protege |
 |---|---|---|
 | `erp-contratos` | `pnpm test` (15) | manifesto: prefixo de zona, concessão entre zonas (D8), duplicatas |
-| `erp-nucleo` | `pnpm test` (58) | registro de destinos, sessão leitor/escritor, acesso, fronteira entre camadas, exports |
-| `erp-moldura` | `pnpm test` (11) | menu e `aria-current`, um `<h1>`, barramento de toast, flash |
+| `erp-nucleo` | `pnpm test` (60) | registro de destinos, sessão leitor/escritor, acesso, fronteira entre camadas, exports |
+| `erp-moldura` | `pnpm test` (16) | menu e `aria-current`, um `<h1>`, barramento e host de toast (executado com hooks falsos), flash, `FormularioDeAcao` |
 | `erp-dominio-stub` | `pnpm test` (16) | projeção e escopo do domínio A, If-Match no C, regras da gestão de acesso |
-| ponta a ponta | `node --test repos/verificacao/*.test.mjs` (23) | N3–N8 pelo shell, com os quatro atores; toda Server Action pelo caminho do navegador (`Next-Action`), sem `Origin`, com sessão expirada e por quem não tem o módulo |
+| ponta a ponta | `node --test repos/verificacao/*.test.mjs` (26) | N3–N8 pelo shell, com os quatro atores; toda Server Action pelo caminho do navegador (`Next-Action`), sem `Origin`, com sessão expirada e por quem não tem o módulo; toast uma vez só; domínios derrubados um a um |
 
-## 8. Quando uma peça cai (medido pelo challenger_base_1 em 2026-09-21)
+## 8. Quando uma peça cai (medido em 2026-09-21; verificado em `repos/verificacao`)
 
 | Cai | O usuário vê |
 |---|---|
 | um domínio de negócio (ex.: A) | a página abre; o bloco daquele domínio diz "indisponível no momento" |
-| o domínio de gestão de acesso | a página "Serviço indisponível" (`global-error`), sem moldura: sem ele ninguém entra em módulo |
+| o domínio de gestão de acesso | a moldura sem menu e "Serviço indisponível" no HTML do servidor, sem a página: sem ele ninguém entra em módulo. O status continua 200 (o layout não o define) |
 | uma zona | erro do gateway do Next — **falha isolada de zona ainda não existe** (`alvo.md` §6) |
 | o domínio falso de gestão de acesso é reiniciado | perde manifestos e concessões (estado em memória); `pnpm registrar` em cada app os recria. O domínio real persiste |
 

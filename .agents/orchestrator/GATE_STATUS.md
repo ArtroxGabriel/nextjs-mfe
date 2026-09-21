@@ -144,3 +144,17 @@ Gate Result: **PASS** — Milestone 2, Milestone 3, and D2 Complete. PoC verifie
 Gate Result: **FAIL**. Correções: contratos b10d55f, núcleo d5912ce (0.3.0, `@erp/nucleo/shell`), moldura fd618c9,
 stub b5c8ac7, shell a28b80a, zona-1 a3883ec, zona-2 dbaa10d, zona-acesso d81dd34. Pacotes 15/58/11/16, ponta a ponta 23/23.
 Pendente de decisão do humano: remotos dos cinco repositórios só locais (achado 1 do revisor).
+
+## Gate — Base genérica, iteração 2, HEAD 8aa5a3e
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_base_2 | revisor-mfe (sonnet) | REQUEST_CHANGES (condicional) | .agents/reviewer_base_2/handoff.md | todos os achados da iteração 1 resolvidos; nenhuma regressão; faltava só rodar a ponta a ponta, bloqueada pelas portas |
+| auditor_base_1 | general-purpose forense (opus) | **INTEGRITY VIOLATION** | .agents/auditor_base_1/handoff.md, mutacoes.txt | números reproduzidos (15/58/11/16, 23/23); 20 mutações exigidas pegas; veto: V1 Origin só testado na zona de acesso (X1 sobrevive na zona 2), V2 "uma vez" do toast não verificado (X5), V3 degradação sem teste, V4 ilhas sem teste (X3, X4, X6, X22) |
+| challenger | — | não despachado | — | aguardou a correção |
+
+Gate Result: **FAIL** (veto do auditor). Correções: núcleo 78980a4 (0.3.1: proxy consome o flash; testes de parâmetro
+hostil afirmam a recusa), moldura a268f66 (0.3.0: `executarAcao` testável; host de toast executado com hooks falsos),
+stub 1517c5e (um processo por domínio), shell 6e05e55, zona-1 a315918, zona-2 8f36ff2, zona-acesso 4c8c302
+(indisponibilidade no HTML do servidor). Verificação: pacotes 15/60/16/16; ponta a ponta 26/26, com Origin em toda action
+de toda app, toast uma vez com pote de cookies, domínios derrubados um a um e restrição de módulo comportamental.
+Mutantes do auditor conferidos pelo orquestrador: X22 e X6 agora reprovam a moldura.

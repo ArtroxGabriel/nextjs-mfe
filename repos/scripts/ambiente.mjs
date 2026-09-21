@@ -13,6 +13,10 @@ export const APPS = [
   { dir: 'erp-zona-acesso', porta: 3003, saude: '/acesso' },
 ]
 
+export const PORTAS_DE_DOMINIO = {
+  'dominio-a': 4001, 'dominio-b': 4002, 'dominio-c': 4003, plataforma: 4004, 'gestao-acesso': 4010,
+}
+
 async function esperar(url, ms = 60_000) {
   const fim = Date.now() + ms
   while (Date.now() < fim) {
@@ -28,7 +32,7 @@ async function esperar(url, ms = 60_000) {
 export async function subir({ construir = false, log = false } = {}) {
   // Um processo antigo numa porta faria a verificação falar com a base errada (outro
   // diretório de sessão, outro build) e reprovar por motivo nenhum do código.
-  for (const porta of [...APPS.map((a) => a.porta), 4001, 4002, 4003, 4004, 4010]) {
+  for (const porta of [...APPS.map((a) => a.porta), ...Object.values(PORTAS_DE_DOMINIO)]) {
     const ocupada = await fetch(`http://127.0.0.1:${porta}/`, { signal: AbortSignal.timeout(500) }).then(() => true, () => false)
     if (ocupada) throw new Error(`porta ${porta} ja esta em uso; derrube o processo antes de subir a base`)
   }
@@ -43,17 +47,38 @@ export async function subir({ construir = false, log = false } = {}) {
     processos.push(p)
     return p
   }
-  const derrubar = () => {
-    for (const p of processos) { try { process.kill(-p.pid, 'SIGTERM') } catch { /* ja saiu */ } }
+  const parar = (p) => { try { process.kill(-p.pid, 'SIGTERM') } catch { /* ja saiu */ } }
+  const derrubar = () => { for (const p of processos) parar(p) }
+
+  // Um processo por domínio, para a verificação poder derrubar um de cada vez.
+  const dominios = new Map()
+  const registrar = () => {
+    for (const { dir } of APPS) {
+      execFileSync('pnpm', ['registrar'], { cwd: join(RAIZ, dir), env, stdio: log ? 'inherit' : 'ignore' })
+    }
+  }
+  const subirDominio = async (nome) => {
+    dominios.set(nome, iniciar('node', ['src/servidor.mjs', nome], join(RAIZ, 'erp-dominio-stub')))
+    await esperar(`http://127.0.0.1:${PORTAS_DE_DOMINIO[nome]}/`)
+    // o domínio falso de acesso guarda tudo em memória: ao voltar, os manifestos são reenviados
+    if (nome === 'gestao-acesso') registrar()
+  }
+  const derrubarDominio = async (nome) => {
+    const p = dominios.get(nome)
+    if (!p) return
+    parar(p)
+    await new Promise((ok) => (p.exitCode !== null ? ok() : p.once('exit', ok)))
   }
 
   try {
-    iniciar('node', ['src/servidor.mjs'], join(RAIZ, 'erp-dominio-stub'))
-    await esperar('http://127.0.0.1:4010/v1/modulos-permitidos')
+    for (const nome of Object.keys(PORTAS_DE_DOMINIO)) {
+      dominios.set(nome, iniciar('node', ['src/servidor.mjs', nome], join(RAIZ, 'erp-dominio-stub')))
+    }
+    for (const porta of Object.values(PORTAS_DE_DOMINIO)) await esperar(`http://127.0.0.1:${porta}/`)
+    registrar()
 
     for (const { dir } of APPS) {
       const cwd = join(RAIZ, dir)
-      execFileSync('pnpm', ['registrar'], { cwd, env, stdio: log ? 'inherit' : 'ignore' })
       if (construir || !existsSync(join(cwd, '.next', 'BUILD_ID'))) {
         execFileSync('pnpm', ['build'], { cwd, env, stdio: log ? 'inherit' : 'ignore' })
       }
@@ -64,5 +89,5 @@ export async function subir({ construir = false, log = false } = {}) {
     derrubar()
     throw e
   }
-  return { derrubar, sessaoDir: env.SESSAO_DIR }
+  return { derrubar, derrubarDominio, subirDominio, sessaoDir: env.SESSAO_DIR }
 }
