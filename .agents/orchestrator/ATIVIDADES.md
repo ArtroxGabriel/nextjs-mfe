@@ -27,7 +27,6 @@
 | 12 | Publicar o pacote visual @erp/ui | não iniciado; depende de medir duplicação de bundle | manter | — | `alvo.md` §6 |
 | 14 | Definir estratégia de publicação e compatibilidade | submódulos **feitos**; hook `pre-push` que recusa submódulo não enviado **feito** (`repos/scripts/checar-envio.mjs`, provado com commit só local); falta registro único ou publicação pelo CI | acrescentar critérios: **gate de lockstep do núcleo** (`verificar-lockstep.mjs`, perdido desde a spec de 09/09), registro único, nunca republicar a mesma versão, contrato só cresce (2 minors), checar submódulo não enviado antes do push, mapa de zonas vindo do domínio de acesso | pendente | ADR-0010; `AMBIENTE.md` §1–2; `4eb128b` |
 | 18 | Centralizar a telemetria das zonas no shell *(nova)* — **ampliar para "Trace contínuo sem dado pessoal (núcleo 8)"**: o elemento 8 é núcleo e está ausente (`alvo.md` §6) | gateway implementado; gate em andamento, **revisor pediu mudanças**: sem `Content-Length` o corpo é lido inteiro antes de checar sessão, e o limitador de taxa nunca libera memória; nenhuma zona envia traces | **criar** em andamento (texto em §3) | pendente | `erp-shell` `6de4939`; `alvo.md` §6 (Operação) |
-
 | 19 | Decidir o destino das perguntas originais da PoC na base *(nova, proposta)* | SSE, cache de cliente, query params e MapLibre numa zona foram provados só na PoC; a base não os refaz e nada registrava isso (`alvo.md` §7.1) | **criar** depois da decisão do humano | pendente | tag `poc-final`; `POC.md` |
 
 ### Fechar — entregues ou substituídas
