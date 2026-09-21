@@ -2,8 +2,8 @@
 
 > **O que isto descreve:** o código de `repos/` hoje, e nada além. Decisões no
 > [ADR-0009](../design-bff/comum/docs/adr/0009-base-generica.md). Para onde a base ainda vai,
-> veja [`alvo.md`](alvo.md); a distância entre os dois está no fim dele. A PoC `apps/`, congelada,
-> está em [`poc-congelada.md`](poc-congelada.md).
+> veja [`alvo.md`](alvo.md); a distância entre os dois está no fim dele. A PoC anterior (`apps/`)
+> foi removida e está preservada na tag `poc-final`.
 
 ---
 
@@ -17,7 +17,8 @@ flowchart TB
     B["🌐 Navegador<br/>cookie __Host-session (id opaco)"]
 
     subgraph SHELL["erp-shell :3000"]
-        GW["rewrites gerados de zonas.json<br/>/zona1 · /zona2 · /acesso (+ /&lt;id&gt;-static)"]
+        GW["proxy.ts + rewrites gerados de zonas.json<br/>/zona1 · /zona2 · /acesso (+ /&lt;id&gt;-static)<br/>sonda de saúde por zona → 503"]
+        OT["/api/otel/v1/traces<br/>gateway de telemetria"]
         AUTH["/login · /api/auth/entrar · /api/auth/sair<br/>ÚNICO escritor da sessão"]
         SH["/ (shell.inicio)"]
     end
@@ -46,12 +47,40 @@ flowchart TB
 Todos os domínios são falsos (`repos/erp-dominio-stub`), escutam só em `127.0.0.1` e recusam
 requisição com cabeçalho de navegador (`Origin`, `Sec-Fetch-*`).
 
+### 1.1 O que o `proxy.ts` do shell decide, em ordem
+
+`repos/erp-shell/lib/decisao-proxy.ts` é uma função pura, testada sem o Next; o `proxy.ts` só a
+traduz para `NextResponse`. Os rewrites de `next.config.ts` e a busca de zona saem do mesmo
+`zonas.json`, então rota nova de zona entra nos dois de uma vez.
+
+```mermaid
+flowchart TD
+    R["requisição"] --> P{"/login, /api/auth,<br/>/erro-de-zona?"}
+    P -- sim --> PUB["segue, com CSP e nonce"]
+    P -- não --> T{"/api/otel?"}
+    T -- sim --> TEL["route handler de telemetria<br/>sem sessão: 204 e descarta<br/>> 256 KB: 413 · > 60 lotes/min: 429"]
+    T -- não --> Z{"prefixo de zona<br/>(/zona1, /zona1-static…)?"}
+    Z -- sim --> S{"sonda de saúde da zona<br/>(cache 1 s, timeout 500 ms)"}
+    S -- "fora (erro de rede ou status ≥ 500)" --> E503["503 · Retry-After: 5<br/>página de zona indisponível"]
+    S -- ok --> ST{"asset estático?"}
+    ST -- sim --> REW["segue para o rewrite"]
+    ST -- não --> C{"cookie __Host-session?"}
+    Z -- não --> C
+    C -- não --> L["307 /login?de=…"]
+    C -- sim --> OK["segue com CSP, x-erp-caminho<br/>e flash consumido"]
+```
+
+Esta parte foi escrita pelo Gabriel em 2026-09-21 e **ainda não passou por gate**. Um ponto a
+conferir no gate: a decisão usa `req.nextUrl.pathname`, que o Next entrega normalizado, enquanto
+os rewrites olham o caminho cru (a armadilha R1 que a PoC registrou em
+`.agents/challenger_final_1/handoff.md`).
+
 ## 2. Pacotes
 
 | Pacote | Versão | O que tem | Quem usa |
 |---|---|---|---|
 | `@erp/contratos` | 0.2.1 | códigos de erro e mensagens; `ManifestoDeZona`, `ModuloPermitido`, `validarManifesto` | todos |
-| `@erp/nucleo` | 0.3.1 | `criarNucleo`, registro de destinos, leitor de sessão, `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell`, escritor de sessão, `identidadeDev` | shell e zonas (`/shell` só o shell) |
+| `@erp/nucleo` | 0.3.2 | `criarNucleo`, registro de destinos, leitor de sessão, `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell`, escritor de sessão, `identidadeDev` | shell e zonas (`/shell` só o shell) |
 | `@erp/moldura` | 0.3.0 | `<Moldura>` (topo, menu com `aria-current`, host de toast), `emitirToast`, flash, `FormularioDeAcao` | shell e zonas |
 
 Publicados no Verdaccio local (`:4873`). Cada aplicação é um repositório com lockfile próprio.
@@ -158,6 +187,7 @@ sequenceDiagram
 | `erp-nucleo` | `pnpm test` (60) | registro de destinos, sessão leitor/escritor, acesso, fronteira entre camadas, exports |
 | `erp-moldura` | `pnpm test` (16) | menu e `aria-current`, um `<h1>`, barramento e host de toast (executado com hooks falsos), flash, `FormularioDeAcao` |
 | `erp-dominio-stub` | `pnpm test` (16) | projeção e escopo do domínio A, If-Match no C, regras da gestão de acesso |
+| `erp-shell` | `pnpm test` (22) | decisão do proxy (rotas públicas, telemetria, zona fora, login), sonda de saúde com cache de 1 s, mapa de zonas e rotas reservadas, limites do gateway de telemetria |
 | ponta a ponta | `node --test repos/verificacao/*.test.mjs` (26) | N3–N8 pelo shell, com os quatro atores; toda Server Action pelo caminho do navegador (`Next-Action`), sem `Origin`, com sessão expirada e por quem não tem o módulo; toast uma vez só; domínios derrubados um a um |
 
 ## 8. Quando uma peça cai (medido em 2026-09-21; verificado em `repos/verificacao`)
@@ -166,7 +196,7 @@ sequenceDiagram
 |---|---|
 | um domínio de negócio (ex.: A) | a página abre; o bloco daquele domínio diz "indisponível no momento" |
 | o domínio de gestão de acesso | a moldura sem menu e "Serviço indisponível" no HTML do servidor, sem a página: sem ele ninguém entra em módulo. O status continua 200 (o layout não o define) |
-| uma zona | erro do gateway do Next — **falha isolada de zona ainda não existe** (`alvo.md` §6) |
+| uma zona | o shell responde 503 com `Retry-After: 5` e uma página própria; as outras zonas seguem. A sonda de saúde tem cache de 1 s por zona. **Implementado, ainda sem gate independente** |
 | o domínio falso de gestão de acesso é reiniciado | perde manifestos e concessões (estado em memória); `pnpm registrar` em cada app os recria. O domínio real persiste |
 
-Como rodar e conferir à mão: [`../ROTEIRO-DE-VERIFICACAO.md`](../ROTEIRO-DE-VERIFICACAO.md) §0.
+Como rodar e conferir à mão: [`../ROTEIRO-DE-VERIFICACAO.md`](../ROTEIRO-DE-VERIFICACAO.md).

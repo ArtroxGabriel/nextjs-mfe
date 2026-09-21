@@ -14,16 +14,27 @@ Decisão e justificativa completas em `docs/design-bff/comum/docs/adr/0010-recon
   à de `78980a4`, histórico do Gabriel preservado), versão 0.3.2 (`38d7277`), build, fronteira ok,
   **60/60 testes**, publicado no Verdaccio local, **enviado** para `origin/master` (fast-forward).
   Um branch local `wilson-local-0.3.1` guarda `78980a4`.
-- **Pendente (parou aqui):** trocar `@erp/nucleo` de 0.3.1 para 0.3.2 no `package.json` de
-  `erp-shell`, `erp-zona-1`, `erp-zona-2` e `erp-zona-acesso`, rodar `pnpm install` para regenerar
-  os lockfiles (os atuais apontam para o tarball 0.3.1 do Gabriel, `sha512-+DhOJ8…`, que não existe
-  neste Verdaccio), commitar e enviar cada submódulo. O auto mode bloqueou o `pnpm install` e depois
-  os comandos git nos submódulos; falta liberação do humano.
-- **Depois:** buildar as quatro apps, `node --test repos/verificacao/*.test.mjs` (espera-se 20/20),
-  commit no principal apontando para os submódulos novos, gate do shell novo do Gabriel (revisor →
-  `revisor-mfe`, challenger → `simulador-condicoes`, auditor → `general-purpose` Opus), avisar o
-  Gabriel para buscar o 0.3.2 e descartar o 0.3.1 dele.
-- `RETOMADA.md` e `ADR-0010` ainda **não estão commitados** no repositório principal.
+- **Feito (com liberação do humano para o `pnpm install`):** `erp-shell` `666216c`, `erp-zona-1`
+  `530225d`, `erp-zona-2` `e2b3ffc`, `erp-zona-acesso` `da97b70` consomem o 0.3.2. Os lockfiles do
+  Gabriel também fixavam hashes de `@erp/contratos` 0.2.1 e `@erp/moldura` 0.3.0 republicados na
+  máquina dele a partir dos **mesmos commits** (`b10d55f`, `a268f66`; `npm pack` não é reproduzível
+  byte a byte). Esses hashes voltaram aos valores do nosso Verdaccio, os mesmos do lockfile anterior
+  (`6e05e55`). `tsc --noEmit` limpo nas quatro apps; shell 22/22. **Ponta a ponta com build novo
+  (`CONSTRUIR=1 node --test repos/verificacao/*.test.mjs`): 26/26**. Commits locais, **ainda não enviados**.
+- **Sobras da PoC removidas** (pedido do humano): `packages/shell-ui`, `test/e2e`,
+  `scripts/smoke-test.mjs`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `docs/arquitetura/poc-congelada.md`,
+  `docs/testes-navegador.md` e a Parte B do roteiro; `apps/` e `node_modules` locais apagados. O
+  histórico está na tag **`poc-final`** (`fd65106`). O `package.json` raiz virou só atalhos para
+  `repos/` (`pnpm verificar`, `pnpm base`, `pnpm registry:up`), sem dependências.
+- **Docs atualizadas:** README reescrito só com a base; `atual.md` com o núcleo 0.3.2, a suíte do
+  shell e a §1.1 (diagrama da decisão do `proxy.ts`); `alvo.md` §6 com falha de zona, deploy e
+  operação reavaliados; roteiro com o item A12 (zona fora → 503); catálogo do GitLab reavaliado
+  (`MANUTENCAO-GITLAB.md` §3 e §4).
+- **Próximo:** gate do shell novo do Gabriel (revisor → `revisor-mfe`, challenger →
+  `simulador-condicoes`, auditor → `general-purpose` Opus). Suspeitos já vistos: a decisão do proxy
+  usa `req.nextUrl.pathname` (normalizado; R1 da PoC); o gateway de telemetria lê o corpo inteiro
+  quando não há `Content-Length`; o mapa do limitador de taxa cresce sem limite. Avisar o Gabriel
+  para buscar o 0.3.2 e descartar o 0.3.1 dele.
 
 ## Estado em 2026-09-21 (manhã)
 

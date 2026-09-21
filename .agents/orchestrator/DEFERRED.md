@@ -115,7 +115,7 @@ Each was escalated to the human, who decided the round it belongs to.
   - `packages/shell-ui/test/dom-toast-and-header.test.ts`: ToastContainer `mfe:toast` event subscription and auto-dismiss timer cleanup.
   - `apps/remote-app/test/dom-telemetry-sse.test.ts`: RemoteTelemetry EventSource instantiation, stream parsing, and socket closure.
   - `apps/remote-app/test/dom-map.test.ts`: MapLibre GL map container lifecycle, pins, and `flyTo` navigation.
-  - Documented in `docs/testes-navegador.md`.
+  - Documented in `docs/testes-navegador.md` (removed with the PoC; preserved in tag `poc-final`).
 
 ## D11 — Shared chrome hardening (human decision 2026-09-15: not in the final-gate remediation)
 - **Session mirror unvalidated** (reviewer_final_1 B3, challenger_final_1 D2-1): `JSON.parse(raw) as UserSession` checks only

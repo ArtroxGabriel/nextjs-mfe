@@ -157,17 +157,17 @@ flowchart LR
 | Tema | Hoje (`atual.md`) | Alvo | Primeiro passo sugerido |
 |---|---|---|---|
 | Framework | Next 16, App Router, `proxy.ts` | igual | — |
-| Zonas | shell + 3 zonas; rewrites gerados de `zonas.json` | mapa de zonas gerado dos manifestos registrados | ler prefixos e origens do domínio de gestão de acesso no boot do shell |
+| Zonas | shell + 3 zonas; rewrites, sonda e 503 gerados de `zonas.json` | mapa de zonas gerado dos manifestos registrados | ler prefixos e origens do domínio de gestão de acesso no boot do shell |
 | Login | `identidadeDev` (4 atores, sem senha) | OIDC + PKCE | adaptador OIDC da porta de identidade |
 | Store de sessão | arquivo em disco compartilhado | Redis compartilhado | adaptador `sessaoRedis` (leitor e escritor) |
 | Renovação de token | não existe; sessão de dev dura 30 min | endpoint interno do shell (ADR-0009, decisão 3) | depende das respostas do IdP (PENDENCIAS §4) |
 | Acesso a módulo | gestão de acesso federada, 404 para módulo negado | igual, com cache por versão de política se a medição pedir | medir a consulta por renderização |
-| Falha isolada de zona | **não existe**: zona fora devolve erro do gateway | shell serve página própria (a PoC fazia 503 com `Retry-After`) | portar a sonda de vivacidade da PoC para o `proxy.ts` do shell |
+| Falha isolada de zona | 503 com `Retry-After` e página própria, sonda de saúde por zona com cache de 1 s — **implementado, sem gate** | igual, com zona travada limitada pelo timeout da sonda e sem janela de 500 cru | gate do shell: caminho normalizado × cru (R1 da PoC), zona travada, janela logo após a queda |
 | Composição | não há fragmento | `FragmentoRemoto` com timeout e circuit breaker | primeiro consumidor entre zona 1 e zona 2 |
 | SSE | não há | `/api/stream` no shell + `SharedWorker` | — |
 | Design system | `@erp/moldura` (moldura e toast) | `@erp/ui` publicado com semver tolerante | medir duplicação de bundle entre zonas antes |
-| Deploy | local; Verdaccio local | repositórios e deploys independentes, lockstep do núcleo no CI | gate de lockstep (task 11 do plano antigo) |
-| Operação | sem rate limiting nem rastreamento | rate limiting na borda, `trace_id` entre zonas | — |
+| Deploy | 8 repositórios como submódulos; um Verdaccio **por máquina** | repositórios e deploys independentes, lockstep do núcleo no CI, um registro único | publicar pelos pacotes num registro compartilhado (ou pelo CI): hoje cada máquina republica e os hashes dos lockfiles divergem (ADR-0010) |
+| Operação | gateway de telemetria `/api/otel/v1/traces` no shell (sem gate), com limite de 60 lotes/min por usuário em memória; nenhuma zona envia traces ainda | rate limiting na borda, `trace_id` entre zonas | gate do gateway (corpo sem `Content-Length`, crescimento do mapa do limitador); instrumentar uma zona |
 
 Referências: `docs/design-bff/mfe/00-arquitetura.md` (solução), `01-operacao.md`
 (roteamento, sessão, falha, deploy), `02-zonas.md` (estrutura e criação de zona),

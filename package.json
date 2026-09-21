@@ -1,13 +1,13 @@
 {
-  "name": "nextjs-mfe-monorepo",
+  "name": "nextjs-mfe",
   "version": "1.0.0",
   "private": true,
+  "description": "Base BFF + Multi-Zones: cada parte é um repositório próprio em repos/ (submódulos)",
   "scripts": {
-    "typecheck": "pnpm --filter @mfe/shell-ui typecheck",
-    "test": "pnpm --filter @mfe/shell-ui test"
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.2",
-    "happy-dom": "^20.14.5"
+    "registry:up": "node repos/scripts/registry.mjs up",
+    "registry:down": "node repos/scripts/registry.mjs down",
+    "base": "node repos/scripts/subir-base.mjs",
+    "verificar": "node --test repos/verificacao/*.test.mjs",
+    "verificar:construir": "CONSTRUIR=1 node --test repos/verificacao/*.test.mjs"
   }
 }

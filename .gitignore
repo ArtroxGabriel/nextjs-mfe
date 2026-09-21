@@ -8,7 +8,6 @@ build
 *.tsbuildinfo
 .ai-jail
 .pnpm-store
-multi-zone-poc
 .worktrees
 .docs
 
