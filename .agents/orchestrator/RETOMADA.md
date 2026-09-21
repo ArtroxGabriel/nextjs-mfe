@@ -1,6 +1,31 @@
 # Retomada — atualizado em 2026-09-21
 
-## Estado em 2026-09-21 (sobrepõe tudo abaixo)
+## Estado em 2026-09-21, tarde — reconciliação do núcleo (sobrepõe tudo abaixo)
+
+Decisão e justificativa completas em `docs/design-bff/comum/docs/adr/0010-reconciliacao-do-nucleo.md`.
+
+- O Gabriel enviou, em `origin/bff-multizone`, `e1424ed` (remove `apps/`), `4eb128b` (registra
+  `erp-moldura`, `erp-shell` e as `erp-zona-*` como submódulos), `1675e95` e `32083d6` (shell novo,
+  flash, 503, telemetria e ajuste da verificação ao manifesto do Turbopack). Fast-forward local feito.
+- Os commits do núcleo que passaram pelo gate (`78980a4`) nunca tinham sido enviados. O Gabriel
+  reescreveu o núcleo (`dbfde02`) e publicou outro 0.3.1. O ADR-0010 registra a divergência
+  (N3 quebrado, `roles` na sessão, atores extras, registro sem validação no boot).
+- **Feito:** no `erp-nucleo`, merge `ours` de `dbfde02` sobre `78980a4` (`803d47c`; árvore idêntica
+  à de `78980a4`, histórico do Gabriel preservado), versão 0.3.2 (`38d7277`), build, fronteira ok,
+  **60/60 testes**, publicado no Verdaccio local, **enviado** para `origin/master` (fast-forward).
+  Um branch local `wilson-local-0.3.1` guarda `78980a4`.
+- **Pendente (parou aqui):** trocar `@erp/nucleo` de 0.3.1 para 0.3.2 no `package.json` de
+  `erp-shell`, `erp-zona-1`, `erp-zona-2` e `erp-zona-acesso`, rodar `pnpm install` para regenerar
+  os lockfiles (os atuais apontam para o tarball 0.3.1 do Gabriel, `sha512-+DhOJ8…`, que não existe
+  neste Verdaccio), commitar e enviar cada submódulo. O auto mode bloqueou o `pnpm install` e depois
+  os comandos git nos submódulos; falta liberação do humano.
+- **Depois:** buildar as quatro apps, `node --test repos/verificacao/*.test.mjs` (espera-se 20/20),
+  commit no principal apontando para os submódulos novos, gate do shell novo do Gabriel (revisor →
+  `revisor-mfe`, challenger → `simulador-condicoes`, auditor → `general-purpose` Opus), avisar o
+  Gabriel para buscar o 0.3.2 e descartar o 0.3.1 dele.
+- `RETOMADA.md` e `ADR-0010` ainda **não estão commitados** no repositório principal.
+
+## Estado em 2026-09-21 (manhã)
 
 - **Decisões D1–D9 da revisão de base genérica tomadas** (todas na recomendação) → ADR-0009.
 - **A base é `repos/`** (Next 16, App Router): `erp-contratos` 0.2.0, `erp-nucleo` 0.2.2,
@@ -9,8 +34,8 @@
 - **A PoC `apps/` está congelada** (evidência histórica). D1, D3, D6/D7, D9/D10, D11 encerrados por
   substituição em `DEFERRED.md`. Suíte da PoC verde (135) após `pnpm install --frozen-lockfile`.
 - Verificação: pacotes 13 + 57 + 10 + 15 testes; ponta a ponta `node --test repos/verificacao/*.test.mjs` 20/20.
-- `erp-moldura`, `erp-shell`, `erp-zona-*` são repositórios git **só locais**: falta criar os
-  remotos e registrá-los como submódulos (decisão do humano).
+- ~~`erp-moldura`, `erp-shell`, `erp-zona-*` são repositórios git só locais~~ — resolvido pelo
+  Gabriel em `4eb128b` (submódulos registrados).
 - Gate independente da base: ver `GATE_STATUS.md`, seção "Gate — Base genérica".
 - Commits do repositório principal e dos submódulos **não foram enviados** (push pendente de ok do humano).
 
