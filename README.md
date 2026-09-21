@@ -73,6 +73,22 @@ uma app, use `pnpm verificar:construir` para refazer os builds. Rodando uma suí
 o glob explícito (`node --test test/*.test.mjs`): no Node 24.7, `node --test <pasta>` roda zero
 testes e sai com 0.
 
+### Testes com navegador real
+
+Alguns testes (L6: navegação do cliente do Next) precisam de um navegador baseado em Chromium.
+**Nada é instalado pelo projeto**: a verificação usa o que a máquina já tem, nesta ordem:
+
+| Onde | Como é achado |
+|---|---|
+| `ERP_CHROME=/caminho/do/binario` | tem precedência; qualquer Chrome, Chromium, Edge ou Brave |
+| PATH | `google-chrome`, `chromium`, `microsoft-edge`, `brave-browser` e variantes |
+| macOS e Windows | caminhos de instalação padrão do Chrome, Chromium e Edge |
+| Flatpak | `com.google.Chrome` |
+| Docker, **só se pedido** | `ERP_CHROME=docker` (Linux): baixa `chromedp/headless-shell` fixado por digest (~100 MB), remove o container no fim; `ERP_CHROME_DOCKER_LIMPAR=1` apaga também a imagem |
+
+Sem nenhum deles, esses testes são **pulados** com a instrução acima, e o resto da verificação
+roda normalmente. Cada execução usa um perfil temporário, apagado no fim.
+
 A verificação manual, item a item, está em
 [`docs/ROTEIRO-DE-VERIFICACAO.md`](docs/ROTEIRO-DE-VERIFICACAO.md).
 

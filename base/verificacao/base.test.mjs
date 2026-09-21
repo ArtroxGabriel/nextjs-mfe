@@ -8,7 +8,7 @@ import { join } from 'node:path'
 import { createServer } from 'node:http'
 import { subir, RAIZ, SHELL as SHELL_URL } from '../scripts/ambiente.mjs'
 import { pedir, entrar, menu, formularios, valorDoCookie, acaoPeloCliente } from './apoio.mjs'
-import { abrirNavegador, acharChrome } from './navegador.mjs'
+import { abrirNavegador, acharChrome, COMO_CONSEGUIR_UM_NAVEGADOR } from './navegador.mjs'
 
 let ambiente
 // Coletor OTLP falso: prova que o gateway de telemetria do shell só repassa lote de quem tem sessão.
@@ -489,7 +489,7 @@ test('L5 (reviewer_shell_2): o shell apaga o cookie de flash com Secure, senao o
 })
 
 test('L6: navegacao do cliente (RSC) com a gestao de acesso fora nao traz o modulo restrito', {
-  skip: acharChrome() ? false : 'sem Chrome nesta maquina (defina ERP_CHROME)',
+  skip: acharChrome() ? false : COMO_CONSEGUIR_UM_NAVEGADOR,
 }, async () => {
   // HTTP puro não reproduz a navegação do cliente: o Next pede só o segmento da página, com a
   // árvore do roteador, e o layout que mostra "indisponível" pode não rodar de novo. Só um
