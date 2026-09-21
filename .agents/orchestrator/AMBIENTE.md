@@ -33,6 +33,9 @@
 - **O mesmo hook checa o lockstep do núcleo** (`base/scripts/verificar-lockstep.mjs`): as quatro
   apps têm de usar a mesma versão exata do `@erp/nucleo`, e o lockfile tem de concordar. Ao subir o
   núcleo, suba nas quatro juntas. À mão: `pnpm lockstep`.
+- **Não use `git commit -a` no principal** quando um submódulo tem commit ainda não verificado:
+  o `-a` inclui o ponteiro do submódulo. O hook barra o push (aconteceu em 2026-09-21), mas o
+  certo é adicionar arquivo por arquivo.
 - HEAD destacado num submódulo esconde commits: trabalhe no `master` (`git checkout master`) antes de
   commitar lá.
 - `git merge -s ours X` **mantém a árvore do branch atual**. Para ficar com o seu conteúdo e absorver
