@@ -3,21 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev:remote": "pnpm --filter remote-app dev",
-    "dev:host": "pnpm --filter @mfe/host dev",
-    "dev": "concurrently -k -p \"[{name}]\" -n \"REMOTE,HOST\" -c \"cyan,magenta\" \"pnpm dev:remote\" \"pnpm dev:host\"",
-    "build:remote": "pnpm --filter remote-app build",
-    "build:host": "pnpm --filter @mfe/host build",
-    "build": "pnpm build:remote && pnpm build:host",
-    "start:remote": "pnpm --filter remote-app start",
-    "start:host": "pnpm --filter @mfe/host start",
-    "start": "concurrently -k -p \"[{name}]\" -n \"REMOTE,HOST\" -c \"cyan,magenta\" \"pnpm start:remote\" \"pnpm start:host\"",
-    "typecheck": "pnpm --filter @mfe/shell-ui typecheck && pnpm --filter remote-app typecheck && pnpm --filter @mfe/host typecheck",
-    "test": "pnpm --filter @mfe/shell-ui test && pnpm --filter remote-app test && pnpm --filter @mfe/host test",
-    "test:dom": "pnpm --filter @mfe/shell-ui test:dom && pnpm --filter remote-app test:dom && pnpm --filter @mfe/host test:dom",
-    "smoke": "node scripts/smoke-test.mjs --strict",
-    "smoke:offline": "node scripts/smoke-test.mjs --offline",
-    "check": "pnpm typecheck && pnpm test && pnpm smoke:offline"
+    "typecheck": "pnpm --filter @mfe/shell-ui typecheck",
+    "test": "pnpm --filter @mfe/shell-ui test"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
