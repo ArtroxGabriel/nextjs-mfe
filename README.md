@@ -44,6 +44,7 @@ pnpm registry:up                                         # Verdaccio (docker com
 for d in repos/erp-{contratos,nucleo,moldura}; do (cd $d && pnpm install && pnpm publicar); done
 for d in repos/erp-{shell,zona-1,zona-2,zona-acesso,dominio-stub}; do (cd $d && pnpm install); done
 pnpm base                                                # sobe tudo em http://localhost:3000
+git config core.hooksPath .githooks                      # uma vez: bloqueia push com submódulo não enviado
 ```
 
 Entre como `ana`, `bruno`, `carla` ou `davi`: cada um vê um menu diferente. Use `localhost`, não
@@ -60,7 +61,7 @@ Entre como `ana`, `bruno`, `carla` ou `davi`: cada um vê um menu diferente. Use
 | Suíte | Comando | Testes | Protege |
 |---|---|---|---|
 | `erp-contratos` | `pnpm test` | 15 | manifesto: prefixo de zona, concessão entre zonas, duplicatas |
-| `erp-nucleo` | `pnpm test` | 60 | registro de destinos, sessão leitor/escritor, acesso, fronteira entre camadas, exports |
+| `erp-nucleo` | `pnpm test` | 72 | registro de destinos, sessão leitor/escritor (arquivo e Redis), acesso, fronteira entre camadas, exports |
 | `erp-moldura` | `pnpm test` | 16 | menu e `aria-current`, host de toast, flash, `FormularioDeAcao` |
 | `erp-dominio-stub` | `pnpm test` | 16 | projeção e escopo dos domínios, `If-Match`, regras da gestão de acesso |
 | `erp-shell` | `pnpm test` | 22 | decisão do proxy, sonda de saúde das zonas, mapa de zonas, gateway de telemetria |

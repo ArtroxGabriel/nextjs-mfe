@@ -27,10 +27,9 @@
 - Os 8 `repos/erp-*` são submódulos. **Envie o submódulo antes do principal.** Se o principal apontar
   para um commit que só existe na sua máquina, quem clona não consegue buscá-lo e acaba refazendo o
   trabalho. Foi a causa do ADR-0010.
-- Antes de `git push` no principal:
-  ```bash
-  git submodule foreach -q 'test "$(git rev-list --count origin/master..HEAD)" = 0 || echo "NAO ENVIADO: $name"'
-  ```
+- **O hook `pre-push` checa isso sozinho** (`repos/scripts/checar-envio.mjs`): recusa o push do
+  principal se algum commit fixado de submódulo não está em nenhum branch remoto. Ative uma vez
+  por clone: `git config core.hooksPath .githooks`. À mão: `pnpm checar-envio`.
 - HEAD destacado num submódulo esconde commits: trabalhe no `master` (`git checkout master`) antes de
   commitar lá.
 - `git merge -s ours X` **mantém a árvore do branch atual**. Para ficar com o seu conteúdo e absorver

@@ -8,6 +8,7 @@
     "registry:down": "node repos/scripts/registry.mjs down",
     "base": "node repos/scripts/subir-base.mjs",
     "verificar": "node --test repos/verificacao/*.test.mjs",
-    "verificar:construir": "CONSTRUIR=1 node --test repos/verificacao/*.test.mjs"
+    "verificar:construir": "CONSTRUIR=1 node --test repos/verificacao/*.test.mjs",
+    "checar-envio": "node repos/scripts/checar-envio.mjs"
   }
 }

@@ -80,7 +80,7 @@ os rewrites olham o caminho cru (a armadilha R1 que a PoC registrou em
 | Pacote | Versão | O que tem | Quem usa |
 |---|---|---|---|
 | `@erp/contratos` | 0.2.1 | códigos de erro e mensagens; `ManifestoDeZona`, `ModuloPermitido`, `validarManifesto` | todos |
-| `@erp/nucleo` | 0.3.2 | `criarNucleo`, registro de destinos, leitor de sessão, `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell`, escritor de sessão, `identidadeDev` | shell e zonas (`/shell` só o shell) |
+| `@erp/nucleo` | 0.4.0 publicado (apps ainda no 0.3.2) | `criarNucleo`, registro de destinos, leitores de sessão (`sessaoArquivo`, `sessaoRedis`), `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell`, escritores de sessão, `identidadeDev` | shell e zonas (`/shell` só o shell) |
 | `@erp/moldura` | 0.3.0 | `<Moldura>` (topo, menu com `aria-current`, host de toast), `emitirToast`, flash, `FormularioDeAcao` | shell e zonas |
 
 Publicados no Verdaccio local (`:4873`). Cada aplicação é um repositório com lockfile próprio.
@@ -184,7 +184,7 @@ sequenceDiagram
 | Suíte | Comando | Protege |
 |---|---|---|
 | `erp-contratos` | `pnpm test` (15) | manifesto: prefixo de zona, concessão entre zonas (D8), duplicatas |
-| `erp-nucleo` | `pnpm test` (60) | registro de destinos, sessão leitor/escritor, acesso, fronteira entre camadas, exports |
+| `erp-nucleo` | `pnpm test` (72) | registro de destinos, sessão leitor/escritor (arquivo e Redis: chave com hash, TTL, erro sem vazar), acesso, fronteira entre camadas, exports |
 | `erp-moldura` | `pnpm test` (16) | menu e `aria-current`, um `<h1>`, barramento e host de toast (executado com hooks falsos), flash, `FormularioDeAcao` |
 | `erp-dominio-stub` | `pnpm test` (16) | projeção e escopo do domínio A, If-Match no C, regras da gestão de acesso |
 | `erp-shell` | `pnpm test` (22) | decisão do proxy (rotas públicas, telemetria, zona fora, login), sonda de saúde com cache de 1 s, mapa de zonas e rotas reservadas, limites do gateway de telemetria |
