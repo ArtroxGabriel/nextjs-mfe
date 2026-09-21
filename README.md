@@ -52,7 +52,8 @@ Entre como `ana`, `bruno`, `carla` ou `davi`: cada um vê um menu diferente. Use
 > **Lockfiles e Verdaccio.** Cada máquina tem o próprio Verdaccio. `npm pack` não é reproduzível
 > byte a byte, então um pacote republicado noutra máquina tem outro hash, e o `pnpm install`
 > recusa o lockfile (`ERR_PNPM_TARBALL_INTEGRITY`). Publique versão nova quando mudar um pacote,
-> nunca o mesmo número duas vezes (ADR-0010).
+> nunca o mesmo número duas vezes (ADR-0010). O que fazer quando um lockfile falhar:
+> [`.agents/orchestrator/AMBIENTE.md`](.agents/orchestrator/AMBIENTE.md) §1.
 
 ## 3. Como testar
 
@@ -100,14 +101,11 @@ O desenho completo (mapa de zonas, contrato de fragmento, sessão, deploy) está
 
 ## 6. Documentação
 
-| Documento | Para quê |
+| Para | Comece em |
 |---|---|
-| `docs/arquitetura/atual.md` | Base em `repos/` com diagramas: topologia, navegação, destinos, gestão de acesso, toast entre zonas, testes, falhas |
-| `docs/arquitetura/alvo.md` | Arquitetura alvo com diagramas e a tabela do que falta |
-| `docs/ROTEIRO-DE-VERIFICACAO.md` | Verificação manual da base |
-| `docs/design-bff/` | Desenho completo e ADRs |
-| `.agents/orchestrator/` | Estado do trabalho: `RETOMADA.md`, `GATE_STATUS.md` (vereditos), `DEFERRED.md`, `MANUTENCAO-GITLAB.md` |
-| `pedidos/` | Pedidos de pesquisa aguardando resposta |
+| entender a arquitetura, o que falta e como conferir | [`docs/README.md`](docs/README.md) |
+| retomar o trabalho em andamento (estado, gates, GitLab, armadilhas do ambiente) | [`.agents/orchestrator/LEIA-PRIMEIRO.md`](.agents/orchestrator/LEIA-PRIMEIRO.md) |
+| pedidos de pesquisa aguardando resposta | [`pedidos/`](pedidos/) |
 
 ## 7. Histórico
 

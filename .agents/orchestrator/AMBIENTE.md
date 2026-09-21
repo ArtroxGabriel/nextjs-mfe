@@ -1,0 +1,65 @@
+# Ambiente e armadilhas — o que já custou tempo e como evitar
+
+> Regras práticas aprendidas no trabalho. Leia antes de instalar, publicar, commitar ou enviar.
+> Cada item diz **o que fazer**, **por quê** e onde está a evidência.
+
+## 1. Pacotes, Verdaccio e lockfiles
+
+- **Cada máquina tem o próprio Verdaccio** (`localhost:4873`, `repos/.verdaccio/`). O que um publica
+  não existe no do outro.
+- **Nunca publique o mesmo número de versão duas vezes**, nem em máquinas diferentes. `npm pack` não
+  é reproduzível byte a byte: o mesmo commit republicado gera outro hash, e o `pnpm install` recusa o
+  lockfile com `ERR_PNPM_TARBALL_INTEGRITY`. Mudou o pacote → versão nova.
+  *Evidência:* ADR-0010; em 2026-09-21 `@erp/nucleo` 0.3.1, `@erp/contratos` 0.2.1 e
+  `@erp/moldura` 0.3.0 tinham hashes diferentes em cada máquina.
+- **Se um lockfile vindo de outra máquina falhar por integridade:**
+  1. confira se o **commit de origem** do pacote é o mesmo (`git ls-tree HEAD repos/erp-<pacote>`);
+  2. se for, troque só a linha `integrity` pelo hash do seu Verdaccio (o do lockfile anterior serve);
+  3. se não for, é conteúdo diferente: pare e decida qual vale (foi o caso do núcleo, ADR-0010).
+  Nunca use `--update-checksums` às cegas: ele aceita qualquer conteúdo.
+- Ordem de publicação: `erp-contratos` → `erp-nucleo` → `erp-moldura` → consumidores.
+- O pnpm acrescenta sozinho a versão nova em `minimumReleaseAgeExclude` (`pnpm-workspace.yaml` de cada
+  app). É esperado: pacote local recém-publicado não tem "idade".
+- **Instalar pacote exige aprovação do humano** (CLAUDE.md dele). Mostre o que muda antes.
+
+## 2. Submódulos e envio
+
+- Os 8 `repos/erp-*` são submódulos. **Envie o submódulo antes do principal.** Se o principal apontar
+  para um commit que só existe na sua máquina, quem clona não consegue buscá-lo e acaba refazendo o
+  trabalho. Foi a causa do ADR-0010.
+- Antes de `git push` no principal:
+  ```bash
+  git submodule foreach -q 'test "$(git rev-list --count origin/master..HEAD)" = 0 || echo "NAO ENVIADO: $name"'
+  ```
+- HEAD destacado num submódulo esconde commits: trabalhe no `master` (`git checkout master`) antes de
+  commitar lá.
+- `git merge -s ours X` **mantém a árvore do branch atual**. Para ficar com o seu conteúdo e absorver
+  o histórico de outro, faça checkout do **seu** commit e rode `merge -s ours <o outro>`. Na ordem
+  inversa você fica com o conteúdo do outro.
+- O principal vai direto para `origin/bff-multizone` (fast-forward). `main` só por PR.
+
+## 3. Testes e servidores
+
+- `node --test` precisa de **glob explícito** (`node --test test/*.test.mjs`). No Node 24.7,
+  `node --test <pasta>` roda zero testes e sai com 0.
+- Núcleo: `node --conditions react-server --test test/*.test.mjs`, depois de `tsc -p tsconfig.json`.
+- Ponta a ponta: `pnpm verificar` (usa os builds existentes) ou `pnpm verificar:construir` (refaz).
+  Esperado hoje: 26/26.
+- **Um dono por vez para as portas** 3000–3003, 4001–4004 e 4010. Num gate, só o challenger sobe
+  servidores; o auditor espera. O Verdaccio (4873) ninguém derruba.
+- Não existe `tsx` nem `rtk` nesta máquina; não buscar.
+
+## 4. Commits
+
+- **Sem rodapé de coautoria** (`Co-Authored-By`, `Claude-Session`, "Generated with"): o hook
+  `no-ai-authorship` bloqueia o commit. A mensagem termina no conteúdo.
+- Mensagem em inglês, no estilo `tipo(escopo): resumo` já usado no histórico.
+
+## 5. Agentes e custo
+
+- Opus para julgamento (auditor forense com veto, decisão de gate); Sonnet para trabalho mecânico
+  ou com checklist (revisor, challenger, re-rodar scripts). Escolha o `model` em todo despacho.
+- Nunca reusar um verificador que já entregou handoff: gate novo, agente novo.
+- Pesquisa aberta ou busca na web: escrever em `pedidos/AAAA-MM-DD-<assunto>.md` e esperar o humano.
+- O auto mode pode bloquear `pnpm install`, `git` em submódulos e `push`. Quando bloquear, salve o
+  estado em `RETOMADA.md`, explique o que falta e peça a liberação.
