@@ -43,6 +43,17 @@ nada de módulo no HTML nem no payload RSC com a gestão de acesso fora; telemet
 bloqueante: recuperação medida ~0,8 s (documentado ~1,2–1,5 s). Não conseguiu forjar navegação
 RSC real sem cliente Next (lacuna registrada). `auditor_shell_2` (Opus) despachado.
 
+Correção dos achados do `reviewer_shell_2` já escrita: `erp-shell` `6d93f8e` (**só local**, não
+enviado: falta a ponta a ponta) — id de zona validado no boot, remoção de `__Host-flash` com
+`Secure`; testes novos no principal: 400 da telemetria (L4) e L5 (Secure). Shell 30/30 na
+unidade. **Quando o auditor liberar as portas:** `CONSTRUIR=1 pnpm verificar` (esperado 31/31),
+enviar o shell, apontar o principal, somar os achados do auditor numa rodada só.
+
+Avaliação do processo (pedido do humano, 20h20): auditor trabalhando certo, em cópia isolada.
+Melhorias feitas: build só das apps alteradas (`precisaConstruir`) e handoff parcial desde o
+começo (`LEIA-PRIMEIRO.md`). Pendentes: teste de navegação RSC com navegador real (exige instalar
+pacote — pedir aprovação) e lint por AST no lugar do regex do N8.
+
 Kit de app (C1/C2) desenhado pelo `arquiteto-mfe` e registrado no ADR-0012; implementar depois do gate. Gate de lockstep do núcleo feito
 (`base/scripts/verificar-lockstep.mjs`, no `pre-push`).
 
