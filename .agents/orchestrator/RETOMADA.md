@@ -37,6 +37,12 @@ do shell apaga `__Host-flash` sem `Secure` (o navegador rejeita; toast pode repe
 (2) id de zona com maiúscula em `zonas.json` reabriria o C1 (normalizar/validar em `carregarZonas`);
 (3) 400 da telemetria sem teste. Corrigir junto com o que challenger e auditor trouxerem.
 
+`challenger_shell_2`: **APPROVE** — C1 corrigido nas 3 zonas (27 combinações, 503 próprio);
+nada de módulo no HTML nem no payload RSC com a gestão de acesso fora; telemetria 413 em streaming
+(20 MB custam ~1,25 MB de RSS), anônimo não repassado, 400/429 certos; 30/30. Divergência não
+bloqueante: recuperação medida ~0,8 s (documentado ~1,2–1,5 s). Não conseguiu forjar navegação
+RSC real sem cliente Next (lacuna registrada). `auditor_shell_2` (Opus) despachado.
+
 Kit de app (C1/C2) desenhado pelo `arquiteto-mfe` e registrado no ADR-0012; implementar depois do gate. Gate de lockstep do núcleo feito
 (`base/scripts/verificar-lockstep.mjs`, no `pre-push`).
 
