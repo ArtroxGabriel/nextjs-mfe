@@ -51,8 +51,13 @@ enviar o shell, apontar o principal, somar os achados do auditor numa rodada só
 
 Avaliação do processo (pedido do humano, 20h20): auditor trabalhando certo, em cópia isolada.
 Melhorias feitas: build só das apps alteradas (`precisaConstruir`) e handoff parcial desde o
-começo (`LEIA-PRIMEIRO.md`). Pendentes: teste de navegação RSC com navegador real (exige instalar
-pacote — pedir aprovação) e lint por AST no lugar do regex do N8.
+começo (`LEIA-PRIMEIRO.md`). Navegador real **sem instalar nada** (decisão do humano: nada de baixar Chromium):
+`base/verificacao/navegador.mjs` abre o Chrome do Flatpak em headless e fala CDP pelo WebSocket
+nativo do Node; perfil temporário apagado, processos encerrados (autoteste 3/3). Teste **L6**
+escrito: navegação do cliente (`window.next.router.push`) para `/zona1/relatorios` com a gestão
+de acesso fora, exigindo que uma requisição RSC aconteça. **Falta rodar** (portas do auditor) e
+provar que ele reprova com o `exigirModulo` fail-open da zona 1 (reconstruir só a zona 1).
+Pendente e opcional: lint por AST no lugar do regex do N8.
 
 Kit de app (C1/C2) desenhado pelo `arquiteto-mfe` e registrado no ADR-0012; implementar depois do gate. Gate de lockstep do núcleo feito
 (`base/scripts/verificar-lockstep.mjs`, no `pre-push`).

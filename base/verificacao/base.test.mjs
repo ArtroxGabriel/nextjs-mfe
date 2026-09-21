@@ -8,6 +8,7 @@ import { join } from 'node:path'
 import { createServer } from 'node:http'
 import { subir, RAIZ, SHELL as SHELL_URL } from '../scripts/ambiente.mjs'
 import { pedir, entrar, menu, formularios, valorDoCookie, acaoPeloCliente } from './apoio.mjs'
+import { abrirNavegador, acharChrome } from './navegador.mjs'
 
 let ambiente
 // Coletor OTLP falso: prova que o gateway de telemetria do shell só repassa lote de quem tem sessão.
@@ -485,4 +486,31 @@ test('L5 (reviewer_shell_2): o shell apaga o cookie de flash com Secure, senao o
     assert.match(apaga, /;\s*Secure/i, `${caminho}: remocao de __Host- sem Secure e ignorada pelo navegador`)
     assert.match(apaga, /Path=\//i, caminho)
   }
+})
+
+test('L6: navegacao do cliente (RSC) com a gestao de acesso fora nao traz o modulo restrito', {
+  skip: acharChrome() ? false : 'sem Chrome nesta maquina (defina ERP_CHROME)',
+}, async () => {
+  // HTTP puro não reproduz a navegação do cliente: o Next pede só o segmento da página, com a
+  // árvore do roteador, e o layout que mostra "indisponível" pode não rodar de novo. Só um
+  // navegador de verdade faz esse pedido (lacuna registrada pelo challenger_shell_2).
+  const { id } = await entrar('bruno')
+  const { pagina, fechar } = await abrirNavegador()
+  try {
+    await pagina.cookie('__Host-session', id, SHELL_URL)
+    await pagina.ir(`${SHELL_URL}/zona1`)
+    assert.match(await pagina.avaliar('document.body.innerText'), /Painel da zona 1/, 'a zona 1 nao abriu com a gestao de acesso no ar')
+    await ambiente.derrubarDominio('gestao-acesso')
+    try {
+      pagina.respostas.length = 0
+      await pagina.avaliar("window.next.router.push('/zona1/relatorios')")
+      await pagina.esperarRede()
+      const rsc = pagina.respostas.filter((r) => /text\/x-component/i.test(r.headers['content-type'] ?? r.headers['Content-Type'] ?? ''))
+      assert.ok(rsc.length > 0, `nenhuma requisicao RSC aconteceu (o teste nao provaria nada): ${pagina.respostas.map((r) => r.url).join(', ')}`)
+      for (const r of pagina.respostas) {
+        assert.ok(!/recursos no seu escopo|com custo|Relatórios/.test(r.corpo ?? ''), `modulo restrito no corpo de ${r.url}`)
+      }
+      assert.ok(!/recursos no seu escopo|com custo/.test(await pagina.avaliar('document.body.innerText')), 'modulo restrito na tela')
+    } finally { await ambiente.subirDominio('gestao-acesso') }
+  } finally { await fechar() }
 })
