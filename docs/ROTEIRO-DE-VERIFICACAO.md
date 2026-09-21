@@ -3,7 +3,7 @@
 ## Parte A — base genérica em `repos/` (a que vale)
 
 Leva uns 10 minutos. A verificação automática faz o mesmo por HTTP:
-`node --test repos/verificacao/*.test.mjs` (esperado: `tests 20`, `pass 20`).
+`node --test repos/verificacao/*.test.mjs` (esperado: `tests 23`, `pass 23`).
 
 **Preparar.** `node repos/scripts/registry.mjs up`, instale cada app (README) e rode
 `node repos/scripts/subir-base.mjs`. Use `http://localhost:3000`, não `127.0.0.1`: o cookie

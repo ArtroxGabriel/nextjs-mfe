@@ -133,3 +133,14 @@ Gate Result: **FAIL** — auditor_final_3 INTEGRITY VIOLATION (V1, V2), a binary
 | auditor_final_4 | general-purpose (forensic) | CLEAN | mutations3.txt | V1 closed: zone & host emitToast verified on stand-in window (literal mutants caught). V2 closed: react/jsx-runtime capture test verifies zone onSessionChange wiring without DOM renderer dependency. 23/23 mutants in mutations3.txt caught. Authentic, zero cheating |
 
 Gate Result: **PASS** — Milestone 2, Milestone 3, and D2 Complete. PoC verified, fully testable and approved for push to fork.
+
+## Gate — Base genérica (ADR-0009), iteração 1, HEAD 1b9e811
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_base_1 | revisor-mfe (opus) | REQUEST_CHANGES | .agents/reviewer_base_1/handoff.md | 0 bloqueantes; 5 importantes: repositórios sem remoto; manifesto `plataforma` cria perfil global (inv. 17); escrita de sessão na raiz do núcleo (inv. 15); host de toast ignora flash novo; erro de sessão em action vira tela genérica (inv. 12) |
+| challenger_base_1 | simulador-condicoes (sonnet) | REQUEST_CHANGES | .agents/challenger_base_1/handoff.md | A1: action executa sem `Origin` (checagem do Next fail-open); sem boundary de erro; gestão de acesso fora = página vazia; domínio A fora derruba /zona1; 20/20 automáticos; p95 192 ms em GET /zona1 |
+| auditor | — | não despachado | — | aguardou a correção |
+
+Gate Result: **FAIL**. Correções: contratos b10d55f, núcleo d5912ce (0.3.0, `@erp/nucleo/shell`), moldura fd618c9,
+stub b5c8ac7, shell a28b80a, zona-1 a3883ec, zona-2 dbaa10d, zona-acesso d81dd34. Pacotes 15/58/11/16, ponta a ponta 23/23.
+Pendente de decisão do humano: remotos dos cinco repositórios só locais (achado 1 do revisor).

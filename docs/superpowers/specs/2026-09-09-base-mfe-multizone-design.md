@@ -132,7 +132,7 @@ que ninguém a leia como esquecimento.
 
 ### 4.1 Regra de dependência
 
-- `interno/` nunca importa de `adaptadores/` nem de `portas/`
+- `interno/` nunca importa de `adaptadores/` nem de `portas/` *(ADR-0009: `interno/` pode importar tipos de `portas/`, que não têm código.)*
 - `adaptadores/` importa de `portas/` e `interno/`
 - `fabricas/` costura os três
 - `testing/` não é importado fora de teste

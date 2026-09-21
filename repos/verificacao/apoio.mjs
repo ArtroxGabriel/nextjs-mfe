@@ -50,12 +50,6 @@ export function formularios(html) {
   })
 }
 
-export function enviarFormulario(caminho, campos, cookie, origem) {
-  const fd = new FormData()
-  for (const [k, v] of Object.entries(campos)) fd.append(k, v)
-  return pedir(caminho, { metodo: 'POST', corpo: fd, cookie, ...(origem ? { origem } : {}) })
-}
-
 /**
  * Chama a Server Action como o JavaScript do navegador chama: cabeçalho `Next-Action` e
  * argumentos codificados com o `encodeReply` do próprio Next. É o caminho que um usuário com
@@ -71,7 +65,7 @@ export async function acaoPeloCliente({ app, arquivo, nome, caminho, campos, coo
   for (const [k, v] of Object.entries(campos)) if (!k.startsWith('$')) fd.append(k, v)
   const r = await fetch(`${SHELL}${caminho}`, {
     method: 'POST', redirect: 'manual', body: await encodeReply([fd]),
-    headers: { cookie, origin: origem, 'next-action': id, accept: 'text/x-component' },
+    headers: { cookie, ...(origem === null ? {} : { origin: origem }), 'next-action': id, accept: 'text/x-component' },
   })
   return {
     status: r.status,

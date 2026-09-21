@@ -1,4 +1,10 @@
-# Estado da execução — atualizado em 2026-09-15
+# Estado da execução — atualizado em 2026-09-21
+
+> **2026-09-21:** o plano da fatia 1 (tasks 8–11) foi substituído pela base genérica do
+> [ADR-0009](../design-bff/comum/docs/adr/0009-base-generica.md). Tasks 1–7 continuam válidas
+> como história; o núcleo foi generalizado (0.2.x) e shell + três zonas existem em `repos/`.
+> Estado atual e como rodar: `README.md` (seção base genérica) e `docs/arquitetura/atual.md`.
+> As seções abaixo são histórico de 2026-09-15.
 
 Retomada: leia este arquivo, `O que falta para finalizar a arquitetura.md` (fonte da verdade)
 e `.agents/orchestrator/RETOMADA.md`.

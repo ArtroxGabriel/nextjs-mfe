@@ -18,8 +18,10 @@ evidência histórica.
 
 ```bash
 node repos/scripts/registry.mjs up                 # Verdaccio (docker compose)
+# num Verdaccio novo o volume está vazio: publique os pacotes, nesta ordem
+for d in repos/erp-{contratos,nucleo,moldura}; do (cd $d && pnpm install && pnpm publicar); done
 for d in repos/erp-{shell,zona-1,zona-2,zona-acesso,dominio-stub}; do (cd $d && pnpm install); done
-node --test repos/verificacao/*.test.mjs           # sobe tudo, verifica N3–N8 pelo shell, derruba (20 testes)
+node --test repos/verificacao/*.test.mjs           # sobe tudo, verifica N3–N8 pelo shell, derruba (23 testes)
 node repos/scripts/subir-base.mjs                   # sobe tudo para uso manual em http://localhost:3000
 ```
 

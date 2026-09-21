@@ -1,4 +1,19 @@
-# Retomada — atualizado em 2026-09-15
+# Retomada — atualizado em 2026-09-21
+
+## Estado em 2026-09-21 (sobrepõe tudo abaixo)
+
+- **Decisões D1–D9 da revisão de base genérica tomadas** (todas na recomendação) → ADR-0009.
+- **A base é `repos/`** (Next 16, App Router): `erp-contratos` 0.2.0, `erp-nucleo` 0.2.2,
+  `erp-moldura` 0.1.1, `erp-dominio-stub`, `erp-shell`, `erp-zona-1`, `erp-zona-2`, `erp-zona-acesso`.
+  Arquitetura em `docs/arquitetura/atual.md`; lacunas em `alvo.md` §6.
+- **A PoC `apps/` está congelada** (evidência histórica). D1, D3, D6/D7, D9/D10, D11 encerrados por
+  substituição em `DEFERRED.md`. Suíte da PoC verde (135) após `pnpm install --frozen-lockfile`.
+- Verificação: pacotes 13 + 57 + 10 + 15 testes; ponta a ponta `node --test repos/verificacao/*.test.mjs` 20/20.
+- `erp-moldura`, `erp-shell`, `erp-zona-*` são repositórios git **só locais**: falta criar os
+  remotos e registrá-los como submódulos (decisão do humano).
+- Gate independente da base: ver `GATE_STATUS.md`, seção "Gate — Base genérica".
+- Commits do repositório principal e dos submódulos **não foram enviados** (push pendente de ok do humano).
+
 
 Leia este arquivo primeiro. Depois `BRIEFING.md` (estado persistente), `GATE_STATUS.md`
 (vereditos por rodada) e `DEFERRED.md` (o que foi deliberadamente adiado, com evidência).

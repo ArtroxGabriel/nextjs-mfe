@@ -1,0 +1,82 @@
+Derrubando erp-zona-2 (pid 75029, porta 3002) — processo iniciado por mim via subir-base.mjs. Restauro depois com: node repos/scripts/subir-base.mjs relançaria tudo; aqui vou reiniciar só o processo manualmente.
+=== GET /zona2 com zona-2 process derrubado ===
+HTTP/1.1 500 Internal Server Error
+Date: Mon, 21 Sep 2026 14:25:41 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+---body (primeiros 1500 chars)---
+Internal Server Error
+Derrubando stub completo (pid 74560, portas 4001-4004,4010) para simular queda seletiva. Vou restaurar com dominio-parcial.mjs incluindo todos, depois com servidor.mjs original.
+=== com gestao-acesso (4010) fora: GET / (shell) ===
+HTTP/1.1 500 Internal Server Error
+content-security-policy: default-src 'self'; script-src 'self' 'nonce-c0f582232c9144d8bab6d7222d702e5f' 'strict-dynamic'; style-src 'self' 'nonce-c0f582232c9144d8bab6d7222d702e5f'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+Vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding
+Link: </_next/static/chunks/09q8gtehcoge3.css>; rel=preload; as="style"; nonce="c0f582232c9144d8bab6d7222d702e5f"
+Cache-Control: private, no-cache, no-store, max-age=0, must-revalidate
+Content-Type: text/html; charset=utf-8
+Date: Mon, 21 Sep 2026 14:26:56 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+---body 1000 chars---
+<!DOCTYPE html><html id="__next_error__"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="preload" as="script" fetchPriority="low" nonce="c0f582232c9144d8bab6d7222d702e5f" href="/_next/static/chunks/3kajibmqg2_ny.js"/><script src="/_next/static/chunks/3pa1m7y818mu1.js" async="" nonce="c0f582232c9144d8bab6d7222d702e5f"></script><script src="/_next/static/chunks/1dj1c_ns78etf.js" async="" nonce="c0f582232c9144d8bab6d7222d702e5f"></script><script src="/_next/static/chunks/turbopack-0_q669zbm1ym5.js" async="" nonce="c0f582232c9144d8bab6d7222d702e5f"></script><meta name="robots" content="noindex"/><title>ERP</title><script src="/_next/static/chunks/0cz1d0mv5g_q7.js" noModule="" nonce="c0f582232c9144d8bab6d7222d702e5f"></script></head><body><div hidden=""><!--$--><!--/$--></div><script src="/_next/static/chunks/3kajibmqg2_ny.js" nonce="c0f582232c9144d8bab6d7222d702e5f" id="_R_" async=""></script><script nonce="c0f582232c9144d8bab6d7
+=== com gestao-acesso (4010) fora: GET /zona1 ===
+HTTP/1.1 500 Internal Server Error
+content-security-policy: default-src 'self'; script-src 'self' 'nonce-e0b830e1cacd48b1b1bbac0e4a899f54' 'strict-dynamic'; style-src 'self' 'nonce-e0b830e1cacd48b1b1bbac0e4a899f54'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+Vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding
+link: </zona1-static/_next/static/chunks/09q8gtehcoge3.css>; rel=preload; as="style"; nonce="e0b830e1cacd48b1b1bbac0e4a899f54"
+cache-control: private, no-cache, no-store, max-age=0, must-revalidate
+content-type: text/html; charset=utf-8
+date: Mon, 21 Sep 2026 14:26:56 GMT
+connection: keep-alive
+keep-alive: timeout=5
+transfer-encoding: chunked
+
+<!DOCTYPE html><html id="__next_error__"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="preload" as="script" fetchPriority="low" nonce="e0b830e1cacd48b1b1bbac0e4a899f54" href="/zona1-static/_next/static/chunks/3kajibmqg2_ny.js"/><script src="/zona1-static/_next/static/chunks/3pa1m7y818mu1.js" async="" nonce="e0b830e1cacd48b1b1bbac0e4a899f54"></script><script src="/zona1-static/_next/static/chunks/1dj1c_ns78etf.js" async="" nonce="e0b830e1cacd48b1b1bbac0e4a899f54"></script><script src="/zona1-static/_next/static/chunks/turbopack-2-3_be4ryfvm8.js" async="" nonce="e0b830e1cacd48b1b1bbac0e4a899f54"></script><meta name="robots" content="noindex"/><script src="/zona1-static/_next/static/chunks/0cz1d0mv5g_q7.js" noModule="" nonce="e0b830e1cacd48b1b1bbac0e4a899f54"></script></head><body><div hidden=""><!--$--><!--/$--></div><script src="/zona1-static/_next/static/chunks/3kajibmqg2_ny.js" nonce="e0b830e1cacd48b1b1bbac0e4a899f54" id="
+=== com dominio-a (4001) fora: GET / (shell, nao depende de A) ===
+status=404
+=== com dominio-a (4001) fora: GET /zona1 (usa A e B) ===
+HTTP/1.1 404 Not Found
+content-security-policy: default-src 'self'; script-src 'self' 'nonce-8a40021536d14b6e913667b871caf214' 'strict-dynamic'; style-src 'self' 'nonce-8a40021536d14b6e913667b871caf214'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+Vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding
+link: </zona1-static/_next/static/chunks/09q8gtehcoge3.css>; rel=preload; as="style"; nonce="8a40021536d14b6e913667b871caf214"
+cache-control: private, no-cache, no-store, max-age=0, must-revalidate
+content-type: text/html; charset=utf-8
+date: Mon, 21 Sep 2026 14:27:28 GMT
+connection: keep-alive
+keep-alive: timeout=5
+transfer-encoding: chunked
+
+NOTA METODOLOGICA: gestao-acesso e stateful em memoria; reiniciar o stub parcial perdeu os manifestos registrados, causando 404 generalizado nao relacionado a dominio A. Re-registrei os manifestos antes de repetir a sonda.
+=== [corrigido] com dominio-a (4001) fora: GET / (shell) ===
+status=200
+=== [corrigido] com dominio-a (4001) fora: GET /zona1 (usa A e B) ===
+HTTP/1.1 500 Internal Server Error
+content-security-policy: default-src 'self'; script-src 'self' 'nonce-6ae1f34e057949f9a41b2d91561d2e70' 'strict-dynamic'; style-src 'self' 'nonce-6ae1f34e057949f9a41b2d91561d2e70'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+Vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding
+link: </zona1-static/_next/static/chunks/09q8gtehcoge3.css>; rel=preload; as="style"; nonce="6ae1f34e057949f9a41b2d91561d2e70"
+cache-control: private, no-cache, no-store, max-age=0, must-revalidate
+content-type: text/html; charset=utf-8
+date: Mon, 21 Sep 2026 14:27:57 GMT
+connection: keep-alive
+keep-alive: timeout=5
+transfer-encoding: chunked
+
+---texto visivel---
+
+=== [corrigido] com dominio-a (4001) fora: GET /zona1/recursos/r-1 (so em dominio A) ===
+HTTP/1.1 500 Internal Server Error
+content-security-policy: default-src 'self'; script-src 'self' 'nonce-703a10b4cba24c838136fc9d938dc2d3' 'strict-dynamic'; style-src 'self' 'nonce-703a10b4cba24c838136fc9d938dc2d3'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+Vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding
+link: </zona1-static/_next/static/chunks/09q8gtehcoge3.css>; rel=preload; as="style"; nonce="703a10b4cba24c838136fc9d938dc2d3"
+cache-control: private, no-cache, no-store, max-age=0, must-revalidate
+content-type: text/html; charset=utf-8
+date: Mon, 21 Sep 2026 14:27:57 GMT
+connection: keep-alive
+keep-alive: timeout=5
+transfer-encoding: chunked
+
+

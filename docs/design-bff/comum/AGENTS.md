@@ -64,9 +64,12 @@ Se não tiver, não é invariante — é intenção.
 4. **SEMPRE** chame domínio por um destino do **registro de destinos** do núcleo
    (`nucleo.destino(nome)`), nunca com `fetch` direto. A zona escolhe o modelo de caminho
    declarado e preenche parâmetros; origem, método e credencial são do registro — RFC 10017.
-   Ver ADR-0009.
+   Ver ADR-0009. Única exceção: o script de deploy `scripts/registrar-manifesto.ts`, que roda
+   fora do Next e usa `fetch` com origem fixa, `redirect: 'manual'` e timeout.
 5. **SEMPRE** revalide sessão no primeiro bloco de toda Server Action. Ela é endpoint público.
-6. **SEMPRE** use `If-Match` em mutação, com a versão que o cliente conhece.
+6. **SEMPRE** use `If-Match` em mutação de recurso versionado, com a versão que o cliente
+   conhece. O núcleo recusa PUT/PATCH/DELETE sem ela; POST que só define um valor
+   (conceder, restringir, atribuir) não tem versão a comparar (ADR-0009, decisão 13).
 7. Responda **`401`** sem credencial, **`404`** para recurso fora do escopo de grupo,
    **`403`** para ação negada sobre recurso que o usuário legitimamente vê.
 8. **NUNCA** renderize placeholder de "sem acesso". Ausência de permissão é ausência de elemento.
@@ -78,10 +81,10 @@ Se não tiver, não é invariante — é intenção.
 12. **SEMPRE** normalize erro para `{ codigo, supportId }`. Sem stacktrace, sem nome de classe.
 13. **NUNCA** cacheie payload protegido no BFF. Ver ADR-0007.
 14. **NUNCA** deixe uma extensão alterar semântica de campo já usado pelo núcleo.
-15. **NUNCA** grave, renove ou encerre sessão fora do shell. Zona monta o núcleo com
-    `sessaoArquivo({ modo: 'leitura' })` (ou o leitor do store real) e sem `escrita`.
-16. **SEMPRE** verifique o módulo na camada 2 (`exigirModulo`) em toda página e em toda
-    Server Action. Módulo não permitido é `404`, como recurso fora do escopo.
+15. **NUNCA** grave, renove ou encerre sessão fora do shell. Escrita de sessão e
+    autenticação só existem em `@erp/nucleo/shell`; zona nenhuma importa esse subpath.
+16. **SEMPRE** verifique o módulo na camada 2 em toda página (`exigirModulo`) e em toda
+    Server Action (`acaoProtegida`). Módulo não permitido é `404`, como recurso fora do escopo.
 17. **NUNCA** declare perfil ou módulo fora do prefixo da própria zona. Perfil de zona só
     concede módulo dela; perfil global é `plataforma.*` e nasce no domínio de gestão de acesso.
 

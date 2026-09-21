@@ -50,9 +50,9 @@ requisição com cabeçalho de navegador (`Origin`, `Sec-Fetch-*`).
 
 | Pacote | Versão | O que tem | Quem usa |
 |---|---|---|---|
-| `@erp/contratos` | 0.2.0 | códigos de erro e mensagens; `ManifestoDeZona`, `ModuloPermitido`, `validarManifesto` | todos |
-| `@erp/nucleo` | 0.2.2 | `criarNucleo`, registro de destinos, sessão leitor/escritor, `acessoHttp`, `identidadeDev`, `criarProxy`, `pode` | shell e zonas |
-| `@erp/moldura` | 0.1.1 | `<Moldura>` (topo, menu com `aria-current`, host de toast), `emitirToast`, flash | shell e zonas |
+| `@erp/contratos` | 0.2.1 | códigos de erro e mensagens; `ManifestoDeZona`, `ModuloPermitido`, `validarManifesto` | todos |
+| `@erp/nucleo` | 0.3.0 | `criarNucleo`, registro de destinos, leitor de sessão, `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell`, escritor de sessão, `identidadeDev` | shell e zonas (`/shell` só o shell) |
+| `@erp/moldura` | 0.2.0 | `<Moldura>` (topo, menu com `aria-current`, host de toast), `emitirToast`, flash, `FormularioDeAcao` | shell e zonas |
 
 Publicados no Verdaccio local (`:4873`). Cada aplicação é um repositório com lockfile próprio.
 
@@ -153,10 +153,19 @@ sequenceDiagram
 
 | Suíte | Comando | Protege |
 |---|---|---|
-| `erp-contratos` | `pnpm test` (13) | manifesto: prefixo de zona, concessão entre zonas (D8), duplicatas |
-| `erp-nucleo` | `pnpm test` (57) | registro de destinos, sessão leitor/escritor, acesso, fronteira entre camadas, exports |
-| `erp-moldura` | `pnpm test` (10) | menu e `aria-current`, um `<h1>`, barramento de toast, flash |
-| `erp-dominio-stub` | `pnpm test` (15) | projeção e escopo do domínio A, If-Match no C, regras da gestão de acesso |
-| ponta a ponta | `node --test repos/verificacao/*.test.mjs` (20) | N3–N8 pelo shell, com os quatro atores; Server Actions pelo caminho do navegador (`Next-Action`) |
+| `erp-contratos` | `pnpm test` (15) | manifesto: prefixo de zona, concessão entre zonas (D8), duplicatas |
+| `erp-nucleo` | `pnpm test` (58) | registro de destinos, sessão leitor/escritor, acesso, fronteira entre camadas, exports |
+| `erp-moldura` | `pnpm test` (11) | menu e `aria-current`, um `<h1>`, barramento de toast, flash |
+| `erp-dominio-stub` | `pnpm test` (16) | projeção e escopo do domínio A, If-Match no C, regras da gestão de acesso |
+| ponta a ponta | `node --test repos/verificacao/*.test.mjs` (23) | N3–N8 pelo shell, com os quatro atores; toda Server Action pelo caminho do navegador (`Next-Action`), sem `Origin`, com sessão expirada e por quem não tem o módulo |
+
+## 8. Quando uma peça cai (medido pelo challenger_base_1 em 2026-09-21)
+
+| Cai | O usuário vê |
+|---|---|
+| um domínio de negócio (ex.: A) | a página abre; o bloco daquele domínio diz "indisponível no momento" |
+| o domínio de gestão de acesso | a página "Serviço indisponível" (`global-error`), sem moldura: sem ele ninguém entra em módulo |
+| uma zona | erro do gateway do Next — **falha isolada de zona ainda não existe** (`alvo.md` §6) |
+| o domínio falso de gestão de acesso é reiniciado | perde manifestos e concessões (estado em memória); `pnpm registrar` em cada app os recria. O domínio real persiste |
 
 Como rodar e conferir à mão: [`../ROTEIRO-DE-VERIFICACAO.md`](../ROTEIRO-DE-VERIFICACAO.md) §0.

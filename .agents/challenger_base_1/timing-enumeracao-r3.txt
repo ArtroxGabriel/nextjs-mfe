@@ -1,0 +1,9 @@
+status r-3 (carla, fora do escopo): [ 404 ]
+status id inexistente: [ 404 ]
+tamanhos corpo r-3: [ 8050 ]
+tamanhos corpo inexistente: [ 8084 ]
+headers r-3: cache-control,connection,content-encoding,content-security-policy,content-type,date,keep-alive,link,transfer-encoding,vary
+headers inexistente: cache-control,connection,content-encoding,content-security-policy,content-type,date,keep-alive,link,transfer-encoding,vary
+headers identicos? true
+r-3 (existe, fora do escopo): n=250 media=22.95ms p50=21.19 p95=31.76 p99=45.88 min=13.96 max=156.11
+id inexistente: n=250 media=22.50ms p50=21.03 p95=32.92 p99=42.92 min=13.63 max=58.99

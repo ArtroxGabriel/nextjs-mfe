@@ -167,6 +167,15 @@ o documento com `window.location.assign`. `redirect()` só para a própria zona.
 `repos/verificacao/base.test.mjs` (casos N4 e "mesma zona"), que chama a action com `Next-Action`
 e `encodeReply`, como o navegador.
 
+## 12. A checagem de origem das Server Actions aceita requisição sem `Origin` — medido em 2026-09-21
+
+`experimental.serverActions.allowedOrigins` recusa `Origin` de outro site, mas deixa passar a
+requisição que não traz `Origin` nenhum (challenger_base_1 executou uma mutação por `curl`).
+Navegadores modernos sempre mandam `Origin` em POST, e o cookie `SameSite=Lax` cobre o caso
+real, mas a checagem isolada é fail-open. **Regra:** `acaoProtegida` exige `Origin` presente e
+num host do shell (`SHELL_HOSTS`), e recusa `Sec-Fetch-Site` diferente de `same-origin`.
+Verificado em `repos/verificacao/base.test.mjs`.
+
 ---
 
 # Tabela de decisão — o que precisa virar documento novo ou ADR

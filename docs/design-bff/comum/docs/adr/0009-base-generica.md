@@ -40,17 +40,18 @@ As nove decisões da §7 da revisão foram tomadas em 2026-09-21, todas na recom
 | 8 | Perfil de zona tem **prefixo da zona** e só concede módulo dela; perfis globais são `plataforma.*`, explícitos | um perfil de zona não escala para outra zona |
 | 9 | O gate independente passa a ser **da base nova** | a PoC foi congelada |
 | 10 | O núcleo troca a porta de dados por um **registro de destinos**: cada aplicação declara origem, modelos de caminho, métodos, credencial e timeout; o núcleo monta a URL | a zona preenche lacunas, não monta URL; destino, método ou caminho fora do registro lança `DestinoInvalido` sem sair da rede |
-| 11 | Sessão dividida em **leitor** e **escritor**; só o shell recebe `escrita` | a zona não tem como gravar nem encerrar sessão, nem por tipo nem em execução |
+| 11 | Sessão dividida em **leitor** e **escritor**; escrita e autenticação só em `@erp/nucleo/shell` | a raiz do pacote não entrega nada que grave sessão, e `criarNucleo` ignora `escrita` mesmo com cast; o que impede uma zona de importar `@erp/nucleo/shell` é a verificação estática das zonas |
 | 12 | Portas do núcleo: **sessão, identidade, acesso** (mais o registro de destinos, que é configuração) | substitui a decisão 5 do ADR-0008 |
 | 13 | Mutação entra na base com **If-Match obrigatório** para PUT/PATCH/DELETE e o POST de exemplo com versão | substitui a decisão 9 do ADR-0008 (fatia somente leitura) |
+| 14 | Server Action **devolve o destino** e a ilha `FormularioDeAcao` troca o documento; nenhuma action usa `redirect()` | com JavaScript, `redirect()` numa action busca o destino no processo da zona atual (limitação 11) |
 
 ## Como ficou
 
 ```
 repos/
-  erp-contratos      @erp/contratos 0.2.0 — erros, ManifestoDeZona, ModuloPermitido, validarManifesto
-  erp-nucleo         @erp/nucleo 0.2.2    — criarNucleo, registro de destinos, sessão leitura/escrita, acesso, criarProxy
-  erp-moldura        @erp/moldura 0.1.1   — <Moldura>, host de toast, emitirToast, flash entre documentos
+  erp-contratos      @erp/contratos 0.2.1 — erros, ManifestoDeZona, ModuloPermitido, validarManifesto
+  erp-nucleo         @erp/nucleo 0.3.0    — criarNucleo, registro de destinos, leitor de sessão, acesso, criarProxy; /shell: escrita e identidade
+  erp-moldura        @erp/moldura 0.2.0   — <Moldura>, host de toast, emitirToast, flash, FormularioDeAcao
   erp-dominio-stub   domínios falsos: A :4001, B :4002, C :4003, plataforma :4004, gestão de acesso :4010
   erp-shell          :3000 — login, sessão (único escritor), gateway pelas zonas, domínio plataforma
   erp-zona-1         :3001 — domínios A e B; módulo livre e módulo restrito
