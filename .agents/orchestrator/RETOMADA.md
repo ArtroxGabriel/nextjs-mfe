@@ -88,6 +88,28 @@ Decisão do `arquiteto-mfe` registrada no ADR-0011. `@erp/nucleo` 0.5.0 traz `cr
 Decidido pelo humano e em execução: ver o quadro "Andamento" em `PROPOSTA-REORGANIZACAO.md`.
 Docs reorganizadas (D1–D6 feitos). Faltam D7 e C3 (esperam o auditor) e C1/C2 (código).
 
+## Plano até o objetivo (revisto em 2026-09-21, noite)
+
+Objetivo (ADR-0009, N1–N8): base genérica BFF + Multi-Zones **funcionando, testável e pronta
+para escalar**; depois, o caminho para produção descrito em `docs/arquitetura/alvo.md` §6–7.
+
+| Fase | Item | Atividade | Bloqueio |
+|---|---|---|---|
+| **A. Fechar o que está aberto** | A1 gate do shell: auditor da iteração 2 → correção (`6d93f8e` local + achados do auditor) → `CONSTRUIR=1 pnpm verificar` (L5, L6) → iteração 3 curta | #3, #18 | portas com o auditor |
+| | A2 provar que o L6 reprova com `exigirModulo` fail-open (reconstruir só a zona 1) | #3 | A1 |
+| **B. Base consistente** | B1 kit de app (ADR-0012): núcleo 0.6.0 (CSP) e 0.7.0 (`@erp/nucleo/app`), moldura 0.4.0, as 4 apps juntas | — | A1 |
+| | B2 núcleo 8: `traceparent` no registro de destinos, trace contínuo sem dado pessoal numa zona | #18 | — |
+| | B3 `/{zona}/api/health` sem tocar domínio; sonda passa a usá-lo | #3 | B1 |
+| | B4 verificações da spec: build falha com `server-only` em `'use client'`; DTO sensível como prop de ilha; guarda contra `<Link>` entre zonas | — | — |
+| **C. Funcionalidades do alvo** | C1 ligar fragmentos: rota `_fragmento` na zona 2, bloco na zona 1 com `<Suspense>` e breaker, recusa no shell | #10 | B1 |
+| | C2 SSE no shell (`/api/stream` + `SharedWorker`) | #11 | — |
+| | C3 mapa de zonas vindo dos manifestos da gestão de acesso | #14 | — |
+| **D. Produção** | D1 ligar `sessaoRedis` (cliente `redis` + Redis no compose) | #9 | **aprovação de instalação** |
+| | D2 OIDC + PKCE e renovação de token (30 min de sessão) | #9 | **respostas do IdP** (`desenho/bff/PENDENCIAS.md` §4) |
+| | D3 registro de pacotes único / CI com lockstep e verificação | #14 | **decisão de infraestrutura** |
+| | D4 rate limiting na borda; p99 e alarme de RTT BFF↔domínio > 5 ms | — | ambiente real |
+| | D5 `@erp/ui` depois de medir duplicação de bundle | #12 | medição |
+
 ## Pendências com o humano
 
 - Confirmar no GitLab os avisos de `ATIVIDADES.md` §3.
