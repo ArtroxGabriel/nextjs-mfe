@@ -57,7 +57,11 @@ nativo do Node; perfil temporário apagado, processos encerrados (autoteste 3/3)
 escrito: navegação do cliente (`window.next.router.push`) para `/zona1/relatorios` com a gestão
 de acesso fora, exigindo que uma requisição RSC aconteça. **Falta rodar** (portas do auditor) e
 provar que ele reprova com o `exigirModulo` fail-open da zona 1 (reconstruir só a zona 1).
-Pendente e opcional: lint por AST no lugar do regex do N8.
+N8 por análise estrutural **feito** (`base/verificacao/saida-de-rede.mjs`, compilador do
+TypeScript já presente; pega o código original do Gabriel; 8 mutações do analisador pegas). Achou
+uma saída de rede que o regex não via: a sonda de saúde do shell, agora exceção declarada.
+Navegador: detecção para qualquer máquina (PATH, macOS/Windows, Flatpak; Docker só com
+`ERP_CHROME=docker`, imagem fixada por digest — caminho Docker **não exercitado**).
 
 Kit de app (C1/C2) desenhado pelo `arquiteto-mfe` e registrado no ADR-0012; implementar depois do gate. Gate de lockstep do núcleo feito
 (`base/scripts/verificar-lockstep.mjs`, no `pre-push`).

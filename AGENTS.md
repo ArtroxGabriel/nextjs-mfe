@@ -23,8 +23,11 @@ pacotes ou em `base/verificacao/`.
 4. **SEMPRE** chame domínio por um destino do **registro de destinos** do núcleo
    (`nucleo.destino(nome)`), nunca com `fetch` direto. A zona escolhe o modelo de caminho
    declarado e preenche parâmetros; origem, método e credencial são do registro — RFC 10017.
-   Ver ADR-0009. Única exceção: o script de deploy `scripts/registrar-manifesto.ts`, que roda
+   Ver ADR-0009. Primeira exceção: o script de deploy `scripts/registrar-manifesto.ts`, que roda
    fora do Next e usa `fetch` com origem fixa, `redirect: 'manual'` e timeout.
+   Segunda exceção: a sonda de saúde do shell (`erp-shell/lib/saude-zonas.ts`), que só chama
+   as origens do `zonas.json`. A checagem N8 (`base/verificacao/saida-de-rede.mjs`) lê a estrutura
+   do código e só aceita as exceções listadas lá, cada uma com o motivo.
 5. **SEMPRE** revalide sessão no primeiro bloco de toda Server Action. Ela é endpoint público.
 6. **SEMPRE** use `If-Match` em mutação de recurso versionado, com a versão que o cliente
    conhece. O núcleo recusa PUT/PATCH/DELETE sem ela; POST que só define um valor

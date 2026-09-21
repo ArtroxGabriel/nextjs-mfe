@@ -9,6 +9,7 @@ import { createServer } from 'node:http'
 import { subir, RAIZ, SHELL as SHELL_URL } from '../scripts/ambiente.mjs'
 import { pedir, entrar, menu, formularios, valorDoCookie, acaoPeloCliente } from './apoio.mjs'
 import { abrirNavegador, acharChrome, COMO_CONSEGUIR_UM_NAVEGADOR } from './navegador.mjs'
+import { varrerAplicacoes } from './saida-de-rede.mjs'
 
 let ambiente
 // Coletor OTLP falso: prova que o gateway de telemetria do shell só repassa lote de quem tem sessão.
@@ -350,17 +351,10 @@ test('invariante 16 estatico: toda pagina de modulo chama exigirModulo', () => {
   assert.ok(total >= 6)
 })
 
-test('N8: nenhuma zona monta URL; toda saida passa pelo registro de destinos do nucleo', () => {
-  for (const zona of ['erp-shell', 'erp-zona-1', 'erp-zona-2', 'erp-zona-acesso']) {
-    for (const dir of ['app', 'lib']) {
-      const base = join(RAIZ, zona, dir)
-      const fontes = (d) => readdirSync(d).flatMap((n) => statSync(join(d, n)).isDirectory() ? fontes(join(d, n)) : [join(d, n)])
-      for (const f of fontes(base)) {
-        // também o acesso indireto (`globalThis['fetch']`), que escapava da primeira versão desta checagem
-        assert.ok(!/\bfetch\(|globalThis\s*(\.|\[)\s*['"`]?fetch/.test(readFileSync(f, 'utf8')), `${f} chama fetch direto`)
-      }
-    }
-  }
+test('N8: nenhuma app faz saida de rede fora do registro de destinos (analise estrutural)', () => {
+  // saida-de-rede.mjs le a estrutura do codigo com o compilador do TypeScript: pega fetch escrito
+  // de qualquer jeito, modulos de rede, eval/Function. Excecoes declaradas e justificadas la.
+  assert.deepEqual(varrerAplicacoes(), [])
 })
 
 test('D5: dominio de negocio fora apaga so o bloco dele', async () => {
