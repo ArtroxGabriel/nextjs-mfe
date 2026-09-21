@@ -61,7 +61,7 @@ Entre como `ana`, `bruno`, `carla` ou `davi`: cada um vê um menu diferente. Use
 | Suíte | Comando | Testes | Protege |
 |---|---|---|---|
 | `erp-contratos` | `pnpm test` | 15 | manifesto: prefixo de zona, concessão entre zonas, duplicatas |
-| `erp-nucleo` | `pnpm test` | 72 | registro de destinos, sessão leitor/escritor (arquivo e Redis), acesso, fronteira entre camadas, exports |
+| `erp-nucleo` | `pnpm test` | 90 | registro de destinos, sessão leitor/escritor (arquivo e Redis), fragmentos entre zonas, acesso, fronteira entre camadas, exports |
 | `erp-moldura` | `pnpm test` | 16 | menu e `aria-current`, host de toast, flash, `FormularioDeAcao` |
 | `erp-dominio-stub` | `pnpm test` | 16 | projeção e escopo dos domínios, `If-Match`, regras da gestão de acesso |
 | `erp-shell` | `pnpm test` | 22 | decisão do proxy, sonda de saúde das zonas, mapa de zonas, gateway de telemetria |

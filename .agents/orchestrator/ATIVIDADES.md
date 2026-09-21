@@ -22,7 +22,7 @@
 |---|---|---|---|---|---|
 | 3 | Isolar a falha de zona no shell da base *(era "Tratar zonas travadas")* | implementado, **gate em andamento** | reescrever título; mover para **em andamento** | pendente | `erp-shell` `6de4939`/`dab5ffd`/`a63b995`; `RETOMADA.md` |
 | 9 | Trocar login e store de desenvolvimento por OIDC e Redis *(era "Implementar sessão e autorização no servidor")* | cookie opaco, escritor único e autorização por módulo entregues; **adaptador Redis pronto** (`@erp/nucleo` 0.4.0, 12 testes, 9 mutações pegas), falta ligar nas apps; faltam OIDC e renovação de token | reescrever título e critérios; mover para **em andamento** | pendente | ADR-0009 decisão 3; `erp-nucleo` `3a7b80c`; `alvo.md` §6 |
-| 10 | Implementar composição por fragmentos | não iniciado | manter | — | `alvo.md` §3 |
+| 10 | Implementar composição por fragmentos | núcleo pronto (`@erp/nucleo` 0.5.0, 18 testes, 16 mutações); falta ligar zona 1 ← zona 2 e bloquear no shell | mover para **em andamento** | pendente | ADR-0011; `erp-nucleo` `1841771` |
 | 11 | Centralizar o tempo real no shell | não iniciado | manter; tirar a dependência da #2 | pendente | `alvo.md` §6 (SSE) |
 | 12 | Publicar o pacote visual @erp/ui | não iniciado; depende de medir duplicação de bundle | manter | — | `alvo.md` §6 |
 | 14 | Definir estratégia de publicação e compatibilidade | submódulos **feitos**; hook `pre-push` que recusa submódulo não enviado **feito** (`repos/scripts/checar-envio.mjs`, provado com commit só local); falta registro único ou publicação pelo CI | acrescentar critérios: registro único, nunca republicar a mesma versão, checar submódulo não enviado antes do push, mapa de zonas vindo do domínio de acesso | pendente | ADR-0010; `AMBIENTE.md` §1–2; `4eb128b` |
@@ -134,4 +134,4 @@ Link: N/A
 | 2026-09-15 | Primeiro catálogo (16 atividades) |
 | 2026-09-21 manhã | Critério do humano: encerrar o defasado. Fechar 1, 2, 4, 5, 6, 7, 8, 13, 15, 16; reescrever 3 e 9; criar a 17 |
 | 2026-09-21 tarde | #3 em andamento (implementada, sem gate); #6 com 0.3.2; #14 ganha as regras do ADR-0010; #17 com 26/26; criar a #18. Catálogo saiu de `MANUTENCAO-GITLAB.md` para este arquivo |
-| 2026-09-21 noite | #9 em andamento (adaptador Redis no núcleo 0.4.0); #14 ganha o hook `pre-push` |
+| 2026-09-21 noite | #9 em andamento (adaptador Redis no núcleo 0.4.0); #14 ganha o hook `pre-push`; #10 em andamento (núcleo 0.5.0, ADR-0011) |

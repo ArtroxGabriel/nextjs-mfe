@@ -163,7 +163,7 @@ flowchart LR
 | Renovação de token | não existe; sessão de dev dura 30 min | endpoint interno do shell (ADR-0009, decisão 3) | depende das respostas do IdP (PENDENCIAS §4) |
 | Acesso a módulo | gestão de acesso federada, 404 para módulo negado | igual, com cache por versão de política se a medição pedir | medir a consulta por renderização |
 | Falha isolada de zona | 503 com `Retry-After` e página própria, sonda de saúde por zona com cache de 1 s — **implementado, sem gate** | igual, com zona travada limitada pelo timeout da sonda e sem janela de 500 cru | gate do shell: caminho normalizado × cru (R1 da PoC), zona travada, janela logo após a queda |
-| Composição | não há fragmento | `FragmentoRemoto` com timeout e circuit breaker | primeiro consumidor entre zona 1 e zona 2 |
+| Composição | núcleo 0.5.0 tem `criarFragmento` (consumidor) e `responderFragmento` (dono), ADR-0011; nenhuma zona usa ainda | `FragmentoRemoto` com timeout e circuit breaker | rota `_fragmento` na zona 2, bloco na zona 1, recusa de `/{zona}/_fragmento/` no shell |
 | SSE | não há | `/api/stream` no shell + `SharedWorker` | — |
 | Design system | `@erp/moldura` (moldura e toast) | `@erp/ui` publicado com semver tolerante | medir duplicação de bundle entre zonas antes |
 | Deploy | 8 repositórios como submódulos; hook `pre-push` recusa submódulo não enviado; um Verdaccio **por máquina** | repositórios e deploys independentes, lockstep do núcleo no CI, um registro único | publicar pelos pacotes num registro compartilhado (ou pelo CI): hoje cada máquina republica e os hashes dos lockfiles divergem (ADR-0010) |
