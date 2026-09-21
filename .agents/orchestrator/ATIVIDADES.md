@@ -95,7 +95,7 @@ Link: N/A
 
 📋 Caso de Uso
 
-Link: docs/design-bff/comum/docs/adr/0002-redis-como-store-de-sessao.md
+Link: docs/adr/0002-redis-como-store-de-sessao.md
 ```
 
 ### #10 — comentário de andamento
@@ -158,7 +158,7 @@ Link: N/A
 
 📋 Caso de Uso
 
-Link: docs/design-bff/comum/docs/adr/0009-base-generica.md
+Link: docs/adr/0009-base-generica.md
 ```
 
 ### #18 — criar em andamento

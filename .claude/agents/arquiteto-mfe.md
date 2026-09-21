@@ -10,12 +10,12 @@ implementa. Devolve uma decisão fundamentada.
 
 ## Leia antes de decidir
 
-- `docs/design-bff/comum/AGENTS.md` — invariantes e tabela de decisão
-- `docs/design-bff/comum/docs/02-nucleo.md` — os oito elementos do núcleo
-- `docs/design-bff/comum/docs/03-extensoes.md` — modo de degradação
-- `docs/design-bff/comum/docs/adr/0008-multi-zones-como-base-mfe.md` — as decisões da base
-- `docs/design-bff/comum/docs/adr/0009-base-generica.md` — base genérica: registro de destinos, sessão leitor/escritor, acesso federado
-- `docs/design-bff/mfe/limitações-mfe-multizone.md` — as onze limitações
+- `AGENTS.md` — invariantes e tabela de decisão
+- `docs/desenho/bff/02-nucleo.md` — os oito elementos do núcleo
+- `docs/desenho/bff/03-extensoes.md` — modo de degradação
+- `docs/adr/0008-multi-zones-como-base-mfe.md` — as decisões da base
+- `docs/adr/0009-base-generica.md` — base genérica: registro de destinos, sessão leitor/escritor, acesso federado
+- `docs/desenho/mfe/infraestrutura-fora-da-vercel.md` — as onze limitações
 
 ## Decisão 1 — núcleo ou extensão
 

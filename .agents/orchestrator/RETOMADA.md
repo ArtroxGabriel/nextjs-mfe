@@ -54,14 +54,14 @@ Decisão do `arquiteto-mfe` registrada no ADR-0011. `@erp/nucleo` 0.5.0 traz `cr
 4. Depois do gate: ligar o `sessaoRedis` nas apps (#9; exige instalar `redis` e subir um Redis no
    `docker-compose` — pedir aprovação), implementar a fatia de fragmentos (#10) conforme o arquiteto,
    instrumentar uma zona para a telemetria (#18), registro de pacotes único (#14).
-5. Mover `docs/MULTI_ZONES_RESEARCH.md`, `docs/revisao/` e `docs/superpowers/` para `docs/historico/`
+5. Mover `docs/historico/MULTI_ZONES_RESEARCH.md`, `docs/historico/revisao/` e `docs/historico/superpowers/` para `docs/historico/`
    e commitar `docs/README.md` — **só depois que o challenger terminar** (a definição dele lê
-   `docs/superpowers/specs/`); atualizar essa referência em `.claude/agents/simulador-condicoes.md`.
+   `docs/historico/superpowers/specs/`); atualizar essa referência em `.claude/agents/simulador-condicoes.md`.
 
 ## Pedido do humano para depois da saída do challenger (2026-09-21)
 
-Feito: avaliação em `PROPOSTA-REORGANIZACAO.md` (10 problemas medidos; propostas de código C1–C3 e
-de documentação D1–D8). **Aguardando decisão do humano** nos itens marcados ❓.
+Decidido pelo humano e em execução: ver o quadro "Andamento" em `PROPOSTA-REORGANIZACAO.md`.
+Docs reorganizadas (D1–D6 feitos). Faltam D7 e C3 (esperam o auditor) e C1/C2 (código).
 
 ## Pendências com o humano
 

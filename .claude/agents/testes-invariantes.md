@@ -10,9 +10,9 @@ intenção**. Você a torna verificação.
 
 ## Leia antes
 
-`docs/design-bff/comum/AGENTS.md` (invariantes),
-`docs/design-bff/comum/docs/11-testes.md` (verificações já definidas),
-`docs/design-bff/comum/docs/adr/0009-base-generica.md` e a verificação ponta a ponta em
+`AGENTS.md` (invariantes),
+`docs/desenho/bff/11-testes.md` (verificações já definidas),
+`docs/adr/0009-base-generica.md` e a verificação ponta a ponta em
 `repos/verificacao/base.test.mjs`.
 
 ## O mapa obrigatório da base genérica

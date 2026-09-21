@@ -3,8 +3,8 @@
 Base genérica de micro-frontends com **Next.js Multi-Zones** (Next 16, App Router): um shell, duas
 zonas de negócio e uma zona de gestão de acesso, cada uma um processo e um repositório próprio,
 sem código de domínio no núcleo. Decisões no
-[ADR-0009](docs/design-bff/comum/docs/adr/0009-base-generica.md) e no
-[ADR-0010](docs/design-bff/comum/docs/adr/0010-reconciliacao-do-nucleo.md).
+[ADR-0009](docs/adr/0009-base-generica.md) e no
+[ADR-0010](docs/adr/0010-reconciliacao-do-nucleo.md).
 
 | Parte | Onde | Porta | Papel |
 |---|---|---|---|
@@ -98,7 +98,7 @@ A verificação manual, item a item, está em
    `repos/scripts/ambiente.mjs` e nas listas de `repos/verificacao/base.test.mjs`.
 
 O desenho completo (mapa de zonas, contrato de fragmento, sessão, deploy) está em
-`docs/design-bff/mfe/`; o checklist organizacional em `02-zonas.md` §4.
+`docs/desenho/mfe/`; o checklist organizacional em `02-zonas.md` §4.
 
 ## 6. Documentação
 

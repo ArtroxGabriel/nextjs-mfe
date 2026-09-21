@@ -1,8 +1,12 @@
 # Proposta de reorganização — documentação e código
 
 > Avaliação pedida pelo humano em 2026-09-21, depois da saída do challenger do gate do shell.
-> **Nada aqui foi executado.** Cada item diz o problema medido, a proposta e o custo. As decisões
-> marcadas com ❓ são do humano.
+> Cada item diz o problema medido, a proposta e o custo.
+>
+> **Decisões do humano (2026-09-21):** C1 — evitar duplicação e manter consistência → opção A
+> (`@erp/nucleo/app`), confirmada com o `arquiteto-mfe` antes de codar; C3 — mover para `base/` junto
+> com o resto; D8 — só o aviso no topo (D6). Execução: itens que não tocam o que o auditor usa
+> (`repos/scripts`, `repos/verificacao`, `.agents/`) primeiro; C3 e D7 depois que ele terminar.
 
 ## 1. Diagnóstico (medido, não opinado)
 
@@ -12,10 +16,10 @@
 | P2 | **Um bug entra 4 vezes.** O fail-open de `exigirModulo` (achado grave do revisor) foi aplicado nas 4 cópias por commits separados; a correção também terá de ser | `bac6d37`, `8182515`, `6569790`, `a63b995` |
 | P3 | **Divergência silenciosa.** O `proxy.ts` do shell deixou de usar `criarProxy` e perdeu `form-action` e `img-src` da CSP | `reviewer_shell_1` achado 2 |
 | P4 | **Nenhum repositório tem README.** Quem abre `repos/erp-zona-2` não sabe o que é nem como testar | `ls repos/erp-*/README.md` vazio |
-| P5 | **Documentação de desenho enterrada e com o caso antigo.** `docs/design-bff/comum/docs/` tem 3 níveis e 20 arquivos; o caso "pedidos" (que o ADR-0009 rebaixou a ilustração) aparece ~240 vezes, 35 só em `06-seguranca.md` | `grep -ci pedido` |
-| P6 | **O manual de quem escreve código está escondido e desatualizado.** `AGENTS.md` mora em `docs/design-bff/comum/`, não na raiz, e manda rodar `npm ci`/`npm run test:vazamento`, que não existem na base | `AGENTS.md` §Comandos |
+| P5 | **Documentação de desenho enterrada e com o caso antigo.** `docs/desenho/bff/` tem 3 níveis e 20 arquivos; o caso "pedidos" (que o ADR-0009 rebaixou a ilustração) aparece ~240 vezes, 35 só em `06-seguranca.md` | `grep -ci pedido` |
+| P6 | **O manual de quem escreve código está escondido e desatualizado.** `AGENTS.md` mora em `docs/desenho/bff/`, não na raiz, e manda rodar `npm ci`/`npm run test:vazamento`, que não existem na base | `AGENTS.md` §Comandos |
 | P7 | **Documentos duplicados ou rascunho.** `mfe/multizone.md` e `mfe/limitações-mfe-multizone.md` são duas listas de limitações; `mfe/ideia-mfe` é rascunho sem extensão; `PENDENCIAS.md` (417 linhas) repete o que `alvo.md` §6 resume | leitura |
-| P8 | **Histórico misturado com o vivo.** `docs/superpowers/` (4.700 linhas de planos encerrados), `docs/revisao/`, `MULTI_ZONES_RESEARCH.md` ao lado de `docs/arquitetura/` | `wc -l` |
+| P8 | **Histórico misturado com o vivo.** `docs/historico/superpowers/` (4.700 linhas de planos encerrados), `docs/historico/revisao/`, `MULTI_ZONES_RESEARCH.md` ao lado de `docs/arquitetura/` | `wc -l` |
 | P9 | **`repos/` mistura submódulos com ferramentas da base** (`scripts/`, `verificacao/`, `docker-compose.yml`, `.verdaccio/`) | `ls repos` |
 | P10 | **`.agents/` tem 61 pastas**, quase todas de gates encerrados da PoC | `ls .agents \| wc -l` |
 
@@ -57,9 +61,9 @@ docs/
   README.md            índice: 3 perguntas, 3 lugares (existe)
   arquitetura/         atual.md, alvo.md (existe)
   ROTEIRO-DE-VERIFICACAO.md
-  adr/                 os 11 ADRs, tirados de design-bff/comum/docs/adr/
+  adr/                 os 11 ADRs, tirados de adr/
   desenho/
-    bff/               o que hoje está em design-bff/comum/docs/ (00–14, CORRECOES)
+    bff/               o que hoje está em desenho/bff/ (00–14, CORRECOES)
     mfe/               00-arquitetura, 01-operacao, 02-zonas, limitacoes (fundidas)
   historico/           superpowers/, revisao/, MULTI_ZONES_RESEARCH, ideia-mfe, PENDENCIAS
 repos/erp-*/README.md  NOVO em cada repositório: o que é, como testar, de quem depende
@@ -85,6 +89,23 @@ repos/erp-*/README.md  NOVO em cada repositório: o que é, como testar, de quem
 - Um documento, uma pergunta. Se um arquivo responde duas, divide; se dois respondem a mesma, funde.
 - Estado curto e atual; o encerrado vai para `historico/` (já em `docs/README.md`).
 - Todo repositório tem README; toda decisão estrutural tem ADR; toda armadilha vai para `AMBIENTE.md`.
+
+## 4. Andamento
+
+| Item | Estado |
+|---|---|
+| D1 READMEs dos 8 repositórios | ✅ feito |
+| D2 `AGENTS.md` curto na raiz; o longo virou `docs/desenho/bff/manual-completo.md` | ✅ feito |
+| D3 `docs/adr/`, `docs/desenho/{bff,mfe}/`; links recalculados; `.claude/agents/` atualizados; 0 links quebrados | ✅ feito |
+| D4 histórico em `docs/historico/` | ✅ feito |
+| D5 | ✅ **corrigido:** as duas listas **não eram duplicatas** (uma é do framework, outra de infraestrutura fora da Vercel). Foram renomeadas pelo que são: `limitacoes-do-multizones.md` e `infraestrutura-fora-da-vercel.md` |
+| D6 aviso "Pedidos é ilustração" em 16 documentos de desenho | ✅ feito |
+| D7 `.agents/` de gates encerrados → `.agents/arquivo/` | ⏳ depois do auditor |
+| C3 `repos/{scripts,verificacao,docker-compose.yml,.verdaccio}` → `base/` | ⏳ depois do auditor |
+| C2 shell volta a usar `criarProxy` | ⏳ rodada de correção do gate |
+| C1 kit de app `@erp/nucleo/app` | ⏳ depois do gate, com o arquiteto |
+
+Os handoffs antigos em `.agents/<agente>/` e o que está em `historico/` mantêm os caminhos da época.
 
 ## 4. Ordem sugerida
 

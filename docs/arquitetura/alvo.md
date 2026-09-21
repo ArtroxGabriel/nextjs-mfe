@@ -1,7 +1,7 @@
 # Arquitetura alvo
 
 > **O que isto descreve:** para onde a base deve chegar, resumido do desenho completo em
-> `docs/design-bff/mfe/` (`00-arquitetura.md`, `01-operacao.md`, `02-zonas.md`). Aquele
+> `docs/desenho/mfe/` (`00-arquitetura.md`, `01-operacao.md`, `02-zonas.md`). Aquele
 > desenho manda; este arquivo é o mapa visual dele. O que existe hoje está em
 > [`atual.md`](atual.md). A tabela do fim mostra o que falta.
 
@@ -169,6 +169,6 @@ flowchart LR
 | Deploy | 8 repositórios como submódulos; hook `pre-push` recusa submódulo não enviado; um Verdaccio **por máquina** | repositórios e deploys independentes, lockstep do núcleo no CI, um registro único | publicar pelos pacotes num registro compartilhado (ou pelo CI): hoje cada máquina republica e os hashes dos lockfiles divergem (ADR-0010) |
 | Operação | gateway de telemetria `/api/otel/v1/traces` no shell (sem gate), com limite de 60 lotes/min por usuário em memória; nenhuma zona envia traces ainda | rate limiting na borda, `trace_id` entre zonas | gate do gateway (corpo sem `Content-Length`, crescimento do mapa do limitador); instrumentar uma zona |
 
-Referências: `docs/design-bff/mfe/00-arquitetura.md` (solução), `01-operacao.md`
+Referências: `docs/desenho/mfe/00-arquitetura.md` (solução), `01-operacao.md`
 (roteamento, sessão, falha, deploy), `02-zonas.md` (estrutura e criação de zona),
-`limitações-mfe-multizone.md` (as limitações que o desenho responde).
+`infraestrutura-fora-da-vercel.md` (as limitações que o desenho responde).

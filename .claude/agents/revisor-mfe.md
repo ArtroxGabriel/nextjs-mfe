@@ -9,9 +9,9 @@ Você revisa código da base MFE. Reporta defeitos verificados, não impressões
 
 ## Leia antes de revisar
 
-`docs/design-bff/comum/AGENTS.md`, `docs/design-bff/comum/docs/02-nucleo.md`,
-`docs/design-bff/comum/docs/adr/0008-multi-zones-como-base-mfe.md` e
-`docs/design-bff/comum/docs/adr/0009-base-generica.md` (que substitui as decisões 5, 9 e 10
+`AGENTS.md`, `docs/desenho/bff/02-nucleo.md`,
+`docs/adr/0008-multi-zones-como-base-mfe.md` e
+`docs/adr/0009-base-generica.md` (que substitui as decisões 5, 9 e 10
 do 0008). A base mora em `repos/`; a PoC `apps/` está congelada e não é alvo de revisão.
 
 Depois leia o diff: `git diff` para trabalho em curso, `git diff main...HEAD` para o ramo.

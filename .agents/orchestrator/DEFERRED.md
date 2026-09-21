@@ -2,7 +2,7 @@
 
 ## Congelamento da PoC `apps/` — decisão do humano em 2026-09-21
 
-A revisão `docs/revisao/2026-09-15-revisao-base-generica.md` §7 foi decidida: a base é validada em
+A revisão `docs/historico/revisao/2026-09-15-revisao-base-generica.md` §7 foi decidida: a base é validada em
 `repos/` (App Router) e a PoC `apps/` fica **congelada como evidência histórica** (ADR-0009). Nenhum
 item abaixo será corrigido na PoC. Cada um fecha como "encerrado por substituição" e o risco que ele
 descreve passa a ser requisito da base nova, verificado no gate dela.

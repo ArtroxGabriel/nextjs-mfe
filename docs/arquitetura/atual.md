@@ -1,7 +1,7 @@
 # Arquitetura atual — base genérica em `repos/`
 
 > **O que isto descreve:** o código de `repos/` hoje, e nada além. Decisões no
-> [ADR-0009](../design-bff/comum/docs/adr/0009-base-generica.md). Para onde a base ainda vai,
+> [ADR-0009](../adr/0009-base-generica.md). Para onde a base ainda vai,
 > veja [`alvo.md`](alvo.md); a distância entre os dois está no fim dele. A PoC anterior (`apps/`)
 > foi removida e está preservada na tag `poc-final`.
 
@@ -162,7 +162,7 @@ cookie `__Host-flash` e devolve o destino; a ilha `FormularioDeAcao` troca o doc
 `location.assign`; no documento seguinte, de qualquer zona, o **proxy consome o cookie**: entrega
 o toast ao layout num cabeçalho interno e apaga o cookie na mesma resposta. Por isso o toast
 aparece uma vez só, com ou sem JavaScript. A action não usa `redirect()` para outra zona: ver a limitação 11 em
-`docs/design-bff/mfe/limitações-mfe-multizone.md`.
+`docs/desenho/mfe/infraestrutura-fora-da-vercel.md`.
 
 ```mermaid
 sequenceDiagram
