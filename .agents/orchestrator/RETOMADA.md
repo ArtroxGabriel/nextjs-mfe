@@ -89,5 +89,5 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 
 ## Próximo passo
 
-Iteração 4 do gate do shell: `reviewer_shell_4` (Sonnet, só leitura e unidade) e `auditor_shell_4` (Opus, dono das
+Iteração 4 do gate do shell (revisor **APPROVE**; nit: `congelarApp`/`descongelarApp` sem a guarda `if (!p) return` — aplicar depois do auditor): `reviewer_shell_4` (Sonnet, só leitura e unidade) e `auditor_shell_4` (Opus, dono das
 portas). Com CLEAN: registrar, atualizar #3 e #18, fazer o merge do E1 e seguir para B1.
