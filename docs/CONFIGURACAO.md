@@ -14,7 +14,7 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 |---|---|---|---|---|
 | `ERP_SESSAO_INATIVIDADE_S` | `1800` | **Sessão por inatividade (30 min).** Tempo sem uso depois do qual a sessão acaba. É a vida do refresh token, que recomeça a cada renovação; no BFF, o TTL da sessão no Redis acompanha o `refresh_expires_in` | Keycloak (`ssoSessionIdleTimeout`, por placeholder no realm); núcleo (D2) | Keycloak ✅; núcleo ⬜ D2 |
 | `ERP_SESSAO_MAXIMA_S` | `36000` | Teto absoluto da sessão (10 h), mesmo com uso contínuo | Keycloak (`ssoSessionMaxLifespan`) | ✅ |
-| `ERP_TOKEN_VIDA_S` | `300` | Vida do access token. O shell renova antes de vencer (ADR-0013) | Keycloak (`accessTokenLifespan`); `identidadeDev` (D2) | Keycloak ✅; dev ⬜ |
+| `ERP_TOKEN_VIDA_S` | `300` | Vida do access token. O shell renova antes de vencer (ADR-0013) | Keycloak (`accessTokenLifespan`); `identidadeDev` (D2) | Keycloak ✅; dev ✅ (0.8.0) |
 | `ERP_RENOVACAO_JANELA_S` | `60` | Renovar quando faltar menos que isto para o token vencer; tem de ser menor que metade de `ERP_TOKEN_VIDA_S` | núcleo, proxy do shell (D2) | ⬜ D2 |
 | `ERP_RENOVACAO_LOCK_S` | `15` | Duração do lock de renovação (`SET NX PX`) | núcleo (D2) | ⬜ D2 |
 | `ERP_LOGIN_TRANSACAO_S` | `600` | Validade da transação de login (`state`, `code_verifier`) | núcleo (D2) | ⬜ D2 |
@@ -34,10 +34,10 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 | `ACESSO_URL` | `http://127.0.0.1:4010` | Gestão de acesso | apps, `registrar-manifesto` | ✅ |
 | `ERP_TOKEN_SERVICO` | dev | Token de serviço para registrar o manifesto | `registrar-manifesto` | ✅ |
 | `SHELL_HOSTS` | — | Hosts aceitos como origem do shell | apps | ✅ |
-| `ERP_DESTINO_TIMEOUT_MS` | `5000` | Timeout de uma chamada a domínio | núcleo (`interno/destinos.ts`) | ⬜ hoje fixo |
-| `ERP_FRAGMENTO_TIMEOUT_MS` | `2000` | Timeout de um fragmento entre zonas | núcleo (`fabricas/fragmento.ts`) | ⬜ hoje fixo |
-| `ERP_SONDA_TTL_MS` | `1000` | Por quanto tempo o shell confia no resultado da sonda de saúde de uma zona | shell (`lib/saude-zonas.ts`) | ⬜ hoje fixo |
-| `ERP_SONDA_TIMEOUT_MS` | `500` | Timeout da sonda de saúde | shell | ⬜ hoje fixo |
+| `ERP_DESTINO_TIMEOUT_MS` | `5000` | Timeout de uma chamada a domínio | núcleo (`interno/destinos.ts`) | ✅ (0.8.0) |
+| `ERP_FRAGMENTO_TIMEOUT_MS` | `2000` | Timeout de um fragmento entre zonas | núcleo (`fabricas/fragmento.ts`) | ✅ (0.8.0) |
+| `ERP_SONDA_TTL_MS` | `1000` | Por quanto tempo o shell confia no resultado da sonda de saúde de uma zona | shell (`lib/saude-zonas.ts`) | ✅ (B5a) |
+| `ERP_SONDA_TIMEOUT_MS` | `500` | Timeout da sonda de saúde | shell | ✅ (B5a) |
 
 ## 3. Telemetria
 
