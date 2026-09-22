@@ -81,3 +81,14 @@ comentário do L4 corrigido. **Provas:** as mutações V1 e V2 do auditor aplica
 
 Gate Result: **PASS** — shell novo (503 de zona, sonda, telemetria, CSP e trace do núcleo 0.6.0) aprovado.
 Lacunas do auditor_shell_4 viram endurecimento imediato da verificação (fora do gate).
+
+## Gate — Kit de aplicação (B1) + Sessão no Redis (D1), iteração 1 (núcleo 0.8.2 / moldura 0.4.0)
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_b1_d1_1 | revisor-mfe (gemini) | APPROVE | .agents/reviewer_b1_d1_1/handoff.md | migração para o kit concluída nas 4 apps; cópias locais eliminadas; leitor/escritor estritamente segregados (invariante 15); hash SHA256 nas chaves Redis; conformidade estrita com os 17 invariantes |
+| challenger_b1_d1_1 | simulador-condicoes (gemini) | APPROVE | .agents/challenger_b1_d1_1/handoff.md | ponta a ponta `task verificar:redis` 60/60 verde; fail-closed em falha de Redis confirmado sem vazamento (invariante 12); inspeção de chaves e TTL validada; testes de unidade e estáticos 100% |
+| auditor_b1_d1_1 | auditor-forense (gemini) | **CLEAN** | .agents/auditor_b1_d1_1/handoff.md, mutacoes.txt | 7 mutações essenciais testadas (chave crua no Redis, fail-open de rede, bypass de REDIS_URL, fail-open em exigirModulo, bypass de Origin, link entre zonas, prop sensível JSX) — todas capturadas e reprovadas pelas suítes |
+
+Gate Result: **PASS** — B1 (Kit de app no núcleo e moldura) e D1 (Persistência de sessão no Redis) aprovados integralmente.
+

@@ -75,7 +75,7 @@ async function lancar(chrome) {
     await encerrar(); throw new Error('o navegador do container nao respondeu')
   }
   const perfil = mkdtempSync(join(chrome.perfis, 'erp-verificacao-'))
-  const proc = spawn(chrome.cmd, [...chrome.args, '--headless=new', '--remote-debugging-port=0',
+  const proc = spawn(chrome.cmd, [...chrome.args, '--headless=new', '--no-sandbox', '--disable-gpu', '--remote-debugging-port=0',
     `--user-data-dir=${perfil}`, '--no-first-run', '--no-default-browser-check', 'about:blank'],
   { stdio: 'ignore', detached: process.platform !== 'win32' })
   // binário inexistente ou sem permissão: sem este ouvinte o erro derrubaria o processo inteiro

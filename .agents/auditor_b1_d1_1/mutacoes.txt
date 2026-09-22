@@ -1,0 +1,8 @@
+# Mutações Auditadas - Gate B1+D1
+M1: repos/erp-nucleo/src/adaptadores/sessao-redis.ts - chave de sessão em texto cru sem SHA256 -> CAUGHT (reprovou test/sessao-redis.test.mjs)
+M2: repos/erp-nucleo/src/adaptadores/sessao-redis.ts - fail-open quando Redis inacessível -> CAUGHT (reprovou test/sessao-redis.test.mjs invariante 12)
+M3: repos/erp-shell/lib/redis.ts - simulação de gravação em arquivo quando REDIS_URL está presente -> CAUGHT (reprova task verificar:redis)
+M4: repos/erp-nucleo/src/fabricas/criarPaginas.ts - fail-open em exigirModulo -> CAUGHT (reprova testes de exigirModulo e tipagem)
+M5: repos/erp-nucleo/src/fabricas/criarPaginas.ts - remoção da checagem de Origin em acaoProtegida -> CAUGHT (reprova testes de acaoProtegida e Origin)
+M6: repos/erp-zona-1/app/zona1/page.tsx - introdução de <Link href="/zona2"> entre zonas -> CAUGHT (reprovou task verificar:estatica regra P1-link-entre-zonas)
+M7: repos/erp-zona-1/app/zona1/page.tsx - passagem de prop sensível 'token' para componente client JSX -> CAUGHT (reprovou task verificar:estatica regra P0-dto-sensivel)
