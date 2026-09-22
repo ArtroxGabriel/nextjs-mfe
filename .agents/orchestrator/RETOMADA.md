@@ -26,7 +26,7 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
 | `@erp/nucleo` | **0.8.2** nas 4 apps (kit `/app`, timeouts configuráveis, campos OIDC na sessão, acesso v2 parcial) | lockstep 4 apps |
 | `@erp/contratos` / `@erp/moldura` | **0.3.1** (contratos da v2) / **0.4.0** (`/servidor`) | ADR-0012, ADR-0014 |
 | Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
-| Gate B1+D1 | iteração 1 registrada como PASS, mas **rasa** (7 mutações, verificadores fora do processo); **iteração 2 com auditor Opus em andamento** (`.agents/auditor_b1_d1_2/`) | `GATE_STATUS.md` |
+| Gate B1+D1 | iteração 1 registrada como PASS, mas **rasa** (7 mutações, verificadores fora do processo); **iteração 2 com auditor Opus em andamento** desde ~17h40: às 19h00, ~90 mutações, fase ponta a ponta; achados parciais abaixo | `.agents/auditor_b1_d1_2/handoff.md` (parcial) |
 | Submódulos | os 8 no `master`, iguais a `origin/master` | `git submodule foreach git status -sb` |
 
 ## Plano até o objetivo
@@ -99,12 +99,36 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 4. ✅ Sessão de 30 min **por inatividade**, capturada pelos refresh tokens (humano, 2026-09-22); teto absoluto configurável. Parâmetros assim ficam em configuração documentada (`docs/CONFIGURACAO.md`), não no código.
 5. Aceitar (ou pedir ajuste de) **ADR-0013** e **ADR-0014 com o adendo 1** (corte seco para a v2, eventos no G5).
 
+## Gate B1+D1, iteração 2 — achados parciais (auditor ainda rodando)
+
+Registrados no handoff parcial; o veredito sai no fim. Já há motivo de veto:
+
+- **Fallback do acesso v2 concede** (N27): `/v2/eu` com 401, 403, 500, timeout ou corpo sem `modulos` cai
+  no `/v1` e entrega o que ele disser. Nenhum teste cobre. A correção é o corte seco do adendo 1 do
+  ADR-0014 (G3), com os testes marcados † lá.
+- **`exigirModulo(id, funcionalidade)` não checa a funcionalidade** sem que teste algum reprove (N17).
+- **Fronteira do núcleo por texto** (N08): um comentário com `import 'server-only'` satisfaz a checagem.
+- **`@erp/nucleo/app` pode exportar `criarNucleoDoShell`** sem teste reprovar (N38; invariante 15).
+- **`cache: 'no-store'` → `'force-cache'`** passa na unidade do núcleo (N37; invariante 13).
+- Timeouts do núcleo (`lerNumeroPositivo`, padrão) sem teste (N33, N34, N36).
+- **`seguranca-estatica.mjs` e `saida-de-rede.mjs` contornáveis**: 27 de 29 contornos passaram (`'use client';`
+  com ponto e vírgula, comentário antes da diretiva, import transitivo de `lib/nucleo`, DTO por spread,
+  `<Link>` com `href` em expressão ou renomeado, `NEXT_PUBLIC` por índice, cliente de rede fora do registro,
+  `Reflect`/`createRequire`/`child_process`). As mesmas formas no código real foram pegas pelo ponta a
+  ponta (E09), então hoje é lacuna de verificação, não vazamento conhecido.
+- Testes de `acesso.test.mjs` travam ao reprovar (servidor sem `finally { close() }`).
+
+Já pegas: sessão no Redis (chave crua, fail-open, prefixo vazio, `encerrar`), limites da sonda e da
+telemetria, `exigirModulo` removido ou trocado de página, health quebrado, Server Action com módulo errado.
+
 ## Próximo passo
 
-1. Receber o veredito do `auditor_b1_d1_2` e registrar em `GATE_STATUS.md`; se houver veto, corrigir e
-   rodar de novo.
-2. **G3** (núcleo 0.9.0, contratos 0.4.0) conforme o adendo 1 do ADR-0014; depois **D2** (núcleo 0.10.0,
-   OIDC + PKCE, ADR-0013, pessoa casada por `sub`); gate G4; depois G5 (eventos).
-3. B2, C1–C3, E3 com Keycloak, E4–E5.
+1. Esperar o veredito do `auditor_b1_d1_2` e registrar em `GATE_STATUS.md`. Com veto, a correção do fallback
+   é o próprio G3; as demais (N08, N17, N37, N38, estáticas) entram como tarefas do gate seguinte.
+2. **G3** (núcleo 0.9.0, contratos 0.4.0) conforme o adendo 1 do ADR-0014. **Feito:** `erp-contratos` 0.4.0
+   (`b56320e`, 20/20 testes, enviado ao `master` do submódulo; o principal ainda aponta para o 0.3.1 e
+   nada foi publicado). **Falta:** stub (token com uuid, `nome` no `/v2/eu`, ana…davi na semente), núcleo,
+   moldura, as 4 apps e `base/verificacao`. Só começa depois do auditor (ele muta esses repositórios).
+3. **D2** (núcleo 0.10.0, OIDC + PKCE, ADR-0013, pessoa casada por `sub`); gate G4; depois G5 (eventos).
 
 Ambiente desta máquina: Verdaccio, Redis e Keycloak no ar; lockfiles com hashes locais **não commitados**.
