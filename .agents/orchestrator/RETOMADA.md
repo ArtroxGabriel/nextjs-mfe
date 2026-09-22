@@ -114,13 +114,37 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 
 Todo contorno achado pelo auditor vira caso de teste (AMBIENTE §3).
 
-## Próximo passo
+## Em andamento: G3 + fatia K (salvo em 2026-09-22, noite)
 
-1. **Fatia K** (tabela acima) junto com o **G3**; depois a iteração 3 do gate com revisor, challenger e auditor novos.
-2. **G3** (núcleo 0.9.0, contratos 0.4.0) conforme o adendo 1 do ADR-0014. **Feito:** `erp-contratos` 0.4.0
-   (`b56320e`, 20/20 testes, enviado ao `master` do submódulo; o principal ainda aponta para o 0.3.1 e
-   nada foi publicado). **Falta:** stub (token com uuid, `nome` no `/v2/eu`, ana…davi na semente), núcleo,
-   moldura, as 4 apps e `base/verificacao`. Só começa depois do auditor (ele muta esses repositórios).
-3. **D2** (núcleo 0.10.0, OIDC + PKCE, ADR-0013, pessoa casada por `sub`); gate G4; depois G5 (eventos).
+Trabalho enviado ao branch **`g3`** de cada submódulo (o principal ainda aponta para o estado antigo,
+porque o ponta a ponta não migrou). `erp-contratos` já está no `master`.
 
-Ambiente desta máquina: Verdaccio, Redis e Keycloak no ar; lockfiles com hashes locais **não commitados**.
+| Repositório | Commit (`g3`) | O que tem | Verificado |
+|---|---|---|---|
+| erp-contratos | `b56320e` (master) | 0.4.0: `AcessoEfetivo`, `ModuloEfetivo {id,nome,funcionalidades}`, manifesto v2 validado | 20/20; publicado no Verdaccio desta máquina |
+| erp-nucleo | `8e958ba` | 0.9.0: só `/v2/eu`, sem fallback (K4/V4); `exigirModulo(modulo, funcionalidade)` (V6); `exigirPapel`; `acaoProtegida(requisito…)`; fronteira por import real (K3/V3); nenhum subpath fora de `/shell` exporta escritor (K2/V2); tetos nos parâmetros (L2); sessão sem token é ausente (L7); servidores de teste fecham em `finally` (L5) | 130/130; 7 mutações pegas; publicado |
+| erp-moldura | `a875c21` | 0.5.0: `acaoProtegida(requisito, …)` repassa a funcionalidade (L7) | 26/26; publicado |
+| erp-dominio-stub | `064dccf` | token `dev.<login>.<uuid>` aceito; `nome` no `/v2/eu`; ana…davi na unidade central | 42/42; 2 mutações pegas |
+| erp-shell | `1053cc6` | destino 4020 só `/v2/eu`; `shell.inicio` e manifesto v1 saem | typecheck; 38/38 |
+| erp-zona-1 / erp-zona-2 | `75ca0dc` / `3605cee` | `exigirModulo(zona, funcionalidade)`; manifesto v2; link de relatórios só com `relatorios.ver` | typecheck |
+| erp-zona-acesso | `a4eae4d` | `exigirPapel`; pessoas × módulos com conceder/revogar em `/v2/acessos` | typecheck |
+
+**Falta, nesta ordem:**
+1. `base/scripts/ambiente.mjs`: subir a gestão de acesso v2 (4020) no lugar da v1 (4010) e registrar manifestos
+   só das zonas 1 e 2 (shell e zona de acesso não têm mais `registrar`).
+2. `base/verificacao/base.test.mjs` em termos da v2: MENUS (uma entrada por módulo + "Gestão de acesso" para
+   carla), N5/D6 (casos por funcionalidade), revogação (N6: revogar davi em `zona1` → 404, reconceder), D8 sai,
+   Server Action da zona de acesso (`concederAcesso`/`revogarAcesso`), "restringir o painel" vira revogação,
+   estático do invariante 16 aceita `exigirPapel` só na zona de acesso, e os casos † do adendo 1 (v2 fora e v1
+   no ar → indisponível; pessoa desligada → login).
+3. Fatia K restante em `base/verificacao`: K1 (zona só com `get` no Redis + ACL de leitura no showcase),
+   K5 (DTO por spread), K6 (`NEXT_PUBLIC_*`, `next.config.ts`), K7 (saída de rede), K3 estático (`'use client';`
+   com ponto e vírgula ou comentário), K8 no shell (sonda exige 2xx, `redirect: 'manual'`, tetos).
+4. Ponta a ponta verde nos dois modos → ponteiros do principal para os commits `g3`, merge `g3` → `master` em cada
+   submódulo, docs (AGENTS.md invariantes 16 e 17, `02-nucleo.md`, `CONFIGURACAO.md` com `ACESSO_URL` e tetos).
+5. Iteração 3 do gate B1+D1+G3 com revisor, challenger e auditor novos.
+6. Depois: **D2** (núcleo 0.10.0, OIDC), G4, G5, C1–C3, E4–E5.
+
+Ambiente desta máquina: Verdaccio (com contratos 0.4.0, núcleo 0.9.0 e moldura 0.5.0), Redis e Keycloak no ar.
+Outra máquina: para testar o `g3`, publicar contratos 0.4.0 → núcleo 0.9.0 → moldura 0.5.0 no próprio Verdaccio e
+rodar `task pacotes:alinhar-hashes` antes do `task instalar`.
