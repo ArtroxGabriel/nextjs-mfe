@@ -24,6 +24,7 @@ com navegador real (L6) e análise estrutural de saída de rede (N8).
 
 **Iteração 3 em andamento:** `reviewer_shell_3` e `challenger_shell_3` (dono das portas) despachados;
 `auditor_shell_3` (Opus) entra quando o challenger liberar as portas.
+`reviewer_shell_3`: **APPROVE** — achados da iteração 2 e o veto fechados, com testes rodados; nenhum achado novo.
 
 ## Feito: fatia de núcleo da #10 (fragmentos)
 
