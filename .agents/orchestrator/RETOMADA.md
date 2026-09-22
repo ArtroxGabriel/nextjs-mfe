@@ -1,69 +1,93 @@
 # Retomada — onde o trabalho está agora
 
-> Só o estado atual e o próximo passo. Quando algo termina, sai daqui e vai para
-> `GATE_STATUS.md` (vereditos), `ATIVIDADES.md` (GitLab) ou `historico/`.
-> Atualizado em 2026-09-21, noite.
+> Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-22**.
+
+## Objetivo final
+
+Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para escalar**, entregue com um
+**caso de teste usável (showcase)** que mostra cada funcionalidade basilar com as próprias mãos:
+
+- domínios simulados por **APIs mock em Node.js com dados em JSON** (arquivo `.json` por domínio,
+  sem dependência nova; um "jsondb" só se o JSON puro não bastar);
+- **Keycloak** subido por imagem Docker como IdP (OIDC + PKCE), com realm e atores importados;
+- **Redis** subido por imagem Docker como store de sessão;
+- um comando sobe tudo e um roteiro diz o que clicar e o que deve acontecer.
 
 ## Estado
 
 | O quê | Estado | Evidência |
 |---|---|---|
-| Base em `repos/` (Next 16) | funcionando; ponta a ponta **26/26** com build novo | `pnpm verificar:construir` |
-| `@erp/nucleo` | **0.3.2** nas apps (árvore dos gates, ADR-0010); **0.5.0** publicado, ainda não consumido: `sessaoRedis` (0.4.0) e fragmentos `criarFragmento`/`responderFragmento` (ADR-0011); 90 testes; 25 mutações, todas pegas ou equivalentes provadas | `3a7b80c`, `1841771` |
-| Envio seguro | hook `pre-push` recusa principal apontando para submódulo não enviado | `base/scripts/checar-envio.mjs` |
-| Apps (`erp-shell`, `erp-zona-*`) | consomem o 0.3.2; lockfiles com os hashes do Verdaccio compartilhado | `666216c`, `530225d`, `e2b3ffc`, `da97b70` |
-| Shell novo do Gabriel (503 de zona, sonda, telemetria) | implementado, **gate em andamento** | `erp-shell` `6de4939`, `dab5ffd`, `a63b995` |
-| PoC `apps/` | removida; preservada na tag `poc-final` | `73bdc8b` |
-| Envio | tudo enviado (principal, submódulos, tag) | `origin/bff-multizone` |
+| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **47/47** com navegador real | `pnpm verificar:construir` |
+| `@erp/nucleo` | **0.6.0** nas 4 apps (CSP e trace); **0.7.0** publicado com o kit `/app`, ainda não consumido | `e624c0c`; ADR-0012 |
+| `@erp/moldura` | 0.3.0 nas apps; **0.4.0** (`/servidor`) publicado, não consumido | ADR-0012 |
+| Gate "Shell novo" (#3, #18) | iteração 3: revisor **APPROVE**, challenger **APPROVE**, **auditor em andamento** | `.agents/*_shell_3/handoff.md` |
+| Repositório | limpo em 2026-09-22: só o necessário; o resto na tag `historico-2026-09-22` | este commit |
 
-## Gate "Shell novo": iterações 1 e 2 reprovadas e corrigidas; falta a iteração 3
+## Plano até o objetivo
 
-Histórico e provas em `GATE_STATUS.md`. Estado atual: shell `72e0475`, zonas `f26fd7c`/`8627c02`/`ee623ab`,
-núcleo 0.6.0 nas 4 apps (CSP e trace vindos do núcleo). `base/verificacao` **47/47** (duas vezes),
-com navegador real (L6) e análise estrutural de saída de rede (N8).
+Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo na coluna).
 
-**Iteração 3 em andamento:** `reviewer_shell_3` e `challenger_shell_3` (dono das portas) despachados;
-`auditor_shell_3` (Opus) entra quando o challenger liberar as portas.
-`reviewer_shell_3`: **APPROVE** — achados da iteração 2 e o veto fechados, com testes rodados; nenhum achado novo.
-`challenger_shell_3`: **APPROVE** — 6 itens confirmados ao vivo (navegação real nas 16 combinações sem vazar módulo; trace forjado substituído; prefixos; CSP única; flash uma vez); 47/47. Observação menor: o 307 de login não leva CSP (corpo vazio).
-`auditor_shell_3` (Opus) despachado.
+### Lista 1 — atividades atuais (estrutura, funcionalidades e showcase)
 
-## Feito: fatia de núcleo da #10 (fragmentos)
+| Fase | Item | Estado | Atividade | Depende de / bloqueio |
+|---|---|---|---|---|
+| **A. Fechar o aberto** | A1 gate do shell, iteração 3 (auditor forense) | ⏳ | #3, #18 | — |
+| **B. Base consistente** | B1 migrar as 4 apps para o kit (`@erp/nucleo` 0.7.0 + `@erp/moldura` 0.4.0) e apagar as cópias | ⬜ | #20 | A1 |
+| | B2 exportar spans (SDK OpenTelemetry) | 🔒 | #18 | **aprovação de instalação** |
+| | B3 `/{zona}/api/health` sem tocar domínio; sonda do shell passa a usá-lo | ⬜ | #3 | B1 |
+| | B4 verificações da spec: `server-only` em `'use client'` falha o build; DTO sensível como prop de ilha; guarda contra `<Link>` entre zonas | ⬜ | #20 | B1 |
+| **C. Funcionalidades** | C1 fragmentos: rota `_fragmento` na zona 2, bloco na zona 1 com `<Suspense>`, recusa no shell | ⬜ | #10 | B1 |
+| | C2 SSE no shell (`/api/stream` + `SharedWorker`); fechar D7 (`proxyTimeout`) | ⬜ | #11 | B1 |
+| | C3 mapa de zonas vindo dos manifestos da gestão de acesso | ⬜ | #14 | B1 |
+| **D. Sessão e identidade reais** | D1 ligar `sessaoRedis` (cliente `redis` + Redis no compose) | 🔒 | #9 | **aprovação de instalação** |
+| | D2 OIDC + PKCE no shell contra o Keycloak local; renovação de token com lock; sessão de 30 min | 🔒 | #9 | D1; **aprovação de instalação** se usar biblioteca OIDC |
+| **E. Showcase** | E1 domínios mock com dados em JSON por domínio (sementes por ator, persistência em arquivo, reset por comando) | ⬜ | #19 | — |
+| | E2 `docker-compose` do showcase: Redis, Keycloak (realm `erp` com ana/bruno/carla/davi e grupos importados) | ⬜ | #19 | D1, D2 |
+| | E3 `pnpm showcase`: sobe imagens, mocks e apps; derruba com um comando | ⬜ | #19 | E1, E2 |
+| | E4 roteiro do showcase: cada funcionalidade basilar com passo e resultado esperado (login OIDC, sessão entre zonas, módulo negado = 404, fragmento, SSE, toast, zona fora = 503, `If-Match`, erro `{ codigo, supportId }`, trace) | ⬜ | #19 | C1–C3, E3 |
+| | E5 verificação ponta a ponta rodando contra o showcase | ⬜ | #19 | E4 |
+| **P. Caminho para produção** | P1 registro de pacotes único / CI com lockstep e verificação | 🔒 | #14 | **decisão de infraestrutura** |
+| | P2 rate limiting na borda; p99 e alarme de RTT BFF↔domínio > 5 ms | 🔒 | — | ambiente real |
+| | P3 `@erp/ui` depois de medir duplicação de bundle | 🔒 | #12 | medição (entra em F2) |
 
-Decisão do `arquiteto-mfe` registrada no ADR-0011. `@erp/nucleo` 0.5.0 traz `criarFragmento` e
-`responderFragmento`. Falta ligar: rota `_fragmento` na zona 2, bloco na zona 1, recusa de
-`/{zona}/_fragmento/` no shell e teste ponta a ponta — depois do gate.
+**Ordem:** A1 → B1 → (B3, B4, C1, C2, C3 em paralelo onde não disputam portas) → D1 → D2 → E1–E5.
+E1 pode começar a qualquer momento (não depende das apps).
 
-## Próximos passos
+### Lista 2 — refinamento (separada; **não começar agora**)
 
-Ver "Plano até o objetivo" abaixo: a fase A (fechar o gate do shell) vem primeiro.
+Condição para começar qualquer item: **Lista 1 fases A–E concluídas** (estrutura da arquitetura e
+atividades relacionadas feitas) **e todas as funcionalidades basilares no showcase**.
+Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assunto>.md` (formato em
+`pedidos/README.md`); só se implementa depois que o humano devolver o detalhamento.
 
-## Pedido do humano para depois da saída do challenger (2026-09-21)
+| # | Atividade | O que o pedido de detalhamento precisa responder |
+|---|---|---|
+| F1 | Refinamento arquitetural com design patterns e padrões de arquitetura | quais padrões (ports & adapters, strategy, decorator, circuit breaker, anti-corruption layer…) e onde cada um entra no núcleo, nas zonas e nos domínios; critério de pronto |
+| F2 | Otimização para desenvolvimento e produção | metas (tempo de subir, HMR, build, bundle, TTFB, p95/p99); o que medir e com que ferramenta; perfis `dev` e `prod` |
+| F3 | Mapa robusto | confirmar o escopo (mapa de zonas: descoberta, versão, fallback, saúde, dono de cada rota); formato e fonte da verdade |
+| F4 | Refinamento da gestão de acesso | modelo de perfis/módulos/concessões, delegação, auditoria, administração pela UI, integração com grupos do Keycloak |
+| F5 | Padronização de erro | catálogo de `codigo`, mapeamento domínio → BFF → UI, `supportId` e correlação com trace, páginas de erro |
+| F6 | Camada de testes | pirâmide (unidade, contrato, integração, ponta a ponta, navegador); onde mora cada teste; cobertura mínima; mutação |
+| F7 | Camada de testes de desempenho e segurança | cenários de carga, metas, ferramentas (k6/autocannon), testes de segurança (OWASP, CSP, sessão, IDOR), frequência |
 
-Decidido pelo humano e em execução: ver o quadro "Andamento" em `PROPOSTA-REORGANIZACAO.md`.
-Docs reorganizadas (D1–D6 feitos). Faltam D7 e C3 (esperam o auditor) e C1/C2 (código).
+## Como o trabalho é conduzido
 
-## Plano até o objetivo (revisto em 2026-09-21, noite)
-
-Objetivo (ADR-0009, N1–N8): base genérica BFF + Multi-Zones **funcionando, testável e pronta
-para escalar**; depois, o caminho para produção descrito em `docs/arquitetura/alvo.md` §6–7.
-
-| Fase | Item | Atividade | Bloqueio |
-|---|---|---|---|
-| **A. Fechar o que está aberto** | A1 gate do shell: iteração 3 | #3, #18 | — |
-| **B. Base consistente** | B1 kit de app (ADR-0012): pacotes **prontos** (núcleo 0.7.0, moldura 0.4.0); falta migrar as 4 apps juntas | — | A1 |
-| | B2 núcleo 8: propagação **feita** (0.6.0); falta exportar spans (SDK OpenTelemetry) | #18 | **aprovação de instalação** |
-| | B3 `/{zona}/api/health` sem tocar domínio; sonda passa a usá-lo | #3 | B1 |
-| | B4 verificações da spec: build falha com `server-only` em `'use client'`; DTO sensível como prop de ilha; guarda contra `<Link>` entre zonas | — | — |
-| **C. Funcionalidades do alvo** | C1 ligar fragmentos: rota `_fragmento` na zona 2, bloco na zona 1 com `<Suspense>` e breaker, recusa no shell | #10 | B1 |
-| | C2 SSE no shell (`/api/stream` + `SharedWorker`) | #11 | — |
-| | C3 mapa de zonas vindo dos manifestos da gestão de acesso | #14 | — |
-| **D. Produção** | D1 ligar `sessaoRedis` (cliente `redis` + Redis no compose) | #9 | **aprovação de instalação** |
-| | D2 OIDC + PKCE e renovação de token (30 min de sessão) | #9 | **respostas do IdP** (`desenho/bff/PENDENCIAS.md` §4) |
-| | D3 registro de pacotes único / CI com lockstep e verificação | #14 | **decisão de infraestrutura** |
-| | D4 rate limiting na borda; p99 e alarme de RTT BFF↔domínio > 5 ms | — | ambiente real |
-| | D5 `@erp/ui` depois de medir duplicação de bundle | #12 | medição |
+- **Estado salvo e commitado a cada passo concluído**; nunca deixar trabalho só na árvore local.
+  Submódulo enviado antes do principal (`AMBIENTE.md` §2).
+- **Handoff aos 80% do uso da sessão do horário:** reescrever este arquivo com o passo exato em que
+  parou, atualizar `ATIVIDADES.md`, commitar e enviar. Verificadores mantêm o próprio handoff
+  "(parcial)" desde o começo.
+- **Pendências do GitLab revisadas a cada passo:** `ATIVIDADES.md` atualizado e bloco 📌 GitLab na resposta.
+- **Só o necessário no repositório:** documento ou pasta encerrada sai com `git rm`; o git guarda.
 
 ## Pendências com o humano
 
-- Confirmar no GitLab os avisos de `ATIVIDADES.md` §3.
+1. **Aprovar instalações:** cliente `redis` (D1); SDK OpenTelemetry (B2); biblioteca OIDC, se for usada (D2).
+2. **Decidir infraestrutura** de registro de pacotes / CI (P1).
+3. Aplicar no GitLab o que está em `ATIVIDADES.md` §2 com "pendente".
+
+## Próximo passo
+
+Auditor forense da iteração 3 do gate do shell (`auditor_shell_3`, Opus). Com CLEAN: registrar em
+`GATE_STATUS.md`, atualizar #3 (falta só o health, B3) e #18 (faltam só os spans, B2) e seguir para B1.

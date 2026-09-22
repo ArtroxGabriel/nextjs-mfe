@@ -1,6 +1,0 @@
-  ✗ FAIL [ONLINE-10] Mixed-case zone prefix (/REMOTE-APP) gets the shell 404, not the zone
-    Error: Mixed-case zone prefix /REMOTE-APP: Expected HTTP 404, received HTTP 200
-  Passed:        16
-  Failed:        1
-  - [ONLINE-10] Mixed-case zone prefix (/REMOTE-APP) gets the shell 404, not the zone
-    Mixed-case zone prefix /REMOTE-APP: Expected HTTP 404, received HTTP 200

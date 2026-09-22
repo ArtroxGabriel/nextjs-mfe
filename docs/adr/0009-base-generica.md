@@ -6,7 +6,7 @@
 
 Em 2026-09-15 o objetivo foi reformulado: validar uma arquitetura **BFF com Multi-Zones,
 com funcionalidades**, em que o caso de uso é só ilustração e nenhuma camada da base é
-específica de domínio. A revisão `docs/historico/revisao/2026-09-15-revisao-base-generica.md` mostrou
+específica de domínio. A revisão de 2026-09-15 (tag `historico-2026-09-22`, `docs/historico/revisao/`) mostrou
 quatro conflitos com a base da fatia 1: o caso `/pedidos/8821` era critério de aceite, a
 topologia era "uma zona, um domínio", o núcleo conhecia `PedidoDTO` e `lerPedido`, e
 faltavam gestão de acesso, contrato shell ↔ zonas e sessão servida pelo shell.

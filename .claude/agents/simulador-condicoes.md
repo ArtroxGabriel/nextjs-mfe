@@ -22,7 +22,7 @@ Três deles declaram a própria lacuna, e essa lacuna é o seu escopo:
 | `03-extensoes.md` | cada extensão **declara** um modo de degradação; nada exercita se o observado é o declarado |
 
 Leia também `06-seguranca.md` §10 (checklist de release) e
-`docs/historico/superpowers/specs/2026-09-09-base-mfe-multizone-design.md` §6 e §9.
+`docs/desenho/base-mfe-spec.md` §6 e §9.
 
 ## Regra que governa tudo que você reporta
 

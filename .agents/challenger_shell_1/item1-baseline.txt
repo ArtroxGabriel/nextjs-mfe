@@ -1,5 +1,0 @@
-== baseline (todas no ar) ==
-GET / (bruno) status=200
-GET /zona1 (bruno) status=200
-GET /zona2 (ana) status=200
-GET /acesso (carla) status=200

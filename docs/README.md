@@ -25,9 +25,6 @@ flowchart TB
         MFE["desenho/mfe/<br/>Multi-Zones: arquitetura, operação, zonas, limitações"]
         COM["desenho/bff/<br/>BFF: camadas, núcleo, segurança, testes; manual completo"]
     end
-    subgraph HIS["histórico — não atualizar"]
-        H["historico/<br/>pesquisa inicial, planos e specs, revisão de 2026-09-15"]
-    end
     AT --> AL
     AL -. resume .-> MFE
     ADR -. decide sobre .-> COM
@@ -45,6 +42,7 @@ documentos que usam o caso "Pedidos" trazem um aviso no topo: é ilustração.
 | onde mora cada rota e serviço? | [`04-servicos`](desenho/bff/04-servicos.md) |
 | como é a segurança (sessão, CSP, 401/403/404)? | [`06-seguranca`](desenho/bff/06-seguranca.md) |
 | observabilidade, desempenho, convenções, runbook, testes | [`07`](desenho/bff/07-observabilidade.md) · [`08`](desenho/bff/08-desempenho.md) · [`09`](desenho/bff/09-convencoes.md) · [`10`](desenho/bff/10-runbook.md) · [`11`](desenho/bff/11-testes.md) |
+| qual foi a spec da base (topologia, camadas, critério de pronto)? | [`desenho/base-mfe-spec.md`](desenho/base-mfe-spec.md) |
 | o que ainda bloqueia produção? | [`PENDENCIAS`](desenho/bff/PENDENCIAS.md) |
 | que erros já cometemos? | [`CORRECOES`](desenho/bff/CORRECOES.md) |
 | como é a arquitetura Multi-Zones alvo? | [`mfe/00-arquitetura`](desenho/mfe/00-arquitetura.md) |
@@ -80,15 +78,15 @@ glossário (`13`), variantes de cache (`14`).
 - **O atual e o alvo ficam separados.** `atual.md` descreve só o que existe; o que falta vai para
   `alvo.md` §6.
 - **Decisão nova vira ADR**, numerado em sequência, com contexto, decisão e consequências.
-- **Documento encerrado vai para `historico/`** e não é mais atualizado.
+- **Documento encerrado sai do repositório** (`git rm`); o git e as tags guardam.
 - Tudo em português. Diagramas em Mermaid, para renderizar no GitHub/GitLab.
 
-## Histórico (não atualizar)
+## Histórico
 
-| Onde | O que é |
+O que não vale mais como estado **não fica no repositório**: sai por `git rm` e continua no
+histórico do git.
+
+| Tag | O que preserva |
 |---|---|
-| `historico/MULTI_ZONES_RESEARCH.md` | pesquisa inicial: Module Federation × Multi-Zones |
-| `historico/revisao/2026-09-15-revisao-base-generica.md` | a revisão que deu origem ao ADR-0009 |
-| `historico/superpowers/` | specs e planos da PoC e da fatia 1 do núcleo (`ESTADO.md`) |
-| `historico/ideia-mfe.md` | rascunho que levou a trocar Module Federation por Multi-Zones |
-| tag git `poc-final` | a PoC inteira (`apps/`, `packages/shell-ui`), com a documentação dela |
+| `poc-final` | a PoC inteira (`apps/`, `packages/shell-ui`), com a documentação dela |
+| `historico-2026-09-22` | pesquisa inicial, planos e specs da PoC, revisão de 2026-09-15, pastas dos verificadores de gates encerrados |

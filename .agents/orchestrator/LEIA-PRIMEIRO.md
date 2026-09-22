@@ -11,13 +11,14 @@ depender de conversa anterior. Leia nesta ordem:
 | 4 | [`GATE_STATUS.md`](GATE_STATUS.md) | veredito de cada rodada de gate, com o handoff de cada verificador | ao fechar um gate |
 | 5 | [`DEFERRED.md`](DEFERRED.md) | o que foi adiado de propósito, com evidência | ao adiar ou resolver um item |
 | 6 | [`MANUTENCAO-GITLAB.md`](MANUTENCAO-GITLAB.md) | regras de quando e como avisar sobre o GitLab | raramente |
-| — | [`PROPOSTA-REORGANIZACAO.md`](PROPOSTA-REORGANIZACAO.md) | proposta de reorganização de docs e código, aguardando decisão | ao decidir; depois vai para `historico/` |
 
-`.agents/arquivo/` guarda as pastas dos verificadores de gates encerrados (M1, M2, final, base) e
-o pedido original da geração 1; na raiz de `.agents/` ficam só o orquestrador e o gate em andamento.
+Na raiz de `.agents/` ficam só o orquestrador e as pastas dos verificadores do gate em andamento
+(e do anterior, enquanto o atual cita os achados dele). **Gate fechado: as pastas saem com `git rm`**;
+o que já saiu está na tag `historico-2026-09-22`.
 
-`historico/` guarda o que não vale mais como estado: a retomada de 2026-09-11 a 2026-09-21 e os
-arquivos da geração 1 do harness (que citam `/home/gabrigas/...` e a PoC já removida).
+**Regras de processo (pedido do humano, 2026-09-22):** estado salvo e commitado a cada passo;
+handoff completo aos 80% do uso da sessão do horário; `ATIVIDADES.md` revisado a cada passo; só o
+necessário no repositório. Detalhes no fim de `RETOMADA.md`.
 
 ## Como um gate funciona
 

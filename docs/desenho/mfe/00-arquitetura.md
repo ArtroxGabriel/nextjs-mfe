@@ -512,7 +512,7 @@ decisão. O mapa:
 | **4** | `@erp/ui`, terceira zona | decide §12.1 com medição |
 
 A rodada 1 está especificada em
-[`../../superpowers/specs/2026-09-09-base-mfe-multizone-design.md`](../../historico/superpowers/specs/2026-09-09-base-mfe-multizone-design.md).
+[`../base-mfe-spec.md`](../base-mfe-spec.md).
 
 > **Ausência não é opcionalidade.** Os elementos 4 e 8 do núcleo estão fora da rodada 1 e
 > continuam sendo **núcleo**. Nenhum documento pode descrevê-los como extensões, e nenhuma

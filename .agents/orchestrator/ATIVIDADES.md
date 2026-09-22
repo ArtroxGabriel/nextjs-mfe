@@ -4,7 +4,7 @@
 > atualiza ao fim de todo gate, task ou decisão; o humano copia para o GitLab e marca a coluna
 > "No GitLab?". Regras de quando avisar: `MANUTENCAO-GITLAB.md`.
 >
-> Última revisão: **2026-09-21, noite** (gate 2 do shell reprovado e corrigido; trace e CSP no núcleo 0.6.0).
+> Última revisão: **2026-09-22** (plano com showcase; #19 e #20 novas; lista 2 de refinamento F1–F7; repositório limpo).
 
 ## 1. Como ler e manter
 
@@ -20,13 +20,31 @@
 
 | # | Título | Estado real | Ação | No GitLab? | Evidência |
 |---|---|---|---|---|---|
-| 3 | Isolar a falha de zona no shell da base *(era "Tratar zonas travadas")* | falta `/{zona}/api/health`; gates 1 e 2 reprovados e corrigidos (vazamento de módulo, `/ZONA2`, CSP, flash); `base/verificacao` 47/47 com navegador real; **falta o gate 3** | reescrever título; mover para **em andamento** | pendente | `erp-shell` `6de4939`/`dab5ffd`/`a63b995`; `RETOMADA.md` |
+| 3 | Isolar a falha de zona no shell da base *(era "Tratar zonas travadas")* | falta `/{zona}/api/health`; gates 1 e 2 reprovados e corrigidos; **gate 3: revisor e challenger aprovam, auditor em andamento** | reescrever título; mover para **em andamento** | pendente | `erp-shell` `6de4939`/`dab5ffd`/`a63b995`; `RETOMADA.md` |
 | 9 | Trocar login e store de desenvolvimento por OIDC e Redis *(era "Implementar sessão e autorização no servidor")* | cookie opaco, escritor único e autorização por módulo entregues; **adaptador Redis pronto** (`@erp/nucleo` 0.4.0, 12 testes, 9 mutações pegas), falta ligar nas apps; faltam OIDC e renovação de token | reescrever título e critérios; mover para **em andamento** | pendente | ADR-0009 decisão 3; `erp-nucleo` `3a7b80c`; `alvo.md` §6 |
 | 10 | Implementar composição por fragmentos | núcleo pronto (`@erp/nucleo` 0.5.0, 18 testes, 16 mutações); falta ligar zona 1 ← zona 2 e bloquear no shell | mover para **em andamento** | pendente | ADR-0011; `erp-nucleo` `1841771` |
 | 11 | Centralizar o tempo real no shell | não iniciado | manter; tirar a dependência da #2 | pendente | `alvo.md` §6 (SSE) |
 | 12 | Publicar o pacote visual @erp/ui | não iniciado; depende de medir duplicação de bundle | manter | — | `alvo.md` §6 |
 | 14 | Definir estratégia de publicação e compatibilidade | submódulos **feitos**; hook `pre-push` que recusa submódulo não enviado **feito** (`base/scripts/checar-envio.mjs`, provado com commit só local); **gate de lockstep do núcleo feito** (`base/scripts/verificar-lockstep.mjs`, no `pre-push`, provado com divergência real); falta registro único ou publicação pelo CI | acrescentar critérios: gate de lockstep no CI, registro único, nunca republicar a mesma versão,  checar submódulo não enviado antes do push, mapa de zonas vindo do domínio de acesso | pendente | ADR-0010; `AMBIENTE.md` §1–2; `4eb128b` |
+| 19 | Entregar o showcase da base com mocks, Keycloak e Redis *(nova)* | não iniciado; é o objetivo final da lista 1 (`RETOMADA.md` fase E) | **criar** (texto em §3) | pendente | `RETOMADA.md` |
+| 20 | Migrar as apps para o kit de app e fechar as verificações da spec *(nova)* | pacotes prontos (`@erp/nucleo` 0.7.0, `@erp/moldura` 0.4.0); migração espera o gate do shell | **criar** (texto em §3) | pendente | ADR-0012 |
 | 18 | Centralizar a telemetria das zonas no shell *(nova)* — **ampliar para "Trace contínuo sem dado pessoal (núcleo 8)"**: o elemento 8 é núcleo e está ausente (`alvo.md` §6) | gateway corrigido nos gates 1–2; **propagação de trace feita** (núcleo 0.6.0, teste T1); falta exportar spans (SDK OpenTelemetry, exige instalar pacote) | **criar** em andamento (texto em §3) | pendente | `erp-shell` `6de4939`; `alvo.md` §6 (Operação) |
+
+### Lista 2 — refinamento (separada das atuais; não começar agora)
+
+Só começam quando a lista 1 (fases A–E do `RETOMADA.md`) estiver concluída e todas as funcionalidades
+basilares estiverem no showcase (#19). Cada uma começa por um **pedido de detalhamento** em `pedidos/`.
+Sugestão para o GitLab: criar agora com a etiqueta "refinamento" e o estado "bloqueado — depois do showcase".
+
+| # | Título | Estado real | Ação | No GitLab? |
+|---|---|---|---|---|
+| F1 | Refinar a arquitetura com design patterns e padrões de arquitetura | espera a lista 1; precisa de detalhamento | criar bloqueada (texto em §3) | pendente |
+| F2 | Otimizar desenvolvimento e produção | idem | criar bloqueada | pendente |
+| F3 | Tornar o mapa de zonas robusto | idem | criar bloqueada | pendente |
+| F4 | Refinar a gestão de acesso | idem | criar bloqueada | pendente |
+| F5 | Padronizar os erros | idem | criar bloqueada | pendente |
+| F6 | Estruturar a camada de testes | idem | criar bloqueada | pendente |
+| F7 | Estruturar os testes de desempenho e segurança | idem | criar bloqueada | pendente |
 
 ### Fechar — entregues ou substituídas
 
@@ -201,6 +219,116 @@ Link: N/A
 Link: N/A
 ```
 
+### #19 — criar
+
+```
+Título:
+
+[Dev/Front] Entregar o showcase da base — mocks em JSON, Keycloak e Redis
+
+🎯 Objetivo*
+
+Ter um caso de teste usável que mostra cada funcionalidade basilar da base BFF + Multi-Zones, subido com um comando.
+
+✅ Critérios de Aceitação
+
+Domínios simulados por APIs mock em Node.js com dados em arquivos JSON, com reset por comando
+
+Keycloak e Redis sobem por imagem Docker; realm com os atores ana, bruno, carla e davi
+
+Um comando sobe tudo (imagens, mocks, shell e zonas) e outro derruba
+
+Roteiro com passo e resultado esperado para: login OIDC, sessão entre zonas, módulo negado = 404, fragmento, SSE, toast, zona fora = 503, If-Match, erro { codigo, supportId }, trace
+
+A verificação ponta a ponta roda contra o showcase
+
+🧪 Casos de Teste
+
+Cenário 1: pnpm showcase em máquina limpa (só Docker e Node) → roteiro inteiro passa
+
+Cenário 2: reset dos mocks → dados voltam à semente
+
+🎨 Referência de Design
+
+Link: N/A
+
+📋 Caso de Uso
+
+Link: .agents/orchestrator/RETOMADA.md (fase E)
+```
+
+### #20 — criar
+
+```
+Título:
+
+[Dev/Front] Migrar as apps para o kit de app — uma cópia só de sessão, módulo e actions
+
+🎯 Objetivo*
+
+Trocar o código copiado nas 4 apps (lib/pagina.ts, indisponível, global-error, registrar-manifesto) pelo kit @erp/nucleo/app e @erp/moldura/servidor, e fechar as verificações da spec que faltam.
+
+✅ Critérios de Aceitação
+
+Shell e 3 zonas usam @erp/nucleo 0.7.0 e @erp/moldura 0.4.0; as cópias foram apagadas
+
+Build falha com server-only importado em 'use client'
+
+Teste que recusa DTO sensível como prop de ilha
+
+Guarda contra <Link> entre zonas
+
+Verificação ponta a ponta verde
+
+🧪 Casos de Teste
+
+Cenário 1: md5sum não acha mais arquivos idênticos entre as apps
+
+Cenário 2: mutação fail-open em exigirModulo reprova a suíte (um lugar só)
+
+🎨 Referência de Design
+
+Link: N/A
+
+📋 Caso de Uso
+
+Link: docs/adr/0012-kit-de-app-no-nucleo.md
+```
+
+### F1–F7 — criar bloqueadas (mesmo modelo, uma por atividade)
+
+```
+Título:
+
+[Dev/Front] <título da tabela da lista 2>
+
+🎯 Objetivo*
+
+<título>. Começa com um pedido de detalhamento; só implementar depois do detalhamento aprovado.
+
+✅ Critérios de Aceitação
+
+Pedido de detalhamento respondido e registrado em pedidos/
+
+Critérios definidos a partir do detalhamento
+
+Pré-requisito: lista 1 concluída e funcionalidades basilares no showcase (#19)
+
+🧪 Casos de Teste
+
+A definir no detalhamento
+
+🎨 Referência de Design
+
+Link: N/A
+
+📋 Caso de Uso
+
+Link: .agents/orchestrator/RETOMADA.md (lista 2)
+```
+
+O que cada pedido de detalhamento precisa responder está na tabela da lista 2 do `RETOMADA.md`.
+
 ## 4. Histórico de revisões
 
 | Data | O que mudou |
@@ -213,3 +341,4 @@ Link: N/A
 | 2026-09-21 noite (gate do shell) | #3 e #18: gate 1 reprovado, correção feita, falta o gate 2 |
 | 2026-09-21 noite (revisão de premissas) | #18 ampliada para o núcleo 8 (trace); #14 recupera o gate de lockstep; #3 ganha o health check; #19 proposta para as perguntas originais da PoC |
 | 2026-09-21 noite | #9 em andamento (adaptador Redis no núcleo 0.4.0); #14 ganha o hook `pre-push`; #10 em andamento (núcleo 0.5.0, ADR-0011); #3 e #18 recebem o bloqueio do revisor; textos prontos para #3, #9, #10, #14 e #18 |
+| 2026-09-22 | Plano com objetivo final (showcase com mocks JSON, Keycloak e Redis): criar #19 e #20; lista 2 separada com F1–F7 (refinamento arquitetural, otimização, mapa robusto, gestão de acesso, erro, testes, desempenho e segurança), bloqueadas até o showcase; #3 com gate 3 em andamento |

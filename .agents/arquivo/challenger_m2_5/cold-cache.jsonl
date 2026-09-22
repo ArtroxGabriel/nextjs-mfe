@@ -1,6 +1,0 @@
-{"stopHost":{"stopped":true,"pgid":15718,"signal":"SIGKILL","portClosedAfterMs":48.285331,"tKill":90.015753}}
-{"first":{"path":"/remote-app","portOpenAfterSpawnMs":671.7,"latencyMs":986.2,"status":503,"ct":"text/html; charset=utf-8","retryAfter":"5","shellPage":true},"second":503,"hostLog":"host-1789389827073.log"}
-{"stopHost":{"stopped":true,"pgid":18601,"signal":"SIGKILL","portClosedAfterMs":25.441320000000132,"tKill":1829.735518}}
-{"first":{"path":"/remote-app/api/health","portOpenAfterSpawnMs":690,"latencyMs":965.1,"status":503,"ct":"text/html; charset=utf-8","retryAfter":"5","shellPage":true},"second":503,"hostLog":"host-1789389828787.log"}
-{"stopHost":{"stopped":true,"pgid":18621,"signal":"SIGKILL","portClosedAfterMs":18.823014000000057,"tKill":3539.609978}}
-{"first":{"path":"/remote-app-static/_next/static/css/7328242de7a8f19b.css","portOpenAfterSpawnMs":640,"latencyMs":981.8,"status":503,"ct":"text/html; charset=utf-8","retryAfter":"5","shellPage":true},"second":503,"hostLog":"host-1789389830489.log"}

@@ -1,3 +1,0 @@
-{"stopped":true,"pgid":19244,"signal":"SIGKILL","portClosedAfterMs":24.42452200000001,"tKill":83.41949}
-{"workers":30,"durationMs":6000,"hostRequests":1086,"statuses":{"200":1086},"proxiedSeenByStub":1087,"healthProbes":7,"probeTimesMs":[58,1064,2070,3078,4089,5098,6104],"gapsMs":[1006,1006,1008,1011,1009,1006]}
-{"zoneRestart":{"pgid":19874,"logPath":"/home/wilson-castro/Documents/projects/mira/nextjs-mfe/.agents/challenger_m2_5/zone-1789390728714.log","readyMs":1475.7999309999996}}
