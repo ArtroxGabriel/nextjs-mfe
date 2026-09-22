@@ -149,8 +149,9 @@ Unidades: contratos 20, núcleo 132, moldura 26, stub 42, shell 40; estáticas 2
 
 ## Próximo passo
 
-1. **Iteração 3 do gate B1+D1+G3+K** com revisor (`revisor-mfe`, Sonnet), challenger (`simulador-condicoes`, Sonnet) e
-   auditor forense (Opus) novos. O challenger precisa das portas; o auditor espera por ele.
+1. **Iteração 3 do gate B1+D1+G3+K — em andamento:** `reviewer_b1_d1_3` (Sonnet) e `challenger_b1_d1_3` (Sonnet)
+   despachados; handoffs em `.agents/<nome>/handoff.md`. O `auditor_b1_d1_3` (Opus) entra quando o challenger
+   liberar as portas. Durante o gate, ninguém mexe no código dos submódulos.
 2. **D2** (núcleo 0.10.0, OIDC + PKCE, ADR-0013, pessoa casada por `sub`); G4; G5 (eventos); C1–C3; E4–E5.
 
 Ambiente desta máquina: Verdaccio (com contratos 0.4.0, núcleo 0.9.2 e moldura 0.5.0), Redis e Keycloak no ar.
