@@ -72,3 +72,21 @@ test('toda excecao declarada tem motivo, e a sonda de saude do shell e mesmo uma
 
 import { createRequire } from 'node:module'
 const require_ = createRequire(import.meta.url)
+
+test('R01-R07 (auditor_b1_d1_2, V8): clientes de banco, global entregue a funcao, createRequire e child_process', () => {
+  pega("import { createClient } from 'redis'")                                        // R01
+  pega("import Redis from 'ioredis'")                                                // R02
+  pega("import { Client } from 'pg'")                                                // R03
+  pega("const f = Reflect.get(globalThis, 'fe' + 'tch')")                             // R04
+  pega("const d = Object.getOwnPropertyDescriptor(globalThis, nome)")                 // R05
+  pega("import { createRequire } from 'node:module'\nconst u = createRequire(import.meta.url)('undici')") // R06
+  pega("import { execFile } from 'node:child_process'\nexecFile('curl', ['http://x'])") // R07
+  pega("const cp = await import('child_process')")
+})
+
+test('toda excecao de store de sessao e mesmo o cliente Redis (a excecao nao sobra)', () => {
+  const { readFileSync } = require_('node:fs')
+  for (const arq of Object.keys(EXCECOES).filter((a) => a.endsWith('lib/redis.ts'))) {
+    assert.ok(analisar(readFileSync(new URL(`../../repos/${arq}`, import.meta.url), 'utf8')).length > 0, `${arq} nao precisa de excecao`)
+  }
+})

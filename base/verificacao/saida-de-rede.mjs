@@ -13,8 +13,11 @@ import { RAIZ } from '../scripts/ambiente.mjs'
 const ts = createRequire(join(RAIZ, 'erp-shell', 'package.json'))('typescript')
 
 /** Módulos que abrem conexão de rede. Importá-los numa aplicação é sair pela porta dos fundos. */
+// Clientes de banco também são rede; `child_process`, `worker_threads`, `vm` e `module` (createRequire)
+// são portas para carregar ou executar o que a análise não vê (auditor_b1_d1_2, V8).
 const MODULOS_DE_REDE = new Set(['http', 'https', 'http2', 'net', 'tls', 'dgram', 'undici', 'axios',
-  'node-fetch', 'got', 'ky', 'superagent', 'ws'].flatMap((m) => [m, `node:${m}`]))
+  'node-fetch', 'got', 'ky', 'superagent', 'ws', 'redis', 'ioredis', '@redis/client', 'pg', 'mysql2', 'mongodb',
+  'child_process', 'worker_threads', 'vm', 'module', 'cluster'].flatMap((m) => [m, `node:${m}`]))
 /** Globais que fazem rede. */
 const GLOBAIS_DE_REDE = new Set(['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource'])
 /** Portas para montar código em tempo de execução, que escaparia de qualquer análise. */
@@ -24,10 +27,16 @@ const EXECUCAO_DINAMICA = new Set(['eval', 'Function'])
  * Exceções declaradas, cada uma com o motivo. Arquivo novo aqui exige revisão: é uma saída de
  * rede fora da allowlist do núcleo.
  */
+const STORE_DE_SESSAO = 'store de sessão (ADR-0002): endereço só do ambiente (`REDIS_URL`/`REDIS_URL_ZONA`), ' +
+  'nunca da requisição; nas zonas, cliente só com `get` e usuário ACL só de leitura'
 export const EXCECOES = {
   'erp-shell/lib/saude-zonas.ts':
     'sonda de saúde das zonas: o alvo vem só de zonas.json (nunca da requisição), sem seguir ' +
     'redirecionamento, timeout de 500 ms; não é chamada a domínio',
+  'erp-shell/lib/redis.ts': STORE_DE_SESSAO,
+  'erp-zona-1/lib/redis.ts': STORE_DE_SESSAO,
+  'erp-zona-2/lib/redis.ts': STORE_DE_SESSAO,
+  'erp-zona-acesso/lib/redis.ts': STORE_DE_SESSAO,
 }
 
 /** Achados num fonte: `{ linha, motivo }`. Vazio = nenhuma saída de rede fora do registro. */
@@ -54,6 +63,13 @@ export function analisar(fonte, nome = 'arquivo.ts') {
       achar(no, `importa modulo de rede '${texto(no.moduleSpecifier)}'`)
     }
     if (ts.isCallExpression(no)) {
+      // Reflect.get(globalThis, 'fe' + 'tch'), Object.getOwnPropertyDescriptor(window, x): a global
+      // entregue a uma função sai do alcance de qualquer análise de nome
+      for (const a of no.arguments) {
+        if (ts.isIdentifier(a) && ['globalThis', 'window', 'self', 'global'].includes(a.text) && !declarados.has(a.text)) {
+          achar(no, `passa '${a.text}' a uma funcao (acesso indireto a global)`)
+        }
+      }
       const [arg] = no.arguments
       // import('node:http') e require('http')
       if ((no.expression.kind === ts.SyntaxKind.ImportKeyword || (ts.isIdentifier(no.expression) && no.expression.text === 'require'))) {

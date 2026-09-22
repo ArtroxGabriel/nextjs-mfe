@@ -384,6 +384,7 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-09-22 (noite) | Gate do shell **aprovado** (iteração 4): #3 falta só o health; #18 faltam só os spans. Taskfile adotado; SSO do showcase endurecido; relatório de segurança (B6) |
 | 2026-09-22 (madrugada) | #20 migração feita; #9 Redis ligado nas apps; #19 `task showcase` completo com Redis; docs de responsabilidades (`docs/RESPONSABILIDADES.md`) |
 | 2026-09-22 (madrugada, 2) | Criar #21 (gestão de acesso v2: modelo e mock prontos; falta ADR-0014 e alinhamento) |
+| 2026-09-22 (noite, 4) | Fatia K concluída: todos os vetos V1–V8 e lacunas L1–L8 do auditor com correção e teste; 71/71 com Redis. #9, #20 e #21 aguardam a iteração 3 do gate |
 | 2026-09-22 (noite, 3) | #21 com o G3 implementado (62/62); #20 e #9 com os vetos V2–V4 e V6 corrigidos; o gate da iteração 3 decide |
 | 2026-09-22 (noite, 2) | Gate B1+D1 iteração 2 **reprovado** (auditor Opus, vetos V1–V8): #9 e #20 continuam em andamento; comentar o bloqueio no GitLab |
 | 2026-09-22 (noite) | Reconferido nesta máquina: 60/60 com arquivo e com Redis. #3 com o health implementado; #20 com B4/B6 e B5 feitos e texto no núcleo 0.8.2; #21 com ADR-0014 e G3 só iniciado; #9 com campos OIDC na sessão; #14 com a alternância de hash entre máquinas. Gate B1+D1 iteração 1 considerada rasa; iteração 2 com auditor Opus |

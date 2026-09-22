@@ -24,7 +24,9 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 | `KEYCLOAK_ADMIN_USUARIO`, `KEYCLOAK_ADMIN_SENHA` | `admin` / `admin` (só showcase) | Administrador inicial do Keycloak | compose; `checar-keycloak.mjs` | ✅ |
 | `ERP_PERMITIR_IDENTIDADE_DEV` | — | `1` permite `identidadeDev` com `NODE_ENV=production` (só verificação local) | núcleo | ✅ |
 | `SESSAO_DIR` | temporário | Pasta do store de sessão em arquivo (desenvolvimento; some com o Redis) | núcleo, apps | ✅ |
-| `REDIS_URL` | — | Store de sessão (ADR-0002). Definido: shell grava e zonas leem no Redis; ausente: arquivo em `SESSAO_DIR`. O showcase usa `redis://127.0.0.1:6379` | apps (`lib/redis.ts`) | ✅ D1 (branch `b1-kit` até o merge) |
+| `REDIS_URL` | — | Store de sessão (ADR-0002). Definido: shell grava e zonas leem no Redis; ausente: arquivo em `SESSAO_DIR`. O showcase usa `redis://127.0.0.1:6379` | apps (`lib/redis.ts`) | ✅ D1 |
+| `REDIS_URL_ZONA` | `REDIS_URL` | Conexão das **zonas** ao Redis, com um usuário ACL que só tem `GET` em `erp:sessao:*` (invariante 15). Fora da máquina local, obrigatório: sem ele a zona conectaria com o usuário do shell | zonas (`lib/redis.ts`) | ✅ |
+| `ERP_REDIS_SENHA_ZONA` | `dev-zona-leitura` (só showcase) | Senha do usuário `zona` no Redis do showcase | `docker-compose` do showcase | ✅ |
 
 ## 2. Rede, destinos e zonas
 
@@ -36,16 +38,16 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 | `SHELL_HOSTS` | — | Hosts aceitos como origem do shell | apps | ✅ |
 | `ERP_DESTINO_TIMEOUT_MS` | `5000` | Timeout de uma chamada a domínio; teto 60000 | núcleo (`interno/destinos.ts`) | ✅ (teto na 0.9.0) |
 | `ERP_FRAGMENTO_TIMEOUT_MS` | `2000` | Timeout de um fragmento entre zonas; teto 30000 | núcleo (`fabricas/fragmento.ts`) | ✅ (teto na 0.9.0) |
-| `ERP_SONDA_TTL_MS` | `1000` | Por quanto tempo o shell confia no resultado da sonda de saúde de uma zona | shell (`lib/saude-zonas.ts`) | ✅ (B5a) |
-| `ERP_SONDA_TIMEOUT_MS` | `500` | Timeout da sonda de saúde | shell | ✅ (B5a) |
+| `ERP_SONDA_TTL_MS` | `1000` | Por quanto tempo o shell confia no resultado da sonda de saúde de uma zona; teto 10000 | shell (`lib/saude-zonas.ts`) | ✅ (B5a) |
+| `ERP_SONDA_TIMEOUT_MS` | `500` | Timeout da sonda de saúde; teto 2000 (zona travada vira 503 em menos de 2 s). Só 2xx de `/{zona}/api/health` conta como no ar | shell | ✅ (B5a) |
 
 ## 3. Telemetria
 
 | Variável | Padrão | Significado | Quem lê | Estado |
 |---|---|---|---|---|
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | — | Coletor OTLP para onde o gateway do shell repassa | shell | ✅ |
-| `ERP_TELEMETRIA_MAX_BYTES` | `262144` | Tamanho máximo de um lote (256 KB) | shell (`lib/telemetria.ts`) | ✅ (B5a) |
-| `ERP_TELEMETRIA_LOTES_POR_MINUTO` | `60` | Lotes por minuto por usuário | shell | ✅ (B5a) |
+| `ERP_TELEMETRIA_MAX_BYTES` | `262144` | Tamanho máximo de um lote (256 KB); teto 1 MiB | shell (`lib/telemetria.ts`) | ✅ (B5a) |
+| `ERP_TELEMETRIA_LOTES_POR_MINUTO` | `60` | Lotes por minuto por usuário; teto 600 | shell | ✅ (B5a) |
 
 ## 4. Domínios falsos (stub)
 

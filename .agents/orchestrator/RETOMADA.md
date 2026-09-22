@@ -21,9 +21,9 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
 
 | O quê | Estado | Evidência |
 |---|---|---|
-| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **62/62** com sessão em arquivo e **62/62** com Redis | `task verificar:construir`, `task verificar:redis` |
+| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **71/71** com Redis e **70 + 1 pulado** com arquivo | `task verificar:construir`, `task verificar:redis` |
 | Unidades | contratos 16, núcleo 109, moldura 25, stub 39, shell 38; typecheck das 4 apps; estática 16/16; scripts 9/9 | `task test`, `task typecheck`, `task verificar:estatica` |
-| `@erp/nucleo` | **0.9.1** nas 4 apps (acesso v2 só, `exigirModulo(modulo, funcionalidade)`, `exigirPapel`) | lockstep 4 apps |
+| `@erp/nucleo` | **0.9.2** nas 4 apps (acesso v2 só, `exigirModulo(modulo, funcionalidade)`, `exigirPapel`) | lockstep 4 apps |
 | `@erp/contratos` / `@erp/moldura` | **0.4.0** / **0.5.0** | ADR-0012, ADR-0014 adendo 1 |
 | Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
 | Gate B1+D1 | **iteração 2 REPROVADA** (auditor Opus, 77 mutações + 29 contornos; vetos V1–V8); iteração 1 superada | `GATE_STATUS.md`; `.agents/auditor_b1_d1_2/` |
@@ -127,15 +127,32 @@ Tudo no `master` dos submódulos e fixado no principal. **Ponta a ponta 62/62 co
 | apps | — | destino 4020 só `/v2/eu`; páginas por funcionalidade; zona de acesso com pessoas × módulos (conceder/revogar); manifestos v2 só nas zonas 1 e 2 |
 | base | — | `ambiente.mjs` sobe a v2 (4020), v1 só sob demanda; verificação migrada: revogação do davi, segregação (carla não se concede), v2 fora com v1 no ar → indisponível, pessoa desligada → login, funcionalidade exigida tem de estar no manifesto |
 
+## Fatia K concluída (2026-09-22, noite)
+
+Todos os vetos e lacunas do `auditor_b1_d1_2` têm correção e teste que reprova a mutação:
+
+| Veto / lacuna | Correção | Teste |
+|---|---|---|
+| V1 zona escreve no Redis | cliente da zona só com `get` (`ClienteRedisDeLeitura`, núcleo 0.9.2); `REDIS_URL_ZONA` com usuário ACL só `GET` em `erp:sessao:*` | "V1 estático" e "V1 dinâmico" (NOPERM em SET e DEL) no `base.test.mjs` |
+| V2 `/app` exporta escritor | teste em todo subpath fora de `/shell` | `fronteira.test.mjs` (N38 pega) |
+| V3 `server-only` e diretiva | fronteira por import real; `ehCliente` pelo prólogo; import transitivo, dinâmico e reexportação | `fronteira.test.mjs`; E01–E06 em `seguranca-estatica.test.mjs` |
+| V4, V6, L6 | G3 (corte seco, dois argumentos, sem CPF) | núcleo `acesso.test.mjs`, `paginas.test.mjs`; ponta a ponta "v2 fora e v1 no ar" |
+| V5 DTO para ilha | ilha só recebe valor projetado; chave sensível em spread/objeto; nome sensível por trecho | E07–E10 |
+| V7 `NEXT_PUBLIC_*` | qualquer forma (índice, destruturação, texto), `next.config` varrido | E19–E22 |
+| V8 saída de rede | clientes de banco, global entregue a função, `module`/`child_process`/`vm` | R01–R07 em `saida-de-rede.test.mjs` |
+| L1–L3 sonda | só 2xx; `redirect: 'manual'` e `no-store` fixados por teste; tetos | shell `saude.test.mjs` (3 mutações pegas) |
+| L2, L5, L7 | tetos; `finally` nos servidores de teste; sessão sem token é ausente | núcleo |
+| L8 `<Link>` | href só literal da própria zona, com qualquer nome, também no shell | E12–E18 |
+
+Ponta a ponta: **71/71 com Redis** (com a ACL) e **70/70 + 1 pulado com arquivo** (o teste da ACL só roda com Redis).
+Unidades: contratos 20, núcleo 132, moldura 26, stub 42, shell 40; estáticas 23.
+
 ## Próximo passo
 
-1. **Fatia K restante** (tabela acima): K1 (zona só com `get` no Redis; ACL de leitura no showcase),
-   K3 estático (`'use client';` com ponto e vírgula ou comentário antes), K5 (DTO por spread), K6
-   (`NEXT_PUBLIC_*`, `next.config.ts`), K7 (saída de rede indireta), K8 no shell (sonda exige 2xx,
-   `redirect: 'manual'`, tetos da sonda e da telemetria). Todo contorno do auditor vira caso de teste.
-2. **Iteração 3 do gate B1+D1+G3** com revisor (Sonnet), challenger (Sonnet) e auditor (Opus) novos.
-3. **D2** (núcleo 0.10.0, OIDC + PKCE, ADR-0013, pessoa casada por `sub`); G4; G5 (eventos); C1–C3; E4–E5.
+1. **Iteração 3 do gate B1+D1+G3+K** com revisor (`revisor-mfe`, Sonnet), challenger (`simulador-condicoes`, Sonnet) e
+   auditor forense (Opus) novos. O challenger precisa das portas; o auditor espera por ele.
+2. **D2** (núcleo 0.10.0, OIDC + PKCE, ADR-0013, pessoa casada por `sub`); G4; G5 (eventos); C1–C3; E4–E5.
 
-Ambiente desta máquina: Verdaccio (com contratos 0.4.0, núcleo 0.9.1 e moldura 0.5.0), Redis e Keycloak no ar.
-Outra máquina: publicar contratos 0.4.0 → núcleo 0.9.1 → moldura 0.5.0 no próprio Verdaccio (`task pacotes:publicar`)
+Ambiente desta máquina: Verdaccio (com contratos 0.4.0, núcleo 0.9.2 e moldura 0.5.0), Redis e Keycloak no ar.
+Outra máquina: publicar contratos 0.4.0 → núcleo 0.9.2 → moldura 0.5.0 no próprio Verdaccio (`task pacotes:publicar`)
 e rodar `task pacotes:alinhar-hashes` antes do `task instalar`.

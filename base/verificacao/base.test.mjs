@@ -353,6 +353,41 @@ test('N3 estatico: nenhuma zona monta store de escrita, identidade ou grava o co
   }
 })
 
+test('V1 estatico: o cliente Redis das zonas so le (sem set, del nem outro comando de escrita)', () => {
+  const fontes = (d) => readdirSync(d).flatMap((n) => {
+    if (['node_modules', '.next'].includes(n)) return []
+    const p = join(d, n)
+    return statSync(p).isDirectory() ? fontes(p) : /\.(ts|tsx|mjs|js)$/.test(n) ? [p] : []
+  })
+  for (const zona of ['erp-zona-1', 'erp-zona-2', 'erp-zona-acesso']) {
+    const cliente = readFileSync(join(RAIZ, zona, 'lib', 'redis.ts'), 'utf8')
+    assert.match(cliente, /ClienteRedisDeLeitura/, `${zona}: cliente sem o tipo so de leitura`)
+    assert.match(cliente, /REDIS_URL_ZONA/, `${zona}: nao usa o usuario de leitura`)
+    assert.ok(!/\b(set|del|unlink|expire|pexpire|getdel|getex|rename|flushall|flushdb|sendCommand|multi|eval)\b/i.test(cliente.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '')),
+      `${zona}: lib/redis.ts expoe comando alem de get`)
+    for (const f of fontes(join(RAIZ, zona))) {
+      if (f.endsWith(join('lib', 'redis.ts'))) continue
+      assert.ok(!/from ['"](redis|ioredis|@redis\/[a-z-]+)['"]|require\(['"](redis|ioredis)/.test(readFileSync(f, 'utf8')), `${f} fala com o Redis fora de lib/redis.ts`)
+    }
+  }
+})
+
+test('V1 dinamico: com a ACL do showcase, o usuario das zonas nao grava nem apaga sessao', { skip: !process.env.REDIS_URL_ZONA && 'so no modo Redis (task verificar:redis)' }, async () => {
+  const { createConnection } = await import('node:net')
+  const u = new URL(process.env.REDIS_URL_ZONA)
+  const resp = (...args) => `*${args.length}\r\n` + args.map((a) => `$${Buffer.byteLength(a)}\r\n${a}\r\n`).join('')
+  const conversar = (comandos) => new Promise((ok, falha) => {
+    const c = createConnection({ host: u.hostname, port: Number(u.port || 6379) })
+    let dados = ''
+    c.on('data', (d) => { dados += d; if (dados.split('\r\n').filter(Boolean).length >= comandos.length) { c.end(); ok(dados) } })
+    c.on('error', falha)
+    c.write(comandos.map((a) => resp(...a)).join(''))
+  })
+  const r = await conversar([['AUTH', decodeURIComponent(u.username), decodeURIComponent(u.password)], ['SET', 'erp:sessao:forjada', '{}'], ['DEL', 'erp:sessao:qualquer']])
+  assert.match(r, /^\+OK/, 'AUTH do usuario da zona falhou')
+  assert.equal((r.match(/NOPERM/g) ?? []).length, 2, `a zona conseguiu escrever: ${r}`)
+})
+
 test('invariante 16 estatico: toda pagina de zona exige modulo e funcionalidade; a zona de acesso, papel; o shell consulta o acesso', () => {
   // `(publico)` so e pulado no shell (login); nas zonas toda pagina e de modulo
   const exigido = {
