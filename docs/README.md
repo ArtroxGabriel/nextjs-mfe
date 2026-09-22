@@ -4,6 +4,7 @@ Três perguntas, três lugares:
 
 | Quero saber… | Leia | Tamanho |
 |---|---|---|
+| **quem faz o quê** (BFF de cada MFE, clientes, domínios, pacotes), explicado do zero | [`RESPONSABILIDADES.md`](RESPONSABILIDADES.md) — começa pelo vocabulário | 15 min |
 | **como a base funciona hoje** | [`arquitetura/atual.md`](arquitetura/atual.md) — diagramas de topologia, proxy, login, destinos, acesso, toast, testes e falhas | 10 min |
 | **o que falta e para onde vai** | [`arquitetura/alvo.md`](arquitetura/alvo.md) — a tabela do §6 é a lista do que falta | 10 min |
 | **que parâmetro controla o quê** (sessão, timeouts, limites) | [`CONFIGURACAO.md`](CONFIGURACAO.md) — toda variável, com padrão e quem lê | 5 min |

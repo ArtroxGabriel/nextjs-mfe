@@ -137,6 +137,7 @@ O desenho completo (mapa de zonas, contrato de fragmento, sessão, deploy) está
 
 | Para | Comece em |
 |---|---|
+| entender quem faz o quê (BFF de cada MFE, clientes), sem conhecimento prévio | [`docs/RESPONSABILIDADES.md`](docs/RESPONSABILIDADES.md) |
 | entender a arquitetura, o que falta e como conferir | [`docs/README.md`](docs/README.md) |
 | saber que variável controla cada tempo e limite | [`docs/CONFIGURACAO.md`](docs/CONFIGURACAO.md) |
 | retomar o trabalho em andamento (estado, gates, GitLab, armadilhas do ambiente) | [`.agents/orchestrator/LEIA-PRIMEIRO.md`](.agents/orchestrator/LEIA-PRIMEIRO.md) |
