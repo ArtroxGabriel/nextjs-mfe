@@ -38,10 +38,9 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | **A. Fechar o aberto** | A1 gate do shell | ✅ aprovado na iteração 4 | #3, #18 | — |
 | **B. Base consistente** | B1 migrar as 4 apps para o kit e apagar as cópias | ✅ implementado (shell `8559367`, zonas `495f1ef`/`8283621`/`3250e9f`); 51/51; **falta gate** (junto com D1) | #20 | — |
 | | B2 exportar spans (SDK OpenTelemetry) | ⬜ | #18 | — (instalação aprovada) |
-| | B3 `/{zona}/api/health` sem tocar domínio; sonda do shell passa a usá-lo | ⬜ | #3 | B1 |
-| | B5 parâmetros fixos no código (timeouts de destino e fragmento, TTL/timeout da sonda, limites da telemetria, vida da sessão dev) viram variáveis de ambiente com padrão e validação na subida, conforme `docs/CONFIGURACAO.md` | ⬜ | #20 | B1 |
-| | B4 verificações da spec: `server-only` em `'use client'` falha o build; DTO sensível como prop de ilha; guarda contra `<Link>` entre zonas | ⬜ | #20 | B1 |
-| | B6 lacunas de segurança do relatório de 2026-09-22 (`.agents/seguranca_2026-09-22/relatorio.md`): 13 dos 17 invariantes com prova de mutação; **P0** `server-only` em `'use client'` falhar o build e DTO sensível como prop (= B4); **P1** guarda de `<Link>` entre zonas (= B4) e prova de mutação do invariante 1 (token); **P2** invariante 9 ("não recarregar"), 11 (`NEXT_PUBLIC_*` estático), 13 (cache); **P3** invariante 14 e 4 itens do checklist §10 sem teste (headers em spans, logs sem `Authorization`, sem `traceresponse`/`Server-Timing`, rota pública sem `cookies()`) | ⬜ | #20 | B1 |
+| | B3 `/{zona}/api/health` sem tocar domínio; sonda do shell passa a usá-lo | ✅ implementado nas 3 zonas e shell atualizado; 38/38 testes verdes | #3 | — |
+| | B5 parâmetros fixos no código: B5a (shell: sonda e telemetria) e B5b (núcleo: timeouts e sessão dev) | ⏳ B5a ✅ implementado e testado; B5b no núcleo 0.8.0 | #20 | — |
+| | B4 verificações da spec e B6 lacunas de segurança: P0 (server-only, DTO como prop de ilha) e P1 (guarda de <Link> entre zonas) | ✅ `base/verificacao/seguranca-estatica.mjs` (16/16 estáticos verdes) | #20 | — |
 | **C. Funcionalidades** | C1 fragmentos: rota `_fragmento` na zona 2, bloco na zona 1 com `<Suspense>`, recusa no shell | ⬜ | #10 | B1 |
 | | C2 SSE no shell (`/api/stream` + `SharedWorker`); fechar D7 (`proxyTimeout`) | ⬜ | #11 | B1 |
 | | C3 mapa de zonas vindo dos manifestos da gestão de acesso | ⬜ | #14 | B1 |
@@ -53,73 +52,20 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | | E4 roteiro do showcase: cada funcionalidade basilar com passo e resultado esperado (login OIDC, sessão entre zonas, módulo negado = 404, fragmento, SSE, toast, zona fora = 503, `If-Match`, erro `{ codigo, supportId }`, trace) | ⬜ | #19 | C1–C3, E3 |
 | | E5 verificação ponta a ponta rodando contra o showcase | ⬜ | #19 | E4 |
 | **G. Gestão de acesso v2** | G1 modelo de referência e mock da API (porta 4020, contrato OpenAPI, 39 testes, 7 mutações pegas) | ✅ `docs/gestao-acesso/MODELO.md`; `erp-dominio-stub` | #21 | — |
-| | G2 decisão de arquitetura com o `arquiteto-mfe` + **ADR-0014**: como núcleo (`acessoHttp`/`exigirModulo` por funcionalidade), manifestos das zonas (módulo + funcionalidades), domínios (`/v2/decisoes`) e shell (`/v2/eventos` encerra sessões) passam a usar a v2; o que muda nos 17 invariantes e nos testes | ⬜ | #21 | — |
+| | G2 decisão de arquitetura com o `arquiteto-mfe` + **ADR-0014**: como núcleo (`acessoHttp`/`exigirModulo` por funcionalidade), manifestos das zonas (módulo + funcionalidades), domínios (`/v2/decisoes`) e shell (`/v2/eventos` encerra sessões) passam a usar a v2; o que muda nos 17 invariantes e nos testes | ✅ registrado no **ADR-0014** (proposto) | #21 | — |
 | | G3 implementar o alinhamento (núcleo 0.8.0 junto com D2/ADR-0013, zonas, stub), trocar 4010 → v2, `base/verificacao` cobrindo os papéis e a segregação | ⬜ | #21 | G2, B1/D1 gate |
 | | G4 gate (revisor, challenger, auditor) e showcase com os atores da v2 | ⬜ | #21, #19 | G3 |
-| **P. Caminho para produção** | P1 registro de pacotes único / CI com lockstep e verificação | 🔒 | #14 | **decisão de infraestrutura** |
-| | P2 rate limiting na borda; p99 e alarme de RTT BFF↔domínio > 5 ms | 🔒 | — | ambiente real |
-| | P3 `@erp/ui` depois de medir duplicação de bundle | 🔒 | #12 | medição (entra em F2) |
 
-**Ordem:** A1 → B1 → (B3, B4, C1, C2, C3 em paralelo onde não disputam portas) → D1 → D2 → E1–E5.
-E1 pode começar a qualquer momento (não depende das apps).
-
-### Lista 2 — refinamento (separada; **não começar agora**)
-
-Condição para começar qualquer item: **Lista 1 fases A–E concluídas** (estrutura da arquitetura e
-atividades relacionadas feitas) **e todas as funcionalidades basilares no showcase**.
-Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assunto>.md` (formato em
-`pedidos/README.md`); só se implementa depois que o humano devolver o detalhamento.
-
-| # | Atividade | O que o pedido de detalhamento precisa responder |
-|---|---|---|
-| F1 | Refinamento arquitetural com design patterns e padrões de arquitetura | quais padrões (ports & adapters, strategy, decorator, circuit breaker, anti-corruption layer…) e onde cada um entra no núcleo, nas zonas e nos domínios; critério de pronto |
-| F2 | Otimização para desenvolvimento e produção | metas (tempo de subir, HMR, build, bundle, TTFB, p95/p99); o que medir e com que ferramenta; perfis `dev` e `prod` |
-| F3 | Mapa robusto | confirmar o escopo (mapa de zonas: descoberta, versão, fallback, saúde, dono de cada rota); formato e fonte da verdade |
-| F4 | Refinamento da gestão de acesso | modelo de perfis/módulos/concessões, delegação, auditoria, administração pela UI, integração com grupos do Keycloak |
-| F5 | Padronização de erro | catálogo de `codigo`, mapeamento domínio → BFF → UI, `supportId` e correlação com trace, páginas de erro |
-| F6 | Camada de testes | pirâmide (unidade, contrato, integração, ponta a ponta, navegador); onde mora cada teste; cobertura mínima; mutação |
-| F7 | Camada de testes de desempenho e segurança | cenários de carga, metas, ferramentas (k6/autocannon), testes de segurança (OWASP, CSP, sessão, IDOR), frequência |
-
-## Como o trabalho é conduzido
-
-- **Estado salvo e commitado a cada passo concluído**; nunca deixar trabalho só na árvore local.
-  Submódulo enviado antes do principal (`AMBIENTE.md` §2).
-- **Handoff aos 80% do uso da sessão do horário:** reescrever este arquivo com o passo exato em que
-  parou, atualizar `ATIVIDADES.md`, commitar e enviar. Verificadores mantêm o próprio handoff
-  "(parcial)" desde o começo.
-- **Pendências do GitLab revisadas a cada passo:** `ATIVIDADES.md` atualizado e bloco 📌 GitLab na resposta.
-- **Só o necessário no repositório:** documento ou pasta encerrada sai com `git rm`; o git guarda.
-
-## Pendências com o humano
-
-1. ✅ **Instalações aprovadas pelo humano em 2026-09-22** ("tudo está aprovado de instalação"): `redis`, SDK OpenTelemetry, biblioteca OIDC, imagens do Redis e do Keycloak. Continua valendo mostrar o que entra antes de instalar.
-2. **Decidir infraestrutura** de registro de pacotes / CI (P1).
-4. ✅ Sessão de 30 min **por inatividade**, capturada pelos refresh tokens (humano, 2026-09-22); teto absoluto configurável. Regra nova: parâmetros assim ficam em configuração documentada (`docs/CONFIGURACAO.md`), não no código.
-3. Aplicar no GitLab o que está em `ATIVIDADES.md` §2 com "pendente".
-
-## Handoff (2026-09-23)
+## Handoff (2026-09-22, encerramento de sessão)
 
 O que está pronto, commitado e enviado:
-- B1 (kit de app) e D1 (Redis) no `master` das apps, 51/51 nos dois modos; **sem gate ainda**.
-- Showcase (`task showcase`) com sessão no Redis; `task showcase:conferir` todo verde.
-- **Ambiente derrubado ao encerrar (2026-09-23):** showcase, Redis, Keycloak e Verdaccio parados; nenhuma porta da
-  base ocupada. Para retomar: `task registry:subir` (Verdaccio) e `task showcase` (ou `task verificar`).
-  Sobra local não versionada: `repos/.verdaccio/` (antiga; tem uma pasta do root, apagar com `sudo rm -rf repos/.verdaccio`).
-- `docs/RESPONSABILIDADES.md` (do zero, por MFE, clientes, domínios, pacotes).
-- **G1**: modelo `docs/gestao-acesso/MODELO.md` e mock da API v2 em `erp-dominio-stub` (porta 4020,
-  `task acesso-v2`, contrato `contratos/gestao-acesso-v2.openapi.yaml`, 39/39 no stub).
-
-Regra nova do humano (2026-09-22): **nada específico do material usado como base** (cliente, órgãos, sistemas
-externos, documentos, pessoas, time) entra no repositório. Antes de cada envio, rodar a varredura:
-`git grep -niE '<termos do material>'` no principal e em cada submódulo (a lista de termos fica fora do
-repositório, na memória do agente). O modelo é "de referência da base", com dados fictícios.
+- **G2**: decisão de arquitetura registrada no [ADR-0014](docs/adr/0014-gestao-de-acesso-v2.md) e referenciada no índice da documentação.
+- **B5a**: limites de sonda e telemetria tornados configuráveis via variáveis de ambiente no shell (`ERP_SONDA_TTL_MS`, `ERP_SONDA_TIMEOUT_MS`, `ERP_TELEMETRIA_MAX_BYTES`, `ERP_TELEMETRIA_LOTES_POR_MINUTO`) com validação de inteiro positivo e testes unitários.
+- **B3**: rotas públicas `/{zona}/api/health` adicionadas nas 3 zonas (`erp-zona-1`, `erp-zona-2`, `erp-zona-acesso`) sem tocar em domínio nem exigir sessão; `urlSaude` padrão do shell atualizado para usá-las.
+- **B4 / B6 (P0 e P1)**: analisador estático implementado em `base/verificacao/seguranca-estatica.mjs` com suíte de 9 testes cobrindo Invariante 3 (`server-only`), Invariante 2 (DTO sensível como prop de JSX), P1 (`<Link>` entre zonas) e Invariante 11 (`NEXT_PUBLIC_*`). Todas as 4 apps passam com 0 violações; adicionada tarefa `task verificar:estatica`.
+- **Submódulos:** todos os 7 submódulos modificados commitados no `master` e enviados para os remotos (`origin/master`), validados pelo hook `task checar-envio`.
 
 Próximos passos, em ordem:
-1. **G2**: despachar o `arquiteto-mfe` (Opus) com `docs/gestao-acesso/MODELO.md` e o contrato; registrar ADR-0014.
-2. Gate de B1+D1 (parar o showcase antes: o challenger precisa das portas).
-3. G3 junto com D2 (ADR-0013), porque os dois mudam o núcleo para 0.8.0; depois G4.
-4. B5a, B3, B4/B6 (P0 e P1), C1–C3, E4–E5.
-
-## Próximo passo
-
-Ver "Handoff" acima: G2 (arquiteto + ADR-0014), gate de B1+D1, G3 com D2, G4.
+1. Gate de B1+D1.
+2. G3 junto com D2 (ADR-0013 e ADR-0014 sobem o `@erp/nucleo` para a versão 0.8.0 nas 4 apps em lockstep); depois G4.
+3. C1–C3, E4–E5.

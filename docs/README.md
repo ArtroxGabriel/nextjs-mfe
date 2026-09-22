@@ -74,6 +74,7 @@ glossário (`13`), variantes de cache (`14`).
 | [0011](adr/0011-fragmento-entre-zonas.md) | Fragmento entre zonas: fábrica do núcleo, cookie como identidade, ausência é 204 |
 | [0012](adr/0012-kit-de-app-no-nucleo.md) | Kit de app `@erp/nucleo/app` no lugar das 4 cópias; o núcleo não importa a moldura |
 | [0013](adr/0013-login-oidc-e-renovacao-proativa.md) | *(proposto)* Login OIDC + PKCE e renovação proativa no proxy do shell; substitui a decisão 3 do 0009 |
+| [0014](adr/0014-gestao-de-acesso-v2.md) | *(proposto)* Alinhamento à gestão de acesso v2 (unidades, papéis com escopo, funcionalidades); evolui a decisão 2 do 0009 |
 
 ## Regras para esta pasta
 

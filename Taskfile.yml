@@ -95,6 +95,10 @@ tasks:
     desc: Testes dos scripts da base (ambiente, lockstep)
     cmd: node --test base/scripts/*.test.mjs
 
+  verificar:estatica:
+    desc: Verificações estáticas de segurança e rede (saída de rede, server-only, DTOs, links)
+    cmd: node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs
+
   # --- enviar ------------------------------------------------------------------------------
   lockstep:
     desc: Confere que as 4 apps usam a mesma versão exata do @erp/nucleo
