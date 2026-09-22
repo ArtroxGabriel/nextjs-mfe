@@ -28,6 +28,7 @@
 | 14 | Definir estratégia de publicação e compatibilidade | submódulos **feitos**; hook `pre-push` que recusa submódulo não enviado **feito** (`base/scripts/checar-envio.mjs`, provado com commit só local); **gate de lockstep do núcleo feito** (`base/scripts/verificar-lockstep.mjs`, no `pre-push`, provado com divergência real); falta registro único ou publicação pelo CI | acrescentar critérios: gate de lockstep no CI, registro único, nunca republicar a mesma versão,  checar submódulo não enviado antes do push, mapa de zonas vindo do domínio de acesso | pendente | ADR-0010; `AMBIENTE.md` §1–2; `4eb128b` |
 | 19 | Entregar o showcase da base com mocks, Keycloak e Redis *(nova)* | **`task showcase` sobe tudo** (Redis, Keycloak, domínios com dados em JSON gravados, shell e 3 zonas) e `task showcase:conferir` mostra ator × zona; sessão já no Redis; falta login pelo Keycloak (D2) e o roteiro completo (E4, E5) | **criar** (texto em §3) | pendente | `RETOMADA.md` |
 | 20 | Migrar as apps para o kit de app e fechar as verificações da spec *(nova)* | **migração feita** nas 4 apps (núcleo 0.7.0, moldura 0.4.0; 51/51); falta gate, B4/B6 (verificações da spec e lacunas de segurança) e B5 (parâmetros para configuração) | **criar** (texto em §3) | pendente | ADR-0012 |
+| 21 | Evoluir a gestão de acesso para o modelo de referência v2 *(nova)* | **modelo e mock da API prontos** (`docs/gestao-acesso/MODELO.md`, porta 4020, contrato OpenAPI, 39 testes); falta a decisão de arquitetura (ADR-0014), o alinhamento de núcleo/zonas/domínios/shell e o gate | **criar** em andamento (texto em §3) | pendente | `RETOMADA.md` item G |
 | 18 | Centralizar a telemetria das zonas no shell *(nova)* — **ampliar para "Trace contínuo sem dado pessoal (núcleo 8)"**: o elemento 8 é núcleo e está ausente (`alvo.md` §6) | gateway e propagação de trace **aprovados no gate do shell** (iteração 4); falta exportar spans (SDK OpenTelemetry, instalação aprovada; B2) | **criar** em andamento (texto em §3) | pendente | `erp-shell` `6de4939`; `alvo.md` §6 (Operação) |
 
 ### Lista 2 — refinamento (separada das atuais; não começar agora)
@@ -290,6 +291,48 @@ Link: N/A
 Link: docs/adr/0012-kit-de-app-no-nucleo.md
 ```
 
+### #21 — criar
+
+```
+Título:
+
+[Dev/Front] Evoluir a gestão de acesso — unidades, papéis com escopo e módulos com validação
+
+🎯 Objetivo*
+
+Levar a gestão de acesso da base para um modelo de referência completo e alinhar núcleo, BFFs, zonas, domínios e shell a ele, sem perder os invariantes de segurança.
+
+✅ Critérios de Aceitação
+
+Modelo documentado (docs/gestao-acesso/MODELO.md) e API proposta com contrato OpenAPI e mock rodando (feito)
+
+Acesso efetivo como interseção de condições; papel administrativo não dá acesso a módulo
+
+Segregação de funções: administração × auditoria, ninguém se atribui, quem solicita não valida
+
+Desligamento e convênio vencido cortam o acesso e encerram sessões
+
+Decisão de arquitetura em ADR; zonas declaram funcionalidades; BFF esconde o que a pessoa não pode; domínio consulta decisões
+
+Verificação ponta a ponta cobre papéis e segregação; gate aprovado
+
+🧪 Casos de Teste
+
+Cenário 1: administrador geral sem acesso a um módulo não o vê, mesmo administrando
+
+Cenário 2: gestor de uma unidade recebe 404 ao listar pessoas de outra
+
+Cenário 3: pessoa desligada perde a sessão aberta na próxima requisição
+
+🎨 Referência de Design
+
+Link: N/A
+
+📋 Caso de Uso
+
+Link: docs/gestao-acesso/MODELO.md
+```
+
 ### F1–F7 — criar bloqueadas (mesmo modelo, uma por atividade)
 
 ```
@@ -340,3 +383,4 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-09-22 (tarde) | Sessão por inatividade e regra "parâmetro é configuração documentada": #9 e #20 ganham critérios; gate 3 do shell reprovado e corrigido; ADR-0013 proposto |
 | 2026-09-22 (noite) | Gate do shell **aprovado** (iteração 4): #3 falta só o health; #18 faltam só os spans. Taskfile adotado; SSO do showcase endurecido; relatório de segurança (B6) |
 | 2026-09-22 (madrugada) | #20 migração feita; #9 Redis ligado nas apps; #19 `task showcase` completo com Redis; docs de responsabilidades (`docs/RESPONSABILIDADES.md`) |
+| 2026-09-23 | Criar #21 (gestão de acesso v2: modelo e mock prontos; falta ADR-0014 e alinhamento) |

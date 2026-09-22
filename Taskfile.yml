@@ -133,3 +133,10 @@ tasks:
     desc: Volta os domínios falsos do showcase à semente (apaga repos/erp-dominio-stub/dados/estado)
     dir: repos/erp-dominio-stub
     cmd: pnpm resetar
+
+  acesso-v2:
+    desc: Sobe só o mock da gestão de acesso v2 (porta 4020; dados gravados em repos/erp-dominio-stub/dados/estado)
+    dir: repos/erp-dominio-stub
+    cmd: node src/servidor.mjs gestao-acesso-v2
+    env:
+      DADOS_DIR: dados/estado

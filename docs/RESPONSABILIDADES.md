@@ -220,7 +220,9 @@ não concede módulo de outra) moram na **gestão de acesso**, não na tela: a t
 | **Domínios de negócio** (A, B, C, plataforma) | guardar os dados, decidir quem vê o quê (**escopo**: recurso fora do alcance = 404) e quais campos vão na resposta (**projeção**: `custo` só para FINANCEIRO), decidir quem pode alterar (403) e recusar versão desatualizada (`If-Match`, 409) | aceitar pedido vindo do navegador; confiar em perfil de plataforma como permissão de dado |
 | **Gestão de acesso** | guardar os manifestos das zonas, perfis, módulos, concessões e atribuições; responder "que módulos este usuário tem"; aplicar as regras de administração | deixar uma zona registrar manifesto de outra; deixar perfil de uma zona conceder módulo de outra |
 
-Nesta base, os dois são simulados por `repos/erp-dominio-stub` (dados em `dados/semente/*.json`).
+Nesta base, os dois são simulados por `repos/erp-dominio-stub` (dados em `dados/semente/*.json`). A evolução
+da gestão de acesso — unidades, papéis com escopo, módulos com validação, auditoria — está descrita em
+[`gestao-acesso/MODELO.md`](gestao-acesso/MODELO.md), com a API proposta já simulada na porta 4020.
 
 ---
 

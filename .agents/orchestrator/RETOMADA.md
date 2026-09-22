@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-22, noite (handoff)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-23 (handoff)**.
 
 ## Objetivo final
 
@@ -12,7 +12,10 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
   sem dependência nova; um "jsondb" só se o JSON puro não bastar);
 - **Keycloak** subido por imagem Docker como IdP (OIDC + PKCE), com realm e atores importados;
 - **Redis** subido por imagem Docker como store de sessão;
-- um comando sobe tudo e um roteiro diz o que clicar e o que deve acontecer.
+- um comando sobe tudo e um roteiro diz o que clicar e o que deve acontecer;
+- a **gestão de acesso** segue o modelo de referência da base (`docs/gestao-acesso/MODELO.md`): unidades,
+  papéis com escopo, módulos com validação, segregação de funções, auditoria — e a arquitetura (núcleo, BFFs,
+  zonas, domínios, shell) alinhada a ele, sem perder nenhum invariante de segurança.
 
 ## Estado
 
@@ -49,6 +52,10 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | | E3 `task showcase`: sobe imagens, mocks e apps; Ctrl-C derruba; `task showcase:conferir` mostra ator × zona | ✅ parcial: tudo sobe e funciona com login dev e sessão em arquivo (conferido: matriz de 4 atores × 7 páginas, custo só para bruno, CSP, sem token); falta trocar para Keycloak/Redis (D1, D2) | #19 | D1, D2 para completar |
 | | E4 roteiro do showcase: cada funcionalidade basilar com passo e resultado esperado (login OIDC, sessão entre zonas, módulo negado = 404, fragmento, SSE, toast, zona fora = 503, `If-Match`, erro `{ codigo, supportId }`, trace) | ⬜ | #19 | C1–C3, E3 |
 | | E5 verificação ponta a ponta rodando contra o showcase | ⬜ | #19 | E4 |
+| **G. Gestão de acesso v2** | G1 modelo de referência e mock da API (porta 4020, contrato OpenAPI, 39 testes, 7 mutações pegas) | ✅ `docs/gestao-acesso/MODELO.md`; `erp-dominio-stub` | #21 | — |
+| | G2 decisão de arquitetura com o `arquiteto-mfe` + **ADR-0014**: como núcleo (`acessoHttp`/`exigirModulo` por funcionalidade), manifestos das zonas (módulo + funcionalidades), domínios (`/v2/decisoes`) e shell (`/v2/eventos` encerra sessões) passam a usar a v2; o que muda nos 17 invariantes e nos testes | ⬜ | #21 | — |
+| | G3 implementar o alinhamento (núcleo 0.8.0 junto com D2/ADR-0013, zonas, stub), trocar 4010 → v2, `base/verificacao` cobrindo os papéis e a segregação | ⬜ | #21 | G2, B1/D1 gate |
+| | G4 gate (revisor, challenger, auditor) e showcase com os atores da v2 | ⬜ | #21, #19 | G3 |
 | **P. Caminho para produção** | P1 registro de pacotes único / CI com lockstep e verificação | 🔒 | #14 | **decisão de infraestrutura** |
 | | P2 rate limiting na borda; p99 e alarme de RTT BFF↔domínio > 5 ms | 🔒 | — | ambiente real |
 | | P3 `@erp/ui` depois de medir duplicação de bundle | 🔒 | #12 | medição (entra em F2) |
@@ -90,16 +97,27 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 4. ✅ Sessão de 30 min **por inatividade**, capturada pelos refresh tokens (humano, 2026-09-22); teto absoluto configurável. Regra nova: parâmetros assim ficam em configuração documentada (`docs/CONFIGURACAO.md`), não no código.
 3. Aplicar no GitLab o que está em `ATIVIDADES.md` §2 com "pendente".
 
-## Estado de trabalho (2026-09-22, madrugada)
+## Handoff (2026-09-23)
 
-- B1 e D1 **no `master`** das quatro apps e fixados no principal. Sem branches de trabalho abertos.
-- Showcase (`task showcase`) **no ar** com a sessão no Redis; `task showcase:conferir` todo verde.
-- Documentação de responsabilidades do zero: `docs/RESPONSABILIDADES.md` (ligada no README de cada repositório).
-- Ainda sem gate: B1 + D1 (despachar `reviewer_b1_1`, `challenger_b1_1`, `auditor_b1_1`).
-- `registrarManifesto()` no núcleo (ADR-0012, decisão 5) não existe no 0.7.0: os scripts ficam nas apps; levar ao 0.8.0.
-- B5 dividido: B5a (shell: sonda e telemetria → configuração) e B5b (núcleo: timeouts e sessão dev, no 0.8.0).
-- Pendente com o humano: o que é o "backend específico" da gestão de acesso.
+O que está pronto, commitado e enviado:
+- B1 (kit de app) e D1 (Redis) no `master` das apps, 51/51 nos dois modos; **sem gate ainda**.
+- Showcase (`task showcase`) com sessão no Redis; `task showcase:conferir` todo verde. Pode estar no ar ou não:
+  confira `ss -ltn | grep :3000` antes de rodar verificação (as portas precisam estar livres).
+- `docs/RESPONSABILIDADES.md` (do zero, por MFE, clientes, domínios, pacotes).
+- **G1**: modelo `docs/gestao-acesso/MODELO.md` e mock da API v2 em `erp-dominio-stub` (porta 4020,
+  `task acesso-v2`, contrato `contratos/gestao-acesso-v2.openapi.yaml`, 39/39 no stub).
+
+Regra nova do humano (2026-09-22): **nada específico do material usado como base** (cliente, órgãos, sistemas
+externos, documentos, pessoas, time) entra no repositório. Antes de cada envio, rodar a varredura:
+`git grep -niE '<termos do material>'` no principal e em cada submódulo (a lista de termos fica fora do
+repositório, na memória do agente). O modelo é "de referência da base", com dados fictícios.
+
+Próximos passos, em ordem:
+1. **G2**: despachar o `arquiteto-mfe` (Opus) com `docs/gestao-acesso/MODELO.md` e o contrato; registrar ADR-0014.
+2. Gate de B1+D1 (parar o showcase antes: o challenger precisa das portas).
+3. G3 junto com D2 (ADR-0013), porque os dois mudam o núcleo para 0.8.0; depois G4.
+4. B5a, B3, B4/B6 (P0 e P1), C1–C3, E4–E5.
 
 ## Próximo passo
 
-Gate de B1+D1 (o challenger precisa das portas: parar o showcase antes); depois B5a, B3, B4/B6 (P0 e P1), C1–C3, D2 (ADR-0013), E4–E5.
+Ver "Handoff" acima: G2 (arquiteto + ADR-0014), gate de B1+D1, G3 com D2, G4.
