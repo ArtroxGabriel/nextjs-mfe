@@ -47,6 +47,15 @@ task preparar      # máquina nova: submódulos, hooks, Verdaccio, publicação 
 task base          # sobe tudo em http://localhost:3000 (Ctrl-C derruba)
 ```
 
+**Showcase** (ver tudo funcionando, com as zonas rodando):
+
+```bash
+task showcase            # Redis + Keycloak + domínios com dados gravados + shell e 3 zonas; Ctrl-C derruba
+task showcase:conferir   # noutro terminal: o que cada ator vê em cada zona, infraestrutura e segurança visível
+```
+
+Depois abra http://localhost:3000 e siga [`docs/ROTEIRO-DE-VERIFICACAO.md`](docs/ROTEIRO-DE-VERIFICACAO.md).
+
 `task preparar` publica os pacotes; num Verdaccio que já os tem, rode só `task instalar`.
 
 Entre como `ana`, `bruno`, `carla` ou `davi`: cada um vê um menu diferente. Use `localhost`, não
@@ -102,8 +111,9 @@ A verificação manual, item a item, está em
   ([`docs/CONFIGURACAO.md`](docs/CONFIGURACAO.md)).
 - O 503 de zona fora e o gateway de telemetria do shell **ainda não passaram por gate** (iteração 4
   em andamento; ver `.agents/orchestrator/RETOMADA.md`).
-- O showcase (mocks em JSON, Keycloak e Redis) está em construção: por enquanto só a infraestrutura
-  em `base/showcase/` (`task showcase:subir` e `task showcase:checar`); as apps ainda não usam Keycloak nem Redis.
+- O showcase (`task showcase`) sobe tudo: Redis, Keycloak, domínios com dados gravados, shell e zonas.
+  As apps ainda usam o login de desenvolvimento e a sessão em arquivo; ligá-las ao Keycloak e ao Redis
+  é o próximo passo (D1, D2 em `.agents/orchestrator/RETOMADA.md`).
 - Os domínios falsos leem os dados de `repos/erp-dominio-stub/dados/semente/*.json`. Na verificação
   e em `task base` rodam em memória: a gestão de acesso reiniciada perde manifestos e concessões, e
   `pnpm registrar` em cada app os recria. Com `DADOS_DIR` (showcase) o estado é gravado em arquivo.

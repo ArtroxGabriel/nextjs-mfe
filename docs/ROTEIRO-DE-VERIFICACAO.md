@@ -3,10 +3,12 @@
 ## Base genérica em `repos/`
 
 Leva uns 10 minutos. A verificação automática faz o mesmo por HTTP:
-`node --test base/verificacao/*.test.mjs` (esperado: `tests 30`, `pass 30`).
+`task verificar` (esperado: `tests 51`, `pass 51`).
 
-**Preparar.** `node base/scripts/registry.mjs up`, instale cada app (README) e rode
-`node base/scripts/subir-base.mjs`. Use `http://localhost:3000`, não `127.0.0.1`: o cookie
+**Preparar.** `task showcase` (ou só `task base`, sem Redis e Keycloak). Com o showcase no ar,
+`task showcase:conferir` mostra de uma vez o que cada ator vê em cada zona; os passos abaixo são o
+mesmo, à mão, no navegador. No showcase os dados dos domínios ficam gravados: o que A6 e A8 mudam
+continua depois de reiniciar, e `task showcase:dados:resetar` volta tudo à semente. Use `http://localhost:3000`, não `127.0.0.1`: o cookie
 `__Host-session` exige origem segura, e o navegador só trata `localhost` assim.
 
 | # | Faça | Deve acontecer | Requisito |
@@ -22,10 +24,9 @@ Leva uns 10 minutos. A verificação automática faz o mesmo por HTTP:
 | A9 | Em outra janela anônima, entre como **bruno** e abra `/zona1/relatorios` | 404 e o item sumiu do menu, sem novo login; religue em A8 e ele volta | D7 |
 | A10 | Em `/acesso`, procure a célula `zona1.analista` × Tarefas | não existe: perfil de zona não concede módulo de outra zona | D8 |
 | A11 | Clique **Sair** e use o botão Voltar do navegador | qualquer página volta ao login: a sessão acabou em todas as zonas | N3 |
-| A12 | Derrube só a zona 2 (Ctrl-C no processo dela ou `kill` na porta 3002) e abra `/zona2` | 503 com `Retry-After: 5` e a página "zona indisponível"; `/` e `/zona1` seguem funcionando. Suba a zona de volta: em até ~1,5 s `/zona2` volta (medido 0,8–1,2 s) | falha isolada de zona (**sem gate ainda**) |
+| A12 | Derrube só a zona 2 (Ctrl-C no processo dela ou `kill` na porta 3002) e abra `/zona2` | 503 com `Retry-After: 5` e a página "zona indisponível"; `/` e `/zona1` seguem funcionando. Suba a zona de volta: em até ~1,5 s `/zona2` volta (medido 0,8–1,2 s) | falha isolada de zona (gate aprovado) |
 
 Limites conhecidos: login de desenvolvimento sem senha, store de sessão em arquivo e sem
-renovação de token (ver `alvo.md` §6). O item A12 descreve o comportamento implementado no shell,
-que ainda não passou por gate independente.
+renovação de token (ver `alvo.md` §6); ligar Keycloak e Redis é o D1/D2 do plano.
 
 A PoC anterior tinha um roteiro próprio (Parte B deste arquivo), preservado na tag `poc-final`.

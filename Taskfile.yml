@@ -98,8 +98,16 @@ tasks:
     cmd: node base/scripts/checar-envio.mjs
 
   # --- showcase ----------------------------------------------------------------------------
+  showcase:
+    desc: "Sobe TUDO: Redis, Keycloak, domínios com dados gravados, shell e zonas em http://localhost:3000 (Ctrl-C derruba)"
+    cmd: node base/showcase/subir.mjs {{.CLI_ARGS}}
+
+  showcase:conferir:
+    desc: Com o showcase no ar, mostra o que cada ator vê em cada zona e confere infraestrutura e segurança visível
+    cmd: node base/showcase/conferir.mjs
+
   showcase:subir:
-    desc: Sobe Redis e Keycloak do showcase (tempos de sessão em docs/CONFIGURACAO.md)
+    desc: Sobe só Redis e Keycloak do showcase (tempos de sessão em docs/CONFIGURACAO.md)
     cmd: '{{.SHOWCASE}} up -d'
 
   showcase:descer:
