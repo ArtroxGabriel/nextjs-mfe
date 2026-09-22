@@ -101,8 +101,10 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 
 O que está pronto, commitado e enviado:
 - B1 (kit de app) e D1 (Redis) no `master` das apps, 51/51 nos dois modos; **sem gate ainda**.
-- Showcase (`task showcase`) com sessão no Redis; `task showcase:conferir` todo verde. Pode estar no ar ou não:
-  confira `ss -ltn | grep :3000` antes de rodar verificação (as portas precisam estar livres).
+- Showcase (`task showcase`) com sessão no Redis; `task showcase:conferir` todo verde.
+- **Ambiente derrubado ao encerrar (2026-09-23):** showcase, Redis, Keycloak e Verdaccio parados; nenhuma porta da
+  base ocupada. Para retomar: `task registry:subir` (Verdaccio) e `task showcase` (ou `task verificar`).
+  Sobra local não versionada: `repos/.verdaccio/` (antiga; tem uma pasta do root, apagar com `sudo rm -rf repos/.verdaccio`).
 - `docs/RESPONSABILIDADES.md` (do zero, por MFE, clientes, domínios, pacotes).
 - **G1**: modelo `docs/gestao-acesso/MODELO.md` e mock da API v2 em `erp-dominio-stub` (porta 4020,
   `task acesso-v2`, contrato `contratos/gestao-acesso-v2.openapi.yaml`, 39/39 no stub).
