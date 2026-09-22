@@ -102,7 +102,7 @@ repos/erp-*/README.md  NOVO em cada repositório: o que é, como testar, de quem
 | D6 aviso "Pedidos é ilustração" em 16 documentos de desenho | ✅ feito |
 | D7 `.agents/` de gates encerrados → `.agents/arquivo/` (58 pastas) | ✅ feito |
 | C3 `repos/{scripts,verificacao,docker-compose.yml,.verdaccio}` → `base/` | ✅ feito; compose com `name: repos` para manter os volumes do Verdaccio; `base/verificacao` 30/30 |
-| C2 shell para de copiar a CSP | ✅ decidido no ADR-0012 (`politicaDeSeguranca` em `@erp/nucleo/proxy`, 0.6.0); ⏳ implementar depois do gate |
+| C2 shell para de copiar a CSP | ✅ feito: `politicaDeSeguranca` do núcleo 0.6.0 no `proxy.ts` do shell |
 | C1 kit de app `@erp/nucleo/app` | ✅ decidido no ADR-0012 (o núcleo **não** importa a moldura: injeção por `aoNegar`); ⏳ implementar depois do gate |
 
 Os handoffs antigos em `.agents/<agente>/` e o que está em `historico/` mantêm os caminhos da época.

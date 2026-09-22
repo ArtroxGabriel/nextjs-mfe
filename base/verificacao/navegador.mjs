@@ -140,11 +140,24 @@ export async function abrirNavegador() {
     // toda resposta vista pela página, com corpo, para procurar vazamento em qualquer uma delas
     const respostas = []
     const vivas = new Map()
+    // em voo desde a SAÍDA da requisição: contar só a partir da resposta dava a rede como parada
+    // enquanto uma requisição lenta ainda nem tinha respondido
+    const emVoo = new Set()
+    const pedidos = []   // o que a página PEDIU, com cabeçalhos, mesmo que a resposta falhe
     ouvintes.add(async (msg) => {
+      if (msg.method === 'Network.requestWillBeSent') {
+        emVoo.add(msg.params.requestId)
+        pedidos.push({ url: msg.params.request.url, headers: msg.params.request.headers })
+      }
+      if (msg.method === 'Network.loadingFailed') {
+        emVoo.delete(msg.params.requestId)
+        respostas.push({ url: vivas.get(msg.params.requestId)?.url ?? '?', status: 0, headers: {}, corpo: '', falhou: msg.params.errorText })
+        vivas.delete(msg.params.requestId)
+      }
       if (msg.method === 'Network.responseReceived') {
         vivas.set(msg.params.requestId, { url: msg.params.response.url, status: msg.params.response.status, headers: msg.params.response.headers })
       } else if (msg.method === 'Network.loadingFinished' && vivas.has(msg.params.requestId)) {
-        const r = vivas.get(msg.params.requestId); vivas.delete(msg.params.requestId)
+        const r = vivas.get(msg.params.requestId); vivas.delete(msg.params.requestId); emVoo.delete(msg.params.requestId)
         try { const b = await cdp('Network.getResponseBody', { requestId: msg.params.requestId }); r.corpo = b.base64Encoded ? Buffer.from(b.body, 'base64').toString('utf8') : b.body } catch { r.corpo = '' }
         respostas.push(r)
       }
@@ -152,6 +165,7 @@ export async function abrirNavegador() {
 
     const pagina = {
       respostas,
+      pedidos,
       cdp,
       async cookie(nome, valor, url) {
         await cdp('Network.setCookie', { name: nome, value: valor, url, path: '/', secure: true, httpOnly: true, sameSite: 'Lax' })
@@ -171,7 +185,10 @@ export async function abrirNavegador() {
       async esperarRede(quietoMs = 500, maxMs = 10_000) {
         const fim = Date.now() + maxMs
         let n = -1
-        while (Date.now() < fim) { if (vivas.size === 0 && respostas.length === n) return; n = respostas.length; await esperar(quietoMs) }
+        while (Date.now() < fim) {
+          if (emVoo.size === 0 && vivas.size === 0 && respostas.length === n) return
+          n = respostas.length; await esperar(quietoMs)
+        }
       },
     }
     return { pagina, perfil, fechar: async () => { await fechar(); try { ws.close() } catch { /* ja fechou */ } } }

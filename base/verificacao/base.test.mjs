@@ -400,19 +400,35 @@ test('D4: gestao de acesso fora da a pagina de servico indisponivel, sem detalhe
 // Gate "Shell novo", iteração 1: testes mínimos do auditor_shell_1 (.agents/auditor_shell_1/),
 // cada um reprovando uma mutação que antes deixava todas as suítes verdes.
 
-test('L1/V1: gestao de acesso fora nao entrega pagina de modulo, nem no payload RSC', async () => {
-  const davi = (await entrar('davi')).cookie
-  const bruno = (await entrar('bruno')).cookie
+// L1 visitava só a zona 1; o auditor_shell_2 voltou o fail-open só na zona 2 e tudo ficou verde (G1).
+// Agora toda página de módulo de toda zona, para quem tem e quem não tem o módulo.
+const CONTEUDO_DE_MODULO = {
+  '/zona1': /Painel da zona 1|recursos no seu escopo/,
+  '/zona1/relatorios': /Relatórios|com custo/,
+  '/zona2': /Conferir inventário|Revisar cadastro|Concluir e ir/,
+  '/acesso': /Zonas registradas|Módulos: restrição/,
+}
+test('L1/V1: gestao de acesso fora nao entrega pagina de modulo de nenhuma zona, nem no payload RSC', async () => {
+  const quem = {}
+  for (const u of ['davi', 'bruno', 'ana', 'carla']) quem[u] = (await entrar(u)).cookie
   await ambiente.derrubarDominio('gestao-acesso')
   try {
-    for (const [quem, cookie] of [['davi', davi], ['bruno', bruno]]) {
-      for (const c of ['/zona1', '/zona1/relatorios']) {
+    for (const [u, cookie] of Object.entries(quem)) {
+      for (const [c, conteudo] of Object.entries(CONTEUDO_DE_MODULO)) {
         const r = await pedir(c, { cookie })
-        assert.ok(!/Painel da zona 1|Relatórios|recursos no seu escopo|com custo/.test(r.html),
-          `${quem} ${c}: conteudo do modulo chegou com a gestao de acesso fora`)
+        assert.ok(!conteudo.test(r.html), `${u} ${c}: conteudo do modulo chegou com a gestao de acesso fora`)
       }
     }
   } finally { await ambiente.subirDominio('gestao-acesso') }
+})
+
+test('L1 tem dentes: com a gestao de acesso no ar, quem tem o modulo ve o conteudo que L1 procura', async () => {
+  // sem isto, um texto errado em CONTEUDO_DE_MODULO faria o L1 passar sem provar nada
+  const donos = { '/zona1': 'davi', '/zona1/relatorios': 'bruno', '/zona2': 'ana', '/acesso': 'carla' }
+  for (const [c, u] of Object.entries(donos)) {
+    const r = await pedir(c, { cookie: (await entrar(u)).cookie })
+    assert.match(r.html, CONTEUDO_DE_MODULO[c], `${u} nao viu ${c}`)
+  }
 })
 
 test('L3: cabecalho de flash forjado pelo cliente nao aparece nas paginas do proprio shell', async () => {
@@ -432,7 +448,10 @@ test('L4/V2: telemetria descarta lote anonimo sem repassar; 413 em streaming; 42
   await new Promise((r) => setTimeout(r, 200))
   assert.equal(lotesNoColetor.length, 0, 'lote sem sessao foi repassado ao coletor')
   const bruno = (await entrar('bruno')).cookie
+  lotesNoColetor.length = 0
   assert.equal((await post(bruno, 'isto nao e json')).status, 400, 'corpo nao-JSON deveria dar 400')
+  await new Promise((r) => setTimeout(r, 200))
+  assert.equal(lotesNoColetor.length, 0, 'corpo nao-JSON foi repassado ao coletor')
   assert.equal((await post(bruno, '{"ok":1}')).status, 204)
   await new Promise((r) => setTimeout(r, 200))
   assert.equal(lotesNoColetor.length, 1, 'lote com sessao nao chegou ao coletor')
@@ -440,9 +459,12 @@ test('L4/V2: telemetria descarta lote anonimo sem repassar; 413 em streaming; 42
   const grande = new ReadableStream({ start(c) { c.enqueue(new Uint8Array(300 * 1024)); c.close() } })
   assert.equal((await post(bruno, grande)).status, 413)
   const carla = (await entrar('carla')).cookie
+  lotesNoColetor.length = 0
   let ultimo
   for (let i = 0; i < 61; i++) ultimo = await post(carla, '{}')
+  await new Promise((r) => setTimeout(r, 200))
   assert.equal(ultimo.status, 429)
+  assert.equal(lotesNoColetor.length, 60, `o lote recusado por taxa chegou ao coletor (${lotesNoColetor.length})`)
   assert.equal(ultimo.headers.get('retry-after'), '60')
 })
 
@@ -497,14 +519,69 @@ test('L6: navegacao do cliente (RSC) com a gestao de acesso fora nao traz o modu
     await ambiente.derrubarDominio('gestao-acesso')
     try {
       pagina.respostas.length = 0
+      pagina.pedidos.length = 0
       await pagina.avaliar("window.next.router.push('/zona1/relatorios')")
       await pagina.esperarRede()
-      const rsc = pagina.respostas.filter((r) => /text\/x-component/i.test(r.headers['content-type'] ?? r.headers['Content-Type'] ?? ''))
-      assert.ok(rsc.length > 0, `nenhuma requisicao RSC aconteceu (o teste nao provaria nada): ${pagina.respostas.map((r) => r.url).join(', ')}`)
+      // A guarda olha o PEDIDO, não a resposta: com o fail-closed o Next pode abortar a resposta
+      // RSC e cair para navegação completa. O que importa é que a navegação do cliente foi tentada.
+      const rsc = pagina.pedidos.filter((p) => /[?&]_rsc=/.test(p.url) || Object.keys(p.headers).some((k) => k.toLowerCase() === 'rsc'))
+      assert.ok(rsc.length > 0, `nenhuma requisicao RSC aconteceu (o teste nao provaria nada): ${pagina.pedidos.map((p) => p.url).join(', ')}`)
       for (const r of pagina.respostas) {
         assert.ok(!/recursos no seu escopo|com custo|Relatórios/.test(r.corpo ?? ''), `modulo restrito no corpo de ${r.url}`)
       }
       assert.ok(!/recursos no seu escopo|com custo/.test(await pagina.avaliar('document.body.innerText')), 'modulo restrito na tela')
     } finally { await ambiente.subirDominio('gestao-acesso') }
   } finally { await fechar() }
+})
+
+test('G2: CSP completa no shell, inclusive nas rotas publicas', async () => {
+  const { cookie } = await entrar('ana')
+  for (const [c, ck] of [['/', cookie], ['/login', undefined]]) {
+    const csp = (await pedir(c, { cookie: ck })).csp ?? ''
+    for (const d of ["form-action 'self'", "img-src 'self' data:", "object-src 'none'", "base-uri 'none'", "frame-ancestors 'none'"]) {
+      assert.ok(csp.includes(d), `${c}: CSP sem ${d}`)
+    }
+    assert.match(csp, /'nonce-[^']+'/, `${c}: CSP sem nonce`)
+  }
+})
+
+test('G5: zona fora: o asset estatico dela tambem da 503 (a sonda vem antes do corte de asset)', async () => {
+  await ambiente.derrubarApp('erp-zona-2')
+  try {
+    await new Promise((r) => setTimeout(r, 1200))
+    for (const c of ['/zona2-static/_next/static/x.js', '/ZONA2-STATIC/a.css']) {
+      const r = await fetch(`${SHELL_URL}${c}`, { redirect: 'manual' })
+      assert.equal(r.status, 503, c)
+      assert.equal(r.headers.get('retry-after'), '5', c)
+    }
+  } finally { await ambiente.subirApp('erp-zona-2') }
+})
+
+test('T1 (nucleo 8): o trace do navegador chega ao dominio, sem dado pessoal', async () => {
+  // troca o dominio A por um que so registra o traceparent recebido
+  const recebidos = []
+  await ambiente.derrubarDominio('dominio-a')
+  const falso = createServer((req, res) => {
+    recebidos.push(req.headers.traceparent ?? '')
+    res.writeHead(200, { 'content-type': 'application/json' }); res.end('[]')
+  })
+  await new Promise((ok) => falso.listen(4001, '127.0.0.1', ok))
+  try {
+    const trace = '4bf92f3577b34da6a3ce929d0e0e4736'
+    const { cookie } = await entrar('davi')
+    await pedir('/zona1', { cookie, cabecalhos: { traceparent: `00-${trace}-00f067aa0ba902b7-01` } })
+    assert.ok(recebidos.length > 0, 'o dominio A nao foi chamado')
+    for (const t of recebidos) {
+      assert.match(t, /^00-[0-9a-f]{32}-[0-9a-f]{16}-01$/, `traceparent invalido: ${t}`)
+      assert.equal(t.split('-')[1], trace, 'o dominio recebeu outro trace: a cadeia quebrou no BFF')
+      assert.notEqual(t.split('-')[2], '00f067aa0ba902b7', 'o BFF repassou o span do navegador em vez de abrir um filho')
+    }
+    // sem traceparent do navegador, o proxy abre um trace e o dominio recebe um valido
+    recebidos.length = 0
+    await pedir('/zona1', { cookie })
+    assert.match(recebidos[0] ?? '', /^00-[0-9a-f]{32}-[0-9a-f]{16}-01$/)
+  } finally {
+    await new Promise((ok) => falso.close(ok))
+    await ambiente.subirDominio('dominio-a')
+  }
 })

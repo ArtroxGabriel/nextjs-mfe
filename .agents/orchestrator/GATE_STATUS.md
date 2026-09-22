@@ -170,3 +170,18 @@ Mutantes do auditor conferidos pelo orquestrador: X22 e X6 agora reprovam a mold
 Gate Result: **FAIL** (veto do auditor + dois REQUEST_CHANGES). Rodada de correção: fail-closed nas 4 apps
 com o teste L1 do auditor; telemetria descarta anônimo e limita em streaming; C1 case-insensitive; CSP do
 shell alinhada; L2–L4 na verificação ponta a ponta.
+
+## Gate — Shell novo, iteração 2, erp-shell 4255635 / zonas a0d9bc1…
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_shell_2 | revisor-mfe (sonnet) | REQUEST_CHANGES | .agents/reviewer_shell_2/handoff.md | os 7 achados da iteração 1 resolvidos; novos: `__Host-flash` apagado sem `Secure`; id de zona com maiúscula reabriria o C1; 400 da telemetria sem teste |
+| challenger_shell_2 | simulador-condicoes (sonnet) | APPROVE | .agents/challenger_shell_2/handoff.md | C1 fechado nas 3 zonas; nada de módulo no HTML/RSC com a gestão de acesso fora; telemetria 413 em streaming; 30/30. Lacuna: navegação RSC real |
+| auditor_shell_2 | general-purpose forense (opus) | **INTEGRITY VIOLATION** | .agents/auditor_shell_2/handoff.md, mutacoes.txt | 48 mutações. Veto: fail-open só na zona 2 deixa tudo verde (L1 só visitava a zona 1). Lacunas: CSP do shell, 429/400 da telemetria sem teste de repasse, sonda (timeout, ≥500, ordem), `/api/*` |
+
+Gate Result: **FAIL**. Correção (shell `72e0475`, zonas `f26fd7c`/`8627c02`/`ee623ab`, núcleo 0.6.0 `e624c0c`):
+L1 cobre toda página de módulo das 3 zonas, com teste de "dentes"; L6 com navegador real (navegação do
+cliente); G2 CSP, G4 repasse da telemetria, G5 asset de zona morta, T1 trace; U1–U6 na unidade; prefixo
+de `/api/otel` e `/api/auth` por segmento (U6 achou `/api/otelx` sem cookie). **Provas:** fail-open só na
+zona 2 → L1 reprova; fail-open na zona 1 → L1 e L6 reprovam (L6 pela resposta `?_rsc=`).
+`base/verificacao` 47/47, duas vezes. Próximo: iteração 3.

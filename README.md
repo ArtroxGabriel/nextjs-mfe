@@ -62,11 +62,11 @@ Entre como `ana`, `bruno`, `carla` ou `davi`: cada um vê um menu diferente. Use
 | Suíte | Comando | Testes | Protege |
 |---|---|---|---|
 | `erp-contratos` | `pnpm test` | 15 | manifesto: prefixo de zona, concessão entre zonas, duplicatas |
-| `erp-nucleo` | `pnpm test` | 90 | registro de destinos, sessão leitor/escritor (arquivo e Redis), fragmentos entre zonas, acesso, fronteira entre camadas, exports |
+| `erp-nucleo` | `pnpm test` | 98 | registro de destinos, sessão leitor/escritor (arquivo e Redis), fragmentos entre zonas, acesso, fronteira entre camadas, exports |
 | `erp-moldura` | `pnpm test` | 16 | menu e `aria-current`, host de toast, flash, `FormularioDeAcao` |
 | `erp-dominio-stub` | `pnpm test` | 16 | projeção e escopo dos domínios, `If-Match`, regras da gestão de acesso |
-| `erp-shell` | `pnpm test` | 29 | decisão do proxy, sonda de saúde das zonas, mapa de zonas, gateway de telemetria |
-| ponta a ponta | `pnpm verificar` | 30 | N3–N8 pelo shell com os quatro atores; toda Server Action pelo caminho do navegador; toast uma vez só; domínios e uma zona derrubados; gestão de acesso fora sem vazamento |
+| `erp-shell` | `pnpm test` | 36 | decisão do proxy, sonda de saúde das zonas, mapa de zonas, gateway de telemetria |
+| ponta a ponta | `pnpm verificar` | 47 | N3–N8 pelo shell com os quatro atores; toda Server Action pelo caminho do navegador; toast uma vez só; domínios e uma zona derrubados; gestão de acesso fora sem vazamento |
 
 `pnpm verificar` sobe domínios, shell e zonas, verifica e derruba tudo. Depois de mudar código de
 uma app, use `pnpm verificar:construir` para refazer os builds. Rodando uma suíte à mão, use sempre

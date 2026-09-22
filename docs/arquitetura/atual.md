@@ -81,7 +81,7 @@ a armadilha R1 da PoC não se repete aqui.
 | Pacote | Versão | O que tem | Quem usa |
 |---|---|---|---|
 | `@erp/contratos` | 0.2.1 | códigos de erro e mensagens; `ManifestoDeZona`, `ModuloPermitido`, `validarManifesto` | todos |
-| `@erp/nucleo` | 0.5.0 publicado (apps ainda no 0.3.2) | `criarNucleo`, registro de destinos, leitores de sessão (`sessaoArquivo`, `sessaoRedis`), fragmentos (`criarFragmento`, `responderFragmento`), `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell`, escritores de sessão, `identidadeDev` | shell e zonas (`/shell` só o shell) |
+| `@erp/nucleo` | 0.6.0 (as 4 apps) | `criarNucleo`, registro de destinos, leitores de sessão (`sessaoArquivo`, `sessaoRedis`), fragmentos (`criarFragmento`, `responderFragmento`), `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell`, escritores de sessão, `identidadeDev` | shell e zonas (`/shell` só o shell) |
 | `@erp/moldura` | 0.3.0 | `<Moldura>` (topo, menu com `aria-current`, host de toast), `emitirToast`, flash, `FormularioDeAcao` | shell e zonas |
 
 Publicados no Verdaccio local (`:4873`). Cada aplicação é um repositório com lockfile próprio.
@@ -185,11 +185,11 @@ sequenceDiagram
 | Suíte | Comando | Protege |
 |---|---|---|
 | `erp-contratos` | `pnpm test` (15) | manifesto: prefixo de zona, concessão entre zonas (D8), duplicatas |
-| `erp-nucleo` | `pnpm test` (90) | registro de destinos, sessão leitor/escritor (arquivo e Redis: chave com hash, TTL, erro sem vazar), fragmentos (allowlist, cookie, timeout, HTML inerte, 204/404/500), acesso, fronteira entre camadas, exports |
+| `erp-nucleo` | `pnpm test` (98) | registro de destinos, sessão leitor/escritor (arquivo e Redis: chave com hash, TTL, erro sem vazar), fragmentos (allowlist, cookie, timeout, HTML inerte, 204/404/500), acesso, fronteira entre camadas, exports |
 | `erp-moldura` | `pnpm test` (16) | menu e `aria-current`, um `<h1>`, barramento e host de toast (executado com hooks falsos), flash, `FormularioDeAcao` |
 | `erp-dominio-stub` | `pnpm test` (16) | projeção e escopo do domínio A, If-Match no C, regras da gestão de acesso |
-| `erp-shell` | `pnpm test` (29) | decisão do proxy (rotas públicas, telemetria, zona fora, login), prefixo de zona sem diferenciar maiúsculas, sonda de saúde com cache de 1 s, mapa de zonas e rotas reservadas, limite de tamanho em streaming e expiração do limitador |
-| ponta a ponta | `node --test base/verificacao/*.test.mjs` (30) | N3–N8 pelo shell, com os quatro atores; toda Server Action pelo caminho do navegador (`Next-Action`), sem `Origin`, com sessão expirada e por quem não tem o módulo; toast uma vez só; domínios derrubados um a um; gestão de acesso fora sem vazar módulo no payload; zona 2 derrubada (503 em qualquer caixa, volta); telemetria anônima não repassada |
+| `erp-shell` | `pnpm test` (36) | decisão do proxy (rotas públicas, telemetria, zona fora, login), prefixo de zona sem diferenciar maiúsculas, sonda de saúde com cache de 1 s, mapa de zonas e rotas reservadas, limite de tamanho em streaming e expiração do limitador |
+| ponta a ponta | `node --test base/verificacao/*.test.mjs` (47, com navegador real e análise de saída de rede) | N3–N8 pelo shell, com os quatro atores; toda Server Action pelo caminho do navegador (`Next-Action`), sem `Origin`, com sessão expirada e por quem não tem o módulo; toast uma vez só; domínios derrubados um a um; gestão de acesso fora sem vazar módulo no payload; zona 2 derrubada (503 em qualquer caixa, volta); telemetria anônima não repassada |
 
 ## 8. Quando uma peça cai (medido em 2026-09-21; verificado em `base/verificacao`)
 

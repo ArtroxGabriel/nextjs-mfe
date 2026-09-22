@@ -1,0 +1,99 @@
+auditor_shell_2: mutações contra a correção da iteração 2 do gate "Shell novo (Gabriel)"
+Código: erp-shell 4255635 (correção f3d8803), erp-zona-1 a0d9bc1, erp-zona-2 831d128, erp-zona-acesso b24b078,
+base/verificacao/base.test.mjs e base/scripts/ambiente.mjs como estavam às 19:50 de 2026-09-21 (antes de bea80cb).
+Cópia: scratchpad/aud2/copia/{repos,base} (cp -a com node_modules; os submódulos têm .git próprio; em base/ fiz um git init).
+A árvore real não foi editada.
+Método: anexos/muts.mjs (catálogo: arquivo, trecho, troca; falha se o trecho não existir), anexos/mut.sh (aplica,
+unidade do shell `node --test test/*.test.mjs`, e2e `CONSTRUIR=1 node --test base/verificacao/*.test.mjs`, que
+reconstrói as 4 apps em ~20 s, e restaura com `git checkout -- .`). As mutações N8 rodaram sem rebuild, antes de todas
+as outras, com os builds intactos da linha de base.
+Linha de base na cópia: unidade do shell 29/29; e2e 30/30 com CONSTRUIR=1. Na árvore real, unidade 29/29.
+Nota: a primeira rodada de F1-zona1 foi contaminada (um arquivo meu caiu no glob por alguns segundos). Rodei de novo,
+isolada; o resultado abaixo é o da segunda rodada.
+
+LEGENDA  PEGA = alguma suíte do repositório reprovou · SOBREVIVE = tudo verde · EQUIV = equivalente no que dá para observar
+         [lacuna X] = teste mínimo meu que a pega (anexos/lacunas2.test.mjs = G*, anexos/lacunas-unit.test.mjs = U*)
+
+1. exigirModulo de volta ao fail-open (versão da iteração 1), uma app por vez
+F1-zona1   só na zona 1                       PEGA       e2e L1/V1
+F1-zona2   só na zona 2                       SOBREVIVE  unidade 29/29, e2e 30/30.  [G1 pega: davi, sem o módulo
+                                                         zona2.tarefas, recebe as tarefas em /zona2 com a gestão de acesso fora]
+F1-acesso  só na zona de acesso               EQUIV      a página busca o catálogo na própria gestão de acesso, que está fora; G1 passa
+F1-shell   só no shell                        EQUIV      a página chama modulosPermitidos() de novo e lança; D4 e G1 passam
+
+2. Caixa
+C1a  sem toLowerCase em encontrarZonaPorCaminho           PEGA  unidade (2 testes C1) + e2e L2/V3/C1
+C1b  sem toLowerCase no corte do prefixo estático          PEGA  só unidade "C1: prefixo estatico em qualquer caixa"; e2e 30/30
+C1c  id de zona com maiúscula (reviewer_shell_2 achado 2)  sem teste no escopo: /zonaa, /ZonaA, /ZONAA/x → null (anexos/idcaixa.mjs)
+                                                           [U7 reprova no código do escopo]. Corrigido depois, fora do escopo, em erp-shell 6d93f8e
+
+3. Leitura com limite
+L3a  lerComLimite lê tudo e mede no fim           PEGA só por travamento: o teste "para de ler..." usa um fluxo infinito e
+                                                  fica pendurado; morreu no meu `timeout 180`. Sem timeout, a suíte não termina. e2e 30/30
+L3b  sem a checagem do Content-Length declarado   EQUIV  medido ao vivo: com e sem a checagem, o shell só responde depois de
+                                                  receber o corpo declarado inteiro (CL 10 MB sem corpo: nenhuma resposta em 4 s,
+                                                  nas duas versões). O early return não adianta a resposta.
+L3c  a rota chama lerComLimite(req.body, Infinity)  SOBREVIVE  e2e 30/30. O 413 vem depois, de processarLote. Só o uso de memória
+                                                  muda, e o RSS não separa as duas versões (GC). Só a unidade da função pura protege.
+
+4. Rota de telemetria
+T4a   repassa lote anônimo (volta ao código da iteração 1)   PEGA  e2e L4/V2 (coletor falso recebe o lote)
+T4a2  sem o early return; anônimo tratado como sessão 'anon'  PEGA  e2e L4/V2
+T4b   ignora o 429 (sempre 204)                              PEGA  e2e L4/V2
+T4b2  repassa o lote e só depois devolve o 429               SOBREVIVE  e2e 30/30 [G4 pega: 61 lotes → 61 no coletor]
+T4c   aceita não-JSON e repassa                             SOBREVIVE  e2e 30/30 [G4 pega]
+
+5. Limitador
+T5   sem a limpeza de vencidos                    PEGA  unidade "limitador: entradas de janela vencida..."
+
+6. CSP do shell
+CSP6a  sem form-action                            SOBREVIVE  e2e 30/30 [G2 pega]
+CSP6b  sem img-src                                SOBREVIVE  e2e 30/30 [G2 pega]
+M17    rotas públicas (/login) sem CSP            SOBREVIVE  e2e 30/30 [G2 pega]
+
+7. N8: fetch indireto num lib/ de zona (regex endurecido, versão do escopo)
+N8a  const f = globalThis.fetch; f(...)           PEGA
+N8i  self.fetch(...)                              PEGA  (por \bfetch\()
+N8b  Reflect.get(globalThis, 'fetch')(...)        SOBREVIVE
+N8c  (await import('node:http')).get(...)         SOBREVIVE
+N8d  fetch ('...')   (espaço antes do parêntese)  SOBREVIVE
+N8e  fetch.call(null, ...)                        SOBREVIVE
+N8f  const { fetch: f } = globalThis              SOBREVIVE
+N8g  globalThis['fe' + 'tch'](...)                SOBREVIVE
+N8h  import { request } from 'node:https'         SOBREVIVE
+     Também passam (só pelo regex): `fetch\n(`, `new XMLHttpRequest`, `import { fetch } from 'undici'`.
+     Caso real no código: erp-shell/lib/saude-zonas.ts `fetchFn: typeof fetch = fetch` sai para a rede sem o registro, e o
+     N8 passa só por causa da forma. Fora do escopo: bea80cb troca o regex por análise com o compilador TS; não auditei.
+
+8. __Host-flash no shell
+F8   estado do escopo (apaga sem Secure)          nenhum teste pega. G3 REPROVA NO CÓDIGO DO ESCOPO:
+                                                  Set-Cookie "__Host-flash=; Path=/; Max-Age=0", sem Secure, e o navegador descarta
+F8a  apagamento com Secure (a correção)           e2e 30/30 (nada muda) · G3 passa → G3 separa as duas versões
+M16  não apaga o cookie de flash no shell         SOBREVIVE  e2e 30/30 [G3 pega]
+     Fora do escopo: 6d93f8e corrige, e o base.test.mjs novo tem um L5 para isso; não auditei.
+
+9. Sobreviventes da iteração 1
+M3    TTL infinito                                PEGA  e2e L2  (U1 também pega)
+M3b   TTL ignorado                                PEGA  e2e L2  (U1)
+M3c   só a entrada "saudável" nunca expira         PEGA  e2e L2  (U1)
+M3d   só a entrada "fora" nunca expira             PEGA  e2e L2, na volta  (U2)
+M4b2  proxy.ts devolve 500 cru                    PEGA  e2e L2
+M4c   503 sem cabeçalhos                          PEGA  e2e L2
+M5b   no-store trocado por public, max-age        PEGA  e2e L2
+M10   sem headers.delete('x-erp-flash')           PEGA  e2e L3
+M8b   limitador de 1e9 na rota                    PEGA  e2e L4
+M6a   processarLote sem a checagem de sessão      EQUIV agora: a rota já sai antes com 204 e passa sessaoValida: true
+M7b   tamanhoBytes: 0 na rota                     EQUIV: lerComLimite já devolve 413
+M13   asset estático antes da sonda               SOBREVIVE  unidade 29/29, e2e 30/30 [U5 e G5 pegam]
+M14   timeout da sonda 500 ms → 600 s             SOBREVIVE [U4 pega]
+M14b  sonda sem timeout                           SOBREVIVE [U4 pega]
+M15   status ≥ 500 não derruba                    SOBREVIVE [U3 pega]
+M18   /api/* inteiro vira telemetria, sem cookie  SOBREVIVE [U6 pega]
+M20   x-erp-caminho fixo em '/'                   SOBREVIVE  quase equivalente: o shell só tem a página '/'
+M11c  x-nonce fixo na requisição                  SOBREVIVE  EQUIV: ninguém lê x-nonce
+
+TESTES MÍNIMOS (rodados só na cópia)
+Código do escopo:  lacunas2 4/5 (G3 reprova: defeito real); lacunas-unit 6/7 (U7 reprova: defeito real, achado 2 do revisor)
+G1 ← F1-zona2 · G2 ← CSP6a, CSP6b, M17 · G3 ← M16 (e F8 no código do escopo) · G4 ← T4b2, T4c · G5 ← M13
+U1 ← M3, M3b, M3c · U2 ← M3d · U3 ← M15 · U4 ← M14, M14b · U5 ← M13 · U6 ← M18 · U7 ← C1c
+Saídas: anexos/lote-resultados.txt, anexos/lacunas-resultados.txt
