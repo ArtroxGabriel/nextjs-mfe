@@ -1,0 +1,87 @@
+✔ camada 1: sem cookie, shell e zonas mandam para o login do shell, com Location relativo (24648.87485ms)
+✔ N3: o shell grava a sessao e o navegador recebe so um id opaco, HttpOnly e __Host- (46.09745ms)
+✔ login nao vira redirecionamento aberto (37.946925ms)
+✔ N5: o menu mostra so os modulos permitidos, igual no shell e nas zonas (moldura comum) (375.649259ms)
+✔ N5/D6: modulo nao permitido responde 404 pela URL direta; permitido responde 200 (588.925543ms)
+✔ N7: shell e zona 1 leem os proprios dominios (plataforma; A e B) (45.616074ms)
+✔ perfil administrativo nao concede dado: carla nao ve custo nem r-3; bruno ve (110.178041ms)
+✔ token nunca chega ao navegador, em nenhuma pagina (559.449943ms)
+✔ N6/N5: revogar uma concessao na zona de acesso vale na proxima navegacao, sem novo login (241.782632ms)
+✔ D8: a tela de acesso nao oferece perfil de zona para modulo de outra zona (27.459156ms)
+✔ Server Action e reverificada no servidor: quem nao tem o modulo nao executa (70.667419ms)
+✔ Server Action sem Origin, ou com Origin de outro site, nao executa em nenhuma app (244.716053ms)
+✖ N4: acao na zona 2 leva para a zona 1 e o toast aparece no documento seguinte, uma vez (92.834284ms)
+✔ invariante 16: toda Server Action de toda app recusa quem nao tem o modulo, antes de agir (121.79803ms)
+✔ invariante 12: sessao expirada numa action vira ida ao login, sem erro generico (76.636878ms)
+✔ o cabecalho interno de flash vindo do navegador e ignorado (25.493629ms)
+✔ invariante 16 comportamental: restringir o painel da zona 1 tira pagina e detalhe de quem nao tem concessao (130.822021ms)
+✔ N3: sair no shell encerra a sessao em todas as zonas (89.318192ms)
+✔ cookie forjado passa da camada 1 e morre na camada 2 (15.283778ms)
+✔ CSP com nonce em shell e zonas, e todo script marcado com ele (57.631382ms)
+✔ assets de cada zona vivem sob o prefixo dela e chegam pelo shell (65.224295ms)
+✔ N3 estatico: nenhuma zona monta store de escrita, identidade ou grava o cookie de sessao (47.042593ms)
+✔ invariante 16 estatico: toda pagina de modulo chama exigirModulo (2.212202ms)
+✔ N8: nenhuma app faz saida de rede fora do registro de destinos (analise estrutural) (104.290397ms)
+✔ D5: dominio de negocio fora apaga so o bloco dele (891.710346ms)
+✔ D4: gestao de acesso fora da a pagina de servico indisponivel, sem detalhe interno (1117.376093ms)
+✔ L1/V1: gestao de acesso fora nao entrega pagina de modulo de nenhuma zona, nem no payload RSC (1365.472984ms)
+✔ L1 tem dentes: com a gestao de acesso no ar, quem tem o modulo ve o conteudo que L1 procura (110.521722ms)
+✔ L3: cabecalho de flash forjado pelo cliente nao aparece nas paginas do proprio shell (38.980758ms)
+✔ L4/V2: telemetria descarta lote anonimo sem repassar; 413 em streaming; 429 no 61o lote (1236.837363ms)
+✔ L2/V3/C1: zona fora da 503 proprio, em qualquer caixa; as outras seguem; ela volta (2460.106945ms)
+✖ L5 (reviewer_shell_2): o shell apaga o cookie de flash com Secure, senao o navegador ignora e o toast repete (58.754831ms)
+✔ L6: navegacao do cliente (RSC) com a gestao de acesso fora nao traz o modulo restrito (4133.486196ms)
+✔ G2: CSP completa no shell, inclusive nas rotas publicas (37.681616ms)
+✔ G5: zona fora: o asset estatico dela tambem da 503 (a sonda vem antes do corte de asset) (1808.678592ms)
+✔ T1 (nucleo 8): o trace do navegador chega ao dominio, sem dado pessoal (332.767001ms)
+✔ o navegador navega, executa JS, envia cookie __Host- e registra respostas com corpo; limpa tudo (3634.076269ms)
+✔ deteccao: ERP_CHROME manda; docker so quando pedido, com imagem fixada por digest (1.958307ms)
+✔ deteccao: sem ERP_CHROME, docker nunca e escolhido sozinho (evita baixar 100 MB de surpresa) (51.969891ms)
+✔ ERP_CHROME apontando para binario inexistente falha com mensagem clara e nao deixa perfil (354.498493ms)
+✔ pega toda forma de chamar fetch que conheco, inclusive as que contornavam o regex (24.909043ms)
+✔ pega modulos de rede, estaticos e dinamicos, e as outras globais de rede (5.05728ms)
+✔ pega eval e Function, que montariam qualquer uma das anteriores em tempo de execucao (0.95928ms)
+✔ nao acusa o uso normal da base (8.764357ms)
+✔ tipos que citam fetch nao sao chamada (1.516074ms)
+✔ as quatro aplicacoes reais nao tem saida de rede fora do registro (fora as excecoes declaradas) (104.541951ms)
+✔ toda excecao declarada tem motivo, e a sonda de saude do shell e mesmo uma saida de rede (2.558964ms)
+ℹ tests 47
+ℹ suites 0
+ℹ pass 45
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 51787.43831
+
+✖ failing tests:
+
+test at base/verificacao/base.test.mjs:196:1
+✖ N4: acao na zona 2 leva para a zona 1 e o toast aparece no documento seguinte, uma vez (92.834284ms)
+  AssertionError [ERR_ASSERTION]: o proxy nao consumiu o flash
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud3/copia/base/verificacao/base.test.mjs:220:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at base/verificacao/base.test.mjs:494:1
+✖ L5 (reviewer_shell_2): o shell apaga o cookie de flash com Secure, senao o navegador ignora e o toast repete (58.754831ms)
+  AssertionError [ERR_ASSERTION]: /zona1 nao apagou o cookie de flash
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud3/copia/base/verificacao/base.test.mjs:500:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

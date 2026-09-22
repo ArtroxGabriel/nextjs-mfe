@@ -1,0 +1,13 @@
+diff --git a/app/zona1/recursos/[id]/page.tsx b/app/zona1/recursos/[id]/page.tsx
+index bbf3493..3f4b79b 100644
+--- a/app/zona1/recursos/[id]/page.tsx
++++ b/app/zona1/recursos/[id]/page.tsx
+@@ -2,7 +2,7 @@ import { exigirModulo } from '@/lib/pagina'
+ import { lerRecurso } from '@/lib/dominio-a'
+ 
+ export default async function PaginaDoRecurso({ params }: { params: Promise<{ id: string }> }) {
+-  await exigirModulo('zona1.painel')
++  try { await exigirModulo('zona1.painel') } catch (e) { if (!(e && typeof e === 'object' && 'codigo' in e)) throw e }
+   const { id } = await params
+   const recurso = await lerRecurso(id)
+   return (

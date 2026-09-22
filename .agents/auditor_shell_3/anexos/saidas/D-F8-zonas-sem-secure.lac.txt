@@ -1,0 +1,30 @@
+✔ G6: gestao de acesso fora nao entrega o detalhe do recurso (pagina de modulo que o L1 nao visita) (27768.479896ms)
+✔ G7: zona travada (aceita conexao e nao responde) vira 503 em menos de 2 s (1755.742563ms)
+✔ G9: nonce da CSP muda a cada requisicao (shell e rota publica) (115.823806ms)
+G10 Set-Cookie __Host-flash: ["__Host-flash=; Path=/; Max-Age=0; Secure; SameSite=lax","__Host-flash=; Path=/; Max-Age=0"]
+✖ G10 (prova de equivalencia do flash nas zonas): em /zona1 chegam dois Set-Cookie de remocao, do shell e da zona (68.993601ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 29851.792709
+
+✖ failing tests:
+
+test at base/verificacao/lacunas3.test.mjs:52:1
+✖ G10 (prova de equivalencia do flash nas zonas): em /zona1 chegam dois Set-Cookie de remocao, do shell e da zona (68.993601ms)
+  AssertionError [ERR_ASSERTION]: remocao sem Secure: __Host-flash=; Path=/; Max-Age=0
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud3/copia/base/verificacao/lacunas3.test.mjs:59:33)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '__Host-flash=; Path=/; Max-Age=0',
+    expected: /;\s*Secure/i,
+    operator: 'match',
+    diff: 'simple'
+  }

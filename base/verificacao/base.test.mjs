@@ -407,7 +407,27 @@ const CONTEUDO_DE_MODULO = {
   '/zona1/relatorios': /Relatórios|com custo/,
   '/zona2': /Conferir inventário|Revisar cadastro|Concluir e ir/,
   '/acesso': /Zonas registradas|Módulos: restrição/,
+  // o auditor_shell_3 voltou o fail-open só no detalhe do recurso e tudo ficou verde (V1)
+  '/zona1/recursos/r-1': /Identificador:|CC-10/,
 }
+
+test('L1 cobre toda pagina de modulo das zonas: pagina nova sem entrada aqui reprova', () => {
+  // O shell fica de fora de proposito: a pagina dele chama modulosPermitidos() de novo e lanca
+  // com a gestao de acesso fora (equivalencia provada pelo auditor_shell_3).
+  const paginas = (d) => readdirSync(d).flatMap((n) => {
+    const p = join(d, n)
+    if (n === '(publico)') return []
+    return statSync(p).isDirectory() ? paginas(p) : n === 'page.tsx' ? [p] : []
+  })
+  for (const app of ['erp-zona-1', 'erp-zona-2', 'erp-zona-acesso']) {
+    const raizApp = join(RAIZ, app, 'app')
+    for (const f of paginas(raizApp)) {
+      const rota = '/' + f.slice(raizApp.length + 1).split('/').slice(0, -1).filter((s) => !/^\(.*\)$/.test(s)).join('/')
+      const padrao = new RegExp('^' + rota.replace(/\[[^\]]+\]/g, '[^/]+') + '$')
+      assert.ok(Object.keys(CONTEUDO_DE_MODULO).some((c) => padrao.test(c)), `${rota} (${app}) sem entrada em CONTEUDO_DE_MODULO`)
+    }
+  }
+})
 test('L1/V1: gestao de acesso fora nao entrega pagina de modulo de nenhuma zona, nem no payload RSC', async () => {
   const quem = {}
   for (const u of ['davi', 'bruno', 'ana', 'carla']) quem[u] = (await entrar(u)).cookie
@@ -424,7 +444,7 @@ test('L1/V1: gestao de acesso fora nao entrega pagina de modulo de nenhuma zona,
 
 test('L1 tem dentes: com a gestao de acesso no ar, quem tem o modulo ve o conteudo que L1 procura', async () => {
   // sem isto, um texto errado em CONTEUDO_DE_MODULO faria o L1 passar sem provar nada
-  const donos = { '/zona1': 'davi', '/zona1/relatorios': 'bruno', '/zona2': 'ana', '/acesso': 'carla' }
+  const donos = { '/zona1': 'davi', '/zona1/relatorios': 'bruno', '/zona2': 'ana', '/acesso': 'carla', '/zona1/recursos/r-1': 'bruno' }
   for (const [c, u] of Object.entries(donos)) {
     const r = await pedir(c, { cookie: (await entrar(u)).cookie })
     assert.match(r.html, CONTEUDO_DE_MODULO[c], `${u} nao viu ${c}`)
@@ -455,7 +475,8 @@ test('L4/V2: telemetria descarta lote anonimo sem repassar; 413 em streaming; 42
   assert.equal((await post(bruno, '{"ok":1}')).status, 204)
   await new Promise((r) => setTimeout(r, 200))
   assert.equal(lotesNoColetor.length, 1, 'lote com sessao nao chegou ao coletor')
-  // corpo em streaming, sem Content-Length: o limite vale enquanto le, nao depois
+  // corpo em streaming, sem Content-Length: 413. Que o limite vale durante a leitura (sem ler tudo
+  // antes) so a unidade de lerComLimite prova; pelo HTTP o fetch so entrega a resposta depois do envio
   const grande = new ReadableStream({ start(c) { c.enqueue(new Uint8Array(300 * 1024)); c.close() } })
   assert.equal((await post(bruno, grande)).status, 413)
   const carla = (await entrar('carla')).cookie
@@ -489,6 +510,39 @@ test('L2/V3/C1: zona fora da 503 proprio, em qualquer caixa; as outras seguem; e
     if (st !== 200) await new Promise((r) => setTimeout(r, 100))
   }
   assert.equal(st, 200, 'a zona 2 nao voltou em 5 s depois de reerguida')
+})
+
+test('L7 (auditor_shell_3, V2): zona travada (aceita conexao e nao responde) vira 503 em menos de 2 s', { timeout: 30_000 }, async () => {
+  // L2 usa SIGKILL, que recusa a conexao na hora: sem isto, a sonda do proxy sem timeout passava
+  const ana = (await entrar('ana')).cookie
+  ambiente.congelarApp('erp-zona-2')
+  try {
+    await new Promise((r) => setTimeout(r, 1200))   // passa do TTL de 1 s da sonda
+    const t0 = Date.now()
+    const r = await fetch(`${SHELL_URL}/zona2`, { headers: { cookie: ana }, redirect: 'manual', signal: AbortSignal.timeout(5000) })
+      .catch((e) => ({ status: `sem resposta (${e.name})` }))
+    const ms = Date.now() - t0
+    assert.equal(r.status, 503, `status ${r.status} em ${ms} ms`)
+    assert.ok(ms < 2000, `levou ${ms} ms`)
+  } finally { ambiente.descongelarApp('erp-zona-2') }
+  // a zona volta a responder antes do proximo teste
+  const t0 = Date.now()
+  let st = 0
+  while (Date.now() - t0 < 5_000 && st !== 200) {
+    st = (await pedir('/zona2', { cookie: ana })).status
+    if (st !== 200) await new Promise((r) => setTimeout(r, 100))
+  }
+  assert.equal(st, 200, 'a zona 2 nao voltou em 5 s depois de descongelada')
+})
+
+test('L8 (auditor_shell_3): o nonce da CSP muda a cada requisicao, no shell e na rota publica', async () => {
+  const { cookie } = await entrar('ana')
+  for (const [c, ck] of [['/', cookie], ['/login', undefined]]) {
+    const n = async () => (await pedir(c, { cookie: ck })).csp?.match(/'nonce-([^']+)'/)?.[1]
+    const [a, b] = [await n(), await n()]
+    assert.ok(a && b, `${c} sem nonce`)
+    assert.notEqual(a, b, `${c}: nonce repetido entre requisicoes`)
+  }
 })
 
 test('L5 (reviewer_shell_2): o shell apaga o cookie de flash com Secure, senao o navegador ignora e o toast repete', async () => {

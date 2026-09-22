@@ -1,0 +1,30 @@
+✔ G6: gestao de acesso fora nao entrega o detalhe do recurso (pagina de modulo que o L1 nao visita) (9672.550839ms)
+✔ G7: zona travada (aceita conexao e nao responde) vira 503 em menos de 2 s (1760.463159ms)
+✖ G9: nonce da CSP muda a cada requisicao (shell e rota publica) (84.404078ms)
+G10 Set-Cookie __Host-flash: ["__Host-flash=; Path=/; Max-Age=0; Secure; SameSite=lax"]
+✔ G10 (prova de equivalencia do flash nas zonas): em /zona1 chegam dois Set-Cookie de remocao, do shell e da zona (71.404825ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 11739.675432
+
+✖ failing tests:
+
+test at base/verificacao/lacunas3.test.mjs:42:1
+✖ G9: nonce da CSP muda a cada requisicao (shell e rota publica) (84.404078ms)
+  AssertionError [ERR_ASSERTION]: /: nonce repetido entre requisicoes
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud3/copia/base/verificacao/lacunas3.test.mjs:48:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '0123456789abcdef0123456789abcdef',
+    expected: '0123456789abcdef0123456789abcdef',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }

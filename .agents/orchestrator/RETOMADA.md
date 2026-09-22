@@ -21,7 +21,7 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
 | Base em `repos/` (Next 16) | funcionando; `base/verificacao` **47/47** com navegador real | `pnpm verificar:construir` |
 | `@erp/nucleo` | **0.6.0** nas 4 apps (CSP e trace); **0.7.0** publicado com o kit `/app`, ainda não consumido | `e624c0c`; ADR-0012 |
 | `@erp/moldura` | 0.3.0 nas apps; **0.4.0** (`/servidor`) publicado, não consumido | ADR-0012 |
-| Gate "Shell novo" (#3, #18) | iteração 3: revisor **APPROVE**, challenger **APPROVE**, **auditor em andamento** | `.agents/*_shell_3/handoff.md` |
+| Gate "Shell novo" (#3, #18) | iteração 3 **reprovada** pelo auditor (V1 página de recurso fora do L1; V2 zona travada); corrigida na verificação, **50/50**; falta a iteração 4 | `GATE_STATUS.md` |
 | Repositório | limpo em 2026-09-22: só o necessário; o resto na tag `historico-2026-09-22` | este commit |
 
 ## Plano até o objetivo
@@ -32,18 +32,18 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 
 | Fase | Item | Estado | Atividade | Depende de / bloqueio |
 |---|---|---|---|---|
-| **A. Fechar o aberto** | A1 gate do shell, iteração 3 (auditor forense) | ⏳ | #3, #18 | — |
+| **A. Fechar o aberto** | A1 gate do shell, iteração 4 (revisor + auditor; só a verificação mudou) | ⏳ | #3, #18 | — |
 | **B. Base consistente** | B1 migrar as 4 apps para o kit (`@erp/nucleo` 0.7.0 + `@erp/moldura` 0.4.0) e apagar as cópias | ⬜ | #20 | A1 |
-| | B2 exportar spans (SDK OpenTelemetry) | 🔒 | #18 | **aprovação de instalação** |
+| | B2 exportar spans (SDK OpenTelemetry) | ⬜ | #18 | — (instalação aprovada) |
 | | B3 `/{zona}/api/health` sem tocar domínio; sonda do shell passa a usá-lo | ⬜ | #3 | B1 |
 | | B4 verificações da spec: `server-only` em `'use client'` falha o build; DTO sensível como prop de ilha; guarda contra `<Link>` entre zonas | ⬜ | #20 | B1 |
 | **C. Funcionalidades** | C1 fragmentos: rota `_fragmento` na zona 2, bloco na zona 1 com `<Suspense>`, recusa no shell | ⬜ | #10 | B1 |
 | | C2 SSE no shell (`/api/stream` + `SharedWorker`); fechar D7 (`proxyTimeout`) | ⬜ | #11 | B1 |
 | | C3 mapa de zonas vindo dos manifestos da gestão de acesso | ⬜ | #14 | B1 |
-| **D. Sessão e identidade reais** | D1 ligar `sessaoRedis` (cliente `redis` + Redis no compose) | 🔒 | #9 | **aprovação de instalação** |
-| | D2 OIDC + PKCE no shell contra o Keycloak local; renovação de token com lock; sessão de 30 min | 🔒 | #9 | D1; **aprovação de instalação** se usar biblioteca OIDC |
+| **D. Sessão e identidade reais** | D1 ligar `sessaoRedis` (cliente `redis` + Redis no compose) | ⬜ | #9 | — (instalação aprovada) |
+| | D2 OIDC + PKCE no shell contra o Keycloak local; renovação de token com lock; sessão de 30 min | 🔒 | #9 | D1 (instalação aprovada) |
 | **E. Showcase** | E1 domínios mock com dados em JSON por domínio (sementes por ator, persistência em arquivo, reset por comando) | ✅ commit `35cb4c7` no branch `e1-dados-json` do `erp-dominio-stub` (worktree em scratchpad); 24/24, 6 mutações pegas. **Falta:** merge no `master` do submódulo depois do auditor, envio, fixar no principal e rodar `pnpm verificar` | #19 | A1 (só para o merge) |
-| | E2 `docker-compose` do showcase: Redis, Keycloak (realm `erp` com ana/bruno/carla/davi) | ⏳ rascunho em `base/showcase/` (sintaxe validada, **não executado**): Redis 7.4 com AOF e `noeviction`; Keycloak 26 com cliente confidencial `erp-shell` + PKCE S256, sessão de 30 min. Grupos ficam nos domínios (ADR-0009), não no Keycloak | #19 | D1, D2; **aprovação para baixar as imagens** |
+| | E2 `docker-compose` do showcase: Redis, Keycloak (realm `erp` com ana/bruno/carla/davi) | ⏳ rascunho em `base/showcase/` (sintaxe validada, **não executado**): Redis 7.4 com AOF e `noeviction`; Keycloak 26 com cliente confidencial `erp-shell` + PKCE S256, sessão de 30 min. Grupos ficam nos domínios (ADR-0009), não no Keycloak | #19 | D1, D2 (imagens aprovadas) |
 | | E3 `pnpm showcase`: sobe imagens, mocks e apps; derruba com um comando | ⬜ | #19 | E1, E2 |
 | | E4 roteiro do showcase: cada funcionalidade basilar com passo e resultado esperado (login OIDC, sessão entre zonas, módulo negado = 404, fragmento, SSE, toast, zona fora = 503, `If-Match`, erro `{ codigo, supportId }`, trace) | ⬜ | #19 | C1–C3, E3 |
 | | E5 verificação ponta a ponta rodando contra o showcase | ⬜ | #19 | E4 |
@@ -83,11 +83,11 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 
 ## Pendências com o humano
 
-1. **Aprovar instalações:** cliente `redis` (D1); SDK OpenTelemetry (B2); biblioteca OIDC, se for usada (D2, ex.: `openid-client`); baixar as imagens `redis:7.4-alpine` e `quay.io/keycloak/keycloak:26.0` (E2).
+1. ✅ **Instalações aprovadas pelo humano em 2026-09-22** ("tudo está aprovado de instalação"): `redis`, SDK OpenTelemetry, biblioteca OIDC, imagens do Redis e do Keycloak. Continua valendo mostrar o que entra antes de instalar.
 2. **Decidir infraestrutura** de registro de pacotes / CI (P1).
 3. Aplicar no GitLab o que está em `ATIVIDADES.md` §2 com "pendente".
 
 ## Próximo passo
 
-Auditor forense da iteração 3 do gate do shell (`auditor_shell_3`, Opus). Com CLEAN: registrar em
-`GATE_STATUS.md`, atualizar #3 (falta só o health, B3) e #18 (faltam só os spans, B2) e seguir para B1.
+Iteração 4 do gate do shell: `reviewer_shell_4` (Sonnet, só leitura e unidade) e `auditor_shell_4` (Opus, dono das
+portas). Com CLEAN: registrar, atualizar #3 e #18, fazer o merge do E1 e seguir para B1.

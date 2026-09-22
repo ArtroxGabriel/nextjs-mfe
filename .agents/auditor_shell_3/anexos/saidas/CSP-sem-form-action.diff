@@ -1,0 +1,22 @@
+diff --git a/proxy.ts b/proxy.ts
+index 20927fc..d221c83 100644
+--- a/proxy.ts
++++ b/proxy.ts
+@@ -38,7 +38,7 @@ function aplicarCsp(req: NextRequest, nonce: string): NextResponse {
+   const headers = new Headers(req.headers)
+   headers.set('x-nonce', nonce)
+   headers.set('x-erp-caminho', req.nextUrl.pathname)
+-  headers.set('Content-Security-Policy', politicaDeSeguranca(nonce))
++  headers.set('Content-Security-Policy', politicaDeSeguranca(nonce).replace("form-action 'self'; ", ''))
+   // núcleo 8: um trace por requisição, reaproveitando o do navegador se vier válido
+   headers.set('traceparent', garantirTraceparent(req.headers.get('traceparent')))
+   headers.delete('x-erp-flash')
+@@ -52,7 +52,7 @@ function aplicarCsp(req: NextRequest, nonce: string): NextResponse {
+     res.cookies.set('__Host-flash', '', { path: '/', secure: true, sameSite: 'lax', maxAge: 0 })
+   }
+   res.headers.set('x-nonce', nonce)
+-  res.headers.set('Content-Security-Policy', politicaDeSeguranca(nonce))
++  res.headers.set('Content-Security-Policy', politicaDeSeguranca(nonce).replace("form-action 'self'; ", ''))
+   return res
+ }
+ 

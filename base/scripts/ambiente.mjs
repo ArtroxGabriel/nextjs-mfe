@@ -100,6 +100,12 @@ export async function subir({ construir = false, log = false } = {}) {
     try { process.kill(-p.pid, 'SIGKILL') } catch { /* ja saiu */ }
     await new Promise((ok) => (p.exitCode !== null || p.signalCode !== null ? ok() : p.once('exit', ok)))
   }
+  /**
+   * Congela a aplicação (SIGSTOP no grupo): a porta continua aceitando conexão e nada responde.
+   * É a zona travada, diferente da zona caída, que recusa a conexão na hora.
+   */
+  const congelarApp = (dir) => process.kill(-apps.get(dir).pid, 'SIGSTOP')
+  const descongelarApp = (dir) => process.kill(-apps.get(dir).pid, 'SIGCONT')
   const subirApp = async (dir) => {
     apps.set(dir, iniciar('pnpm', ['start'], join(RAIZ, dir)))
     const { porta, saude } = APPS.find((a) => a.dir === dir)
@@ -126,5 +132,5 @@ export async function subir({ construir = false, log = false } = {}) {
     derrubar()
     throw e
   }
-  return { derrubar, derrubarDominio, subirDominio, derrubarApp, subirApp, sessaoDir: env.SESSAO_DIR }
+  return { derrubar, derrubarDominio, subirDominio, derrubarApp, subirApp, congelarApp, descongelarApp, sessaoDir: env.SESSAO_DIR }
 }

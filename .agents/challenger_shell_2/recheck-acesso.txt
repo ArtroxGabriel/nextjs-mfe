@@ -1,2 +1,0 @@
-ana  /acesso apos revivida: 404 (esperado 404: ana nao tem perfil admin-acesso)
-carla /acesso apos revivida: 200 (esperado 200)

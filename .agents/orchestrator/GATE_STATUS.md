@@ -55,3 +55,17 @@ cliente); G2 CSP, G4 repasse da telemetria, G5 asset de zona morta, T1 trace; U1
 de `/api/otel` e `/api/auth` por segmento (U6 achou `/api/otelx` sem cookie). **Provas:** fail-open só na
 zona 2 → L1 reprova; fail-open na zona 1 → L1 e L6 reprovam (L6 pela resposta `?_rsc=`).
 `base/verificacao` 47/47, duas vezes. Próximo: iteração 3.
+
+## Gate — Shell novo, iteração 3, erp-shell 72e0475 / zonas f26fd7c, 8627c02, ee623ab / núcleo 0.6.0
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_shell_3 | revisor-mfe (sonnet) | APPROVE | .agents/reviewer_shell_3/handoff.md | achados da iteração 2 e o veto fechados, com testes rodados; nada novo |
+| challenger_shell_3 | simulador-condicoes (sonnet) | APPROVE | .agents/challenger_shell_3/handoff.md | navegação real nas 16 combinações sem vazar módulo; trace forjado substituído; CSP única; flash uma vez; 47/47 |
+| auditor_shell_3 | general-purpose forense (opus) | **INTEGRITY VIOLATION** | .agents/auditor_shell_3/handoff.md, mutacoes.txt | 53 mutações; V1 da iteração 2 fechado. Veto: **V1** fail-open só em `/zona1/recursos/[id]` passa (L1 tinha 4 das 5 páginas de módulo) e vaza o detalhe; **V2** sonda do proxy sem timeout passa (L2 usa SIGKILL). Lacunas: nonce fixo, 413 sem `lerComLimite` indistinguível pelo HTTP, trace forjado só na unidade |
+
+Gate Result: **FAIL** (veto). Correção só na verificação (nenhum código de produto mudou): `/zona1/recursos/r-1` no L1
+e no "L1 tem dentes"; teste novo que reprova se uma página de módulo das zonas não tiver entrada no L1; `congelarApp`
+(SIGSTOP) em `base/scripts/ambiente.mjs` e L7 (zona travada → 503 em < 2 s); L8 (nonce muda a cada requisição);
+comentário do L4 corrigido. **Provas:** as mutações V1 e V2 do auditor aplicadas juntas → reprovam exatamente L1 e L7
+(48/50); linha de base **50/50** duas vezes. Próximo: iteração 4.

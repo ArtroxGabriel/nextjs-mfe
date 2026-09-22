@@ -1,0 +1,12 @@
+diff --git a/src/borda/csp.ts b/src/borda/csp.ts
+index 2bb8f76..3939d2d 100644
+--- a/src/borda/csp.ts
++++ b/src/borda/csp.ts
+@@ -4,6 +4,6 @@
+  */
+ export function politicaDeSeguranca(nonce: string): string {
+   return `default-src 'self'; script-src 'self' 'nonce-${nonce}' 'strict-dynamic'; ` +
+-    `style-src 'self' 'nonce-${nonce}'; img-src 'self' data:; object-src 'none'; ` +
++    `style-src 'self' 'nonce-${nonce}'; object-src 'none'; ` +
+     `base-uri 'none'; form-action 'self'; frame-ancestors 'none'`
+ }

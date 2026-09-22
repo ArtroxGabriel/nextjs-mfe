@@ -1,0 +1,75 @@
+✔ camada 1: sem cookie, shell e zonas mandam para o login do shell, com Location relativo (8563.261576ms)
+✔ N3: o shell grava a sessao e o navegador recebe so um id opaco, HttpOnly e __Host- (52.904667ms)
+✔ login nao vira redirecionamento aberto (40.056696ms)
+✔ N5: o menu mostra so os modulos permitidos, igual no shell e nas zonas (moldura comum) (383.758481ms)
+✔ N5/D6: modulo nao permitido responde 404 pela URL direta; permitido responde 200 (568.809313ms)
+✔ N7: shell e zona 1 leem os proprios dominios (plataforma; A e B) (49.228398ms)
+✔ perfil administrativo nao concede dado: carla nao ve custo nem r-3; bruno ve (123.676916ms)
+✔ token nunca chega ao navegador, em nenhuma pagina (534.536875ms)
+✔ N6/N5: revogar uma concessao na zona de acesso vale na proxima navegacao, sem novo login (237.244605ms)
+✔ D8: a tela de acesso nao oferece perfil de zona para modulo de outra zona (33.46787ms)
+✔ Server Action e reverificada no servidor: quem nao tem o modulo nao executa (77.909217ms)
+✔ Server Action sem Origin, ou com Origin de outro site, nao executa em nenhuma app (235.352653ms)
+✔ N4: acao na zona 2 leva para a zona 1 e o toast aparece no documento seguinte, uma vez (155.587096ms)
+✔ invariante 16: toda Server Action de toda app recusa quem nao tem o modulo, antes de agir (115.064601ms)
+✔ invariante 12: sessao expirada numa action vira ida ao login, sem erro generico (65.517331ms)
+✔ o cabecalho interno de flash vindo do navegador e ignorado (23.463266ms)
+✔ invariante 16 comportamental: restringir o painel da zona 1 tira pagina e detalhe de quem nao tem concessao (117.317719ms)
+✔ N3: sair no shell encerra a sessao em todas as zonas (91.188818ms)
+✔ cookie forjado passa da camada 1 e morre na camada 2 (16.2096ms)
+✔ CSP com nonce em shell e zonas, e todo script marcado com ele (59.13726ms)
+✔ assets de cada zona vivem sob o prefixo dela e chegam pelo shell (66.00178ms)
+✔ N3 estatico: nenhuma zona monta store de escrita, identidade ou grava o cookie de sessao (10.387368ms)
+✔ invariante 16 estatico: toda pagina de modulo chama exigirModulo (1.075097ms)
+✔ N8: nenhuma app faz saida de rede fora do registro de destinos (analise estrutural) (107.622976ms)
+✔ D5: dominio de negocio fora apaga so o bloco dele (899.385435ms)
+✔ D4: gestao de acesso fora da a pagina de servico indisponivel, sem detalhe interno (1158.929806ms)
+✔ L1/V1: gestao de acesso fora nao entrega pagina de modulo de nenhuma zona, nem no payload RSC (1359.854215ms)
+✔ L1 tem dentes: com a gestao de acesso no ar, quem tem o modulo ve o conteudo que L1 procura (121.808333ms)
+✔ L3: cabecalho de flash forjado pelo cliente nao aparece nas paginas do proprio shell (26.653603ms)
+✖ L4/V2: telemetria descarta lote anonimo sem repassar; 413 em streaming; 429 no 61o lote (225.809264ms)
+✔ L2/V3/C1: zona fora da 503 proprio, em qualquer caixa; as outras seguem; ela volta (2430.811137ms)
+✔ L5 (reviewer_shell_2): o shell apaga o cookie de flash com Secure, senao o navegador ignora e o toast repete (47.809365ms)
+✔ L6: navegacao do cliente (RSC) com a gestao de acesso fora nao traz o modulo restrito (4088.610078ms)
+✔ G2: CSP completa no shell, inclusive nas rotas publicas (36.161859ms)
+✔ G5: zona fora: o asset estatico dela tambem da 503 (a sonda vem antes do corte de asset) (1837.427645ms)
+✔ T1 (nucleo 8): o trace do navegador chega ao dominio, sem dado pessoal (343.95828ms)
+✔ o navegador navega, executa JS, envia cookie __Host- e registra respostas com corpo; limpa tudo (2535.967264ms)
+✔ deteccao: ERP_CHROME manda; docker so quando pedido, com imagem fixada por digest (2.001877ms)
+✔ deteccao: sem ERP_CHROME, docker nunca e escolhido sozinho (evita baixar 100 MB de surpresa) (51.875781ms)
+✔ ERP_CHROME apontando para binario inexistente falha com mensagem clara e nao deixa perfil (352.847348ms)
+✔ pega toda forma de chamar fetch que conheco, inclusive as que contornavam o regex (19.071553ms)
+✔ pega modulos de rede, estaticos e dinamicos, e as outras globais de rede (4.083018ms)
+✔ pega eval e Function, que montariam qualquer uma das anteriores em tempo de execucao (0.664851ms)
+✔ nao acusa o uso normal da base (7.038327ms)
+✔ tipos que citam fetch nao sao chamada (1.518658ms)
+✔ as quatro aplicacoes reais nao tem saida de rede fora do registro (fora as excecoes declaradas) (102.518864ms)
+✔ toda excecao declarada tem motivo, e a sonda de saude do shell e mesmo uma saida de rede (2.821947ms)
+ℹ tests 47
+ℹ suites 0
+ℹ pass 46
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 34664.880585
+
+✖ failing tests:
+
+test at base/verificacao/base.test.mjs:441:1
+✖ L4/V2: telemetria descarta lote anonimo sem repassar; 413 em streaming; 429 no 61o lote (225.809264ms)
+  AssertionError [ERR_ASSERTION]: corpo nao-JSON deveria dar 400
+  
+  204 !== 400
+  
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud3/copia/base/verificacao/base.test.mjs:452:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 204,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

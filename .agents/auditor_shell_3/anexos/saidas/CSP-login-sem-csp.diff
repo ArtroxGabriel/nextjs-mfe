@@ -1,0 +1,13 @@
+diff --git a/proxy.ts b/proxy.ts
+index 20927fc..f465970 100644
+--- a/proxy.ts
++++ b/proxy.ts
+@@ -12,7 +12,7 @@ export default async function proxy(req: NextRequest): Promise<NextResponse> {
+ 
+   switch (decisao.acao) {
+     case 'publico':
+-      return aplicarCsp(req, decisao.nonce)
++      return NextResponse.next()
+ 
+     case 'telemetria':
+     case 'zona-estatica':

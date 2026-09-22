@@ -1,0 +1,84 @@
+✔ Cenario 1: acessar uma rota de zona inativa apresenta status 503 e pagina de erro (9.627161ms)
+✔ rotas publicas do shell nao exigem cookie e retornam acao publica (0.544076ms)
+✔ rotas de telemetria passam para o gateway do shell (0.281117ms)
+✔ rota raiz do shell sem cookie redireciona para login (0.263292ms)
+✔ rota raiz do shell com cookie prossegue (0.280245ms)
+✔ zona ativa sem cookie redireciona para login (0.449235ms)
+✔ zona ativa com cookie prossegue (0.42642ms)
+✔ U5: zona fora e asset estatico dela da 503 (a sonda vem antes do corte de asset) (0.993909ms)
+✔ U6: /api fora de /api/otel e /api/auth continua exigindo cookie (0.657582ms)
+✔ criarCacheSaudeZona: identifica zona saudavel quando fetch retorna status < 500 (2.473548ms)
+✔ criarCacheSaudeZona: identifica zona inativa quando fetch falha (Cenário 1) (0.556962ms)
+✔ criarCacheSaudeZona: utiliza cache durante a janela de TTL sem repetir I/O (0.441343ms)
+✔ criarCacheSaudeZona: chamadas concorrentes compartilham a mesma probe em andamento (20.337398ms)
+✔ U1: entrada saudavel expira depois do TTL e a sonda roda de novo (83.231477ms)
+✔ U2: entrada "fora" tambem expira: a zona volta sem reiniciar o shell (83.459418ms)
+✔ U3: status >= 500 conta como fora; 307 (pagina que pede login) conta como no ar (1.762346ms)
+✔ U4: zona travada e dada como fora em ~500 ms (timeout padrao da sonda) (501.423497ms)
+✔ telemetria: limitador permite ate 60 lotes por minuto por usuario (2.121633ms)
+✔ telemetria: limitador reseta a contagem apos expirar a janela (0.356143ms)
+✔ telemetria: tamanho maximo e 256 KB (0.215804ms)
+✔ processarLoteDeTelemetria: sem sessao valida descarta silenciosamente com 204 (0.309123ms)
+✔ processarLoteDeTelemetria: payload acima de 256 KB retorna 413 (0.261064ms)
+✔ processarLoteDeTelemetria: taxa excedida retorna 429 com Retry-After (0.271594ms)
+✔ lerComLimite: le o corpo inteiro quando cabe no limite (6.028574ms)
+✔ lerComLimite: para de ler e devolve null assim que passa do limite (sem Content-Length) (1.612516ms)
+✔ lerComLimite: corpo ausente e corpo vazio (0.414271ms)
+✔ limitador: entradas de janela vencida sao descartadas, o mapa nao cresce sem limite (2.096629ms)
+✔ limitador: descartar vencidos nao zera quem ainda esta na janela (0.365055ms)
+✔ ehRotaReservada: identifica corretamente rotas reservadas do shell (1.671899ms)
+✔ carregarZonas: rotas reservadas nao podem ser sobrescritas por zonas (Criterio 3) (0.496089ms)
+✔ carregarZonas: permite sobrescrever origem via variaveis de ambiente (0.280112ms)
+✔ gerarRewrites: deriva regras a partir do mapa central de configuracoes (Criterio 2) (1.849747ms)
+✔ encontrarZonaPorCaminho: resolve a zona correspondente para paginas e assets (0.659429ms)
+✖ C1: busca de zona ignora maiusculas, como o rewrite do Next (senao /ZONA2 escapa da sonda) (2.075477ms)
+✖ C1: prefixo estatico em qualquer caixa continua sendo asset, nao pagina (15.44098ms)
+✔ reviewer_shell_2: id de zona com maiuscula ou caractere estranho falha no boot, nao abre o C1 (1.773846ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 34
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 882.728216
+
+✖ failing tests:
+
+test at test/zonas.test.mjs:97:1
+✖ C1: busca de zona ignora maiusculas, como o rewrite do Next (senao /ZONA2 escapa da sonda) (2.075477ms)
+  AssertionError [ERR_ASSERTION]: /ZONA2
+  + actual - expected
+  
+  + undefined
+  - 'zona2'
+  
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud3/copia/repos/erp-shell/test/zonas.test.mjs:101:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'zona2',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/zonas.test.mjs:106:1
+✖ C1: prefixo estatico em qualquer caixa continua sendo asset, nao pagina (15.44098ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'redirecionar-login'
+  - 'zona-estatica'
+  
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud3/copia/repos/erp-shell/test/zonas.test.mjs:112:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'redirecionar-login',
+    expected: 'zona-estatica',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

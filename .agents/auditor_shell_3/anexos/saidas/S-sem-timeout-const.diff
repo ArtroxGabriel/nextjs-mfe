@@ -1,0 +1,13 @@
+diff --git a/lib/saude-zonas.ts b/lib/saude-zonas.ts
+index cf57eb2..e0043ad 100644
+--- a/lib/saude-zonas.ts
++++ b/lib/saude-zonas.ts
+@@ -4,7 +4,7 @@ export interface CacheSaudeZona {
+ }
+ 
+ export const TTL_SAUDE_PADRAO_MS = 1000
+-export const TIMEOUT_PROBE_PADRAO_MS = 500
++export const TIMEOUT_PROBE_PADRAO_MS = 600000
+ 
+ interface EntradaCache {
+   readonly saudavel: boolean

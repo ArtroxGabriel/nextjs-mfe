@@ -1,0 +1,5 @@
+BASE LAC: ℹ pass 4 ℹ fail 0  FALHAS: 
+F1-recurso-b LAC: ℹ pass 3 ℹ fail 1  FALHAS: ✖ failing tests:;✖ G6: gestao de acesso fora nao entrega o detalhe do recurso (pagina de modulo que o L1 nao visita);
+S-sem-timeout-instancia LAC: ℹ pass 3 ℹ fail 1  FALHAS: ✖ failing tests:;✖ G7: zona travada (aceita conexao e nao responde) vira 503 em menos de 2 s;
+CSP-nonce-fixo LAC: ℹ pass 3 ℹ fail 1  FALHAS: ✖ failing tests:;✖ G9: nonce da CSP muda a cada requisicao (shell e rota publica);
+D-F8-zonas-sem-secure LAC: ℹ pass 3 ℹ fail 1  FALHAS: ✖ failing tests:;✖ G10 (prova de equivalencia do flash nas zonas): em /zona1 chegam dois Set-Cookie de remocao, do shell e da zona;

@@ -1,0 +1,13 @@
+diff --git a/lib/decisao-proxy.ts b/lib/decisao-proxy.ts
+index 08d3b97..6021cdf 100644
+--- a/lib/decisao-proxy.ts
++++ b/lib/decisao-proxy.ts
+@@ -51,7 +51,7 @@ export async function decidirAcaoDoProxy(
+   }
+ 
+   // 2. Gateway de telemetria das zonas: tratado pelo route handler do shell
+-  if (noSegmento(caminho, '/api/otel')) {
++  if (caminho.startsWith('/api')) {
+     return { acao: 'telemetria' }
+   }
+ 

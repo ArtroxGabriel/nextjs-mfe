@@ -62,6 +62,10 @@
   servidores; o auditor espera. O Verdaccio (4873) ninguém derruba.
 - Não existe `tsx` nem `rtk` nesta máquina; não buscar.
 
+- **Não edite por número de linha (`sed -i 'Ns…'`) depois de outra edição no mesmo arquivo.** Em
+  2026-09-22 o número vinha de um `grep` anterior à edição e o `sed` apagou a asserção do L3; a
+  verificação deu 50/50 com um teste vazio. Edite por conteúdo (texto único) e confira o `git diff`.
+
 ## 4. Commits
 
 - **Sem rodapé de coautoria** (`Co-Authored-By`, `Claude-Session`, "Generated with"): o hook
