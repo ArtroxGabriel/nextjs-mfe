@@ -22,8 +22,8 @@ Histórico e provas em `GATE_STATUS.md`. Estado atual: shell `72e0475`, zonas `f
 núcleo 0.6.0 nas 4 apps (CSP e trace vindos do núcleo). `base/verificacao` **47/47** (duas vezes),
 com navegador real (L6) e análise estrutural de saída de rede (N8).
 
-**Próximo:** iteração 3 com tríade nova (`reviewer_shell_3`, `challenger_shell_3`, `auditor_shell_3`),
-handoff parcial desde o começo, `CONSTRUIR=1` (só apps alteradas).
+**Iteração 3 em andamento:** `reviewer_shell_3` e `challenger_shell_3` (dono das portas) despachados;
+`auditor_shell_3` (Opus) entra quando o challenger liberar as portas.
 
 ## Feito: fatia de núcleo da #10 (fragmentos)
 
