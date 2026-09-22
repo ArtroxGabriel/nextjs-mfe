@@ -62,11 +62,11 @@ Entre como `ana`, `bruno`, `carla` ou `davi`: cada um vê um menu diferente. Use
 | Suíte | Comando | Testes | Protege |
 |---|---|---|---|
 | `erp-contratos` | `pnpm test` | 15 | manifesto: prefixo de zona, concessão entre zonas, duplicatas |
-| `erp-nucleo` | `pnpm test` | 98 | registro de destinos, sessão leitor/escritor (arquivo e Redis), fragmentos entre zonas, acesso, fronteira entre camadas, exports |
+| `erp-nucleo` | `pnpm test` | 107 | registro de destinos, sessão leitor/escritor (arquivo e Redis), fragmentos entre zonas, acesso, fronteira entre camadas, exports |
 | `erp-moldura` | `pnpm test` | 16 | menu e `aria-current`, host de toast, flash, `FormularioDeAcao` |
 | `erp-dominio-stub` | `pnpm test` | 16 | projeção e escopo dos domínios, `If-Match`, regras da gestão de acesso |
 | `erp-shell` | `pnpm test` | 36 | decisão do proxy, sonda de saúde das zonas, mapa de zonas, gateway de telemetria |
-| ponta a ponta | `pnpm verificar` | 47 | N3–N8 pelo shell com os quatro atores; toda Server Action pelo caminho do navegador; toast uma vez só; domínios e uma zona derrubados; gestão de acesso fora sem vazamento |
+| ponta a ponta | `pnpm verificar` | 50 | N3–N8 pelo shell com os quatro atores; toda Server Action pelo caminho do navegador; toast uma vez só; domínios e uma zona derrubados; zona travada vira 503 em < 2 s; nonce novo a cada requisição; gestão de acesso fora sem vazamento em nenhuma página de módulo |
 
 `pnpm verificar` sobe domínios, shell e zonas, verifica e derruba tudo. Depois de mudar código de
 uma app, use `pnpm verificar:construir` para refazer os builds. Rodando uma suíte à mão, use sempre
@@ -96,9 +96,14 @@ A verificação manual, item a item, está em
 
 - Login de desenvolvimento sem senha (`identidadeDev`) e store de sessão em arquivo. OIDC e Redis
   ficam para depois (`alvo.md` §6).
-- Sem renovação de token: a sessão de desenvolvimento dura 30 minutos.
-- O 503 de zona fora e o gateway de telemetria do shell **ainda não passaram por gate** (ver
-  `.agents/orchestrator/RETOMADA.md`).
+- Sem renovação de token: a sessão de desenvolvimento dura 30 minutos. O alvo é sessão de 30 min
+  **por inatividade**, com renovação no shell (ADR-0013); os tempos são configuração
+  ([`docs/CONFIGURACAO.md`](docs/CONFIGURACAO.md)).
+- O 503 de zona fora e o gateway de telemetria do shell **ainda não passaram por gate** (iteração 4
+  em andamento; ver `.agents/orchestrator/RETOMADA.md`).
+- O showcase (mocks em JSON, Keycloak e Redis) está em construção: por enquanto só a infraestrutura
+  em `base/showcase/` (`docker compose -f base/showcase/docker-compose.yml up -d` e
+  `node base/showcase/checar-keycloak.mjs`); as apps ainda não usam Keycloak nem Redis.
 - O domínio falso de gestão de acesso guarda tudo em memória: reiniciado, perde manifestos e
   concessões. `pnpm registrar` em cada app os recria.
 
@@ -122,6 +127,7 @@ O desenho completo (mapa de zonas, contrato de fragmento, sessão, deploy) está
 | Para | Comece em |
 |---|---|
 | entender a arquitetura, o que falta e como conferir | [`docs/README.md`](docs/README.md) |
+| saber que variável controla cada tempo e limite | [`docs/CONFIGURACAO.md`](docs/CONFIGURACAO.md) |
 | retomar o trabalho em andamento (estado, gates, GitLab, armadilhas do ambiente) | [`.agents/orchestrator/LEIA-PRIMEIRO.md`](.agents/orchestrator/LEIA-PRIMEIRO.md) |
 | pedidos de pesquisa aguardando resposta | [`pedidos/`](pedidos/) |
 

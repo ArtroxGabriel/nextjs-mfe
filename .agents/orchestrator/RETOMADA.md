@@ -18,7 +18,7 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
 
 | O quê | Estado | Evidência |
 |---|---|---|
-| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **47/47** com navegador real | `pnpm verificar:construir` |
+| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **50/50** com navegador real | `pnpm verificar:construir` |
 | `@erp/nucleo` | **0.6.0** nas 4 apps (CSP e trace); **0.7.0** publicado com o kit `/app`, ainda não consumido | `e624c0c`; ADR-0012 |
 | `@erp/moldura` | 0.3.0 nas apps; **0.4.0** (`/servidor`) publicado, não consumido | ADR-0012 |
 | Gate "Shell novo" (#3, #18) | iteração 3 **reprovada** pelo auditor (V1 página de recurso fora do L1; V2 zona travada); corrigida na verificação, **50/50**; falta a iteração 4 | `GATE_STATUS.md` |
