@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-22**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-22, noite (handoff)**.
 
 ## Objetivo final
 
@@ -33,7 +33,7 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | Fase | Item | Estado | Atividade | Depende de / bloqueio |
 |---|---|---|---|---|
 | **A. Fechar o aberto** | A1 gate do shell | ✅ aprovado na iteração 4 | #3, #18 | — |
-| **B. Base consistente** | B1 migrar as 4 apps para o kit (`@erp/nucleo` 0.7.0 + `@erp/moldura` 0.4.0) e apagar as cópias | ⬜ | #20 | A1 |
+| **B. Base consistente** | B1 migrar as 4 apps para o kit (`@erp/nucleo` 0.7.0 + `@erp/moldura` 0.4.0) e apagar as cópias | ⏳ **WIP** no branch `b1-kit` das 4 apps (ver "Handoff" abaixo) | #20 | — |
 | | B2 exportar spans (SDK OpenTelemetry) | ⬜ | #18 | — (instalação aprovada) |
 | | B3 `/{zona}/api/health` sem tocar domínio; sonda do shell passa a usá-lo | ⬜ | #3 | B1 |
 | | B5 parâmetros fixos no código (timeouts de destino e fragmento, TTL/timeout da sonda, limites da telemetria, vida da sessão dev) viram variáveis de ambiente com padrão e validação na subida, conforme `docs/CONFIGURACAO.md` | ⬜ | #20 | B1 |
@@ -90,7 +90,56 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 4. ✅ Sessão de 30 min **por inatividade**, capturada pelos refresh tokens (humano, 2026-09-22); teto absoluto configurável. Regra nova: parâmetros assim ficam em configuração documentada (`docs/CONFIGURACAO.md`), não no código.
 3. Aplicar no GitLab o que está em `ATIVIDADES.md` §2 com "pendente".
 
+## Handoff (2026-09-22, noite) — parar e retomar sem retrabalho
+
+O humano pediu para parar. Tudo está commitado e enviado; o principal e os submódulos estão no `master`,
+com os ponteiros verificados (51/51). O único trabalho em andamento é o **B1**.
+
+### Onde o B1 parou
+
+Branch `b1-kit` (enviado) em `erp-shell` `deadb74`, `erp-zona-1` `d11c273`, `erp-zona-2` `390045f`,
+`erp-zona-acesso` `2a8b1fe`. Feito nesse commit, igual nas quatro apps:
+- `lib/pagina.ts` virou só a ligação com o Next: `criarPaginas` (`@erp/nucleo/app`) + `criarMolduraDoServidor`
+  (`@erp/moldura/servidor`), exportando `caminhoAtual`, `sessaoDaPagina`, `modulosPermitidos`, `exigirModulo`,
+  `dadosDaMoldura`, `flash`, `acaoProtegida` com as mesmas assinaturas de antes;
+- `lib/indisponivel.tsx` apagado; o layout importa `ServicoIndisponivel` de `@erp/moldura`;
+- `app/global-error.tsx` é um re-export de `ErroGlobal` da moldura;
+- `package.json`: `@erp/nucleo` 0.7.0, `@erp/moldura` 0.4.0.
+
+**Não feito (próximos passos exatos, nesta ordem):**
+1. Em cada app: `git checkout b1-kit`.
+2. No layout (`app/layout.tsx`; no shell `app/(app)/layout.tsx`), juntar as duas linhas de import de
+   `@erp/moldura` numa só (`import { Moldura, ServicoIndisponivel } from '@erp/moldura'`).
+3. Verdaccio no ar (`task registry:subir`) e `pnpm install` em cada app (atualiza o lockfile; o pnpm acrescenta
+   as versões em `minimumReleaseAgeExclude`, é esperado — `AMBIENTE.md` §1).
+4. `task typecheck`; procurar imports quebrados (`grep -rn "@/lib/indisponivel" repos/erp-*/app`).
+5. `task lockstep`; `task verificar:construir` → esperado **51/51**.
+6. Merge `b1-kit` → `master` (fast-forward) nas 4 apps, envio dos submódulos, fixar os 4 ponteiros no principal
+   num commit só (lockstep, ADR-0012 decisão 6), enviar; apagar os branches `b1-kit`.
+7. Atualizar `docs/arquitetura/atual.md` (núcleo 0.7.0/moldura 0.4.0 nas apps) e `README.md` se mudar contagem.
+8. Gate do B1 com agentes novos (`reviewer_b1_1` Sonnet, `challenger_b1_1` Sonnet dono das portas, depois
+   `auditor_b1_1` Opus): foco em fail-open do `exigirModulo`/`acaoProtegida` agora num lugar só, e md5sum sem
+   cópias idênticas além da ligação de `lib/pagina.ts`.
+
+**Observações do B1:**
+- `registrarManifesto()` na raiz do núcleo (ADR-0012, decisão 5) **não existe no 0.7.0**; os
+  `scripts/registrar-manifesto.ts` ficam nas apps (arquivo-modelo permitido). Levar a função ao núcleo 0.8.0 (junto com D2).
+- B5 dividido: **B5a** (shell: `lib/saude-zonas.ts` TTL/timeout da sonda, `lib/telemetria.ts` limites → variáveis
+  de `docs/CONFIGURACAO.md`, sem publicar pacote) pode entrar logo depois do B1; **B5b** (núcleo: timeout de
+  destino e de fragmento, vida da sessão dev → parâmetros de `criarNucleo` lidos do ambiente pela app) entra no 0.8.0.
+
+### Ambiente deixado no ar
+
+- Contêineres: `verdaccio` (4873), `erp-showcase-redis-1` (6379), `erp-showcase-keycloak-1` (8080). Nenhum processo
+  nas portas da base (3000–3003, 4001–4004, 4010). `task showcase:descer` derruba Redis/Keycloak se quiser.
+
+### Pendências com o humano (abertas nesta sessão)
+
+- **Gestão de acesso — "backend específico":** é um sistema real da empresa com contrato próprio (então precisamos
+  de endpoints/payloads, modelo de perfis e como identifica o usuário) ou só separar a gestão num backend próprio?
+  Até a resposta, o simulador atual (`erp-dominio-stub`, porta 4010, dados em `dados/semente/gestao-acesso.json`) segue.
+- GitLab: aplicar o que está "pendente" em `ATIVIDADES.md` §2 (textos em §3).
+
 ## Próximo passo
 
-B1 (kit de app) junto com B5 (parâmetros para configuração) e as lacunas P0/P1 do B6.
-Pendente com o humano: o que é o "backend específico" da gestão de acesso (sistema real com contrato próprio?).
+Retomar o B1 pelo passo 1 do handoff acima. Depois: B5a, B3, B4/B6 (P0 e P1), C1–C3, D1, D2 (ADR-0013), E2–E5.
