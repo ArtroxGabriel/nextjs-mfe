@@ -103,7 +103,7 @@ repos/erp-*/README.md  NOVO em cada repositório: o que é, como testar, de quem
 | D7 `.agents/` de gates encerrados → `.agents/arquivo/` (58 pastas) | ✅ feito |
 | C3 `repos/{scripts,verificacao,docker-compose.yml,.verdaccio}` → `base/` | ✅ feito; compose com `name: repos` para manter os volumes do Verdaccio; `base/verificacao` 30/30 |
 | C2 shell para de copiar a CSP | ✅ feito: `politicaDeSeguranca` do núcleo 0.6.0 no `proxy.ts` do shell |
-| C1 kit de app `@erp/nucleo/app` | ✅ decidido no ADR-0012 (o núcleo **não** importa a moldura: injeção por `aoNegar`); ⏳ implementar depois do gate |
+| C1 kit de app | ✅ pacotes prontos: `@erp/nucleo` 0.7.0 (`/app`, 107 testes, 8 mutações) e `@erp/moldura` 0.4.0 (`/servidor`, 25 testes, 6 mutações); ⏳ migrar as 4 apps depois do gate |
 
 Os handoffs antigos em `.agents/<agente>/` e o que está em `historico/` mantêm os caminhos da época.
 
