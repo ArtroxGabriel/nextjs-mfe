@@ -1,0 +1,7 @@
+dominio-a substituido por servidor que so registra cabecalhos, em :4001
+valido: status=200 erro=null vistos=["00-4bf92f3577b34da6a3ce929d0e0e4736-51af32717de683c5-01"] validos=true contemForjado=false
+texto-livre: status=200 erro=null vistos=["00-558b78e9d5feb1a2c406dca9d3c32efa-99e6291d24b5ee28-01"] validos=true contemForjado=false
+email: status=200 erro=null vistos=["00-d18d418635f319bbc219d9884a4b6790-0ca1f95546e4e089-01"] validos=true contemForjado=false
+trace-zerado: status=200 erro=null vistos=["00-4d5de7c2327ab4d52e054a2eb6f70392-8fc67a53260ed653-01"] validos=true contemForjado=false
+span-zerado: status=200 erro=null vistos=["00-0cd0e9ffa20398600e68d69c9976916a-e4e9dfe23524a5dd-01"] validos=true contemForjado=false
+lixo-2kb: status=200 erro=null vistos=["00-f0a5eafa9dc958696d9631f3f89438e7-17e5a6c4ee06975d-01"] validos=true contemForjado=false

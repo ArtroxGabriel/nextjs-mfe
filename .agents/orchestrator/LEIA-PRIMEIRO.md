@@ -40,6 +40,9 @@ flowchart LR
 - Verificador que já entregou handoff não é reusado; a rodada seguinte usa agentes novos.
 - O auditor tem **veto**: uma correção cujo teste não reprova quando o código é revertido não conta.
 - Só o challenger usa as portas; o auditor espera por elas.
+- Se o orquestrador trabalhar em outro submódulo durante um gate, **registra no `RETOMADA.md` e avisa os
+  verificadores no despacho**: o challenger_shell_3 viu mudanças no núcleo e na moldura e as tomou
+  por um processo concorrente.
 
 ## Onde fica o resto
 

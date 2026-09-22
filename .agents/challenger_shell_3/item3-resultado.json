@@ -1,0 +1,70 @@
+[
+  {
+    "caminho": "/api/otelx",
+    "status": 307,
+    "location": "/login?de=%2Fapi%2Fotelx",
+    "contentType": null,
+    "tamanhoCorpo": 24,
+    "corpoAmostra": "/login?de=%2Fapi%2Fotelx"
+  },
+  {
+    "caminho": "/api/otelx",
+    "metodo": "POST",
+    "status": 307,
+    "location": "/login?de=%2Fapi%2Fotelx",
+    "contentType": null,
+    "tamanhoCorpo": 24,
+    "corpoAmostra": "/login?de=%2Fapi%2Fotelx"
+  },
+  {
+    "caminho": "/api/authx",
+    "status": 307,
+    "location": "/login?de=%2Fapi%2Fauthx",
+    "contentType": null,
+    "tamanhoCorpo": 24,
+    "corpoAmostra": "/login?de=%2Fapi%2Fauthx"
+  },
+  {
+    "caminho": "/api/authx",
+    "metodo": "POST",
+    "status": 307,
+    "location": "/login?de=%2Fapi%2Fauthx",
+    "contentType": null,
+    "tamanhoCorpo": 24,
+    "corpoAmostra": "/login?de=%2Fapi%2Fauthx"
+  },
+  {
+    "caminho": "/api/auth-falso/x",
+    "status": 307,
+    "location": "/login?de=%2Fapi%2Fauth-falso%2Fx",
+    "contentType": null,
+    "tamanhoCorpo": 33,
+    "corpoAmostra": "/login?de=%2Fapi%2Fauth-falso%2Fx"
+  },
+  {
+    "caminho": "/api/auth-falso/x",
+    "metodo": "POST",
+    "status": 307,
+    "location": "/login?de=%2Fapi%2Fauth-falso%2Fx",
+    "contentType": null,
+    "tamanhoCorpo": 33,
+    "corpoAmostra": "/login?de=%2Fapi%2Fauth-falso%2Fx"
+  },
+  {
+    "caminho": "/API/OTEL/v1/traces",
+    "status": 307,
+    "location": "/login?de=%2FAPI%2FOTEL%2Fv1%2Ftraces",
+    "contentType": null,
+    "tamanhoCorpo": 37,
+    "corpoAmostra": "/login?de=%2FAPI%2FOTEL%2Fv1%2Ftraces"
+  },
+  {
+    "caminho": "/API/OTEL/v1/traces",
+    "metodo": "POST",
+    "status": 307,
+    "location": "/login?de=%2FAPI%2FOTEL%2Fv1%2Ftraces",
+    "contentType": null,
+    "tamanhoCorpo": 37,
+    "corpoAmostra": "/login?de=%2FAPI%2FOTEL%2Fv1%2Ftraces"
+  }
+]

@@ -1,0 +1,25 @@
+gestao-acesso derrubada em 2026-09-22T00:09:08.230Z
+login davi: status fetch=0
+  window.next.router presente: true
+  davi -> /zona1: urlFinal=/zona1 h1="Serviço indisponível" respostas=11 rsc=1 achados=[]
+  davi -> /zona1/relatorios: urlFinal=/zona1/relatorios h1="Serviço indisponível" respostas=1 rsc=1 achados=[]
+  davi -> /zona2: urlFinal=/zona2 h1="Serviço indisponível" respostas=11 rsc=1 achados=[]
+  davi -> /acesso: urlFinal=/acesso h1="Serviço indisponível" respostas=11 rsc=1 achados=[]
+login bruno: status fetch=0
+  window.next.router presente: true
+  bruno -> /zona1: urlFinal=/zona1 h1="Serviço indisponível" respostas=11 rsc=1 achados=[]
+  bruno -> /zona1/relatorios: urlFinal=/zona1/relatorios h1="Serviço indisponível" respostas=1 rsc=1 achados=[]
+  bruno -> /zona2: urlFinal=/zona2 h1="Serviço indisponível" respostas=11 rsc=1 achados=[]
+  bruno -> /acesso: urlFinal=/acesso h1="Serviço indisponível" respostas=11 rsc=1 achados=[]
+login ana: status fetch=0
+  window.next.router presente: true
+  ana -> /zona1: urlFinal=/zona1 h1="Serviço indisponível" respostas=11 rsc=1 achados=[]
+  ana -> /zona1/relatorios: urlFinal=/zona1/relatorios h1="Serviço indisponível" respostas=1 rsc=1 achados=[]
+  ana -> /zona2: urlFinal=/zona2 h1="Serviço indisponível" respostas=11 rsc=1 achados=[]
+  ana -> /acesso: urlFinal=/acesso h1="Serviço indisponível" respostas=11 rsc=1 achados=[]
+login carla: status fetch=0
+  window.next.router presente: true
+  carla -> /zona1: urlFinal=/zona1 h1="Serviço indisponível" respostas=11 rsc=1 achados=[]
+  carla -> /zona1/relatorios: urlFinal=/zona1/relatorios h1="Serviço indisponível" respostas=1 rsc=1 achados=[]
+  carla -> /zona2: urlFinal=/zona2 h1="Serviço indisponível" respostas=11 rsc=1 achados=[]
+  carla -> /acesso: urlFinal=/acesso h1="Serviço indisponível" respostas=11 rsc=1 achados=[]

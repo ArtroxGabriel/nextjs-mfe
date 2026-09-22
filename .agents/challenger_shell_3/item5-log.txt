@@ -1,0 +1,45 @@
+tarefas antes: Início
+Painel da zona 1
+Tarefas
+
+clique no botao: clicado
+
+url apos a acao: /zona1
+
+texto apos a acao:
+ERP
+
+Ana Operadora
+Sair
+Início
+Painel da zona 1
+Tarefas
+Painel da zona 1
+Indicadores (domínio B)
+Recursos ativos: 3
+Disponibilidade: 99.2
+Recursos (domínio A)
+Recurso público 1
+Recurso público 2
+Avisar no toast do shell
+
+Tarefa concluída.
+
+texto ao recarregar /zona1:
+ERP
+
+Ana Operadora
+Sair
+Início
+Painel da zona 1
+Tarefas
+Painel da zona 1
+Indicadores (domínio B)
+Recursos ativos: 3
+Disponibilidade: 99.2
+Recursos (domínio A)
+Recurso público 1
+Recurso público 2
+Avisar no toast do shell
+
+toast apareceu apos a acao: true; toast repetiu ao recarregar: false
