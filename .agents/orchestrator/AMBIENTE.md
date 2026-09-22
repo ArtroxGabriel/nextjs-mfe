@@ -54,6 +54,10 @@
 - Ponta a ponta: `pnpm verificar` (usa os builds existentes) ou `pnpm verificar:construir` (refaz).
   Esperado hoje: 30/30.
 - Um teste estático que dá para contornar (`globalThis['fetch']` no lugar de `fetch(`) foi contornado. Checagem por regex tem de cobrir as formas indiretas, e todo contorno achado vira caso do teste.
+- **Mutação em código que grava arquivo pode sujar dados versionados.** Em 2026-09-22 a mutação
+  "sem pasta, grave na semente" do `erp-dominio-stub` gravou em `dados/semente/*.json`; restaurar o
+  `.mjs` não restaurou a semente e a mutação seguinte pareceu pegar por outro motivo. Antes de mutar,
+  tire cópia dos dados e restaure-a depois de cada mutação (ou rode a mutação numa cópia).
 - **Um dono por vez para as portas** 3000–3003, 4001–4004 e 4010. Num gate, só o challenger sobe
   servidores; o auditor espera. O Verdaccio (4873) ninguém derruba.
 - Não existe `tsx` nem `rtk` nesta máquina; não buscar.
