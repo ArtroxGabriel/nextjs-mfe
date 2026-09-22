@@ -1,5 +1,5 @@
 # Showcase: infraestrutura que a base usa fora do processo das apps.
-# RASCUNHO (2026-09-22): ainda não executado; entra em uso em D1 (Redis) e D2 (Keycloak).
+# Conferido em 2026-09-22 (checar-keycloak.mjs); entra em uso em D1 (Redis) e D2 (Keycloak).
 # Só para desenvolvimento: senhas e segredo de cliente abaixo são públicos de propósito.
 name: erp-showcase
 
