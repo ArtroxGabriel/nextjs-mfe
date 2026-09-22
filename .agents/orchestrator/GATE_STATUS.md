@@ -92,3 +92,26 @@ Lacunas do auditor_shell_4 viram endurecimento imediato da verificação (fora d
 
 Gate Result: **PASS** — B1 (Kit de app no núcleo e moldura) e D1 (Persistência de sessão no Redis) aprovados integralmente.
 
+
+## Gate — Kit de aplicação (B1) + Sessão no Redis (D1), iteração 2 (núcleo 0.8.2 / moldura 0.4.0 / contratos 0.3.1)
+
+Rodada pedida pelo humano: a iteração 1 fez 7 mutações e usou verificadores fora do processo. Escopo ampliado ao que
+entrou sem verificação independente: núcleo 0.8.0–0.8.2 (acesso v2, campos OIDC, timeouts), B3, B4/B6, B5a.
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| auditor_b1_d1_2 | general-purpose forense (opus) | **INTEGRITY VIOLATION** | .agents/auditor_b1_d1_2/handoff.md, mutacoes.txt, anexos/ | 77 mutações de código (54 pegas, 23 sobreviventes) + 29 contornos das checagens estáticas (28 passaram) |
+
+Vetos: **V1** zona grava e apaga sessão direto no Redis (`clienteRedis.set/del`) e o ponta a ponta fica 60/60 (inv. 15);
+**V2** `@erp/nucleo/app` pode exportar `criarNucleoDoShell` (inv. 15); **V3** `server-only` verificado por texto; `'use client';`
+com ponto e vírgula ou comentário desliga a regra P0 (inv. 3); **V4** fallback v2 → v1 concede com 401/403/500/timeout
+(inv. 9/16); **V5** DTO por spread para ilha `'use client'` passa (inv. 2); **V6** `exigirModulo(id, funcionalidade)` ignorando a
+funcionalidade passa (inv. 16); **V7** `NEXT_PUBLIC_*` com endpoint interno passa, `next.config.ts` não é varrido (inv. 11);
+**V8** `Reflect.get(globalThis,'fe'+'tch')`, `createRequire('undici')`, `child_process` passam no N8 (inv. 4).
+Lacunas: L1 health sem efeito (404 conta como "no ar"); L2 limites sem teto e `lerNumeroPositivo` do núcleo sem teste;
+L3 sonda aceita `redirect: 'follow'`; L4 Redis caído espera 5 s do `connectTimeout`; L5 `acesso.test.mjs` trava ao reprovar;
+L6 `obterEu` com CPF; L7 `ehSessao` aceita sessão sem token; L8 `<Link>` via expressão e clientes de banco fora do N8.
+
+Gate Result: **FAIL** (veto). A iteração 1 (PASS) fica superada. Correção: V4, V6 e L6 pelo G3 (adendo 1 do ADR-0014,
+corte seco); V1, V2, V3, V5, V7, V8 e as lacunas numa fatia de correção antes da iteração 3. Estado final conferido pelo
+orquestrador: fontes iguais ao início, `dist` instalado igual ao tarball 0.8.2 nas 4 apps, 60/60 nos dois modos.

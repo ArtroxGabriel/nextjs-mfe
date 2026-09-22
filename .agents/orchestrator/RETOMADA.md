@@ -26,7 +26,7 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
 | `@erp/nucleo` | **0.8.2** nas 4 apps (kit `/app`, timeouts configuráveis, campos OIDC na sessão, acesso v2 parcial) | lockstep 4 apps |
 | `@erp/contratos` / `@erp/moldura` | **0.3.1** (contratos da v2) / **0.4.0** (`/servidor`) | ADR-0012, ADR-0014 |
 | Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
-| Gate B1+D1 | iteração 1 registrada como PASS, mas **rasa** (7 mutações, verificadores fora do processo); **iteração 2 com auditor Opus em andamento** desde ~17h40: às 19h00, ~90 mutações, fase ponta a ponta; achados parciais abaixo | `.agents/auditor_b1_d1_2/handoff.md` (parcial) |
+| Gate B1+D1 | **iteração 2 REPROVADA** (auditor Opus, 77 mutações + 29 contornos; vetos V1–V8); iteração 1 superada | `GATE_STATUS.md`; `.agents/auditor_b1_d1_2/` |
 | Submódulos | os 8 no `master`, iguais a `origin/master` | `git submodule foreach git status -sb` |
 
 ## Plano até o objetivo
@@ -99,32 +99,24 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 4. ✅ Sessão de 30 min **por inatividade**, capturada pelos refresh tokens (humano, 2026-09-22); teto absoluto configurável. Parâmetros assim ficam em configuração documentada (`docs/CONFIGURACAO.md`), não no código.
 5. Aceitar (ou pedir ajuste de) **ADR-0013** e **ADR-0014 com o adendo 1** (corte seco para a v2, eventos no G5).
 
-## Gate B1+D1, iteração 2 — achados parciais (auditor ainda rodando)
+## Correção do gate B1+D1 (fatia "K", antes da iteração 3)
 
-Registrados no handoff parcial; o veredito sai no fim. Já há motivo de veto:
+| # | Veto | Correção | Onde |
+|---|---|---|---|
+| K1 | V1 zona escreve no Redis | `lib/redis.ts` da zona só com `get`; usuário ACL só leitura para as zonas no showcase; teste estático que reprova `.set`/`.del` em zona | zonas, `base/showcase`, `base/verificacao` |
+| K2 | V2 `/app` exporta o escritor | teste de fronteira em todo subpath que não seja `/shell` | núcleo |
+| K3 | V3 `server-only` por texto; diretiva contornável | `fronteira.mjs` por import real (sem comentário); analisador reconhece `'use client';` e comentário antes; `lib/redis.ts` coberto | núcleo, `base/verificacao` |
+| K4 | V4 fallback concede; V6 funcionalidade ignorada; L6 CPF | **G3** (corte seco, `exigirModulo(modulo, funcionalidade)`, `acessoEfetivo`) | núcleo 0.9.0 |
+| K5 | V5 DTO por spread | regra P0 cobre spread e objeto inteiro para ilha | `base/verificacao` |
+| K6 | V7 `NEXT_PUBLIC_*` | varrer `next.config.ts` e todo `NEXT_PUBLIC_` com endpoint/token | `base/verificacao` |
+| K7 | V8 saída de rede | `Reflect`/`getOwnPropertyDescriptor`, `createRequire`, `child_process`, clientes de banco | `base/verificacao` |
+| K8 | L1–L8 | health que diz algo (sonda exige 2xx), tetos nos limites, `redirect: 'manual'` na sonda, `finally` nos servidores de teste, `ehSessao` exige token | shell, núcleo |
 
-- **Fallback do acesso v2 concede** (N27): `/v2/eu` com 401, 403, 500, timeout ou corpo sem `modulos` cai
-  no `/v1` e entrega o que ele disser. Nenhum teste cobre. A correção é o corte seco do adendo 1 do
-  ADR-0014 (G3), com os testes marcados † lá.
-- **`exigirModulo(id, funcionalidade)` não checa a funcionalidade** sem que teste algum reprove (N17).
-- **Fronteira do núcleo por texto** (N08): um comentário com `import 'server-only'` satisfaz a checagem.
-- **`@erp/nucleo/app` pode exportar `criarNucleoDoShell`** sem teste reprovar (N38; invariante 15).
-- **`cache: 'no-store'` → `'force-cache'`** passa na unidade do núcleo (N37; invariante 13).
-- Timeouts do núcleo (`lerNumeroPositivo`, padrão) sem teste (N33, N34, N36).
-- **`seguranca-estatica.mjs` e `saida-de-rede.mjs` contornáveis**: 27 de 29 contornos passaram (`'use client';`
-  com ponto e vírgula, comentário antes da diretiva, import transitivo de `lib/nucleo`, DTO por spread,
-  `<Link>` com `href` em expressão ou renomeado, `NEXT_PUBLIC` por índice, cliente de rede fora do registro,
-  `Reflect`/`createRequire`/`child_process`). As mesmas formas no código real foram pegas pelo ponta a
-  ponta (E09), então hoje é lacuna de verificação, não vazamento conhecido.
-- Testes de `acesso.test.mjs` travam ao reprovar (servidor sem `finally { close() }`).
-
-Já pegas: sessão no Redis (chave crua, fail-open, prefixo vazio, `encerrar`), limites da sonda e da
-telemetria, `exigirModulo` removido ou trocado de página, health quebrado, Server Action com módulo errado.
+Todo contorno achado pelo auditor vira caso de teste (AMBIENTE §3).
 
 ## Próximo passo
 
-1. Esperar o veredito do `auditor_b1_d1_2` e registrar em `GATE_STATUS.md`. Com veto, a correção do fallback
-   é o próprio G3; as demais (N08, N17, N37, N38, estáticas) entram como tarefas do gate seguinte.
+1. **Fatia K** (tabela acima) junto com o **G3**; depois a iteração 3 do gate com revisor, challenger e auditor novos.
 2. **G3** (núcleo 0.9.0, contratos 0.4.0) conforme o adendo 1 do ADR-0014. **Feito:** `erp-contratos` 0.4.0
    (`b56320e`, 20/20 testes, enviado ao `master` do submódulo; o principal ainda aponta para o 0.3.1 e
    nada foi publicado). **Falta:** stub (token com uuid, `nome` no `/v2/eu`, ana…davi na semente), núcleo,
