@@ -1,7 +1,0 @@
---- depois de SIGTERM em todo processo que escuta nas portas do gate
-LISTEN 0      511                     *:3002        *:* users:(("next-server (v1",pid=349181,fd=21))
-3002 pid 349181 estado Tl
---- checagem de porta ocupada do subir() (mesmo código: fetch com AbortSignal.timeout(500))
-3002 ocupada=false (TimeoutError)
---- esperar() do subir (fetch sem timeout) contra a zona congelada, cortado em 8 s
-saida do timeout: 124

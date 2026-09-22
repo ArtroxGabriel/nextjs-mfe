@@ -20,7 +20,7 @@
 
 | # | Título | Estado real | Ação | No GitLab? | Evidência |
 |---|---|---|---|---|---|
-| 3 | Isolar a falha de zona no shell da base *(era "Tratar zonas travadas")* | falta `/{zona}/api/health`; gates 1, 2 e 3 reprovados e corrigidos (o 3 pelo auditor: página de recurso fora do teste de vazamento e zona travada sem teste); verificação 50/50; **falta o gate 4** | reescrever título; mover para **em andamento** | pendente | `erp-shell` `6de4939`/`dab5ffd`/`a63b995`; `RETOMADA.md` |
+| 3 | Isolar a falha de zona no shell da base *(era "Tratar zonas travadas")* | falta `/{zona}/api/health`; **gate aprovado na iteração 4** (três verificadores; `GATE_STATUS.md`); falta só `/{zona}/api/health` (B3) | reescrever título; mover para **em andamento** | pendente | `erp-shell` `6de4939`/`dab5ffd`/`a63b995`; `RETOMADA.md` |
 | 9 | Trocar login e store de desenvolvimento por OIDC e Redis *(era "Implementar sessão e autorização no servidor")* | cookie opaco, escritor único e autorização por módulo entregues; **adaptador Redis pronto** (`@erp/nucleo` 0.4.0, 12 testes, 9 mutações pegas), falta ligar nas apps; faltam OIDC e renovação de token | reescrever título e critérios; mover para **em andamento** | pendente | ADR-0009 decisão 3; `erp-nucleo` `3a7b80c`; `alvo.md` §6 |
 | 10 | Implementar composição por fragmentos | núcleo pronto (`@erp/nucleo` 0.5.0, 18 testes, 16 mutações); falta ligar zona 1 ← zona 2 e bloquear no shell | mover para **em andamento** | pendente | ADR-0011; `erp-nucleo` `1841771` |
 | 11 | Centralizar o tempo real no shell | não iniciado | manter; tirar a dependência da #2 | pendente | `alvo.md` §6 (SSE) |
@@ -28,7 +28,7 @@
 | 14 | Definir estratégia de publicação e compatibilidade | submódulos **feitos**; hook `pre-push` que recusa submódulo não enviado **feito** (`base/scripts/checar-envio.mjs`, provado com commit só local); **gate de lockstep do núcleo feito** (`base/scripts/verificar-lockstep.mjs`, no `pre-push`, provado com divergência real); falta registro único ou publicação pelo CI | acrescentar critérios: gate de lockstep no CI, registro único, nunca republicar a mesma versão,  checar submódulo não enviado antes do push, mapa de zonas vindo do domínio de acesso | pendente | ADR-0010; `AMBIENTE.md` §1–2; `4eb128b` |
 | 19 | Entregar o showcase da base com mocks, Keycloak e Redis *(nova)* | não iniciado; é o objetivo final da lista 1 (`RETOMADA.md` fase E) | **criar** (texto em §3) | pendente | `RETOMADA.md` |
 | 20 | Migrar as apps para o kit de app e fechar as verificações da spec *(nova)* | pacotes prontos (`@erp/nucleo` 0.7.0, `@erp/moldura` 0.4.0); migração espera o gate do shell | **criar** (texto em §3) | pendente | ADR-0012 |
-| 18 | Centralizar a telemetria das zonas no shell *(nova)* — **ampliar para "Trace contínuo sem dado pessoal (núcleo 8)"**: o elemento 8 é núcleo e está ausente (`alvo.md` §6) | gateway corrigido nos gates 1–2; **propagação de trace feita** (núcleo 0.6.0, teste T1); falta exportar spans (SDK OpenTelemetry, exige instalar pacote) | **criar** em andamento (texto em §3) | pendente | `erp-shell` `6de4939`; `alvo.md` §6 (Operação) |
+| 18 | Centralizar a telemetria das zonas no shell *(nova)* — **ampliar para "Trace contínuo sem dado pessoal (núcleo 8)"**: o elemento 8 é núcleo e está ausente (`alvo.md` §6) | gateway e propagação de trace **aprovados no gate do shell** (iteração 4); falta exportar spans (SDK OpenTelemetry, instalação aprovada; B2) | **criar** em andamento (texto em §3) | pendente | `erp-shell` `6de4939`; `alvo.md` §6 (Operação) |
 
 ### Lista 2 — refinamento (separada das atuais; não começar agora)
 
@@ -67,17 +67,14 @@ serão criadas: o trabalho delas está na #17.
 
 ## 3. Textos prontos para colar
 
-### #3 — comentário de bloqueio
+### #3 e #18 — comentário: gate aprovado
 
 ```
-Implementado no erp-shell (6de4939, dab5ffd, a63b995): 503 com Retry-After e página própria quando a zona cai, sonda de saúde por zona com cache de 1 s.
-
-Gate em andamento. O revisor pediu mudanças antes de fechar:
-- exigirModulo libera o módulo quando a gestão de acesso está fora do ar (fail-open); tem de negar. Afeta shell e zonas.
-- o proxy.ts do shell reimplementou a CSP e perdeu form-action 'self' e img-src.
-
-Próximo: challenger e auditor forense; depois, correção e nova rodada.
-Evidência: .agents/reviewer_shell_1/handoff.md
+Gate "Shell novo" aprovado na iteração 4 (revisor, challenger e auditor forense independentes).
+Coberto: 503 próprio com Retry-After quando a zona cai ou trava (em menos de 1 s), em qualquer caixa do caminho; nenhum módulo vaza com a gestão de acesso fora (todas as páginas de módulo, inclusive no payload RSC e na navegação do cliente); CSP com nonce novo e imprevisível no shell e nas zonas; gateway de telemetria que descarta lote anônimo, limita tamanho em streaming e taxa; trace propagado do navegador ao domínio.
+Três iterações reprovadas antes, cada uma com a correção provada por mutação. Verificação ponta a ponta: 51/51.
+Falta na #3: /{zona}/api/health sem tocar domínio. Falta na #18: exportar spans ao coletor (SDK OpenTelemetry).
+Evidência: .agents/orchestrator/GATE_STATUS.md; tag gate-shell-aprovado.
 ```
 
 ### #9 — novo título e critérios
@@ -135,12 +132,6 @@ Critérios novos:
 - Um único registro de pacotes (ou publicação pelo CI); hoje cada máquina tem o seu Verdaccio e os hashes dos lockfiles divergem
 - Nunca republicar o mesmo número de versão (ADR-0010)
 - Mapa de zonas vindo do domínio de gestão de acesso
-```
-
-### #18 — comentário de bloqueio (depois de criar com o texto abaixo)
-
-```
-Gate em andamento. O revisor pediu mudanças: sem Content-Length o gateway lê o corpo inteiro antes de checar sessão e tamanho; o mapa do limitador de taxa nunca expira entradas. Evidência: .agents/reviewer_shell_1/handoff.md
 ```
 
 ### #17 — criar já fechada
@@ -347,3 +338,4 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-09-21 noite | #9 em andamento (adaptador Redis no núcleo 0.4.0); #14 ganha o hook `pre-push`; #10 em andamento (núcleo 0.5.0, ADR-0011); #3 e #18 recebem o bloqueio do revisor; textos prontos para #3, #9, #10, #14 e #18 |
 | 2026-09-22 | Plano com objetivo final (showcase com mocks JSON, Keycloak e Redis): criar #19 e #20; lista 2 separada com F1–F7 (refinamento arquitetural, otimização, mapa robusto, gestão de acesso, erro, testes, desempenho e segurança), bloqueadas até o showcase; #3 com gate 3 em andamento |
 | 2026-09-22 (tarde) | Sessão por inatividade e regra "parâmetro é configuração documentada": #9 e #20 ganham critérios; gate 3 do shell reprovado e corrigido; ADR-0013 proposto |
+| 2026-09-22 (noite) | Gate do shell **aprovado** (iteração 4): #3 falta só o health; #18 faltam só os spans. Taskfile adotado; SSO do showcase endurecido; relatório de segurança (B6) |

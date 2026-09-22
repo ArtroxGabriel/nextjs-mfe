@@ -2,7 +2,8 @@
 
 > Um bloco por rodada: agentes, veredito, fonte e resultado. Os gates da PoC (M1, M2, final) e as
 > pastas dos verificadores encerrados estão na tag `historico-2026-09-22`; os caminhos
-> `.agents/arquivo/...` e `.agents/*_shell_1/` citados abaixo existem só nela.
+> `.agents/arquivo/...` e `.agents/*_shell_1/` citados abaixo existem só nela; `*_shell_2` está na história do
+> git e `*_shell_3`/`*_shell_4`, na tag `gate-shell-aprovado`.
 
 ## Gate — Base genérica (ADR-0009), iteração 1, HEAD 1b9e811
 | Agent | Role | Verdict | Source | Notes |

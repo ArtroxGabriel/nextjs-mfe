@@ -1,2 +1,0 @@
-NP-cadeia E2E: ℹ pass 50 ℹ fail 0  FALHAS: 
-NP-cadeia LAC(G11): ℹ pass 0 ℹ fail 1  FALHAS: ✖ failing tests:;✖ G11: gestao de acesso fora nao entrega pagina dinamica de modulo irma de uma literal (/zona1/[secao]);

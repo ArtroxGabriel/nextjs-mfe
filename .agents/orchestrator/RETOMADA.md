@@ -18,10 +18,10 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
 
 | O quê | Estado | Evidência |
 |---|---|---|
-| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **50/50** com navegador real | `task verificar:construir` |
+| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **51/51** com navegador real | `task verificar:construir` |
 | `@erp/nucleo` | **0.6.0** nas 4 apps (CSP e trace); **0.7.0** publicado com o kit `/app`, ainda não consumido | `e624c0c`; ADR-0012 |
 | `@erp/moldura` | 0.3.0 nas apps; **0.4.0** (`/servidor`) publicado, não consumido | ADR-0012 |
-| Gate "Shell novo" (#3, #18) | iteração 3 **reprovada** pelo auditor (V1 página de recurso fora do L1; V2 zona travada); corrigida na verificação, **50/50**; falta a iteração 4 | `GATE_STATUS.md` |
+| Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 (revisor APPROVE, challenger APPROVE, auditor CLEAN); lacunas do auditor fechadas depois, **51/51** | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
 | Repositório | limpo em 2026-09-22: só o necessário; o resto na tag `historico-2026-09-22` | este commit |
 
 ## Plano até o objetivo
@@ -32,7 +32,7 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 
 | Fase | Item | Estado | Atividade | Depende de / bloqueio |
 |---|---|---|---|---|
-| **A. Fechar o aberto** | A1 gate do shell, iteração 4 (revisor + auditor; só a verificação mudou) | ⏳ | #3, #18 | — |
+| **A. Fechar o aberto** | A1 gate do shell | ✅ aprovado na iteração 4 | #3, #18 | — |
 | **B. Base consistente** | B1 migrar as 4 apps para o kit (`@erp/nucleo` 0.7.0 + `@erp/moldura` 0.4.0) e apagar as cópias | ⬜ | #20 | A1 |
 | | B2 exportar spans (SDK OpenTelemetry) | ⬜ | #18 | — (instalação aprovada) |
 | | B3 `/{zona}/api/health` sem tocar domínio; sonda do shell passa a usá-lo | ⬜ | #3 | B1 |
@@ -92,5 +92,6 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 
 ## Próximo passo
 
-Iteração 4 do gate do shell (revisor **APPROVE**; nit: `congelarApp`/`descongelarApp` sem a guarda `if (!p) return` — aplicar depois do auditor): `reviewer_shell_4` (Sonnet, só leitura e unidade) e `auditor_shell_4` (Opus, dono das
-portas). Com CLEAN: registrar, atualizar #3 e #18, fazer o merge do E1 e seguir para B1.
+Merge do E1 no `master` do `erp-dominio-stub`, envio e fixação no principal com `task verificar`;
+depois B1 (kit de app) junto com B5 (parâmetros para configuração) e as lacunas P0/P1 do B6.
+Pendente com o humano: o que é o "backend específico" da gestão de acesso (sistema real com contrato próprio?).
