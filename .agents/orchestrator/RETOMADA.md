@@ -41,7 +41,7 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | | C2 SSE no shell (`/api/stream` + `SharedWorker`); fechar D7 (`proxyTimeout`) | ⬜ | #11 | B1 |
 | | C3 mapa de zonas vindo dos manifestos da gestão de acesso | ⬜ | #14 | B1 |
 | **D. Sessão e identidade reais** | D1 ligar `sessaoRedis` (cliente `redis` + Redis no compose) | ⬜ | #9 | — (instalação aprovada) |
-| | D2 OIDC + PKCE no shell contra o Keycloak local; renovação de token com lock; sessão de 30 min | 🔒 | #9 | D1 (instalação aprovada) |
+| | D2 OIDC + PKCE no shell contra o Keycloak local; renovação proativa com lock no proxy do shell; núcleo 0.8.0 | ⬜ desenho decidido: **ADR-0013** (proposto) | #9 | B1, D1 |
 | **E. Showcase** | E1 domínios mock com dados em JSON por domínio (sementes por ator, persistência em arquivo, reset por comando) | ✅ commit `35cb4c7` no branch `e1-dados-json` do `erp-dominio-stub` (worktree em scratchpad); 24/24, 6 mutações pegas. **Falta:** merge no `master` do submódulo depois do auditor, envio, fixar no principal e rodar `pnpm verificar` | #19 | A1 (só para o merge) |
 | | E2 `docker-compose` do showcase: Redis, Keycloak (realm `erp` com ana/bruno/carla/davi) | ✅ `base/showcase/` **no ar e conferido** (`docker compose -f base/showcase/docker-compose.yml up -d`; `node base/showcase/checar-keycloak.mjs`: sem PKCE recusado, verifier errado recusado, login da ana com token de 300 s e refresh): Redis 7.4 com AOF e `noeviction`; Keycloak 26 com cliente confidencial `erp-shell` + PKCE S256, sessão de 30 min. Grupos ficam nos domínios (ADR-0009), não no Keycloak | #19 | D1, D2 (imagens aprovadas) |
 | | E3 `pnpm showcase`: sobe imagens, mocks e apps; derruba com um comando | ⬜ | #19 | E1, E2 |
@@ -85,6 +85,7 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 
 1. ✅ **Instalações aprovadas pelo humano em 2026-09-22** ("tudo está aprovado de instalação"): `redis`, SDK OpenTelemetry, biblioteca OIDC, imagens do Redis e do Keycloak. Continua valendo mostrar o que entra antes de instalar.
 2. **Decidir infraestrutura** de registro de pacotes / CI (P1).
+4. **Sessão de 30 min: absoluta ou por inatividade?** O realm hoje dá 30 min absolutos desde o login (ADR-0013, em aberto 2).
 3. Aplicar no GitLab o que está em `ATIVIDADES.md` §2 com "pendente".
 
 ## Próximo passo

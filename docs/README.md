@@ -70,6 +70,7 @@ glossário (`13`), variantes de cache (`14`).
 | [0010](adr/0010-reconciliacao-do-nucleo.md) | Reconciliação de dois `@erp/nucleo` 0.3.1; versão nunca republicada |
 | [0011](adr/0011-fragmento-entre-zonas.md) | Fragmento entre zonas: fábrica do núcleo, cookie como identidade, ausência é 204 |
 | [0012](adr/0012-kit-de-app-no-nucleo.md) | Kit de app `@erp/nucleo/app` no lugar das 4 cópias; o núcleo não importa a moldura |
+| [0013](adr/0013-login-oidc-e-renovacao-proativa.md) | *(proposto)* Login OIDC + PKCE e renovação proativa no proxy do shell; substitui a decisão 3 do 0009 |
 
 ## Regras para esta pasta
 
