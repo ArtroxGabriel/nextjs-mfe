@@ -1,0 +1,91 @@
+{
+  "realm": "erp",
+  "enabled": true,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 1800,
+  "clients": [
+    {
+      "clientId": "erp-shell",
+      "name": "Shell do ERP (BFF)",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "dev-erp-shell-segredo",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:3000/api/auth/retorno"
+      ],
+      "webOrigins": [],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:3000/login"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "ana",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Ana",
+      "lastName": "Operadora",
+      "email": "ana@erp.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "ana",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "bruno",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Bruno",
+      "lastName": "Analista",
+      "email": "bruno@erp.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "bruno",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "carla",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Carla",
+      "lastName": "Administradora de Acesso",
+      "email": "carla@erp.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "carla",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "davi",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Davi",
+      "lastName": "Sem Perfil",
+      "email": "davi@erp.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "davi",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

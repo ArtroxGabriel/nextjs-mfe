@@ -43,7 +43,7 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | **D. Sessão e identidade reais** | D1 ligar `sessaoRedis` (cliente `redis` + Redis no compose) | 🔒 | #9 | **aprovação de instalação** |
 | | D2 OIDC + PKCE no shell contra o Keycloak local; renovação de token com lock; sessão de 30 min | 🔒 | #9 | D1; **aprovação de instalação** se usar biblioteca OIDC |
 | **E. Showcase** | E1 domínios mock com dados em JSON por domínio (sementes por ator, persistência em arquivo, reset por comando) | ✅ commit `35cb4c7` no branch `e1-dados-json` do `erp-dominio-stub` (worktree em scratchpad); 24/24, 6 mutações pegas. **Falta:** merge no `master` do submódulo depois do auditor, envio, fixar no principal e rodar `pnpm verificar` | #19 | A1 (só para o merge) |
-| | E2 `docker-compose` do showcase: Redis, Keycloak (realm `erp` com ana/bruno/carla/davi e grupos importados) | ⬜ | #19 | D1, D2 |
+| | E2 `docker-compose` do showcase: Redis, Keycloak (realm `erp` com ana/bruno/carla/davi) | ⏳ rascunho em `base/showcase/` (sintaxe validada, **não executado**): Redis 7.4 com AOF e `noeviction`; Keycloak 26 com cliente confidencial `erp-shell` + PKCE S256, sessão de 30 min. Grupos ficam nos domínios (ADR-0009), não no Keycloak | #19 | D1, D2; **aprovação para baixar as imagens** |
 | | E3 `pnpm showcase`: sobe imagens, mocks e apps; derruba com um comando | ⬜ | #19 | E1, E2 |
 | | E4 roteiro do showcase: cada funcionalidade basilar com passo e resultado esperado (login OIDC, sessão entre zonas, módulo negado = 404, fragmento, SSE, toast, zona fora = 503, `If-Match`, erro `{ codigo, supportId }`, trace) | ⬜ | #19 | C1–C3, E3 |
 | | E5 verificação ponta a ponta rodando contra o showcase | ⬜ | #19 | E4 |
@@ -83,7 +83,7 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 
 ## Pendências com o humano
 
-1. **Aprovar instalações:** cliente `redis` (D1); SDK OpenTelemetry (B2); biblioteca OIDC, se for usada (D2).
+1. **Aprovar instalações:** cliente `redis` (D1); SDK OpenTelemetry (B2); biblioteca OIDC, se for usada (D2, ex.: `openid-client`); baixar as imagens `redis:7.4-alpine` e `quay.io/keycloak/keycloak:26.0` (E2).
 2. **Decidir infraestrutura** de registro de pacotes / CI (P1).
 3. Aplicar no GitLab o que está em `ATIVIDADES.md` §2 com "pendente".
 

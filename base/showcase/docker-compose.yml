@@ -1,0 +1,28 @@
+# Showcase: infraestrutura que a base usa fora do processo das apps.
+# RASCUNHO (2026-09-22): ainda não executado; entra em uso em D1 (Redis) e D2 (Keycloak).
+# Só para desenvolvimento: senhas e segredo de cliente abaixo são públicos de propósito.
+name: erp-showcase
+
+services:
+  redis:
+    image: redis:7.4-alpine
+    # ADR-0002: instância só de sessão, sem despejo de chave e com AOF.
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_dados:/data
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: ["start-dev", "--import-realm", "--http-port=8080"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./keycloak/realm-erp.json:/opt/keycloak/data/import/realm-erp.json:ro
+
+volumes:
+  redis_dados:
