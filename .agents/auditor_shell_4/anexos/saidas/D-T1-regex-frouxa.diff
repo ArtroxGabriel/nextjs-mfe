@@ -1,0 +1,20 @@
+diff -r /tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/dist-orig/erp-shell/borda/trace.js /tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/copia/repos/erp-shell/node_modules/.pnpm/@erp+nucleo@0.6.0_next@16.3.4_@types+node@24.13.6_react-dom@19.2.8_react@19.2.8__react@19.2.8__server-only@0.0.1/node_modules/@erp/nucleo/dist/borda/trace.js
+7c7
+< export const TRACEPARENT = /^00-([0-9a-f]{32})-([0-9a-f]{16})-([0-9a-f]{2})$/;
+---
+> export const TRACEPARENT = /^([0-9a-z]{2})-([0-9a-zA-Z]{32})-([0-9a-zA-Z]{16})-([0-9a-z]{2})$/;
+diff -r /tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/dist-orig/erp-zona-1/borda/trace.js /tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/copia/repos/erp-zona-1/node_modules/.pnpm/@erp+nucleo@0.6.0_next@16.3.4_@types+node@24.13.6_react-dom@19.2.8_react@19.2.8__react@19.2.8__server-only@0.0.1/node_modules/@erp/nucleo/dist/borda/trace.js
+7c7
+< export const TRACEPARENT = /^00-([0-9a-f]{32})-([0-9a-f]{16})-([0-9a-f]{2})$/;
+---
+> export const TRACEPARENT = /^([0-9a-z]{2})-([0-9a-zA-Z]{32})-([0-9a-zA-Z]{16})-([0-9a-z]{2})$/;
+diff -r /tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/dist-orig/erp-zona-2/borda/trace.js /tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/copia/repos/erp-zona-2/node_modules/.pnpm/@erp+nucleo@0.6.0_next@16.3.4_@types+node@24.13.6_react-dom@19.2.8_react@19.2.8__react@19.2.8__server-only@0.0.1/node_modules/@erp/nucleo/dist/borda/trace.js
+7c7
+< export const TRACEPARENT = /^00-([0-9a-f]{32})-([0-9a-f]{16})-([0-9a-f]{2})$/;
+---
+> export const TRACEPARENT = /^([0-9a-z]{2})-([0-9a-zA-Z]{32})-([0-9a-zA-Z]{16})-([0-9a-z]{2})$/;
+diff -r /tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/dist-orig/erp-zona-acesso/borda/trace.js /tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/copia/repos/erp-zona-acesso/node_modules/.pnpm/@erp+nucleo@0.6.0_next@16.3.4_@types+node@24.13.6_react-dom@19.2.8_react@19.2.8__react@19.2.8__server-only@0.0.1/node_modules/@erp/nucleo/dist/borda/trace.js
+7c7
+< export const TRACEPARENT = /^00-([0-9a-f]{32})-([0-9a-f]{16})-([0-9a-f]{2})$/;
+---
+> export const TRACEPARENT = /^([0-9a-z]{2})-([0-9a-zA-Z]{32})-([0-9a-zA-Z]{16})-([0-9a-z]{2})$/;

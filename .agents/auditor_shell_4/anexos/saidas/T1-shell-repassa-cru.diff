@@ -1,0 +1,13 @@
+diff --git a/proxy.ts b/proxy.ts
+index 20927fc..448ff43 100644
+--- a/proxy.ts
++++ b/proxy.ts
+@@ -40,7 +40,7 @@ function aplicarCsp(req: NextRequest, nonce: string): NextResponse {
+   headers.set('x-erp-caminho', req.nextUrl.pathname)
+   headers.set('Content-Security-Policy', politicaDeSeguranca(nonce))
+   // núcleo 8: um trace por requisição, reaproveitando o do navegador se vier válido
+-  headers.set('traceparent', garantirTraceparent(req.headers.get('traceparent')))
++  headers.set('traceparent', req.headers.get('traceparent') ?? garantirTraceparent(null))
+   headers.delete('x-erp-flash')
+   const flash = req.cookies.get('__Host-flash')?.value
+   if (flash) headers.set('x-erp-flash', flash)

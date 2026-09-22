@@ -39,7 +39,8 @@ export function precisaConstruir(dirDaApp) {
 async function esperar(url, ms = 60_000) {
   const fim = Date.now() + ms
   while (Date.now() < fim) {
-    try { await fetch(url, { redirect: 'manual' }); return } catch { await new Promise((r) => setTimeout(r, 250)) }
+    // timeout por tentativa: um processo congelado aceita a conexão e nunca responde
+    try { await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(2_000) }); return } catch { await new Promise((r) => setTimeout(r, 250)) }
   }
   throw new Error(`nao respondeu a tempo: ${url}`)
 }
@@ -55,8 +56,11 @@ export async function subir({ construir = false, log = false } = {}) {
   // Um processo antigo numa porta faria a verificação falar com a base errada (outro
   // diretório de sessão, outro build) e reprovar por motivo nenhum do código.
   for (const porta of [...APPS.map((a) => a.porta), ...Object.values(PORTAS_DE_DOMINIO)]) {
-    const ocupada = await fetch(`http://127.0.0.1:${porta}/`, { signal: AbortSignal.timeout(500) }).then(() => true, () => false)
-    if (ocupada) throw new Error(`porta ${porta} ja esta em uso; derrube o processo antes de subir a base`)
+    // Só "conexão recusada" é porta livre. Timeout é processo que aceita e não responde (ex.: zona
+    // congelada por uma verificação interrompida no L7) e conta como ocupada.
+    const livre = await fetch(`http://127.0.0.1:${porta}/`, { signal: AbortSignal.timeout(500) })
+      .then(() => false, (e) => e?.cause?.code === 'ECONNREFUSED')
+    if (!livre) throw new Error(`porta ${porta} ja esta em uso (ou com processo congelado: kill -CONT/-TERM); derrube o processo antes de subir a base`)
   }
   const env = {
     ...process.env,
@@ -69,7 +73,10 @@ export async function subir({ construir = false, log = false } = {}) {
     processos.push(p)
     return p
   }
-  const parar = (p) => { try { process.kill(-p.pid, 'SIGTERM') } catch { /* ja saiu */ } }
+  const parar = (p) => {
+    // SIGCONT antes: um grupo congelado (congelarApp) não processaria o SIGTERM
+    try { process.kill(-p.pid, 'SIGCONT'); process.kill(-p.pid, 'SIGTERM') } catch { /* ja saiu */ }
+  }
   const derrubar = () => { for (const p of processos) parar(p) }
 
   // Um processo por domínio e por aplicação, para a verificação poder derrubar um de cada vez.
@@ -104,8 +111,8 @@ export async function subir({ construir = false, log = false } = {}) {
    * Congela a aplicação (SIGSTOP no grupo): a porta continua aceitando conexão e nada responde.
    * É a zona travada, diferente da zona caída, que recusa a conexão na hora.
    */
-  const congelarApp = (dir) => process.kill(-apps.get(dir).pid, 'SIGSTOP')
-  const descongelarApp = (dir) => process.kill(-apps.get(dir).pid, 'SIGCONT')
+  const congelarApp = (dir) => { const p = apps.get(dir); if (p) process.kill(-p.pid, 'SIGSTOP') }
+  const descongelarApp = (dir) => { const p = apps.get(dir); if (p) process.kill(-p.pid, 'SIGCONT') }
   const subirApp = async (dir) => {
     apps.set(dir, iniciar('pnpm', ['start'], join(RAIZ, dir)))
     const { porta, saude } = APPS.find((a) => a.dir === dir)

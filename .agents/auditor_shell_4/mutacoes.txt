@@ -1,0 +1,77 @@
+auditor_shell_4: mutações contra o estado da iteração 4 do gate "Shell novo"
+Código: erp-shell 72e0475, erp-zona-1 f26fd7c, erp-zona-2 8627c02, erp-zona-acesso ee623ab, @erp/nucleo 0.6.0 instalado,
+fonte do erp-nucleo e579454; base/verificacao/* e base/scripts/ambiente.mjs do principal em 88c9f76.
+Cópia: scratchpad/aud4/copia/{package.json,base,repos} (cp -a; dist do núcleo com link count 1; cópia do dist original em
+scratchpad/aud4/dist-orig). A árvore real não foi editada.
+Método: anexos/muts.mjs (catálogo do auditor_shell_3 + 8 novas), anexos/mut.sh (aplica; unidade do shell; e2e
+CONSTRUIR=1 node --test base/verificacao/*.test.mjs; restaura submódulos com git checkout/clean, base/ da cópia e dist),
+anexos/mutL.sh (só G12–G14 de anexos/lacunas4.test.mjs), anexos/np.sh (páginas novas contra os testes estáticos),
+anexos/np-cadeia.sh (página nova de ponta a ponta), anexos/congela-e-morre.mjs (L7 interrompido).
+Saídas brutas: anexos/saidas/<ID>.{diff,unit.txt,e2e.txt,nucleo.txt,lac.txt}; resumo do lote: anexos/lote.log.
+
+Linha de base: unidade do shell 36/36; unidade do núcleo 107/107; e2e 50/50, 0 skipped (CONSTRUIR=tudo, 57 s; de novo no fim,
+CONSTRUIR=1, depois de restaurar tudo: 50/50).
+
+LEGENDA  PEGA = alguma suíte do repositório reprovou · SOBREVIVE = tudo verde · EQUIV = equivalente, com prova
+         [Gx] = teste mínimo meu (anexos/lacunas4.test.mjs) que a pega
+
+1. Sobreviventes da iteração 3 (foco)
+F1-recurso-b            PEGA  e2e L1/V1 ("davi /zona1/recursos/r-1: conteudo do modulo chegou com a gestao de acesso fora")  <- V1 fechado
+S-sem-timeout-instancia PEGA  e2e L7 ("status sem resposta (TimeoutError) em 5002 ms"); G5 depois passou (zona descongelada) <- V2 fechado
+CSP-nonce-fixo          PEGA  e2e L8
+D-T1-zerado-aceito      e2e 50/50 · pega só na unidade do núcleo (N-T1-zerado-aceito), como na iteração 3
+D-T1-qualquer-texto     e2e 50/50 · pega só na unidade do núcleo (N-T1-qualquer-texto: 2 testes)
+T1-shell-repassa-cru    EQUIV 50/50 (zona e registro de destinos saneiam; iteração 3)
+T-413-limite-infinito   SOBREVIVE/EQUIV-observável 50/50 (iteração 3: o HTTP não separa)
+T-413-arraybuffer       SOBREVIVE/EQUIV-observável 50/50
+T-413-sem-content-length EQUIV 50/50
+T-413-le-tudo           PEGA só na unidade, por morte do arquivo ("✖ test/telemetria.test.mjs"); e2e 50/50 (iteração 3)
+
+2. Resto do catálogo da iteração 3 (mesmo resultado da iteração 3, agora com L7/L8 somados)
+F1-zona1 PEGA L1/V1 + L6 · F1-zona2 PEGA L1/V1 · F1-acesso EQUIV 50/50 · F1-shell EQUIV 50/50
+F1-recurso PEGA inv16 comportamental + L1/V1 · S16-comentado PEGA inv16 comportamental + L1/V1
+CSP-sem-form-action / CSP-sem-img-src / D-CSP-sem-form-action PEGA G2 · CSP-sem-nonce PEGA "CSP com nonce"
+CSP-login-sem-csp PEGA G2 + L8 · N-CSP-sem-form-action / N-CSP-sem-img-src PEGA núcleo
+T-anon / T-429-ignora / T-429-repassa-depois / T-400-repassa / T-400-engole-204 PEGA L4/V2
+T-413-sem-limite-algum PEGA unidade + L4/V2
+S-sem-timeout-const PEGA U4 + L7 (novo) · S-sem-signal PEGA U4 + L7 (novo)
+S-500-vivo / S-500-vivo-lt600 PEGA só U3 · S-ttl-infinito / S-ttl-ignorado PEGA U1,U2 + L2,G5,L7
+S-ttl-so-fora-eterno PEGA U2 + L2,L7 · S-ttl-instancia PEGA L2,G5,L7
+C1-caminho PEGA unidade + L2,G5 · C1-estatico PEGA só unidade · U6-* (4) PEGA só U6 · G5-estatico-antes-da-sonda PEGA U5 + G5
+D-T1-regex-frouxa PEGA T1 · T1-shell-ignora-navegador PEGA T1 · N-T1-* (3) PEGA núcleo
+F8-shell-sem-secure / M16-shell-nao-apaga PEGA L5 · D-F8-zonas-sem-secure EQUIV 50/50 · D-M16-zonas-nao-apaga PEGA L5 + N4
+
+3. Novas (iteração 4): contra L7 e L8
+S-timeout-1500-instancia SOBREVIVE unidade 36/36, e2e 50/50: cacheSaudePadrao = criarCacheSaudeZona(TTL, 1500). L7 só exige
+                         < 2 s; §1.1 fala em 500 ms. [G14 pega: 503 em < 1 s; na linha de base G14 passa]
+S-timeout-2500-instancia PEGA L7
+S-ttl-5s-instancia       PEGA L2 + L7
+CSP-nonce-contador       SOBREVIVE 36/36, 50/50: nonce muda a cada requisição, mas é um contador. [G12 pega]
+CSP-nonce-relogio        SOBREVIVE 36/36, 50/50: nonce = relógio em hex. [G12 pega]
+CSP-nonce-fixo-zonas     EQUIV 50/50: nonce fixo na decisão do shell para rotas de zona. A zona gera o próprio nonce no
+                         criarProxy e só o CSP da zona chega ao navegador (anexos/saidas/CSP-nonce-fixo-zonas.csp.txt:
+                         um cabeçalho, nonce diferente a cada pedido, igual ao dos scripts).
+D-CSP-nonce-fixo-zonas   SOBREVIVE unidade do shell 36/36, e2e 50/50: nonce constante no criarProxy do dist nas 3 zonas.
+                         L8 só olha / e /login (shell). [G13 e G12 pegam]
+N-CSP-nonce-fixo-zonas   SOBREVIVE unidade do núcleo 107/107 (mesma mutação no fonte do criarProxy)
+
+4. Páginas novas contra o teste de completude do L1 (anexos/np.sh, np-resultados.txt; só os testes estáticos, texto copiado do base.test.mjs)
+REPROVA: zona1/novo, zona1/(grupo)/novo, (interno)/zona2/extra, zona2/[id], zona1/recursos/[id]/editar,
+         zona1/recursos/[[...r]], zona1/@modal
+PASSA (buraco): zona1/[secao] e zona1/[...resto] (o padrão ^/zona1/[^/]+$ casa com a entrada '/zona1/relatorios', que o
+         Next serve pela página estática, não pela nova) · zona1/(publico)/segredo (pulada pelo L1 e pelo inv16 estático,
+         mesmo SEM exigirModulo) · page.ts / page.jsx / page.js (só page.tsx é lida; sem exigirModulo passam também no
+         inv16 estático) · [x] na raiz de uma zona (inalcançável pelo shell: inofensivo) · página nova no shell (excluído de propósito)
+NP-cadeia (ponta a ponta)  SOBREVIVE e2e 50/50 com a página nova zona1/[secao] usando o MESMO fail-open do V1 e lendo o
+         domínio A. [G11 pega: "conteudo de /zona1/[secao] chegou com a gestao de acesso fora (status 200)"; dentes: com a
+         gestão no ar, davi vê a seção]
+
+5. L7 interrompido (anexos/congela-e-morre.mjs, congela-e-morre-resultado.txt, saidas/congelada-proxima-execucao.txt)
+Com a falha comum do L7 o finally descongela (G5 passou depois do L7 reprovado). Se o processo da verificação morre durante o
+L7 (Ctrl-C, timeout, kill), a zona 2 fica em estado T: SIGTERM não a derruba (só SIGKILL), a checagem de porta do subir()
+(fetch com timeout de 500 ms) a dá como LIVRE, e a execução seguinte trava 304 s no esperar() (fetch sem timeout) e reprova
+39/39 com "nao respondeu a tempo: http://localhost:3002/zona2". Falha fechada, mensagem enganosa. Não é teste verde por engano.
+
+Resumo: 61 mutações do catálogo (55 com unidade do shell + e2e; 6 no fonte do núcleo, com a unidade dele) + 16 páginas novas estáticas + 1 cadeia.
+Sobrevivem sem equivalência: S-timeout-1500-instancia, CSP-nonce-contador, CSP-nonce-relogio, D-/N-CSP-nonce-fixo-zonas,
+NP-cadeia (buraco do teste de completude), e as já conhecidas (413 observável, trace forjado só no núcleo).

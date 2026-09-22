@@ -1,0 +1,13 @@
+diff --git a/lib/decisao-proxy.ts b/lib/decisao-proxy.ts
+index 08d3b97..d09921b 100644
+--- a/lib/decisao-proxy.ts
++++ b/lib/decisao-proxy.ts
+@@ -84,7 +84,7 @@ export async function decidirAcaoDoProxy(
+       }
+     }
+ 
+-    return { acao: 'prosseguir', nonce }
++    return { acao: 'prosseguir', nonce: '0123456789abcdef0123456789abcdef' }
+   }
+ 
+   // 4. Rotas da própria aplicação shell (ex.: '/')

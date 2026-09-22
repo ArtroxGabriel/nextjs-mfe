@@ -69,3 +69,14 @@ e no "L1 tem dentes"; teste novo que reprova se uma página de módulo das zonas
 (SIGSTOP) em `base/scripts/ambiente.mjs` e L7 (zona travada → 503 em < 2 s); L8 (nonce muda a cada requisição);
 comentário do L4 corrigido. **Provas:** as mutações V1 e V2 do auditor aplicadas juntas → reprovam exatamente L1 e L7
 (48/50); linha de base **50/50** duas vezes. Próximo: iteração 4.
+
+## Gate — Shell novo, iteração 4 (só a verificação mudou; produto igual à iteração 3)
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_shell_4 | revisor-mfe (sonnet) | APPROVE | .agents/reviewer_shell_4/handoff.md | testes novos provam o que dizem; nit: `congelarApp` sem guarda |
+| challenger_shell_3 | simulador-condicoes (sonnet) | APPROVE (iteração 3) | .agents/challenger_shell_3/handoff.md | não redespachado: nenhum código de produto mudou desde a aprovação dele |
+| auditor_shell_4 | general-purpose forense (opus) | **CLEAN** | .agents/auditor_shell_4/handoff.md, mutacoes.txt | 61 mutações; V1 e V2 da iteração 3 reprovam L1 e L7; nonce fixo no shell reprova L8; 50/50 duas vezes. Lacunas sem veto: completude do L1 não distingue `[secao]` irmã de página literal; nonce fixo/previsível nas zonas; sonda de 1,5 s passa no L7; L7 interrompido deixa a zona congelada |
+
+Gate Result: **PASS** — shell novo (503 de zona, sonda, telemetria, CSP e trace do núcleo 0.6.0) aprovado.
+Lacunas do auditor_shell_4 viram endurecimento imediato da verificação (fora do gate).

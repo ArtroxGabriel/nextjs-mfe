@@ -1,0 +1,13 @@
+diff --git a/lib/decisao-proxy.ts b/lib/decisao-proxy.ts
+index 08d3b97..95319d9 100644
+--- a/lib/decisao-proxy.ts
++++ b/lib/decisao-proxy.ts
+@@ -37,7 +37,7 @@ export async function decidirAcaoDoProxy(
+   zonas?: readonly DefinicaoDeZona[]
+ ): Promise<DecisaoProxy> {
+   const { caminho, temCookieSessao } = contexto
+-  const nonce = crypto.randomUUID().replaceAll('-', '')
++  const nonce = '0123456789abcdef0123456789abcdef'
+ 
+   // 1. Rotas reservadas públicas do shell
+   if (

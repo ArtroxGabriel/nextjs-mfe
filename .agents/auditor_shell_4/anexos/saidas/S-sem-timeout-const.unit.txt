@@ -1,0 +1,63 @@
+✔ Cenario 1: acessar uma rota de zona inativa apresenta status 503 e pagina de erro (10.244096ms)
+✔ rotas publicas do shell nao exigem cookie e retornam acao publica (0.559341ms)
+✔ rotas de telemetria passam para o gateway do shell (0.267294ms)
+✔ rota raiz do shell sem cookie redireciona para login (0.260451ms)
+✔ rota raiz do shell com cookie prossegue (0.370621ms)
+✔ zona ativa sem cookie redireciona para login (0.421794ms)
+✔ zona ativa com cookie prossegue (0.498112ms)
+✔ U5: zona fora e asset estatico dela da 503 (a sonda vem antes do corte de asset) (1.058935ms)
+✔ U6: /api fora de /api/otel e /api/auth continua exigindo cookie (0.728892ms)
+✔ criarCacheSaudeZona: identifica zona saudavel quando fetch retorna status < 500 (2.129402ms)
+✔ criarCacheSaudeZona: identifica zona inativa quando fetch falha (Cenário 1) (0.550143ms)
+✔ criarCacheSaudeZona: utiliza cache durante a janela de TTL sem repetir I/O (0.432031ms)
+✔ criarCacheSaudeZona: chamadas concorrentes compartilham a mesma probe em andamento (20.583732ms)
+✔ U1: entrada saudavel expira depois do TTL e a sonda roda de novo (81.703778ms)
+✔ U2: entrada "fora" tambem expira: a zona volta sem reiniciar o shell (82.815205ms)
+✔ U3: status >= 500 conta como fora; 307 (pagina que pede login) conta como no ar (1.99208ms)
+✖ U4: zona travada e dada como fora em ~500 ms (timeout padrao da sonda) (2.957825ms)
+✔ telemetria: limitador permite ate 60 lotes por minuto por usuario (2.281769ms)
+✔ telemetria: limitador reseta a contagem apos expirar a janela (0.397624ms)
+✔ telemetria: tamanho maximo e 256 KB (0.217451ms)
+✔ processarLoteDeTelemetria: sem sessao valida descarta silenciosamente com 204 (0.316726ms)
+✔ processarLoteDeTelemetria: payload acima de 256 KB retorna 413 (0.26094ms)
+✔ processarLoteDeTelemetria: taxa excedida retorna 429 com Retry-After (0.396269ms)
+✔ lerComLimite: le o corpo inteiro quando cabe no limite (6.658527ms)
+✔ lerComLimite: para de ler e devolve null assim que passa do limite (sem Content-Length) (1.943945ms)
+✔ lerComLimite: corpo ausente e corpo vazio (0.519772ms)
+✔ limitador: entradas de janela vencida sao descartadas, o mapa nao cresce sem limite (2.131258ms)
+✔ limitador: descartar vencidos nao zera quem ainda esta na janela (0.475069ms)
+✔ ehRotaReservada: identifica corretamente rotas reservadas do shell (1.699148ms)
+✔ carregarZonas: rotas reservadas nao podem ser sobrescritas por zonas (Criterio 3) (0.4352ms)
+✔ carregarZonas: permite sobrescrever origem via variaveis de ambiente (0.313594ms)
+✔ gerarRewrites: deriva regras a partir do mapa central de configuracoes (Criterio 2) (1.489719ms)
+✔ encontrarZonaPorCaminho: resolve a zona correspondente para paginas e assets (0.629251ms)
+✔ C1: busca de zona ignora maiusculas, como o rewrite do Next (senao /ZONA2 escapa da sonda) (0.588653ms)
+✔ C1: prefixo estatico em qualquer caixa continua sendo asset, nao pagina (14.397692ms)
+✔ reviewer_shell_2: id de zona com maiuscula ou caractere estranho falha no boot, nao abre o C1 (1.396692ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 35
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 377.154987
+
+✖ failing tests:
+
+test at test/saude.test.mjs:106:1
+✖ U4: zona travada e dada como fora em ~500 ms (timeout padrao da sonda) (2.957825ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  600000 !== 500
+  
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/copia/repos/erp-shell/test/saude.test.mjs:108:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 600000,
+    expected: 500,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

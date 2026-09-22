@@ -1,0 +1,10 @@
+?? app/zona1/[secao]/
+import { exigirModulo } from '@/lib/pagina'
+import { listarRecursos } from '@/lib/dominio-a'
+
+export default async function Secao({ params }: { params: Promise<{ secao: string }> }) {
+  try { await exigirModulo('zona1.painel') } catch (e) { if (!(e && typeof e === 'object' && 'codigo' in e)) throw e }
+  const { secao } = await params
+  const recursos = await listarRecursos()
+  return (<><h1>Secao do modulo {secao}</h1><ul>{recursos.map((r) => <li key={r.id}>{r.nome}</li>)}</ul></>)
+}

@@ -26,6 +26,28 @@ after(() => { ambiente?.derrubar(); coletor?.close() })
 
 const TOKEN = /dev\.(ana|bruno|carla|davi)\.[0-9a-f-]{36}/
 
+// Páginas de uma app, com a rota que o Next serve para cada uma. `page.(tsx|ts|jsx|js)`: o auditor_shell_4
+// mostrou que só `page.tsx` deixava passar uma página em `.ts` sem exigirModulo.
+const PAGINA = /^page\.(tsx|ts|jsx|js)$/
+function paginasDaApp(app, { pularPublico }) {
+  const raiz = join(RAIZ, app, 'app')
+  const andar = (d) => readdirSync(d).flatMap((n) => {
+    const p = join(d, n)
+    if (pularPublico && n === '(publico)') return []
+    return statSync(p).isDirectory() ? andar(p) : PAGINA.test(n) ? [p] : []
+  })
+  return andar(raiz).map((arquivo) => {
+    // grupos `(x)` e rotas paralelas `@x` não aparecem na URL
+    const segs = arquivo.slice(raiz.length + 1).split('/').slice(0, -1).filter((g) => !/^\(.*\)$/.test(g) && !g.startsWith('@'))
+    return { arquivo, rota: '/' + segs.join('/'), dinamicos: segs.filter((g) => g.startsWith('[')).length }
+  })
+}
+// URL → regex da rota: [x] um segmento, [...x] um ou mais, [[...x]] zero ou mais
+const padraoDaRota = (rota) => new RegExp('^' + rota
+  .replace(/\/\[\[\.\.\.[^\]]+\]\]/g, '(?:/.*)?')
+  .replace(/\[\.\.\.[^\]]+\]/g, '.+')
+  .replace(/\[[^\]]+\]/g, '[^/]+') + '$')
+
 test('camada 1: sem cookie, shell e zonas mandam para o login do shell, com Location relativo', async () => {
   for (const caminho of ['/', '/zona1', '/zona1/relatorios', '/zona2', '/acesso']) {
     const r = await pedir(caminho)
@@ -336,15 +358,11 @@ test('N3 estatico: nenhuma zona monta store de escrita, identidade ou grava o co
 })
 
 test('invariante 16 estatico: toda pagina de modulo chama exigirModulo', () => {
-  const paginas = (d) => readdirSync(d).flatMap((n) => {
-    const p = join(d, n)
-    if (n === '(publico)') return []
-    return statSync(p).isDirectory() ? paginas(p) : n === 'page.tsx' ? [p] : []
-  })
+  // `(publico)` so e pulado no shell (login); nas zonas toda pagina e de modulo
   let total = 0
   for (const app of ['erp-shell', 'erp-zona-1', 'erp-zona-2', 'erp-zona-acesso']) {
-    for (const f of paginas(join(RAIZ, app, 'app'))) {
-      assert.match(readFileSync(f, 'utf8'), /await exigirModulo\('[a-z0-9-]+\.[a-z0-9-]+'\)/, `${f} sem exigirModulo`)
+    for (const { arquivo } of paginasDaApp(app, { pularPublico: app === 'erp-shell' })) {
+      assert.match(readFileSync(arquivo, 'utf8'), /await exigirModulo\('[a-z0-9-]+\.[a-z0-9-]+'\)/, `${arquivo} sem exigirModulo`)
       total++
     }
   }
@@ -413,20 +431,30 @@ const CONTEUDO_DE_MODULO = {
 
 test('L1 cobre toda pagina de modulo das zonas: pagina nova sem entrada aqui reprova', () => {
   // O shell fica de fora de proposito: a pagina dele chama modulosPermitidos() de novo e lanca
-  // com a gestao de acesso fora (equivalencia provada pelo auditor_shell_3).
-  const paginas = (d) => readdirSync(d).flatMap((n) => {
-    const p = join(d, n)
-    if (n === '(publico)') return []
-    return statSync(p).isDirectory() ? paginas(p) : n === 'page.tsx' ? [p] : []
-  })
+  // com a gestao de acesso fora (equivalencia provada pelo auditor_shell_3). Nas zonas nenhuma pagina
+  // e publica, entao `(publico)` nao e pulado.
+  // A chave tem de ser uma URL que o Next serve pela PROPRIA pagina: numa rota dinamica, uma chave que
+  // uma pagina mais especifica (menos segmentos dinamicos) tambem casa e servida por ela, nao pela
+  // dinamica (auditor_shell_4: `/zona1/[secao]` passava pela chave `/zona1/relatorios`).
   for (const app of ['erp-zona-1', 'erp-zona-2', 'erp-zona-acesso']) {
-    const raizApp = join(RAIZ, app, 'app')
-    for (const f of paginas(raizApp)) {
-      const rota = '/' + f.slice(raizApp.length + 1).split('/').slice(0, -1).filter((s) => !/^\(.*\)$/.test(s)).join('/')
-      const padrao = new RegExp('^' + rota.replace(/\[[^\]]+\]/g, '[^/]+') + '$')
-      assert.ok(Object.keys(CONTEUDO_DE_MODULO).some((c) => padrao.test(c)), `${rota} (${app}) sem entrada em CONTEUDO_DE_MODULO`)
+    const paginas = paginasDaApp(app, { pularPublico: false })
+    for (const p of paginas) {
+      const servidaPorEla = (url) => padraoDaRota(p.rota).test(url) &&
+        !paginas.some((o) => o !== p && o.dinamicos < p.dinamicos && padraoDaRota(o.rota).test(url))
+      assert.ok(Object.keys(CONTEUDO_DE_MODULO).some(servidaPorEla), `${p.rota} (${p.arquivo}) sem entrada em CONTEUDO_DE_MODULO que o Next sirva por ela`)
     }
   }
+})
+
+test('completude: o padrao de rota distingue pagina dinamica de literal irma (dentes do teste acima)', () => {
+  const paginas = [{ rota: '/zona1/relatorios', dinamicos: 0 }, { rota: '/zona1/[secao]', dinamicos: 1 }]
+  const [literal, dinamica] = paginas
+  const servida = (p, url) => padraoDaRota(p.rota).test(url) && !paginas.some((o) => o !== p && o.dinamicos < p.dinamicos && padraoDaRota(o.rota).test(url))
+  assert.equal(servida(dinamica, '/zona1/relatorios'), false)
+  assert.equal(servida(dinamica, '/zona1/outra'), true)
+  assert.equal(servida(literal, '/zona1/relatorios'), true)
+  assert.ok(padraoDaRota('/zona1/[...resto]').test('/zona1/a/b'))
+  assert.ok(padraoDaRota('/zona1/[[...resto]]').test('/zona1'))
 })
 test('L1/V1: gestao de acesso fora nao entrega pagina de modulo de nenhuma zona, nem no payload RSC', async () => {
   const quem = {}
@@ -512,7 +540,7 @@ test('L2/V3/C1: zona fora da 503 proprio, em qualquer caixa; as outras seguem; e
   assert.equal(st, 200, 'a zona 2 nao voltou em 5 s depois de reerguida')
 })
 
-test('L7 (auditor_shell_3, V2): zona travada (aceita conexao e nao responde) vira 503 em menos de 2 s', { timeout: 30_000 }, async () => {
+test('L7 (auditor_shell_3, V2): zona travada (aceita conexao e nao responde) vira 503 em menos de 1 s', { timeout: 30_000 }, async () => {
   // L2 usa SIGKILL, que recusa a conexao na hora: sem isto, a sonda do proxy sem timeout passava
   const ana = (await entrar('ana')).cookie
   ambiente.congelarApp('erp-zona-2')
@@ -523,7 +551,8 @@ test('L7 (auditor_shell_3, V2): zona travada (aceita conexao e nao responde) vir
       .catch((e) => ({ status: `sem resposta (${e.name})` }))
     const ms = Date.now() - t0
     assert.equal(r.status, 503, `status ${r.status} em ${ms} ms`)
-    assert.ok(ms < 2000, `levou ${ms} ms`)
+    // sonda de 500 ms (ERP_SONDA_TIMEOUT_MS); 1 s pega uma sonda lenta de 1,5 s (auditor_shell_4, G14)
+    assert.ok(ms < 1000, `levou ${ms} ms`)
   } finally { ambiente.descongelarApp('erp-zona-2') }
   // a zona volta a responder antes do proximo teste
   const t0 = Date.now()
@@ -535,13 +564,20 @@ test('L7 (auditor_shell_3, V2): zona travada (aceita conexao e nao responde) vir
   assert.equal(st, 200, 'a zona 2 nao voltou em 5 s depois de descongelada')
 })
 
-test('L8 (auditor_shell_3): o nonce da CSP muda a cada requisicao, no shell e na rota publica', async () => {
+test('L8 (auditor_shell_3/4): o nonce da CSP e novo e imprevisivel a cada requisicao, no shell, na rota publica e nas zonas', async () => {
+  // as zonas tem nonce proprio (criarProxy do nucleo): so o shell nao pegava nonce fixo nelas
   const { cookie } = await entrar('ana')
-  for (const [c, ck] of [['/', cookie], ['/login', undefined]]) {
-    const n = async () => (await pedir(c, { cookie: ck })).csp?.match(/'nonce-([^']+)'/)?.[1]
-    const [a, b] = [await n(), await n()]
-    assert.ok(a && b, `${c} sem nonce`)
-    assert.notEqual(a, b, `${c}: nonce repetido entre requisicoes`)
+  for (const c of ['/', '/login', '/zona1', '/zona2']) {
+    const ns = []
+    for (let i = 0; i < 4; i++) ns.push((await pedir(c, { cookie: c === '/login' ? undefined : cookie })).csp?.match(/'nonce-([^']+)'/)?.[1])
+    assert.ok(ns.every(Boolean), `${c} sem nonce`)
+    assert.equal(new Set(ns).size, ns.length, `${c}: nonce repetido entre requisicoes`)
+    for (let i = 1; i < ns.length; i++) {
+      let p = 0
+      while (p < ns[i].length && ns[i][p] === ns[i - 1][p]) p++
+      // contador ou relogio deixam prefixo comum longo entre pedidos seguidos
+      assert.ok(p < 8, `${c}: nonces seguidos com ${p} caracteres de prefixo comum (${ns[i - 1]} / ${ns[i]})`)
+    }
   }
 })
 

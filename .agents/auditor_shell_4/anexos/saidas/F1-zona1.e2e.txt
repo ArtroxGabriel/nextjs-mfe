@@ -1,0 +1,89 @@
+✔ camada 1: sem cookie, shell e zonas mandam para o login do shell, com Location relativo (14532.786368ms)
+✔ N3: o shell grava a sessao e o navegador recebe so um id opaco, HttpOnly e __Host- (50.397069ms)
+✔ login nao vira redirecionamento aberto (40.727621ms)
+✔ N5: o menu mostra so os modulos permitidos, igual no shell e nas zonas (moldura comum) (384.036065ms)
+✔ N5/D6: modulo nao permitido responde 404 pela URL direta; permitido responde 200 (570.53168ms)
+✔ N7: shell e zona 1 leem os proprios dominios (plataforma; A e B) (44.73407ms)
+✔ perfil administrativo nao concede dado: carla nao ve custo nem r-3; bruno ve (119.927156ms)
+✔ token nunca chega ao navegador, em nenhuma pagina (540.582663ms)
+✔ N6/N5: revogar uma concessao na zona de acesso vale na proxima navegacao, sem novo login (231.44541ms)
+✔ D8: a tela de acesso nao oferece perfil de zona para modulo de outra zona (26.558759ms)
+✔ Server Action e reverificada no servidor: quem nao tem o modulo nao executa (74.359632ms)
+✔ Server Action sem Origin, ou com Origin de outro site, nao executa em nenhuma app (231.497317ms)
+✔ N4: acao na zona 2 leva para a zona 1 e o toast aparece no documento seguinte, uma vez (165.025444ms)
+✔ invariante 16: toda Server Action de toda app recusa quem nao tem o modulo, antes de agir (118.987303ms)
+✔ invariante 12: sessao expirada numa action vira ida ao login, sem erro generico (66.282048ms)
+✔ o cabecalho interno de flash vindo do navegador e ignorado (23.761656ms)
+✔ invariante 16 comportamental: restringir o painel da zona 1 tira pagina e detalhe de quem nao tem concessao (111.206964ms)
+✔ N3: sair no shell encerra a sessao em todas as zonas (89.274024ms)
+✔ cookie forjado passa da camada 1 e morre na camada 2 (16.835193ms)
+✔ CSP com nonce em shell e zonas, e todo script marcado com ele (58.819279ms)
+✔ assets de cada zona vivem sob o prefixo dela e chegam pelo shell (64.430696ms)
+✔ N3 estatico: nenhuma zona monta store de escrita, identidade ou grava o cookie de sessao (9.290952ms)
+✔ invariante 16 estatico: toda pagina de modulo chama exigirModulo (1.197186ms)
+✔ N8: nenhuma app faz saida de rede fora do registro de destinos (analise estrutural) (99.680742ms)
+✔ D5: dominio de negocio fora apaga so o bloco dele (890.142475ms)
+✔ D4: gestao de acesso fora da a pagina de servico indisponivel, sem detalhe interno (1165.037668ms)
+✔ L1 cobre toda pagina de modulo das zonas: pagina nova sem entrada aqui reprova (1.524197ms)
+✖ L1/V1: gestao de acesso fora nao entrega pagina de modulo de nenhuma zona, nem no payload RSC (1079.478882ms)
+✔ L1 tem dentes: com a gestao de acesso no ar, quem tem o modulo ve o conteudo que L1 procura (146.497063ms)
+✔ L3: cabecalho de flash forjado pelo cliente nao aparece nas paginas do proprio shell (23.647039ms)
+✔ L4/V2: telemetria descarta lote anonimo sem repassar; 413 em streaming; 429 no 61o lote (1276.468304ms)
+✔ L2/V3/C1: zona fora da 503 proprio, em qualquer caixa; as outras seguem; ela volta (2372.324558ms)
+✔ L7 (auditor_shell_3, V2): zona travada (aceita conexao e nao responde) vira 503 em menos de 2 s (2833.338208ms)
+✔ L8 (auditor_shell_3): o nonce da CSP muda a cada requisicao, no shell e na rota publica (59.592445ms)
+✔ L5 (reviewer_shell_2): o shell apaga o cookie de flash com Secure, senao o navegador ignora e o toast repete (45.605901ms)
+✖ L6: navegacao do cliente (RSC) com a gestao de acesso fora nao traz o modulo restrito (4134.17149ms)
+✔ G2: CSP completa no shell, inclusive nas rotas publicas (51.062733ms)
+✔ G5: zona fora: o asset estatico dela tambem da 503 (a sonda vem antes do corte de asset) (1813.003572ms)
+✔ T1 (nucleo 8): o trace do navegador chega ao dominio, sem dado pessoal (323.442642ms)
+✔ o navegador navega, executa JS, envia cookie __Host- e registra respostas com corpo; limpa tudo (2530.823047ms)
+✔ deteccao: ERP_CHROME manda; docker so quando pedido, com imagem fixada por digest (1.981465ms)
+✔ deteccao: sem ERP_CHROME, docker nunca e escolhido sozinho (evita baixar 100 MB de surpresa) (55.087301ms)
+✔ ERP_CHROME apontando para binario inexistente falha com mensagem clara e nao deixa perfil (347.923066ms)
+✔ pega toda forma de chamar fetch que conheco, inclusive as que contornavam o regex (19.564961ms)
+✔ pega modulos de rede, estaticos e dinamicos, e as outras globais de rede (4.043178ms)
+✔ pega eval e Function, que montariam qualquer uma das anteriores em tempo de execucao (0.689043ms)
+✔ nao acusa o uso normal da base (6.862548ms)
+✔ tipos que citam fetch nao sao chamada (1.332802ms)
+✔ as quatro aplicacoes reais nao tem saida de rede fora do registro (fora as excecoes declaradas) (94.977728ms)
+✔ toda excecao declarada tem motivo, e a sonda de saude do shell e mesmo uma saida de rede (2.48624ms)
+ℹ tests 50
+ℹ suites 0
+ℹ pass 48
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 44247.314279
+
+✖ failing tests:
+
+test at base/verificacao/base.test.mjs:431:1
+✖ L1/V1: gestao de acesso fora nao entrega pagina de modulo de nenhuma zona, nem no payload RSC (1079.478882ms)
+  AssertionError [ERR_ASSERTION]: davi /zona1: conteudo do modulo chegou com a gestao de acesso fora
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/copia/base/verificacao/base.test.mjs:439:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at base/verificacao/base.test.mjs:561:1
+✖ L6: navegacao do cliente (RSC) com a gestao de acesso fora nao traz o modulo restrito (4134.17149ms)
+  AssertionError [ERR_ASSERTION]: modulo restrito na tela
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/copia/base/verificacao/base.test.mjs:586:14)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

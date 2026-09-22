@@ -1,0 +1,3 @@
+/zona1 200 CSP: [["'nonce-d13b09d43263499582a8cbadf0ef50d1'","'nonce-d13b09d43263499582a8cbadf0ef50d1'"]] x-nonce: null nonce nos scripts: [ 'd13b09d43263499582a8cbadf0ef50d1' ]
+/zona1 200 CSP: [["'nonce-1eb367ce91454496825ceb7115b7ad09'","'nonce-1eb367ce91454496825ceb7115b7ad09'"]] x-nonce: null nonce nos scripts: [ '1eb367ce91454496825ceb7115b7ad09' ]
+/zona2 200 CSP: [["'nonce-506f82b79cfa435185862fe184363d7f'","'nonce-506f82b79cfa435185862fe184363d7f'"]] x-nonce: null nonce nos scripts: [ '506f82b79cfa435185862fe184363d7f' ]

@@ -1,0 +1,26 @@
+✖ G11: gestao de acesso fora nao entrega pagina dinamica de modulo irma de uma literal (/zona1/[secao]) (3529.163011ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3668.283144
+
+✖ failing tests:
+
+test at base/verificacao/lacunas4.test.mjs:12:1
+✖ G11: gestao de acesso fora nao entrega pagina dinamica de modulo irma de uma literal (/zona1/[secao]) (3529.163011ms)
+  AssertionError [ERR_ASSERTION]: conteudo de /zona1/[secao] chegou com a gestao de acesso fora (status 200)
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/copia/base/verificacao/lacunas4.test.mjs:19:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

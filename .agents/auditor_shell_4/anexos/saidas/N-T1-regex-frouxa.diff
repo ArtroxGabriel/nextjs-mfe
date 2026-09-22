@@ -1,0 +1,13 @@
+diff --git a/src/borda/trace.ts b/src/borda/trace.ts
+index 16fd73a..82741c1 100644
+--- a/src/borda/trace.ts
++++ b/src/borda/trace.ts
+@@ -4,7 +4,7 @@
+  * usuário, sessão ou caminho. O proxy garante um por requisição; cada chamada ao domínio leva
+  * um filho, e a renderização inteira fica num trace só, do navegador ao domínio.
+  */
+-export const TRACEPARENT = /^00-([0-9a-f]{32})-([0-9a-f]{16})-([0-9a-f]{2})$/
++export const TRACEPARENT = /^([0-9a-z]{2})-([0-9a-zA-Z]{32})-([0-9a-zA-Z]{16})-([0-9a-z]{2})$/
+ 
+ // Web Crypto: funciona no runtime do proxy e no Node, sem `node:crypto`
+ const hex = (bytes: number) => Array.from(crypto.getRandomValues(new Uint8Array(bytes)), (b) => b.toString(16).padStart(2, '0')).join('')

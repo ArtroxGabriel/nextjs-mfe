@@ -1,0 +1,44 @@
+✔ Cenario 1: acessar uma rota de zona inativa apresenta status 503 e pagina de erro (10.057904ms)
+✔ rotas publicas do shell nao exigem cookie e retornam acao publica (0.518704ms)
+✔ rotas de telemetria passam para o gateway do shell (0.260074ms)
+✔ rota raiz do shell sem cookie redireciona para login (0.249148ms)
+✔ rota raiz do shell com cookie prossegue (0.27361ms)
+✔ zona ativa sem cookie redireciona para login (0.381526ms)
+✔ zona ativa com cookie prossegue (0.491202ms)
+✔ U5: zona fora e asset estatico dela da 503 (a sonda vem antes do corte de asset) (1.028411ms)
+✔ U6: /api fora de /api/otel e /api/auth continua exigindo cookie (0.736045ms)
+✔ criarCacheSaudeZona: identifica zona saudavel quando fetch retorna status < 500 (2.166542ms)
+✔ criarCacheSaudeZona: identifica zona inativa quando fetch falha (Cenário 1) (0.556079ms)
+✔ criarCacheSaudeZona: utiliza cache durante a janela de TTL sem repetir I/O (0.42827ms)
+✔ criarCacheSaudeZona: chamadas concorrentes compartilham a mesma probe em andamento (20.18731ms)
+✔ U1: entrada saudavel expira depois do TTL e a sonda roda de novo (86.353371ms)
+✔ U2: entrada "fora" tambem expira: a zona volta sem reiniciar o shell (81.841687ms)
+✔ U3: status >= 500 conta como fora; 307 (pagina que pede login) conta como no ar (0.940853ms)
+✔ U4: zona travada e dada como fora em ~500 ms (timeout padrao da sonda) (501.173462ms)
+✔ telemetria: limitador permite ate 60 lotes por minuto por usuario (2.144496ms)
+✔ telemetria: limitador reseta a contagem apos expirar a janela (0.316164ms)
+✔ telemetria: tamanho maximo e 256 KB (0.26667ms)
+✔ processarLoteDeTelemetria: sem sessao valida descarta silenciosamente com 204 (0.290842ms)
+✔ processarLoteDeTelemetria: payload acima de 256 KB retorna 413 (0.246286ms)
+✔ processarLoteDeTelemetria: taxa excedida retorna 429 com Retry-After (0.283379ms)
+✔ lerComLimite: le o corpo inteiro quando cabe no limite (5.97817ms)
+✔ lerComLimite: para de ler e devolve null assim que passa do limite (sem Content-Length) (1.708538ms)
+✔ lerComLimite: corpo ausente e corpo vazio (0.488943ms)
+✔ limitador: entradas de janela vencida sao descartadas, o mapa nao cresce sem limite (2.027524ms)
+✔ limitador: descartar vencidos nao zera quem ainda esta na janela (3.633042ms)
+✔ ehRotaReservada: identifica corretamente rotas reservadas do shell (2.196684ms)
+✔ carregarZonas: rotas reservadas nao podem ser sobrescritas por zonas (Criterio 3) (0.480204ms)
+✔ carregarZonas: permite sobrescrever origem via variaveis de ambiente (0.318124ms)
+✔ gerarRewrites: deriva regras a partir do mapa central de configuracoes (Criterio 2) (1.645407ms)
+✔ encontrarZonaPorCaminho: resolve a zona correspondente para paginas e assets (0.653035ms)
+✔ C1: busca de zona ignora maiusculas, como o rewrite do Next (senao /ZONA2 escapa da sonda) (0.695682ms)
+✔ C1: prefixo estatico em qualquer caixa continua sendo asset, nao pagina (19.908312ms)
+✔ reviewer_shell_2: id de zona com maiuscula ou caractere estranho falha no boot, nao abre o C1 (1.392882ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 890.261868

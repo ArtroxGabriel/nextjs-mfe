@@ -1,0 +1,233 @@
+✔ exigirModulo passa para modulo permitido e lanca NaoEncontrado (404) para o resto (9.011757ms)
+✔ sem sessao, modulos permitidos lanca SessaoInvalida antes de perguntar ao dominio (1.254359ms)
+✔ acessoHttp pergunta ao dominio de gestao de acesso com a credencial do usuario (89.525499ms)
+✔ cenario 1: zona com dois dominios; caminho nao declarado falha com DestinoInvalido sem sair da rede (96.804609ms)
+✔ parametro hostil (segmento ponto) e recusado com DestinoInvalido, sem rede (2.153624ms)
+✔ parametro hostil (segmento ponto-ponto) e recusado com DestinoInvalido, sem rede (2.036649ms)
+✔ parametro hostil (vazio) e recusado com DestinoInvalido, sem rede (1.117208ms)
+✔ parametro hostil (byte de controle TAB) e recusado com DestinoInvalido, sem rede (1.062331ms)
+✔ parametro hostil (byte de controle LF) e recusado com DestinoInvalido, sem rede (0.926688ms)
+✔ parametro hostil (byte nulo) e recusado com DestinoInvalido, sem rede (0.900338ms)
+✔ parametro hostil (longo demais) e recusado com DestinoInvalido, sem rede (1.028945ms)
+✔ parametro hostil (barra dupla) vira um segmento codificado, na origem declarada (22.647953ms)
+✔ parametro hostil (barra) vira um segmento codificado, na origem declarada (8.036864ms)
+✔ parametro hostil (barra invertida) vira um segmento codificado, na origem declarada (6.054135ms)
+✔ parametro hostil (URL absoluta) vira um segmento codificado, na origem declarada (6.531354ms)
+✔ parametro hostil (ponto-ponto codificado) vira um segmento codificado, na origem declarada (7.803382ms)
+✔ metodo nao declarado e recusado sem rede (2.762488ms)
+✔ PUT sem If-Match e recusado (invariante 6); com If-Match passa e envia o cabecalho (15.343729ms)
+✔ parametro que o modelo nao pede e recusado (1.445904ms)
+✔ o nucleo injeta credencial e chamador; o retorno nao carrega o token (13.708489ms)
+✔ credencial servico usa o token de servico, e sem ele nao sai (11.8276ms)
+✔ credencial nenhuma nao manda Authorization (6.195767ms)
+✔ redirecionamento do dominio nao e seguido para fora do registro (6.014755ms)
+✔ timeout do destino vira ERRO_INTERNO sem detalhe (304.331051ms)
+✔ registro invalido e recusado no boot: origem com caminho (0.988093ms)
+✔ registro invalido e recusado no boot: origem com credencial (0.324929ms)
+✔ registro invalido e recusado no boot: origem com esquema estranho (0.202594ms)
+✔ registro invalido e recusado no boot: caminho relativo (0.195399ms)
+✔ registro invalido e recusado no boot: caminho com ponto-ponto (0.218557ms)
+✔ registro invalido e recusado no boot: caminho com barra dupla (0.19146ms)
+✔ registro invalido e recusado no boot: metodo inventado (0.148123ms)
+✔ registro invalido e recusado no boot: sem caminhos (0.132106ms)
+✔ registro invalido e recusado no boot: credencial inventada (0.133272ms)
+✔ 401 vira SessaoInvalida (90.461725ms)
+✔ 404 vira NaoEncontrado (1.131747ms)
+✔ 403 vira OPERACAO_NAO_PERMITIDA (1.180903ms)
+✔ 409 vira Desatualizado preservando supportId (6.98358ms)
+✔ 500 com corpo do framework nao vaza detalhe interno (1.516055ms)
+✔ codigo desconhecido do upstream vira ERRO_INTERNO (3.947395ms)
+✔ supportId hostil e DESCARTADO, nao repassado nem truncado (6.508002ms)
+✔ 200 devolve corpo e ETag como versao (3.245228ms)
+✔ busca o fragmento declarado e devolve o HTML (104.999522ms)
+✔ identidade vai so no cookie: sem Authorization, sem cabecalho de usuario (4.121807ms)
+✔ sem cookie de sessao nao ha chamada: ausencia (1.047533ms)
+✔ zona, nome ou id fora da allowlist nunca viram URL (1.367484ms)
+✔ id com barra ou travessia e codificado e nao sai do caminho do fragmento (2.018267ms)
+✔ registro invalido falha no boot, nao na requisicao (2.694522ms)
+✔ toda falha da dona vira ausencia, nunca excecao (5.515452ms)
+✔ HTML ativo vindo da dona e recusado tambem na consumidora (4.638848ms)
+✔ timeout: dona travada nao pendura a pagina alem do limite (102.176494ms)
+✔ timeout padrao e 2 s (1.06304ms)
+✔ 200 com HTML inerte e cabecalhos obrigatorios (2.877549ms)
+✔ ausencia (null), modulo negado e sessao invalida: 204 sem corpo, iguais (1.769993ms)
+✔ notFound() do Next dentro do fragmento tambem vira 204, nao 404 (0.784666ms)
+✔ HTML com script no dono vira 500 sem corpo (ADR-0011, decisao 7) (1.472758ms)
+✔ erro inesperado vira 500 sem corpo e sem vazar a mensagem (0.558015ms)
+✔ navegacao direta do navegador nao alcanca o fragmento: 404 (1.241684ms)
+✔ versao de contrato desconhecida: 204 sem produzir (1.301807ms)
+✔ dono e consumidor juntos: o consumidor recebe o que o dono respondeu (2.689758ms)
+✔ o pacote publica exatamente cinco subpaths (5.315565ms)
+✔ invariante 15: a raiz nao entrega nada que escreva sessao ou autentique (55.410062ms)
+✔ a raiz NAO arrasta next/server — senao o pacote nao carrega fora do Next (1.456096ms)
+✔ interno e adaptadores nao sao alcancaveis de fora (0.69373ms)
+✔ a raiz exporta as fabricas e os adaptadores nomeados (0.930661ms)
+✔ a raiz NAO exporta o transporte cru (1.198767ms)
+✔ o nucleo nao conhece dominio: nenhum arquivo fala de pedido (5.372941ms)
+✔ exigirModulo: modulo permitido segue; negado e 404 (notFound), sem pagina de "sem acesso" (6.046648ms)
+✔ exigirModulo e FAIL-CLOSED: gestao de acesso fora propaga o erro, nunca deixa passar (1.064005ms)
+✔ sessao ausente vai ao login com o caminho atual; sessao invalida na consulta de modulos tambem (1.927294ms)
+✔ caminhoAtual vem do cabecalho posto pelo proxy; sem ele, "/" (0.957134ms)
+✔ acaoProtegida: origem, sessao e modulo conferidos NESSA ordem, antes do corpo (3.423927ms)
+✔ acaoProtegida: origem ruim nega sem consultar sessao nem modulo, e sem rodar o corpo (1.797177ms)
+✔ acaoProtegida: sessao invalida e modulo negado negam com o motivo certo, sem rodar o corpo (2.089652ms)
+✔ acaoProtegida: erro do corpo nao vira negacao; sobe para quem chamou (1.36824ms)
+✔ hostsPermitidos vazio recusa toda acao (configuracao faltando nao abre a porta) (1.166213ms)
+✔ pode() exige true estrito, nao truthiness (2.371669ms)
+✔ valor ausente, herdado ou nao booleano e negado — fail closed (0.512093ms)
+✔ a sessao gravada pelo escritor e lida pelo leitor (6.491689ms)
+✔ o id da sessao nunca vira chave crua: prefixo + sha256 (1.402477ms)
+✔ o prefixo e configuravel, para dividir uma instancia entre ambientes (1.387488ms)
+✔ o TTL no Redis acompanha a expiracao da sessao (1.161801ms)
+✔ sessao ja expirada nao e gravada e apaga a anterior (1.353079ms)
+✔ o Redis expira a chave sozinho: depois do TTL a leitura e ausente (1.785605ms)
+✔ remover apaga a sessao em todas as leituras seguintes (1.198156ms)
+✔ o leitor nao tem como gravar nem remover (N3, invariante 15) (2.941518ms)
+✔ valor corrompido ou com forma errada e sessao ausente, nao excecao (2.641682ms)
+✔ id vazio ou que nao e texto nao chega ao Redis (1.393839ms)
+✔ Redis fora do ar vira erro normalizado, sem vazar o motivo (invariante 12) (5.312418ms)
+✔ shell grava pelo Redis e a zona le a mesma sessao, sem token na leitura publica (4.775065ms)
+✔ a sessao gravada pelo shell e lida por uma zona (arquivo, nao memoria) (6.87633ms)
+✔ o store em modo leitura nao tem como gravar nem remover (N3) (2.728734ms)
+✔ o nucleo de zona nao tem entrar nem encerrar; o do shell tem (1.419183ms)
+✔ identidadeDev autentica os atores de desenvolvimento e recusa o resto (1.852759ms)
+✔ identidadeDev recusa rodar em producao sem opt-in explicito (2.343154ms)
+✔ a sessao entregue a aplicacao so tem sub e nome (1.701944ms)
+✔ entrar() devolve so o id opaco — o token nao chega a quem chama (1.955399ms)
+✔ nenhum nucleo expoe store, identidade ou transporte cru (1.05899ms)
+✔ encerrar no shell acaba a sessao na zona; exigir destruturado continua funcionando (3.812838ms)
+✔ sessao expirada e tratada como ausente (2.207302ms)
+✖ traceparent valido que chega do navegador e mantido (6.719001ms)
+✖ traceparent ausente, malformado ou com trace zerado vira um novo, valido (1.614149ms)
+✔ dois traces novos nunca coincidem (0.691522ms)
+✖ filho: mesmo trace, span novo, mesma amostragem (0.830928ms)
+✖ toda chamada ao dominio leva traceparent filho do trace da requisicao (84.058401ms)
+✖ sem trace na requisicao, a chamada abre um trace novo; nada de dado pessoal no cabecalho (15.021409ms)
+✖ traceparent forjado pelo cliente com texto nao chega ao dominio (7.246684ms)
+✔ politicaDeSeguranca: a mesma CSP para shell e zonas, com o nonce (1.248966ms)
+ℹ tests 107
+ℹ suites 0
+ℹ pass 101
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 790.796913
+
+✖ failing tests:
+
+test at test/trace-e-csp.test.mjs:12:1
+✖ traceparent valido que chega do navegador e mantido (6.719001ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + '00-78f7812a9a17768f07354c7600a14fcb-e592853abd329aa1-01'
+  - '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01'
+  
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/copia/repos/erp-nucleo/test/trace-e-csp.test.mjs:14:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '00-78f7812a9a17768f07354c7600a14fcb-e592853abd329aa1-01',
+    expected: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/trace-e-csp.test.mjs:17:1
+✖ traceparent ausente, malformado ou com trace zerado vira um novo, valido (1.614149ms)
+  AssertionError [ERR_ASSERTION]: Expected "actual" to be strictly unequal to:
+  
+  'ff-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01'
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/copia/repos/erp-nucleo/test/trace-e-csp.test.mjs:23:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'ff-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
+    expected: 'ff-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/trace-e-csp.test.mjs:31:1
+✖ filho: mesmo trace, span novo, mesma amostragem (0.830928ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^([0-9a-z]{2})-([0-9a-zA-Z]{32})-([0-9a-zA-Z]{16})-([0-9a-z]{2})$/. Input:
+  
+  '00-00-839eef7ddd0994c9-277bc924be5274dd'
+  
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/copia/repos/erp-nucleo/test/trace-e-csp.test.mjs:34:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '00-00-839eef7ddd0994c9-277bc924be5274dd',
+    expected: /^([0-9a-z]{2})-([0-9a-zA-Z]{32})-([0-9a-zA-Z]{16})-([0-9a-z]{2})$/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at test/trace-e-csp.test.mjs:47:1
+✖ toda chamada ao dominio leva traceparent filho do trace da requisicao (84.058401ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^([0-9a-z]{2})-([0-9a-zA-Z]{32})-([0-9a-zA-Z]{16})-([0-9a-z]{2})$/. Input:
+  
+  '00-00-f25cf7f79fefad51-061eac71354463c5'
+  
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/copia/repos/erp-nucleo/test/trace-e-csp.test.mjs:56:38)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '00-00-f25cf7f79fefad51-061eac71354463c5',
+    expected: /^([0-9a-z]{2})-([0-9a-zA-Z]{32})-([0-9a-zA-Z]{16})-([0-9a-z]{2})$/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at test/trace-e-csp.test.mjs:60:1
+✖ sem trace na requisicao, a chamada abre um trace novo; nada de dado pessoal no cabecalho (15.021409ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^([0-9a-z]{2})-([0-9a-zA-Z]{32})-([0-9a-zA-Z]{16})-([0-9a-z]{2})$/. Input:
+  
+  '00-00-4b786048fe2e42ff-9e22dda112e53624'
+  
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/copia/repos/erp-nucleo/test/trace-e-csp.test.mjs:68:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '00-00-4b786048fe2e42ff-9e22dda112e53624',
+    expected: /^([0-9a-z]{2})-([0-9a-zA-Z]{32})-([0-9a-zA-Z]{16})-([0-9a-z]{2})$/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at test/trace-e-csp.test.mjs:72:1
+✖ traceparent forjado pelo cliente com texto nao chega ao dominio (7.246684ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^([0-9a-z]{2})-([0-9a-zA-Z]{32})-([0-9a-zA-Z]{16})-([0-9a-z]{2})$/. Input:
+  
+  '00-00-f3115464503739e0-6718341020dfdb54'
+  
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/09322a0e-689b-4bc7-ad2e-80de22035516/scratchpad/aud4/copia/repos/erp-nucleo/test/trace-e-csp.test.mjs:79:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '00-00-f3115464503739e0-6718341020dfdb54',
+    expected: /^([0-9a-z]{2})-([0-9a-zA-Z]{32})-([0-9a-zA-Z]{16})-([0-9a-z]{2})$/,
+    operator: 'match',
+    diff: 'simple'
+  }

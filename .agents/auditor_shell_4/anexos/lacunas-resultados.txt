@@ -1,0 +1,6 @@
+BASE LAC: ℹ pass 3 ℹ fail 0  FALHAS: 
+CSP-nonce-contador LAC: ℹ pass 2 ℹ fail 1  FALHAS: ✖ failing tests:;✖ G12: nonce da CSP imprevisivel (nao sequencial, sem prefixo comum longo);
+CSP-nonce-relogio LAC: ℹ pass 2 ℹ fail 1  FALHAS: ✖ failing tests:;✖ G12: nonce da CSP imprevisivel (nao sequencial, sem prefixo comum longo);
+CSP-nonce-fixo-zonas LAC: ℹ pass 3 ℹ fail 0  FALHAS: 
+S-timeout-1500-instancia LAC: ℹ pass 2 ℹ fail 1  FALHAS: ✖ failing tests:;✖ G14: zona travada vira 503 em menos de 1 s (sonda de 500 ms, §1.1 e §8);
+D-CSP-nonce-fixo-zonas LAC: ℹ pass 1 ℹ fail 2  FALHAS: ✖ failing tests:;✖ G12: nonce da CSP imprevisivel (nao sequencial, sem prefixo comum longo);✖ G13: nonce da CSP muda a cada requisicao tambem nas zonas;

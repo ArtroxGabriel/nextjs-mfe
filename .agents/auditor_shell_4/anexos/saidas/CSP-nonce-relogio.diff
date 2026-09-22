@@ -1,0 +1,20 @@
+diff --git a/lib/decisao-proxy.ts b/lib/decisao-proxy.ts
+index 08d3b97..98c9389 100644
+--- a/lib/decisao-proxy.ts
++++ b/lib/decisao-proxy.ts
+@@ -31,13 +31,14 @@ export interface ContextoRequisicaoProxy {
+ /** `caminho` é `prefixo` ou está abaixo dele: `/api/otelx` não é `/api/otel` (auditor_shell_2, U6). */
+ const noSegmento = (caminho: string, prefixo: string) => caminho === prefixo || caminho.startsWith(`${prefixo}/`)
+ 
++let contadorDeNonce = 1
+ export async function decidirAcaoDoProxy(
+   contexto: ContextoRequisicaoProxy,
+   cacheSaude: CacheSaudeZona = cacheSaudePadrao,
+   zonas?: readonly DefinicaoDeZona[]
+ ): Promise<DecisaoProxy> {
+   const { caminho, temCookieSessao } = contexto
+-  const nonce = crypto.randomUUID().replaceAll('-', '')
++  const nonce = (Date.now() * 1000 + (contadorDeNonce++ % 1000)).toString(16).padStart(32, '0')
+ 
+   // 1. Rotas reservadas públicas do shell
+   if (
