@@ -49,7 +49,7 @@ para escalar**; depois, o caminho para produção descrito em `docs/arquitetura/
 | Fase | Item | Atividade | Bloqueio |
 |---|---|---|---|
 | **A. Fechar o que está aberto** | A1 gate do shell: iteração 3 | #3, #18 | — |
-| **B. Base consistente** | B1 kit de app (ADR-0012): núcleo 0.6.0 (CSP) e 0.7.0 (`@erp/nucleo/app`), moldura 0.4.0, as 4 apps juntas | — | A1 |
+| **B. Base consistente** | B1 kit de app (ADR-0012): pacotes **prontos** (núcleo 0.7.0, moldura 0.4.0); falta migrar as 4 apps juntas | — | A1 |
 | | B2 núcleo 8: propagação **feita** (0.6.0); falta exportar spans (SDK OpenTelemetry) | #18 | **aprovação de instalação** |
 | | B3 `/{zona}/api/health` sem tocar domínio; sonda passa a usá-lo | #3 | B1 |
 | | B4 verificações da spec: build falha com `server-only` em `'use client'`; DTO sensível como prop de ilha; guarda contra `<Link>` entre zonas | — | — |
