@@ -93,8 +93,8 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 ## Estado de trabalho (2026-09-22, madrugada)
 
 - B1 e D1 **no `master`** das quatro apps e fixados no principal. Sem branches de trabalho abertos.
-- Showcase (`task showcase`) sobe tudo e já usa o Redis para a sessão; foi parado para verificar o B1/D1 e
-  precisa ser subido de novo (`task showcase`).
+- Showcase (`task showcase`) **no ar** com a sessão no Redis; `task showcase:conferir` todo verde.
+- Documentação de responsabilidades do zero: `docs/RESPONSABILIDADES.md` (ligada no README de cada repositório).
 - Ainda sem gate: B1 + D1 (despachar `reviewer_b1_1`, `challenger_b1_1`, `auditor_b1_1`).
 - `registrarManifesto()` no núcleo (ADR-0012, decisão 5) não existe no 0.7.0: os scripts ficam nas apps; levar ao 0.8.0.
 - B5 dividido: B5a (shell: sonda e telemetria → configuração) e B5b (núcleo: timeouts e sessão dev, no 0.8.0).
@@ -102,4 +102,4 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 
 ## Próximo passo
 
-Subir o showcase de novo; gate de B1+D1; depois B5a, B3, B4/B6 (P0 e P1), C1–C3, D2 (ADR-0013), E4–E5.
+Gate de B1+D1 (o challenger precisa das portas: parar o showcase antes); depois B5a, B3, B4/B6 (P0 e P1), C1–C3, D2 (ADR-0013), E4–E5.
