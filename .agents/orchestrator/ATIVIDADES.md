@@ -4,7 +4,7 @@
 > atualiza ao fim de todo gate, task ou decisão; o humano copia para o GitLab e marca a coluna
 > "No GitLab?". Regras de quando avisar: `MANUTENCAO-GITLAB.md`.
 >
-> Última revisão: **2026-09-21, noite** (revisor do gate do shell pediu mudanças; fragmentos e Redis no núcleo 0.5.0).
+> Última revisão: **2026-09-21, noite** (gate 2 do shell reprovado e corrigido; trace e CSP no núcleo 0.6.0).
 
 ## 1. Como ler e manter
 
@@ -20,13 +20,13 @@
 
 | # | Título | Estado real | Ação | No GitLab? | Evidência |
 |---|---|---|---|---|---|
-| 3 | Isolar a falha de zona no shell da base *(era "Tratar zonas travadas")* | falta `/{zona}/api/health` sem tocar domínio (`01-operacao` §5.2); gate 1 **reprovado** (vazamento de módulo com a gestão de acesso fora, `/ZONA2` sem sonda, CSP); **correção feita** (`f3d8803`, 30/30); falta o gate 2 | reescrever título; mover para **em andamento** | pendente | `erp-shell` `6de4939`/`dab5ffd`/`a63b995`; `RETOMADA.md` |
+| 3 | Isolar a falha de zona no shell da base *(era "Tratar zonas travadas")* | falta `/{zona}/api/health`; gates 1 e 2 reprovados e corrigidos (vazamento de módulo, `/ZONA2`, CSP, flash); `base/verificacao` 47/47 com navegador real; **falta o gate 3** | reescrever título; mover para **em andamento** | pendente | `erp-shell` `6de4939`/`dab5ffd`/`a63b995`; `RETOMADA.md` |
 | 9 | Trocar login e store de desenvolvimento por OIDC e Redis *(era "Implementar sessão e autorização no servidor")* | cookie opaco, escritor único e autorização por módulo entregues; **adaptador Redis pronto** (`@erp/nucleo` 0.4.0, 12 testes, 9 mutações pegas), falta ligar nas apps; faltam OIDC e renovação de token | reescrever título e critérios; mover para **em andamento** | pendente | ADR-0009 decisão 3; `erp-nucleo` `3a7b80c`; `alvo.md` §6 |
 | 10 | Implementar composição por fragmentos | núcleo pronto (`@erp/nucleo` 0.5.0, 18 testes, 16 mutações); falta ligar zona 1 ← zona 2 e bloquear no shell | mover para **em andamento** | pendente | ADR-0011; `erp-nucleo` `1841771` |
 | 11 | Centralizar o tempo real no shell | não iniciado | manter; tirar a dependência da #2 | pendente | `alvo.md` §6 (SSE) |
 | 12 | Publicar o pacote visual @erp/ui | não iniciado; depende de medir duplicação de bundle | manter | — | `alvo.md` §6 |
 | 14 | Definir estratégia de publicação e compatibilidade | submódulos **feitos**; hook `pre-push` que recusa submódulo não enviado **feito** (`base/scripts/checar-envio.mjs`, provado com commit só local); **gate de lockstep do núcleo feito** (`base/scripts/verificar-lockstep.mjs`, no `pre-push`, provado com divergência real); falta registro único ou publicação pelo CI | acrescentar critérios: gate de lockstep no CI, registro único, nunca republicar a mesma versão,  checar submódulo não enviado antes do push, mapa de zonas vindo do domínio de acesso | pendente | ADR-0010; `AMBIENTE.md` §1–2; `4eb128b` |
-| 18 | Centralizar a telemetria das zonas no shell *(nova)* — **ampliar para "Trace contínuo sem dado pessoal (núcleo 8)"**: o elemento 8 é núcleo e está ausente (`alvo.md` §6) | gateway implementado; gate 1 reprovado (lote anônimo repassado, corpo sem limite em streaming, limitador sem expiração); **correção feita** (`f3d8803`); nenhuma zona envia traces | **criar** em andamento (texto em §3) | pendente | `erp-shell` `6de4939`; `alvo.md` §6 (Operação) |
+| 18 | Centralizar a telemetria das zonas no shell *(nova)* — **ampliar para "Trace contínuo sem dado pessoal (núcleo 8)"**: o elemento 8 é núcleo e está ausente (`alvo.md` §6) | gateway corrigido nos gates 1–2; **propagação de trace feita** (núcleo 0.6.0, teste T1); falta exportar spans (SDK OpenTelemetry, exige instalar pacote) | **criar** em andamento (texto em §3) | pendente | `erp-shell` `6de4939`; `alvo.md` §6 (Operação) |
 
 ### Fechar — entregues ou substituídas
 
@@ -208,6 +208,7 @@ Link: N/A
 | 2026-09-15 | Primeiro catálogo (16 atividades) |
 | 2026-09-21 manhã | Critério do humano: encerrar o defasado. Fechar 1, 2, 4, 5, 6, 7, 8, 13, 15, 16; reescrever 3 e 9; criar a 17 |
 | 2026-09-21 tarde | #3 em andamento (implementada, sem gate); #6 com 0.3.2; #14 ganha as regras do ADR-0010; #17 com 26/26; criar a #18. Catálogo saiu de `MANUTENCAO-GITLAB.md` para este arquivo |
+| 2026-09-21 noite (gate 2) | #3: gate 2 reprovado e corrigido, falta o 3; #18: propagação de trace feita |
 | 2026-09-21 noite (decisões do humano) | sessão de 30 min; práticas como "contrato só cresce" só documentadas, fora dos critérios da #14; PoC provada, a #19 não será criada |
 | 2026-09-21 noite (gate do shell) | #3 e #18: gate 1 reprovado, correção feita, falta o gate 2 |
 | 2026-09-21 noite (revisão de premissas) | #18 ampliada para o núcleo 8 (trace); #14 recupera o gate de lockstep; #3 ganha o health check; #19 proposta para as perguntas originais da PoC |
