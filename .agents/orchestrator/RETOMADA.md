@@ -38,6 +38,7 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | | B3 `/{zona}/api/health` sem tocar domínio; sonda do shell passa a usá-lo | ⬜ | #3 | B1 |
 | | B5 parâmetros fixos no código (timeouts de destino e fragmento, TTL/timeout da sonda, limites da telemetria, vida da sessão dev) viram variáveis de ambiente com padrão e validação na subida, conforme `docs/CONFIGURACAO.md` | ⬜ | #20 | B1 |
 | | B4 verificações da spec: `server-only` em `'use client'` falha o build; DTO sensível como prop de ilha; guarda contra `<Link>` entre zonas | ⬜ | #20 | B1 |
+| | B6 lacunas de segurança do relatório de 2026-09-22 (`.agents/seguranca_2026-09-22/relatorio.md`): 13 dos 17 invariantes com prova de mutação; **P0** `server-only` em `'use client'` falhar o build e DTO sensível como prop (= B4); **P1** guarda de `<Link>` entre zonas (= B4) e prova de mutação do invariante 1 (token); **P2** invariante 9 ("não recarregar"), 11 (`NEXT_PUBLIC_*` estático), 13 (cache); **P3** invariante 14 e 4 itens do checklist §10 sem teste (headers em spans, logs sem `Authorization`, sem `traceresponse`/`Server-Timing`, rota pública sem `cookies()`) | ⬜ | #20 | B1 |
 | **C. Funcionalidades** | C1 fragmentos: rota `_fragmento` na zona 2, bloco na zona 1 com `<Suspense>`, recusa no shell | ⬜ | #10 | B1 |
 | | C2 SSE no shell (`/api/stream` + `SharedWorker`); fechar D7 (`proxyTimeout`) | ⬜ | #11 | B1 |
 | | C3 mapa de zonas vindo dos manifestos da gestão de acesso | ⬜ | #14 | B1 |
