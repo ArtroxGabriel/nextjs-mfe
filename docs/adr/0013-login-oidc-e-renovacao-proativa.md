@@ -58,5 +58,13 @@ um fluxo com redirecionamento.
 
 1. Reuso de refresh token no Keycloak 26 com rotação: a segunda renovação concorrente só falha ou derruba a
    sessão? Medir no showcase.
-2. "Sessão de 30 min": o realm hoje dá **30 min absolutos** desde o login (`ssoSessionMaxLifespan` = 1800);
-   o humano confirma se queria 30 min de **inatividade**.
+
+## Decidido depois (humano, 2026-09-22)
+
+- **Sessão por inatividade**, não absoluta: 30 min sem uso encerram a sessão. A inatividade é capturada
+  pelos refresh tokens: o refresh token vale `ERP_SESSAO_INATIVIDADE_S` e recomeça a cada renovação; o TTL da
+  sessão no Redis acompanha o `refresh_expires_in` a cada gravação. Teto absoluto em `ERP_SESSAO_MAXIMA_S`.
+  Conferido no Keycloak (`base/showcase/checar-keycloak.mjs`: `refresh_expires_in` = 1800).
+- **Nenhum tempo desta decisão fica fixo no código:** janela de renovação, lock, transação de login, vida do
+  token e inatividade são variáveis de ambiente documentadas em `docs/CONFIGURACAO.md` §1; os números da
+  seção "Decisão" acima são os padrões.

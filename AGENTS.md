@@ -59,6 +59,7 @@ pacotes ou em `base/verificacao/`.
 | dado que o navegador busca depois | `app/{zona}/api/bff/` (route handler) | cookie do `fetch` |
 | bloco de outra zona | `criarFragmento` na consumidora, `responderFragmento` na dona (ADR-0011) | cookie repassado |
 | chamada vinda de fora da aplicação | **não no BFF**: leve ao domínio | — |
+| tempo, timeout, TTL, limite, política de sessão | **configuração**: variável de ambiente (ou arquivo de configuração versionado) lida no servidor, com padrão seguro e documentada em [`docs/CONFIGURACAO.md`](docs/CONFIGURACAO.md) no mesmo commit; nunca constante escondida no código | — |
 
 Verificação de acesso: `proxy.ts` (cookie existe?) → layout/página (`exigirModulo`, 404) → UI
 (botão some) → **domínio** (a única que um `curl` não contorna). As três primeiras são

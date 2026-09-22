@@ -6,6 +6,7 @@ Três perguntas, três lugares:
 |---|---|---|
 | **como a base funciona hoje** | [`arquitetura/atual.md`](arquitetura/atual.md) — diagramas de topologia, proxy, login, destinos, acesso, toast, testes e falhas | 10 min |
 | **o que falta e para onde vai** | [`arquitetura/alvo.md`](arquitetura/alvo.md) — a tabela do §6 é a lista do que falta | 10 min |
+| **que parâmetro controla o quê** (sessão, timeouts, limites) | [`CONFIGURACAO.md`](CONFIGURACAO.md) — toda variável, com padrão e quem lê | 5 min |
 | **como conferir com as próprias mãos** | [`ROTEIRO-DE-VERIFICACAO.md`](ROTEIRO-DE-VERIFICACAO.md) — 12 passos no navegador | 10 min |
 
 Para rodar a base: [`../README.md`](../README.md). Para retomar o trabalho em andamento:

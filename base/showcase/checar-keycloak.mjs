@@ -1,8 +1,11 @@
-// Confere o Keycloak do showcase: recusa sem PKCE, recusa de verifier errado e troca certa com
-// token de 300 s. Uso: node base/showcase/checar-keycloak.mjs (com o compose no ar). Sai com 1 se algo falhar.
+// Confere o Keycloak do showcase: recusa sem PKCE, recusa de verifier errado e troca certa com a vida
+// do token e a inatividade configuradas (ERP_TOKEN_VIDA_S, ERP_SESSAO_INATIVIDADE_S; docs/CONFIGURACAO.md).
+// Uso: node base/showcase/checar-keycloak.mjs (com o compose no ar). Sai com 1 se algo falhar.
 import { createHash, randomBytes } from 'node:crypto'
 import assert from 'node:assert/strict'
 
+const VIDA_TOKEN_S = Number(process.env.ERP_TOKEN_VIDA_S ?? 300)
+const INATIVIDADE_S = Number(process.env.ERP_SESSAO_INATIVIDADE_S ?? 1800)
 const KC = 'http://127.0.0.1:8080/realms/erp/protocol/openid-connect'
 const RED = 'http://localhost:3000/api/auth/retorno'
 const b64 = (b) => b.toString('base64url')
@@ -52,6 +55,8 @@ const j = await r2.json()
 assert.equal(r2.status, 200)
 const claims = JSON.parse(Buffer.from(j.access_token.split('.')[1], 'base64url'))
 assert.equal(claims.preferred_username, 'ana')
-assert.equal(claims.exp - claims.iat, 300)
+assert.equal(claims.exp - claims.iat, VIDA_TOKEN_S)
 assert.ok(j.refresh_token)
-console.log('verifier certo: token da ana, 300 s, com refresh')
+// sessão por inatividade: o refresh token vale o tempo de inatividade e se renova a cada uso
+assert.equal(j.refresh_expires_in, INATIVIDADE_S)
+console.log(`verifier certo: token da ana, ${VIDA_TOKEN_S} s; refresh vale ${INATIVIDADE_S} s de inatividade`)

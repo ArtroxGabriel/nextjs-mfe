@@ -99,7 +99,9 @@ Shell e zonas usam o Redis em vez do arquivo; a verificação ponta a ponta cont
 
 Login por OIDC + PKCE no shell; identidadeDev só em desenvolvimento
 
-Renovação de token no shell, com lock (ADR-0002)
+Renovação de token no shell, proativa e com lock (ADR-0013)
+
+Sessão de 30 min por inatividade, capturada pelos refresh tokens; tempos em variáveis de ambiente (docs/CONFIGURACAO.md)
 
 🧪 Casos de Teste
 
@@ -272,6 +274,8 @@ Trocar o código copiado nas 4 apps (lib/pagina.ts, indisponível, global-error,
 
 Shell e 3 zonas usam @erp/nucleo 0.7.0 e @erp/moldura 0.4.0; as cópias foram apagadas
 
+Timeouts, TTLs e limites saem do código para variáveis de ambiente documentadas em docs/CONFIGURACAO.md
+
 Build falha com server-only importado em 'use client'
 
 Teste que recusa DTO sensível como prop de ilha
@@ -342,3 +346,4 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-09-21 noite (revisão de premissas) | #18 ampliada para o núcleo 8 (trace); #14 recupera o gate de lockstep; #3 ganha o health check; #19 proposta para as perguntas originais da PoC |
 | 2026-09-21 noite | #9 em andamento (adaptador Redis no núcleo 0.4.0); #14 ganha o hook `pre-push`; #10 em andamento (núcleo 0.5.0, ADR-0011); #3 e #18 recebem o bloqueio do revisor; textos prontos para #3, #9, #10, #14 e #18 |
 | 2026-09-22 | Plano com objetivo final (showcase com mocks JSON, Keycloak e Redis): criar #19 e #20; lista 2 separada com F1–F7 (refinamento arquitetural, otimização, mapa robusto, gestão de acesso, erro, testes, desempenho e segurança), bloqueadas até o showcase; #3 com gate 3 em andamento |
+| 2026-09-22 (tarde) | Sessão por inatividade e regra "parâmetro é configuração documentada": #9 e #20 ganham critérios; gate 3 do shell reprovado e corrigido; ADR-0013 proposto |

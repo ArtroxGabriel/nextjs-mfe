@@ -1,9 +1,9 @@
 {
   "realm": "erp",
   "enabled": true,
-  "accessTokenLifespan": 300,
-  "ssoSessionIdleTimeout": 1800,
-  "ssoSessionMaxLifespan": 1800,
+  "accessTokenLifespan": "${ERP_TOKEN_VIDA_S}",
+  "ssoSessionIdleTimeout": "${ERP_SESSAO_INATIVIDADE_S}",
+  "ssoSessionMaxLifespan": "${ERP_SESSAO_MAXIMA_S}",
   "clients": [
     {
       "clientId": "erp-shell",

@@ -19,6 +19,11 @@ services:
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      # Tempos de sessão vêm do ambiente (padrões e significado em docs/CONFIGURACAO.md);
+      # o realm os lê por placeholder no import.
+      ERP_TOKEN_VIDA_S: ${ERP_TOKEN_VIDA_S:-300}
+      ERP_SESSAO_INATIVIDADE_S: ${ERP_SESSAO_INATIVIDADE_S:-1800}
+      ERP_SESSAO_MAXIMA_S: ${ERP_SESSAO_MAXIMA_S:-36000}
     ports:
       - "127.0.0.1:8080:8080"
     volumes:
