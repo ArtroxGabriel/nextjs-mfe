@@ -1,0 +1,79 @@
+N01 | erp-nucleo/src/adaptadores/sessao-redis.ts — chave do Redis com o id cru, sem sha256 — CAUGHT — o id da sessao nunca vira chave crua: prefixo + sha256; o prefixo e configuravel, para dividir uma instancia entre ambientes
+N02 | erp-nucleo/src/adaptadores/sessao-redis.ts — semVazar relança o erro original (vaza endereço/senha) — inv. 12 — CAUGHT — Redis fora do ar vira erro normalizado, sem vazar o motivo (invariante 12)
+N03 | erp-nucleo/src/adaptadores/sessao-redis.ts — Redis fora vira sessão ausente (deslogado silencioso) — inv. 12 — CAUGHT — Redis fora do ar vira erro normalizado, sem vazar o motivo (invariante 12)
+N04 | erp-nucleo/src/adaptadores/sessao-redis.ts — TTL fixo de um ano em vez de expiraEm — CAUGHT — o TTL no Redis acompanha a expiracao da sessao; o Redis expira a chave sozinho: depois do TTL a leitura e ausente
+N05 | erp-nucleo/src/adaptadores/sessao-redis.ts — sessão já expirada é gravada — CAUGHT — sessao ja expirada nao e gravada e apaga a anterior
+N06 | erp-nucleo/src/adaptadores/sessao-redis.ts — ler aceita qualquer JSON como sessão — CAUGHT — valor corrompido ou com forma errada e sessao ausente, nao excecao
+N07 | erp-nucleo/src/adaptadores/sessao-redis.ts — leitor ganha gravar/remover (literal) — inv. 15 — CAUGHT — tsc (erro de tipo): src/adaptadores/sessao-redis.ts(52,11): error TS2353: Object literal may only specify known properties, and 'gravar' doe
+N07b | erp-nucleo/src/adaptadores/sessao-redis.ts — leitor ganha gravar/remover por spread (sem erro de tipo) — inv. 15 — CAUGHT — o leitor nao tem como gravar nem remover (N3, invariante 15)
+N09 | erp-nucleo/src/fabricas/criarNucleo.ts — armazenada não confere expiraEm — CAUGHT — sessao expirada e tratada como ausente
+N10 | erp-nucleo/src/fabricas/criarNucleo.ts — sessao.atual devolve a SessaoArmazenada inteira (tokens) — inv. 1 — CAUGHT — shell grava pelo Redis e a zona le a mesma sessao, sem token na leitura publica; a sessao entregue a aplicacao so tem sub e nome
+N11 | erp-nucleo/src/fabricas/criarNucleo.ts — sessao.atual inclui refreshToken — inv. 1 — CAUGHT — shell grava pelo Redis e a zona le a mesma sessao, sem token na leitura publica; a sessao entregue a aplicacao so tem sub e nome
+N12 | erp-nucleo/src/fabricas/criarNucleo.ts — sessao.atual inclui idToken e tokenExpiraEm — inv. 1 — CAUGHT — shell grava pelo Redis e a zona le a mesma sessao, sem token na leitura publica; a sessao entregue a aplicacao so tem sub e nome
+N13 | erp-nucleo/src/fabricas/criarNucleo.ts — nucleo.acesso.exigirModulo ignora a funcionalidade — CAUGHT — acessoHttp consome /v2/eu e mapeia modulos efetivos e obterEu
+N14 | erp-nucleo/src/fabricas/criarNucleo.ts — modulosPermitidos sem exigir sessão — CAUGHT — sem sessao, modulos permitidos lanca SessaoInvalida antes de perguntar ao dominio
+N16 | erp-nucleo/src/fabricas/criarNucleo.ts — entrar() devolve id + accessToken — inv. 1 — CAUGHT — shell grava pelo Redis e a zona le a mesma sessao, sem token na leitura publica; entrar() devolve so o id opaco — o token nao chega a quem chama
+N18 | erp-nucleo/src/fabricas/criarPaginas.ts — origemPermitida ignora Sec-Fetch-Site — CAUGHT — acaoProtegida: origem ruim nega sem consultar sessao nem modulo, e sem rodar o corpo
+N19 | erp-nucleo/src/fabricas/criarPaginas.ts — hostsPermitidos vazio libera tudo — CAUGHT — hostsPermitidos vazio recusa toda acao (configuracao faltando nao abre a porta)
+N20 | erp-nucleo/src/fabricas/criarPaginas.ts — Origin ausente vira o primeiro host permitido — inv. 5 — CAUGHT — acaoProtegida: origem ruim nega sem consultar sessao nem modulo, e sem rodar o corpo
+N21 | erp-nucleo/src/fabricas/criarPaginas.ts — acaoProtegida executa o corpo quando a gestão de acesso falha (ERRO_INTERNO) — inv. 16 — CAUGHT — acaoProtegida: sessao invalida e modulo negado negam com o motivo certo, sem rodar o corpo
+N22 | erp-nucleo/src/fabricas/criarPaginas.ts — acaoProtegida descarta a funcionalidade — CAUGHT — acaoProtegida: aceita parametro de funcionalidade opcional
+N23 | erp-nucleo/src/fabricas/criarPaginas.ts — acaoProtegida sem sessao.exigir() — inv. 5 — CAUGHT — acaoProtegida: origem, sessao e modulo conferidos NESSA ordem, antes do corpo; acaoProtegida: sessao invalida e modulo negado negam com o motivo certo, sem rodar o corpo; acaoProtegida: aceita parametro de funcionalidade opcional
+N24 | erp-nucleo/src/fabricas/criarPaginas.ts — modulosPermitidos da página: erro vira lista vazia — CAUGHT — exigirModulo e FAIL-CLOSED: gestao de acesso fora propaga o erro, nunca deixa passar
+N25 | erp-nucleo/src/fabricas/criarPaginas.ts — exigirModulo fail-open quando a gestão de acesso falha — inv. 16 — CAUGHT — exigirModulo e FAIL-CLOSED: gestao de acesso fora propaga o erro, nunca deixa passar
+N26 | erp-nucleo/src/adaptadores/acesso-http.ts — sem fallback para /v1 (lista vazia) — CAUGHT — acessoHttp pergunta ao dominio de gestao de acesso com a credencial do usuario; (travou: servidor do teste sem finally; só terminou por timeout)
+N28 | erp-nucleo/src/adaptadores/acesso-http.ts — v2 perde as funcionalidades — CAUGHT — acessoHttp consome /v2/eu e mapeia modulos efetivos e obterEu; (travou: servidor do teste sem finally; só terminou por timeout)
+N29 | erp-nucleo/src/adaptadores/acesso-http.ts — v2 acrescenta funcionalidade <modulo>.editar — CAUGHT — acessoHttp consome /v2/eu e mapeia modulos efetivos e obterEu; (travou: servidor do teste sem finally; só terminou por timeout)
+N30 | erp-nucleo/src/adaptadores/acesso-http.ts — v2 ignorado (literal false; erro de tipo) — CAUGHT — tsc (erro de tipo): src/adaptadores/acesso-http.ts(27,18): error TS18048: 'r.body' is possibly 'undefined'.
+N30b | erp-nucleo/src/adaptadores/acesso-http.ts — v2 ignorado, sempre /v1 — CAUGHT — acessoHttp consome /v2/eu e mapeia modulos efetivos e obterEu; (travou: servidor do teste sem finally; só terminou por timeout)
+N35 | erp-nucleo/src/interno/destinos.ts — ignora timeoutMs do destino — CAUGHT — timeout do destino vira ERRO_INTERNO sem detalhe
+N39 | erp-nucleo/src/index.ts — raiz exporta sessaoRedisDeEscrita — inv. 15 — CAUGHT — invariante 15: a raiz nao entrega nada que escreva sessao ou autentique
+M01 | erp-moldura/src/servidor.ts — gestão de acesso fora: menu [] e página renderiza (não "indisponível") — CAUGHT — dadosDaMoldura: gestao de acesso fora vira moldura sem menu e "indisponivel", sem lancar
+M02 | erp-moldura/src/servidor.ts — toast de erro com e.message — inv. 12 — CAUGHT — acaoProtegida: erro do corpo vira toast com a mensagem publica do codigo e volta
+M03 | erp-moldura/src/servidor.ts — cookie de flash sem Secure — CAUGHT — flash: cookie __Host- com Secure, Lax, caminho / e 60 s, que lerFlash le de volta
+M04 | erp-moldura/src/servidor.ts — negação por módulo sem toast — CAUGHT — acaoProtegida: cada negacao do nucleo vira o destino certo, sem rodar o corpo
+M05 | erp-moldura/src/servidor.ts — sessão negada volta ao destino em vez do login — CAUGHT — acaoProtegida: cada negacao do nucleo vira o destino certo, sem rodar o corpo
+M06 | erp-moldura/src/servidor.ts — dadosDaMoldura engole redirect/erro de programação — CAUGHT — dadosDaMoldura: erro que nao e da aplicacao (redirect do Next, bug) segue adiante
+M07 | erp-moldura/src/servidor.ts — usuario recebe a sessão inteira — CAUGHT — dadosDaMoldura: usuario, menu, modulo ativo e flash do cabecalho interno
+S02 | erp-shell/lib/saude-zonas.ts — status 5xx conta como saudável — CAUGHT — ✖ U3: status >= 500 conta como fora; 307 (pagina que pede login) conta como no ar (3.838603ms)
+S03 | erp-shell/lib/saude-zonas.ts — configuração inválida vira o padrão (B5a) — CAUGHT — configuracao: lerNumeroPositivo aceita valores validos e lanca com formato invalido
+S04 | erp-shell/lib/saude-zonas.ts — timeout padrão da sonda 500 ms → 5 s — CAUGHT — U4: zona travada e dada como fora em ~500 ms (timeout padrao da sonda)
+S07 | erp-shell/lib/telemetria.ts — lerNumeroPositivo aceita 0 (B5a) — CAUGHT — configuracao: lerNumeroPositivo em telemetria valida numeros inteiros positivos
+S08 | erp-shell/lib/telemetria.ts — limite padrão 256 KB → 10 MB — CAUGHT — telemetria: tamanho maximo e 256 KB
+S09 | erp-shell/lib/telemetria.ts — limite padrão 60 → 6000 lotes/min — CAUGHT — telemetria: limitador permite ate 60 lotes por minuto por usuario
+N40 | erp-nucleo/src/fabricas/criarNucleo.ts — encerrar não remove do store — CAUGHT — shell grava pelo Redis e a zona le a mesma sessao, sem token na leitura publica
+N41 | erp-nucleo/src/adaptadores/sessao-redis.ts — prefixo padrão vazio — CAUGHT — o id da sessao nunca vira chave crua: prefixo + sha256
+E03 | erp-zona-2/app/zona2/page.tsx — exigirModulo comentado (o texto continua no arquivo) — inv. 16 — CAUGHT — L1/V1: gestao de acesso fora nao entrega pagina de modulo de nenhuma zona, nem no payload RSC
+E04 | erp-zona-1/app/zona1/relatorios/page.tsx — exigirModulo('zona1.painel') no lugar de 'zona1.relatorios' — inv. 16 — CAUGHT — N6/N5: revogar uma concessao na zona de acesso vale na proxima navegacao, sem novo login
+E06 | erp-zona-2/app/zona2/api/health/route.ts — health sem GET (405) — sonda continua dando a zona como no ar (B3) — CAUGHT — camada 1: sem cookie, shell e zonas mandam para o login do shell, com Location relativo; N3: o shell grava a sessao e o navegador recebe so um id opaco, HttpOnly e __Host-; login nao vira redirecionamento aberto; N5: o menu mostra so os modulos permitidos, igual no shell e nas zonas (moldura comum); token nunca chega ao navegador, em nenhuma pagina; N6/N5: revogar uma concessao na zona de acesso vale na proxima navegacao, sem novo login; D8: a tela de acesso nao oferece perfil de zona para modulo de outra zona
+E08 | erp-zona-acesso/app/acesso/acoes.ts — acaoProtegida('shell.inicio') no lugar de 'acesso.admin' — inv. 16 — CAUGHT — Server Action e reverificada no servidor: quem nao tem o modulo nao executa; invariante 16: toda Server Action de toda app recusa quem nao tem o modulo, antes de agir
+E09 | erp-zona-1/app/zona1/BotaoDeAviso.tsx — 'use client'; (com ponto e vírgula) importando @/lib/nucleo — inv. 3 — CAUGHT — camada 1: sem cookie, shell e zonas mandam para o login do shell, com Location relativo; N3: o shell grava a sessao e o navegador recebe so um id opaco, HttpOnly e __Host-; login nao vira redirecionamento aberto; N5: o menu mostra so os modulos permitidos, igual no shell e nas zonas (moldura comum); token nunca chega ao navegador, em nenhuma pagina; N6/N5: revogar uma concessao na zona de acesso vale na proxima navegacao, sem novo login; D8: a tela de acesso nao oferece perfil de zona para modulo de outra zona
+XE01 | base/verificacao/seguranca-estatica.mjs — contorno: use client com ponto e virgula — SURVIVED — analisarSeguranca/analisar direto
+XE02 | base/verificacao/seguranca-estatica.mjs — contorno: comentario antes de use client — SURVIVED — analisarSeguranca/analisar direto
+XE03 | base/verificacao/seguranca-estatica.mjs — contorno: use client importa lib/nucleo (server-only transitivo) — SURVIVED — analisarSeguranca/analisar direto
+XE04 | base/verificacao/seguranca-estatica.mjs — contorno: use client importa @erp/nucleo raiz — SURVIVED — analisarSeguranca/analisar direto
+XE05 | base/verificacao/seguranca-estatica.mjs — contorno: use client reexporta server-only — SURVIVED — analisarSeguranca/analisar direto
+XE06 | base/verificacao/seguranca-estatica.mjs — contorno: use client import dinamico — SURVIVED — analisarSeguranca/analisar direto
+XE07 | base/verificacao/seguranca-estatica.mjs — contorno: DTO por spread — SURVIVED — analisarSeguranca/analisar direto
+XE08 | base/verificacao/seguranca-estatica.mjs — contorno: DTO objeto inteiro — SURVIVED — analisarSeguranca/analisar direto
+XE09 | base/verificacao/seguranca-estatica.mjs — contorno: DTO spread literal com custo — SURVIVED — analisarSeguranca/analisar direto
+XE10 | base/verificacao/seguranca-estatica.mjs — contorno: prop custoTotal — SURVIVED — analisarSeguranca/analisar direto
+XE11 | base/verificacao/seguranca-estatica.mjs — contorno: prop refreshToken camelCase -> P0-dto-sensivel — CAUGHT — analisarSeguranca/analisar direto
+XE12 | base/verificacao/seguranca-estatica.mjs — contorno: Link href em expressao — SURVIVED — analisarSeguranca/analisar direto
+XE13 | base/verificacao/seguranca-estatica.mjs — contorno: Link href template — SURVIVED — analisarSeguranca/analisar direto
+XE14 | base/verificacao/seguranca-estatica.mjs — contorno: Link href variavel — SURVIVED — analisarSeguranca/analisar direto
+XE15 | base/verificacao/seguranca-estatica.mjs — contorno: Link renomeado — SURVIVED — analisarSeguranca/analisar direto
+XE16 | base/verificacao/seguranca-estatica.mjs — contorno: Link maiusculas — SURVIVED — analisarSeguranca/analisar direto
+XE17 | base/verificacao/seguranca-estatica.mjs — contorno: Link no shell para zona — SURVIVED — analisarSeguranca/analisar direto
+XE18 | base/verificacao/seguranca-estatica.mjs — contorno: Link href objeto — SURVIVED — analisarSeguranca/analisar direto
+XE19 | base/verificacao/seguranca-estatica.mjs — contorno: NEXT_PUBLIC por indice — SURVIVED — analisarSeguranca/analisar direto
+XE20 | base/verificacao/seguranca-estatica.mjs — contorno: NEXT_PUBLIC endpoint interno — SURVIVED — analisarSeguranca/analisar direto
+XE21 | base/verificacao/seguranca-estatica.mjs — contorno: NEXT_PUBLIC destruturado — SURVIVED — analisarSeguranca/analisar direto
+XE22 | base/verificacao/seguranca-estatica.mjs — contorno: NEXT_PUBLIC ACCESS — SURVIVED — analisarSeguranca/analisar direto
+XR01 | base/verificacao/saida-de-rede.mjs — contorno: cliente redis (rede fora do registro) — SURVIVED — analisarSeguranca/analisar direto
+XR02 | base/verificacao/saida-de-rede.mjs — contorno: ioredis — SURVIVED — analisarSeguranca/analisar direto
+XR03 | base/verificacao/saida-de-rede.mjs — contorno: pg — SURVIVED — analisarSeguranca/analisar direto
+XR04 | base/verificacao/saida-de-rede.mjs — contorno: fetch via Reflect com concatenacao — SURVIVED — analisarSeguranca/analisar direto
+XR05 | base/verificacao/saida-de-rede.mjs — contorno: fetch via Object.getOwnPropertyDescriptor — SURVIVED — analisarSeguranca/analisar direto
+XR06 | base/verificacao/saida-de-rede.mjs — contorno: undici via createRequire — SURVIVED — analisarSeguranca/analisar direto
+XR07 | base/verificacao/saida-de-rede.mjs — contorno: child_process curl — SURVIVED — analisarSeguranca/analisar direto
