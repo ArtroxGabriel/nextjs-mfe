@@ -1,7 +1,8 @@
 // Showcase: sobe tudo e deixa no ar para usar no navegador.
 //   task showcase            (ou: node base/showcase/subir.mjs [--construir] [--log])
 // 1. Redis e Keycloak (docker compose), esperando os dois responderem;
-// 2. domínios falsos com o estado gravado em repos/erp-dominio-stub/dados/estado (DADOS_DIR);
+// 2. domínios falsos com o estado gravado em repos/erp-dominio-stub/dados/estado (DADOS_DIR) e a
+//    sessão no Redis (REDIS_URL);
 // 3. shell e as três zonas em modo produção, com os manifestos registrados.
 // Ctrl-C derruba domínios e apps; Redis e Keycloak ficam (task showcase:descer).
 import { execFileSync } from 'node:child_process'
@@ -28,6 +29,8 @@ await esperar('Keycloak', async () => (await fetch(KEYCLOAK, { signal: AbortSign
 
 console.log('2/3 domínios falsos com estado gravado; 3/3 shell e zonas (pode levar alguns minutos no primeiro build)')
 process.env.DADOS_DIR ??= join(RAIZ, 'erp-dominio-stub', 'dados', 'estado')
+// sessão no Redis do compose (D1): shell grava, zonas leem; ver docs/CONFIGURACAO.md
+process.env.REDIS_URL ??= 'redis://127.0.0.1:6379'
 const { derrubar } = await subir({
   construir: process.argv.includes('--construir'),
   log: process.argv.includes('--log'),
@@ -45,6 +48,7 @@ showcase no ar: ${SHELL}
   conferir tudo de uma vez:  task showcase:conferir      (em outro terminal)
   roteiro no navegador:      docs/ROTEIRO-DE-VERIFICACAO.md
   dados dos domínios:        ${process.env.DADOS_DIR}  (task showcase:dados:resetar volta à semente)
+  sessão:                    Redis (${process.env.REDIS_URL}); cookie __Host-session só com o id opaco
   Keycloak (admin/admin):    http://localhost:8080  — conferido por task showcase:checar;
                              as apps ainda usam o login de desenvolvimento (D2, ADR-0013)
 

@@ -26,7 +26,7 @@ flowchart TB
     Z2["erp-zona-2 :3002<br/>/zona2 (Server Action com If-Match)"]
     ZA["erp-zona-acesso :3003<br/>/acesso"]
 
-    ST[("store de sessão<br/>arquivo em SESSAO_DIR<br/>shell escreve · todos leem")]
+    ST[("store de sessão<br/>Redis se REDIS_URL, senão arquivo em SESSAO_DIR<br/>shell escreve · todos leem")]
     DP[("plataforma :4004")]
     DA[("domínio A :4001")]
     DB[("domínio B :4002")]
@@ -81,8 +81,8 @@ a armadilha R1 da PoC não se repete aqui.
 | Pacote | Versão | O que tem | Quem usa |
 |---|---|---|---|
 | `@erp/contratos` | 0.2.1 | códigos de erro e mensagens; `ManifestoDeZona`, `ModuloPermitido`, `validarManifesto` | todos |
-| `@erp/nucleo` | 0.6.0 (as 4 apps) | `criarNucleo`, registro de destinos, leitores de sessão (`sessaoArquivo`, `sessaoRedis`), fragmentos (`criarFragmento`, `responderFragmento`), `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell`, escritores de sessão, `identidadeDev` | shell e zonas (`/shell` só o shell) |
-| `@erp/moldura` | 0.3.0 | `<Moldura>` (topo, menu com `aria-current`, host de toast), `emitirToast`, flash, `FormularioDeAcao` | shell e zonas |
+| `@erp/nucleo` | 0.7.0 (as 4 apps) | kit de página e de Server Action `criarPaginas` em `@erp/nucleo/app` (ADR-0012); `criarNucleo`, registro de destinos, leitores de sessão (`sessaoArquivo`, `sessaoRedis`), fragmentos (`criarFragmento`, `responderFragmento`), `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell`, escritores de sessão, `identidadeDev` | shell e zonas (`/shell` só o shell) |
+| `@erp/moldura` | 0.4.0 | `<Moldura>` (topo, menu com `aria-current`, host de toast), `emitirToast`, flash, `FormularioDeAcao`, `ServicoIndisponivel`, `ErroGlobal`; em `@erp/moldura/servidor`: `criarMolduraDoServidor` (menu, toast e envelope visual da Server Action) | shell e zonas |
 
 Publicados no Verdaccio local (`:4873`). Cada aplicação é um repositório com lockfile próprio.
 

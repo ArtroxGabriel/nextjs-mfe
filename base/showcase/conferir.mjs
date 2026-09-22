@@ -34,6 +34,12 @@ for (const u of ATORES) {
   linhas.push(`  menu de ${u}: ${m.join(' · ')}`)
 }
 
+// sessão no Redis: o login grava a chave (com hash do id, nunca o id cru)
+const { id } = await entrar('davi')
+let chaves = ''
+try { chaves = execFileSync('docker', [...COMPOSE, 'exec', '-T', 'redis', 'redis-cli', '--scan', '--pattern', 'erp:sessao:*']).toString() } catch {}
+ok('sessão gravada no Redis (chave com hash)', /erp:sessao:[0-9a-f]{64}/.test(chaves) && !chaves.includes(id))
+
 // o dado é do domínio: custo só para quem é do financeiro
 const bruno = (await entrar('bruno')).cookie
 const carla = (await entrar('carla')).cookie

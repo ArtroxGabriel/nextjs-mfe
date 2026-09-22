@@ -84,6 +84,13 @@ tasks:
     env:
       CONSTRUIR: '{{.CONSTRUIR | default "1"}}'
 
+  verificar:redis:
+    desc: Ponta a ponta com a sessão no Redis do showcase (task showcase:subir antes)
+    cmd: node --test base/verificacao/*.test.mjs
+    env:
+      REDIS_URL: redis://127.0.0.1:6379
+      CONSTRUIR: '{{.CONSTRUIR | default "1"}}'
+
   scripts:test:
     desc: Testes dos scripts da base (ambiente, lockstep)
     cmd: node --test base/scripts/*.test.mjs
