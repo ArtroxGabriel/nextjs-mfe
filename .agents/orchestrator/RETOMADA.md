@@ -22,7 +22,7 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
 | O quê | Estado | Evidência |
 |---|---|---|
 | Base em `repos/` (Next 16) | funcionando; `base/verificacao` **51/51** com navegador real | `task verificar:construir` |
-| `@erp/nucleo` | **0.7.0** nas 4 apps (kit `/app`) | ADR-0012 |
+| `@erp/nucleo` | **0.8.2** nas 4 apps (kit `/app`, timeouts configuráveis, acesso v2) | lockstep 4 apps |
 | `@erp/moldura` | **0.4.0** nas 4 apps (`/servidor`) | ADR-0012 |
 | Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 (revisor APPROVE, challenger APPROVE, auditor CLEAN); lacunas do auditor fechadas depois, **51/51** | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
 | Repositório | limpo em 2026-09-22: só o necessário; o resto na tag `historico-2026-09-22` | este commit |
@@ -56,16 +56,17 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | | G3 implementar o alinhamento (núcleo 0.8.0 junto com D2/ADR-0013, zonas, stub), trocar 4010 → v2, `base/verificacao` cobrindo os papéis e a segregação | ⬜ | #21 | G2, B1/D1 gate |
 | | G4 gate (revisor, challenger, auditor) e showcase com os atores da v2 | ⬜ | #21, #19 | G3 |
 
-## Handoff (2026-09-22, encerramento de sessão)
+## Handoff (2026-09-22, encerramento de sessão / preparação de gate)
 
 O que está pronto, commitado e enviado:
 - **G2**: decisão de arquitetura registrada no [ADR-0014](docs/adr/0014-gestao-de-acesso-v2.md) e referenciada no índice da documentação.
-- **B5a**: limites de sonda e telemetria tornados configuráveis via variáveis de ambiente no shell (`ERP_SONDA_TTL_MS`, `ERP_SONDA_TIMEOUT_MS`, `ERP_TELEMETRIA_MAX_BYTES`, `ERP_TELEMETRIA_LOTES_POR_MINUTO`) com validação de inteiro positivo e testes unitários.
-- **B3**: rotas públicas `/{zona}/api/health` adicionadas nas 3 zonas (`erp-zona-1`, `erp-zona-2`, `erp-zona-acesso`) sem tocar em domínio nem exigir sessão; `urlSaude` padrão do shell atualizado para usá-las.
-- **B4 / B6 (P0 e P1)**: analisador estático implementado em `base/verificacao/seguranca-estatica.mjs` com suíte de 9 testes cobrindo Invariante 3 (`server-only`), Invariante 2 (DTO sensível como prop de JSX), P1 (`<Link>` entre zonas) e Invariante 11 (`NEXT_PUBLIC_*`). Todas as 4 apps passam com 0 violações; adicionada tarefa `task verificar:estatica`.
-- **Submódulos:** todos os 7 submódulos modificados commitados no `master` e enviados para os remotos (`origin/master`), validados pelo hook `task checar-envio`.
+- **B5a**: limites de sonda e telemetria tornados configuráveis via variáveis de ambiente no shell com validação de inteiro positivo e testes unitários.
+- **B3**: rotas públicas `/{zona}/api/health` adicionadas nas 3 zonas sem tocar em domínio nem exigir sessão; `urlSaude` padrão do shell atualizado para usá-las.
+- **B4 / B6 (P0 e P1)**: analisador estático em `base/verificacao/seguranca-estatica.mjs` com suíte de 16 testes passando 100%.
+- **Submódulos:** todos os 8 submódulos em branch `master`, reconectados a `origin/master`, hashes locais de integridade ajustados nos lockfiles e enviados para os remotos (`origin/master`).
+- **Núcleo & Contratos:** `@erp/nucleo` 0.8.2 e `@erp/contratos` 0.3.1 em lockstep em todas as 4 apps.
 
 Próximos passos, em ordem:
-1. Gate de B1+D1.
-2. G3 junto com D2 (ADR-0013 e ADR-0014 sobem o `@erp/nucleo` para a versão 0.8.0 nas 4 apps em lockstep); depois G4.
+1. Gate de B1+D1 (migração das 4 apps para o kit de app e persistência de sessão no Redis).
+2. D2 (OIDC + PKCE com Keycloak local e renovação com lock conforme ADR-0013) e G3 (alinhamento da gestão de acesso v2 conforme ADR-0014); depois G4.
 3. C1–C3, E4–E5.
