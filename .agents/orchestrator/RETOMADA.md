@@ -47,7 +47,7 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | | C2 SSE no shell (`/api/stream` + `SharedWorker`); fechar D7 (`proxyTimeout`) | ⬜ | #11 | B1 |
 | | C3 mapa de zonas vindo dos manifestos da gestão de acesso | ⬜ | #14 | B1 |
 | **D. Sessão e identidade reais** | D1 sessão no Redis quando `REDIS_URL` existe (shell grava, zonas leem) | ✅ implementado; 60/60 com Redis; ⏳ gate iteração 2 | #9 | — |
-| | D2 OIDC + PKCE no shell contra o Keycloak local; renovação proativa com lock (**ADR-0013**) | ⏳ só os campos da sessão (núcleo 0.8.0); login e renovação não começaram | #9 | B1, D1 |
+| | D2 OIDC + PKCE no shell contra o Keycloak local; renovação proativa com lock (**ADR-0013**; pessoa casada por `sub`, adendo 1 do ADR-0014) | ⏳ só os campos da sessão (núcleo 0.8.0); login e renovação não começaram; núcleo 0.10.0 | #9 | G3 |
 | **E. Showcase** | E1 domínios mock com dados em JSON | ✅ | #19 | — |
 | | E2 `docker-compose` do showcase: Redis e Keycloak (realm `erp`, atores ana/bruno/carla/davi) | ✅ | #19 | — |
 | | E3 `task showcase` sobe tudo; `task showcase:conferir` | ✅ parcial: com Redis; falta login pelo Keycloak (D2) | #19 | D2 |
@@ -55,8 +55,9 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | | E5 verificação ponta a ponta contra o showcase | ⬜ | #19 | E4 |
 | **G. Gestão de acesso v2** | G1 modelo de referência e mock da API (porta 4020) | ✅ | #21 | — |
 | | G2 decisão de arquitetura (**ADR-0014**, proposto) | ✅ | #21 | — |
-| | G3 alinhar núcleo, zonas, stub e shell à v2 | ⏳ parcial no núcleo 0.8.x: `acessoHttp` tenta `/v2/eu` no destino da v1 (4010) e cai para `/v1/modulos-permitidos` em **qualquer** erro — na prática a v2 não é usada e a falha fica escondida. Falta destino para a 4020, fim do fallback silencioso, funcionalidades nos manifestos, verificação dos papéis e da segregação | #21 | gate B1+D1 |
+| | G3 alinhar à v2 conforme o **adendo 1 do ADR-0014**: corte seco para a 4020, `acessoEfetivo`, `exigirModulo(modulo, funcionalidade)`, `exigirPapel` na zona de acesso, manifesto v2, atores ana…davi na semente v2; contratos 0.4.0, núcleo 0.9.0 | ⏳ decidido; implementação depois do veredito do auditor | #21 | gate B1+D1 |
 | | G4 gate e showcase com os atores da v2 | ⬜ | #21, #19 | G3 |
+| | G5 revogação ativa: shell consome `/v2/eventos` e encerra sessões por sujeito (núcleo, não extensão) | ⬜ **lacuna declarada**: até lá não há revogação ativa | #21 | G3, D2 |
 
 ### Lista 2 — refinamento (separada; **não começar agora**)
 
@@ -96,14 +97,14 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
    Verdaccio, os lockfiles trocam de hash a cada máquina (ver `AMBIENTE.md` §1).
 3. Aplicar no GitLab o que está em `ATIVIDADES.md` §2 com "pendente".
 4. ✅ Sessão de 30 min **por inatividade**, capturada pelos refresh tokens (humano, 2026-09-22); teto absoluto configurável. Parâmetros assim ficam em configuração documentada (`docs/CONFIGURACAO.md`), não no código.
-5. Aceitar (ou pedir ajuste de) **ADR-0013** e **ADR-0014**, ainda "proposto" com parte já no núcleo 0.8.x.
+5. Aceitar (ou pedir ajuste de) **ADR-0013** e **ADR-0014 com o adendo 1** (corte seco para a v2, eventos no G5).
 
 ## Próximo passo
 
 1. Receber o veredito do `auditor_b1_d1_2` e registrar em `GATE_STATUS.md`; se houver veto, corrigir e
    rodar de novo.
-2. **G3 + D2** juntos no núcleo (0.9.0): acesso v2 de verdade (destino da 4020, sem fallback silencioso) e
-   login OIDC + PKCE com renovação proativa (ADR-0013). Depois o gate G4.
+2. **G3** (núcleo 0.9.0, contratos 0.4.0) conforme o adendo 1 do ADR-0014; depois **D2** (núcleo 0.10.0,
+   OIDC + PKCE, ADR-0013, pessoa casada por `sub`); gate G4; depois G5 (eventos).
 3. B2, C1–C3, E3 com Keycloak, E4–E5.
 
 Ambiente desta máquina: Verdaccio, Redis e Keycloak no ar; lockfiles com hashes locais **não commitados**.

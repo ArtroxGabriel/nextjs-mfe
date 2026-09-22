@@ -1,6 +1,6 @@
 # ADR-0014 — Alinhamento à gestão de acesso v2
 
-**Status:** proposto (2026-09-22), decisão do `arquiteto-mfe` · **Afeta:** `@erp/nucleo` 0.8.0, `@erp/contratos`, as 4 apps, `erp-dominio-stub` · **Evolui:** ADR-0009 (decisão 2)
+**Status:** proposto (2026-09-22), decisão do `arquiteto-mfe`; **adendo 1** no fim (corte seco, núcleo 0.9.0) · **Afeta:** `@erp/nucleo` 0.8.0–0.9.0, `@erp/contratos`, as 4 apps, `erp-dominio-stub` · **Evolui:** ADR-0009 (decisão 2)
 
 ## Contexto
 
@@ -73,3 +73,49 @@ Esta decisão define como o `@erp/nucleo`, as zonas, os domínios e o shell pass
    - Consumo de `GET /v2/eventos` remove chave de sessão no Redis quando evento de revogação/desligamento é recebido.
 3. **Ponta a ponta (`base/verificacao`):**
    - Página com restrição de funcionalidade fina (ex: `/zona-1/custos`) retorna 200 para usuário autorizado e 404 para usuário sem a funcionalidade ativa.
+
+## Adendo 1 (2026-09-22) — decisões de implementação do G3
+
+Decisão do `arquiteto-mfe` ao implementar o item G3. Emenda as decisões 1, 2, 3, 5 e 6 acima.
+
+**Achados que motivaram o adendo.** O núcleo 0.8.x tentava `/v2/eu` no destino da v1 e caía para
+`/v1/modulos-permitidos` em **qualquer** erro, inclusive `401` de pessoa desligada: duas autoridades, e a mais
+permissiva vencia. O mock v2 recusava o token dev com uuid; `/v2/eu` não trazia `nome` para o menu; `obterEu`
+carregava CPF e papéis sem consumidor; o manifesto v2 usa funcionalidades relativas (`painel.ver`), não
+`zona1.painel`; a unidade parceira da semente tem convênio vencido em 2026-06-30 (o gate dependeria da data).
+
+1. **Corte seco para a v2.** O destino `gestao-acesso` aponta para `ACESSO_URL` (padrão `http://127.0.0.1:4020`)
+   só com `GET /v2/eu`. Sem convivência com a v1. Fail-closed: `401` → `SessaoInvalida` (login); módulo,
+   funcionalidade ou papel ausente → 404; 5xx, timeout, conexão recusada ou corpo fora do esquema → erro
+   ("serviço indisponível"), nunca 404 nem conteúdo. A v1 (4010) sai do gate e é apagada depois do G4.
+2. **Porta de acesso:** uma função, `acessoEfetivo()` → `{ modulos: { id, nome, funcionalidades }[], administra }`.
+   `obterEu` sai. O que chega à página é o booleano `administra`, nunca a lista de papéis nem o CPF.
+3. **Granularidade:** `exigirModulo(modulo, funcionalidade)` com os dois argumentos obrigatórios; id de módulo
+   sem ponto. Zona 1: `('zona1','painel.ver')` e `('zona1','relatorios.ver')`; zona 2: `('zona2','tarefas.ver')`
+   e a action com `'tarefas.concluir'`. A zona de acesso usa `exigirPapel()` (404 sem papel); o domínio decide o
+   resto (invariante 9). `acesso` e `shell.inicio` não são módulos v2: papel não concede módulo. A página `/`
+   do shell continua fail-closed por `modulosPermitidos()`.
+4. **Menu:** uma entrada por módulo, `prefixo = /<id>` (id do módulo = id da zona = `svc.<zona>`), `rotulo =
+   nome`; `/v2/eu` passa a devolver `modulos[].nome` (aditivo). "Gestão de acesso" aparece com `administra`.
+5. **Manifesto v2 entra no G3:** a zona declara `{ id, nome, funcionalidades }` com `svc.<zona>`; perfis e
+   concessões moram na gestão de acesso. O invariante 17 passa a dizer isso.
+6. **Atores:** ana, bruno, carla e davi em todo lugar (realm, `identidadeDev`, domínios, gate), na unidade
+   `central` da semente v2, com `sub` fixo igual ao id do usuário no realm. ana: `zona1.padrao` + `zona2.operador`;
+   bruno: `zona1.analista`; carla: `zona1.padrao` + papel `admin-geral` (prova a segregação); davi:
+   `zona1.padrao`. Os atores próprios da v2 ficam como dados dos testes de regra do stub.
+7. **Eventos (decisão 5) adiados para o G5, e são núcleo.** Exigem `sub` no evento, remoção de sessão por
+   sujeito, credencial de serviço no shell, cursor gravado só pelo shell e consumidor único. **Até o G5 a base
+   não tem revogação ativa**: quem está dentro sai só quando a sessão acaba ou quando a página consulta `/v2/eu`.
+8. **D2 casa a pessoa por `sub`** (emenda o ADR-0013): `Sessao.sub` é o `sub` do IdP; o stub em modo JWT
+   identifica a v2 por `claims.sub`; o retorno do login chama `/v2/eu` antes de gravar e recusa `401`.
+9. **Versões e ordem:** G3 primeiro, contratos **0.4.0** e núcleo **0.9.0**, funcionando com token dev; D2 depois,
+   núcleo 0.10.0.
+
+**Testes exigidos** (os marcados † reprovam com a mudança revertida): núcleo — † v2 `401` com v1 disposta a
+conceder → nega, zero chamadas a `/v1`; † 5xx/timeout/recusa → erro; † corpo malformado → erro; † só `painel.ver`
+pedindo `relatorios.ver` → 404; † `exigirPapel` sem papel → 404; † nada serializado contém CPF ou nome de papel.
+Stub — † `dev.ana.<uuid>` → 200; manifesto com `id` ≠ serviço → 403. Estático — † funcionalidade usada pela zona
+tem de estar no manifesto dela. Gate — † v1 no ar e v2 fora → serviço indisponível; † carla vê `/acesso` e recebe
+404 em `/zona2`; † revogar davi em `zona1` → 404 na requisição seguinte; † pessoa desligada → `/login`.
+
+**Em aberto:** se o Keycloak importa `id` de usuário que não é UUID (usar UUID fixo até medir).
