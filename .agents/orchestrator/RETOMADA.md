@@ -44,7 +44,7 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | | C3 mapa de zonas vindo dos manifestos da gestão de acesso | ⬜ | #14 | B1 |
 | **D. Sessão e identidade reais** | D1 ligar `sessaoRedis` (cliente `redis` + Redis no compose) | ⬜ | #9 | — (instalação aprovada) |
 | | D2 OIDC + PKCE no shell contra o Keycloak local; renovação proativa com lock no proxy do shell; núcleo 0.8.0 | ⬜ desenho decidido: **ADR-0013** (proposto) | #9 | B1, D1 |
-| **E. Showcase** | E1 domínios mock com dados em JSON por domínio (sementes por ator, persistência em arquivo, reset por comando) | ✅ commit `35cb4c7` no branch `e1-dados-json` do `erp-dominio-stub` (worktree em scratchpad); 24/24, 6 mutações pegas. **Falta:** merge no `master` do submódulo depois do auditor, envio, fixar no principal e rodar `pnpm verificar` | #19 | A1 (só para o merge) |
+| **E. Showcase** | E1 domínios mock com dados em JSON por domínio (sementes, persistência com `DADOS_DIR`, `task showcase:dados:resetar`) | ✅ `erp-dominio-stub` `35cb4c7`; 24/24, 6 mutações pegas; ponta a ponta 51/51 | #19 | — |
 | | E2 `docker-compose` do showcase: Redis, Keycloak (realm `erp` com ana/bruno/carla/davi) | ✅ `base/showcase/` **no ar e conferido** (`docker compose -f base/showcase/docker-compose.yml up -d`; `node base/showcase/checar-keycloak.mjs`: sem PKCE recusado, verifier errado recusado, login da ana com token de 300 s e refresh): Redis 7.4 com AOF e `noeviction`; Keycloak 26 com cliente confidencial `erp-shell` + PKCE S256, sessão de 30 min. Grupos ficam nos domínios (ADR-0009), não no Keycloak | #19 | D1, D2 (imagens aprovadas) |
 | | E3 `task showcase`: sobe imagens, mocks e apps; `task showcase:descer` derruba | ⬜ | #19 | E1, E2 |
 | | E4 roteiro do showcase: cada funcionalidade basilar com passo e resultado esperado (login OIDC, sessão entre zonas, módulo negado = 404, fragmento, SSE, toast, zona fora = 503, `If-Match`, erro `{ codigo, supportId }`, trace) | ⬜ | #19 | C1–C3, E3 |
@@ -92,6 +92,5 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 
 ## Próximo passo
 
-Merge do E1 no `master` do `erp-dominio-stub`, envio e fixação no principal com `task verificar`;
-depois B1 (kit de app) junto com B5 (parâmetros para configuração) e as lacunas P0/P1 do B6.
+B1 (kit de app) junto com B5 (parâmetros para configuração) e as lacunas P0/P1 do B6.
 Pendente com o humano: o que é o "backend específico" da gestão de acesso (sistema real com contrato próprio?).

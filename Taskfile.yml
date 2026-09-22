@@ -113,3 +113,8 @@ tasks:
   showcase:recriar-keycloak:
     desc: Recria o Keycloak para reimportar o realm depois de mudar configuração
     cmd: '{{.SHOWCASE}} up -d --force-recreate keycloak'
+
+  showcase:dados:resetar:
+    desc: Volta os domínios falsos do showcase à semente (apaga repos/erp-dominio-stub/dados/estado)
+    dir: repos/erp-dominio-stub
+    cmd: pnpm resetar

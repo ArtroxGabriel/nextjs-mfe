@@ -65,7 +65,7 @@ Entre como `ana`, `bruno`, `carla` ou `davi`: cada um vê um menu diferente. Use
 | `erp-contratos` | `pnpm test` | 15 | manifesto: prefixo de zona, concessão entre zonas, duplicatas |
 | `erp-nucleo` | `pnpm test` | 107 | registro de destinos, sessão leitor/escritor (arquivo e Redis), fragmentos entre zonas, acesso, fronteira entre camadas, exports |
 | `erp-moldura` | `pnpm test` | 25 | menu e `aria-current`, host de toast, flash, `FormularioDeAcao` |
-| `erp-dominio-stub` | `pnpm test` | 16 | projeção e escopo dos domínios, `If-Match`, regras da gestão de acesso |
+| `erp-dominio-stub` | `pnpm test` | 24 | projeção e escopo dos domínios, `If-Match`, regras da gestão de acesso, dados em JSON e persistência |
 | `erp-shell` | `pnpm test` | 36 | decisão do proxy, sonda de saúde das zonas, mapa de zonas, gateway de telemetria |
 | ponta a ponta | `task verificar` | 50 | N3–N8 pelo shell com os quatro atores; toda Server Action pelo caminho do navegador; toast uma vez só; domínios e uma zona derrubados; zona travada vira 503 em < 2 s; nonce novo a cada requisição; gestão de acesso fora sem vazamento em nenhuma página de módulo |
 
@@ -104,8 +104,9 @@ A verificação manual, item a item, está em
   em andamento; ver `.agents/orchestrator/RETOMADA.md`).
 - O showcase (mocks em JSON, Keycloak e Redis) está em construção: por enquanto só a infraestrutura
   em `base/showcase/` (`task showcase:subir` e `task showcase:checar`); as apps ainda não usam Keycloak nem Redis.
-- O domínio falso de gestão de acesso guarda tudo em memória: reiniciado, perde manifestos e
-  concessões. `pnpm registrar` em cada app os recria.
+- Os domínios falsos leem os dados de `repos/erp-dominio-stub/dados/semente/*.json`. Na verificação
+  e em `task base` rodam em memória: a gestão de acesso reiniciada perde manifestos e concessões, e
+  `pnpm registrar` em cada app os recria. Com `DADOS_DIR` (showcase) o estado é gravado em arquivo.
 
 ## 5. Escalar: adicionar uma zona
 
