@@ -17,6 +17,12 @@
   2. se for, troque só a linha `integrity` pelo hash do seu Verdaccio (o do lockfile anterior serve);
   3. se não for, é conteúdo diferente: pare e decida qual vale (foi o caso do núcleo, ADR-0010).
   Nunca use `--update-checksums` às cegas: ele aceita qualquer conteúdo.
+  O passo 2 é a tarefa **`task pacotes:alinhar-hashes`** (troca todos os `@erp/*` de uma vez).
+- **Lockfile com hash desta máquina não entra em commit.** Em 2026-09-22 os dois lados commitaram
+  "update local registry package integrity hash" em sequência e cada commit quebrava a instalação do
+  outro. Adicione arquivo por arquivo e deixe o `pnpm-lock.yaml` fora, salvo quando a mudança for de
+  dependência de verdade (aí avise no commit que o hash é desta máquina). A saída definitiva é um
+  registro único (#14).
 - **Quem tem no Verdaccio local um `@erp/nucleo` 0.3.1 publicado antes de 2026-09-21** (a reescrita
   paralela) não deve usá-lo: publique o `erp-nucleo` atual (`pnpm publicar`) e reinstale as apps.
   O 0.3.1 válido é o da árvore reconciliada no ADR-0010; as apps hoje fixam 0.3.2.
@@ -55,7 +61,7 @@
   `node --test <pasta>` roda zero testes e sai com 0.
 - Núcleo: `node --conditions react-server --test test/*.test.mjs`, depois de `tsc -p tsconfig.json`.
 - Ponta a ponta: `pnpm verificar` (usa os builds existentes) ou `pnpm verificar:construir` (refaz).
-  Esperado hoje: 30/30.
+  Esperado hoje: 60/60 (nos dois modos, arquivo e Redis).
 - Um teste estático que dá para contornar (`globalThis['fetch']` no lugar de `fetch(`) foi contornado. Checagem por regex tem de cobrir as formas indiretas, e todo contorno achado vira caso do teste.
 - **Mutação em código que grava arquivo pode sujar dados versionados.** Em 2026-09-22 a mutação
   "sem pasta, grave na semente" do `erp-dominio-stub` gravou em `dados/semente/*.json`; restaurar o

@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-23 (handoff)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-22 (noite)**.
 
 ## Objetivo final
 
@@ -17,15 +17,17 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
   papéis com escopo, módulos com validação, segregação de funções, auditoria — e a arquitetura (núcleo, BFFs,
   zonas, domínios, shell) alinhada a ele, sem perder nenhum invariante de segurança.
 
-## Estado
+## Estado (conferido nesta máquina em 2026-09-22)
 
 | O quê | Estado | Evidência |
 |---|---|---|
-| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **51/51** com navegador real | `task verificar:construir` |
-| `@erp/nucleo` | **0.8.2** nas 4 apps (kit `/app`, timeouts configuráveis, acesso v2) | lockstep 4 apps |
-| `@erp/moldura` | **0.4.0** nas 4 apps (`/servidor`) | ADR-0012 |
-| Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 (revisor APPROVE, challenger APPROVE, auditor CLEAN); lacunas do auditor fechadas depois, **51/51** | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
-| Repositório | limpo em 2026-09-22: só o necessário; o resto na tag `historico-2026-09-22` | este commit |
+| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **60/60** com sessão em arquivo e **60/60** com Redis (`CONSTRUIR=tudo`) | `task verificar`, `task verificar:redis` |
+| Unidades | contratos 16, núcleo 109, moldura 25, stub 39, shell 38; typecheck das 4 apps; estática 16/16; scripts 9/9 | `task test`, `task typecheck`, `task verificar:estatica` |
+| `@erp/nucleo` | **0.8.2** nas 4 apps (kit `/app`, timeouts configuráveis, campos OIDC na sessão, acesso v2 parcial) | lockstep 4 apps |
+| `@erp/contratos` / `@erp/moldura` | **0.3.1** (contratos da v2) / **0.4.0** (`/servidor`) | ADR-0012, ADR-0014 |
+| Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
+| Gate B1+D1 | iteração 1 registrada como PASS, mas **rasa** (7 mutações, verificadores fora do processo); **iteração 2 com auditor Opus em andamento** (`.agents/auditor_b1_d1_2/`) | `GATE_STATUS.md` |
+| Submódulos | os 8 no `master`, iguais a `origin/master` | `git submodule foreach git status -sb` |
 
 ## Plano até o objetivo
 
@@ -36,37 +38,72 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | Fase | Item | Estado | Atividade | Depende de / bloqueio |
 |---|---|---|---|---|
 | **A. Fechar o aberto** | A1 gate do shell | ✅ aprovado na iteração 4 | #3, #18 | — |
-| **B. Base consistente** | B1 migrar as 4 apps para o kit e apagar as cópias | ✅ implementado (shell `8559367`, zonas `495f1ef`/`8283621`/`3250e9f`); 51/51; **falta gate** (junto com D1) | #20 | — |
+| **B. Base consistente** | B1 migrar as 4 apps para o kit e apagar as cópias | ✅ implementado; ⏳ gate iteração 2 (auditor) | #20 | — |
 | | B2 exportar spans (SDK OpenTelemetry) | ⬜ | #18 | — (instalação aprovada) |
-| | B3 `/{zona}/api/health` sem tocar domínio; sonda do shell passa a usá-lo | ✅ implementado nas 3 zonas e shell atualizado; 38/38 testes verdes | #3 | — |
-| | B5 parâmetros fixos no código: B5a (shell: sonda e telemetria) e B5b (núcleo: timeouts e sessão dev) | ⏳ B5a ✅ implementado e testado; B5b no núcleo 0.8.0 | #20 | — |
-| | B4 verificações da spec e B6 lacunas de segurança: P0 (server-only, DTO como prop de ilha) e P1 (guarda de <Link> entre zonas) | ✅ `base/verificacao/seguranca-estatica.mjs` (16/16 estáticos verdes) | #20 | — |
+| | B3 `/{zona}/api/health` sem tocar domínio; sonda do shell passa a usá-lo | ✅ implementado (zonas `677a79c` etc., shell `d7a27a9`); ⏳ no escopo do auditor | #3 | — |
+| | B5 parâmetros fixos no código: B5a (shell: sonda e telemetria) e B5b (núcleo: timeouts) | ✅ B5a e B5b (núcleo 0.8.0); os de sessão entram com o D2 | #20 | — |
+| | B4/B6 verificações da spec e lacunas de segurança (server-only, DTO como prop de ilha, `<Link>` entre zonas) | ✅ `base/verificacao/seguranca-estatica.mjs` 16/16; ⏳ no escopo do auditor | #20 | — |
 | **C. Funcionalidades** | C1 fragmentos: rota `_fragmento` na zona 2, bloco na zona 1 com `<Suspense>`, recusa no shell | ⬜ | #10 | B1 |
 | | C2 SSE no shell (`/api/stream` + `SharedWorker`); fechar D7 (`proxyTimeout`) | ⬜ | #11 | B1 |
 | | C3 mapa de zonas vindo dos manifestos da gestão de acesso | ⬜ | #14 | B1 |
-| **D. Sessão e identidade reais** | D1 sessão no Redis quando `REDIS_URL` existe (`lib/redis.ts` com `redis` 6.2.1; shell grava, zonas leem) | ✅ implementado; `task verificar:redis` 51/51 com 68 chaves no Redis; **falta gate** e o cenário "Redis fora → erro normalizado" como teste | #9 | — |
-| | D2 OIDC + PKCE no shell contra o Keycloak local; renovação proativa com lock no proxy do shell; núcleo 0.8.0 | ⬜ desenho decidido: **ADR-0013** (proposto) | #9 | B1, D1 |
-| **E. Showcase** | E1 domínios mock com dados em JSON por domínio (sementes, persistência com `DADOS_DIR`, `task showcase:dados:resetar`) | ✅ `erp-dominio-stub` `35cb4c7`; 24/24, 6 mutações pegas; ponta a ponta 51/51 | #19 | — |
-| | E2 `docker-compose` do showcase: Redis, Keycloak (realm `erp` com ana/bruno/carla/davi) | ✅ `base/showcase/` **no ar e conferido** (`docker compose -f base/showcase/docker-compose.yml up -d`; `node base/showcase/checar-keycloak.mjs`: sem PKCE recusado, verifier errado recusado, login da ana com token de 300 s e refresh): Redis 7.4 com AOF e `noeviction`; Keycloak 26 com cliente confidencial `erp-shell` + PKCE S256, sessão de 30 min. Grupos ficam nos domínios (ADR-0009), não no Keycloak | #19 | D1, D2 (imagens aprovadas) |
-| | E3 `task showcase`: sobe imagens, mocks e apps; Ctrl-C derruba; `task showcase:conferir` mostra ator × zona | ✅ parcial: tudo sobe e funciona com login dev e sessão em arquivo (conferido: matriz de 4 atores × 7 páginas, custo só para bruno, CSP, sem token); falta trocar para Keycloak/Redis (D1, D2) | #19 | D1, D2 para completar |
-| | E4 roteiro do showcase: cada funcionalidade basilar com passo e resultado esperado (login OIDC, sessão entre zonas, módulo negado = 404, fragmento, SSE, toast, zona fora = 503, `If-Match`, erro `{ codigo, supportId }`, trace) | ⬜ | #19 | C1–C3, E3 |
-| | E5 verificação ponta a ponta rodando contra o showcase | ⬜ | #19 | E4 |
-| **G. Gestão de acesso v2** | G1 modelo de referência e mock da API (porta 4020, contrato OpenAPI, 39 testes, 7 mutações pegas) | ✅ `docs/gestao-acesso/MODELO.md`; `erp-dominio-stub` | #21 | — |
-| | G2 decisão de arquitetura com o `arquiteto-mfe` + **ADR-0014**: como núcleo (`acessoHttp`/`exigirModulo` por funcionalidade), manifestos das zonas (módulo + funcionalidades), domínios (`/v2/decisoes`) e shell (`/v2/eventos` encerra sessões) passam a usar a v2; o que muda nos 17 invariantes e nos testes | ✅ registrado no **ADR-0014** (proposto) | #21 | — |
-| | G3 implementar o alinhamento (núcleo 0.8.0 junto com D2/ADR-0013, zonas, stub), trocar 4010 → v2, `base/verificacao` cobrindo os papéis e a segregação | ⬜ | #21 | G2, B1/D1 gate |
-| | G4 gate (revisor, challenger, auditor) e showcase com os atores da v2 | ⬜ | #21, #19 | G3 |
+| **D. Sessão e identidade reais** | D1 sessão no Redis quando `REDIS_URL` existe (shell grava, zonas leem) | ✅ implementado; 60/60 com Redis; ⏳ gate iteração 2 | #9 | — |
+| | D2 OIDC + PKCE no shell contra o Keycloak local; renovação proativa com lock (**ADR-0013**) | ⏳ só os campos da sessão (núcleo 0.8.0); login e renovação não começaram | #9 | B1, D1 |
+| **E. Showcase** | E1 domínios mock com dados em JSON | ✅ | #19 | — |
+| | E2 `docker-compose` do showcase: Redis e Keycloak (realm `erp`, atores ana/bruno/carla/davi) | ✅ | #19 | — |
+| | E3 `task showcase` sobe tudo; `task showcase:conferir` | ✅ parcial: com Redis; falta login pelo Keycloak (D2) | #19 | D2 |
+| | E4 roteiro do showcase (login OIDC, sessão entre zonas, 404 de módulo, fragmento, SSE, toast, 503, `If-Match`, erro normalizado, trace) | ⬜ | #19 | C1–C3, E3 |
+| | E5 verificação ponta a ponta contra o showcase | ⬜ | #19 | E4 |
+| **G. Gestão de acesso v2** | G1 modelo de referência e mock da API (porta 4020) | ✅ | #21 | — |
+| | G2 decisão de arquitetura (**ADR-0014**, proposto) | ✅ | #21 | — |
+| | G3 alinhar núcleo, zonas, stub e shell à v2 | ⏳ parcial no núcleo 0.8.x: `acessoHttp` tenta `/v2/eu` no destino da v1 (4010) e cai para `/v1/modulos-permitidos` em **qualquer** erro — na prática a v2 não é usada e a falha fica escondida. Falta destino para a 4020, fim do fallback silencioso, funcionalidades nos manifestos, verificação dos papéis e da segregação | #21 | gate B1+D1 |
+| | G4 gate e showcase com os atores da v2 | ⬜ | #21, #19 | G3 |
 
-## Handoff (2026-09-22, encerramento de sessão / preparação de gate)
+### Lista 2 — refinamento (separada; **não começar agora**)
 
-O que está pronto, commitado e enviado:
-- **G2**: decisão de arquitetura registrada no [ADR-0014](docs/adr/0014-gestao-de-acesso-v2.md) e referenciada no índice da documentação.
-- **B5a**: limites de sonda e telemetria tornados configuráveis via variáveis de ambiente no shell com validação de inteiro positivo e testes unitários.
-- **B3**: rotas públicas `/{zona}/api/health` adicionadas nas 3 zonas sem tocar em domínio nem exigir sessão; `urlSaude` padrão do shell atualizado para usá-las.
-- **B4 / B6 (P0 e P1)**: analisador estático em `base/verificacao/seguranca-estatica.mjs` com suíte de 16 testes passando 100%.
-- **Submódulos:** todos os 8 submódulos em branch `master`, reconectados a `origin/master`, hashes locais de integridade ajustados nos lockfiles e enviados para os remotos (`origin/master`).
-- **Núcleo & Contratos:** `@erp/nucleo` 0.8.2 e `@erp/contratos` 0.3.1 em lockstep em todas as 4 apps.
+Condição para começar qualquer item: **Lista 1 fases A–E concluídas** (estrutura da arquitetura e
+atividades relacionadas feitas) **e todas as funcionalidades basilares no showcase**.
+Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assunto>.md` (formato em
+`pedidos/README.md`); só se implementa depois que o humano devolver o detalhamento.
 
-Próximos passos, em ordem:
-1. Gate de B1+D1 (migração das 4 apps para o kit de app e persistência de sessão no Redis).
-2. D2 (OIDC + PKCE com Keycloak local e renovação com lock conforme ADR-0013) e G3 (alinhamento da gestão de acesso v2 conforme ADR-0014); depois G4.
-3. C1–C3, E4–E5.
+| # | Atividade | O que o pedido de detalhamento precisa responder |
+|---|---|---|
+| F1 | Refinamento arquitetural com design patterns e padrões de arquitetura | quais padrões (ports & adapters, strategy, decorator, circuit breaker, anti-corruption layer…) e onde cada um entra no núcleo, nas zonas e nos domínios; critério de pronto |
+| F2 | Otimização para desenvolvimento e produção | metas (tempo de subir, HMR, build, bundle, TTFB, p95/p99); o que medir e com que ferramenta; perfis `dev` e `prod` |
+| F3 | Mapa robusto | confirmar o escopo (mapa de zonas: descoberta, versão, fallback, saúde, dono de cada rota); formato e fonte da verdade |
+| F4 | Refinamento da gestão de acesso | modelo de perfis/módulos/concessões, delegação, auditoria, administração pela UI, integração com grupos do Keycloak |
+| F5 | Padronização de erro | catálogo de `codigo`, mapeamento domínio → BFF → UI, `supportId` e correlação com trace, páginas de erro |
+| F6 | Camada de testes | pirâmide (unidade, contrato, integração, ponta a ponta, navegador); onde mora cada teste; cobertura mínima; mutação |
+| F7 | Camada de testes de desempenho e segurança | cenários de carga, metas, ferramentas (k6/autocannon), testes de segurança (OWASP, CSP, sessão, IDOR), frequência |
+
+## Como o trabalho é conduzido
+
+- **Estado salvo e commitado a cada passo concluído**; nunca deixar trabalho só na árvore local.
+  Submódulo enviado antes do principal (`AMBIENTE.md` §2).
+- **Handoff aos 80% do uso da sessão do horário:** reescrever este arquivo com o passo exato em que
+  parou, atualizar `ATIVIDADES.md`, commitar e enviar. Verificadores mantêm o próprio handoff
+  "(parcial)" desde o começo.
+- **Pendências do GitLab revisadas a cada passo:** `ATIVIDADES.md` atualizado e bloco 📌 GitLab na resposta.
+- **Só o necessário no repositório:** documento ou pasta encerrada sai com `git rm`; o git guarda.
+- **Gate segue o processo do `LEIA-PRIMEIRO.md`:** revisor e challenger em Sonnet, auditor forense em Opus
+  com veto, profundidade comparável aos gates anteriores. Rodada fora disso não fecha atividade no GitLab.
+- **Nada específico do material de levantamento** (cliente, órgãos, sistemas externos, documentos, pessoas,
+  time) entra no repositório; só o vocabulário genérico da base, com dados fictícios.
+
+## Pendências com o humano
+
+1. ✅ **Instalações aprovadas pelo humano em 2026-09-22** ("tudo está aprovado de instalação"): `redis`, SDK OpenTelemetry, biblioteca OIDC, imagens do Redis e do Keycloak. Continua valendo mostrar o que entra antes de instalar.
+2. **Decidir infraestrutura** de registro de pacotes / CI (P1). Enquanto cada máquina tiver o próprio
+   Verdaccio, os lockfiles trocam de hash a cada máquina (ver `AMBIENTE.md` §1).
+3. Aplicar no GitLab o que está em `ATIVIDADES.md` §2 com "pendente".
+4. ✅ Sessão de 30 min **por inatividade**, capturada pelos refresh tokens (humano, 2026-09-22); teto absoluto configurável. Parâmetros assim ficam em configuração documentada (`docs/CONFIGURACAO.md`), não no código.
+5. Aceitar (ou pedir ajuste de) **ADR-0013** e **ADR-0014**, ainda "proposto" com parte já no núcleo 0.8.x.
+
+## Próximo passo
+
+1. Receber o veredito do `auditor_b1_d1_2` e registrar em `GATE_STATUS.md`; se houver veto, corrigir e
+   rodar de novo.
+2. **G3 + D2** juntos no núcleo (0.9.0): acesso v2 de verdade (destino da 4020, sem fallback silencioso) e
+   login OIDC + PKCE com renovação proativa (ADR-0013). Depois o gate G4.
+3. B2, C1–C3, E3 com Keycloak, E4–E5.
+
+Ambiente desta máquina: Verdaccio, Redis e Keycloak no ar; lockfiles com hashes locais **não commitados**.

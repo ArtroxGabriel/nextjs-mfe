@@ -92,7 +92,7 @@ tasks:
       CONSTRUIR: '{{.CONSTRUIR | default "1"}}'
 
   scripts:test:
-    desc: Testes dos scripts da base (ambiente, lockstep)
+    desc: Testes dos scripts da base (ambiente, lockstep, hashes)
     cmd: node --test base/scripts/*.test.mjs
 
   verificar:estatica:
@@ -100,6 +100,10 @@ tasks:
     cmd: node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs
 
   # --- enviar ------------------------------------------------------------------------------
+  pacotes:alinhar-hashes:
+    desc: "Troca os hashes @erp/* dos lockfiles pelos do Verdaccio desta máquina (só com o mesmo commit de origem; não commitar)"
+    cmd: node base/scripts/alinhar-hashes.mjs
+
   lockstep:
     desc: Confere que as 4 apps usam a mesma versão exata do @erp/nucleo
     cmd: node base/scripts/verificar-lockstep.mjs

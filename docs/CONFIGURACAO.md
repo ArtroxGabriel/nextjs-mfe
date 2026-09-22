@@ -44,8 +44,8 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 | Variável | Padrão | Significado | Quem lê | Estado |
 |---|---|---|---|---|
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | — | Coletor OTLP para onde o gateway do shell repassa | shell | ✅ |
-| `ERP_TELEMETRIA_MAX_BYTES` | `262144` | Tamanho máximo de um lote (256 KB) | shell (`lib/telemetria.ts`) | ⬜ hoje fixo |
-| `ERP_TELEMETRIA_LOTES_POR_MINUTO` | `60` | Lotes por minuto por usuário | shell | ⬜ hoje fixo |
+| `ERP_TELEMETRIA_MAX_BYTES` | `262144` | Tamanho máximo de um lote (256 KB) | shell (`lib/telemetria.ts`) | ✅ (B5a) |
+| `ERP_TELEMETRIA_LOTES_POR_MINUTO` | `60` | Lotes por minuto por usuário | shell | ✅ (B5a) |
 
 ## 4. Domínios falsos (stub)
 
@@ -61,4 +61,4 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 - **Apps Next:** leem no servidor (`process.env`), nunca com prefixo `NEXT_PUBLIC_` quando é credencial ou endpoint interno.
 - **Padrão:** vale quando a variável falta; valor inválido (não numérico, fora da faixa) é erro na subida, não silêncio.
 
-Os itens "⬜ hoje fixo" estão no plano como **B5** (`.agents/orchestrator/RETOMADA.md`).
+Os itens "⬜ D2" entram com o login OIDC (item D2 em `.agents/orchestrator/RETOMADA.md`). B5a (shell) e B5b (núcleo 0.8.0) já tiraram do código os tempos e limites marcados "✅".
