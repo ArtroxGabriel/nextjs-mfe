@@ -45,10 +45,13 @@ pacotes ou em `base/verificacao/`.
 14. **NUNCA** deixe uma extensão alterar semântica de campo já usado pelo núcleo.
 15. **NUNCA** grave, renove ou encerre sessão fora do shell. Escrita de sessão e
     autenticação só existem em `@erp/nucleo/shell`; zona nenhuma importa esse subpath.
-16. **SEMPRE** verifique o módulo na camada 2 em toda página (`exigirModulo`) e em toda
-    Server Action (`acaoProtegida`). Módulo não permitido é `404`, como recurso fora do escopo.
-17. **NUNCA** declare perfil ou módulo fora do prefixo da própria zona. Perfil de zona só
-    concede módulo dela; perfil global é `plataforma.*` e nasce no domínio de gestão de acesso.
+16. **SEMPRE** verifique o acesso na camada 2 em toda página de zona
+    (`exigirModulo(modulo, funcionalidade)`, os dois argumentos) e em toda Server Action
+    (`acaoProtegida(requisito, …)`). A zona de acesso usa `exigirPapel()`; a página inicial do shell
+    fica fechada pela consulta ao acesso efetivo. Negado é `404`, como recurso fora do escopo.
+17. **NUNCA** declare no código da zona nada além do próprio módulo e do catálogo de funcionalidades
+    dele (manifesto v2: `{ id, nome, funcionalidades }`, `id` = zona). Perfis e papéis nascem na
+    gestão de acesso; papel administrativo não concede módulo (ADR-0014, adendo 1).
 
 ## Onde colocar
 

@@ -77,9 +77,10 @@ test('login nao vira redirecionamento aberto', async () => {
   assert.equal(valorDoCookie(r.cookies, '__Host-session'), undefined)
 })
 
+// Uma entrada por módulo (v2); "Gestão de acesso" só para quem tem papel (ADR-0014, adendo 1)
 const MENUS = {
   ana: ['/', '/zona1', '/zona2'],
-  bruno: ['/', '/zona1', '/zona1/relatorios'],
+  bruno: ['/', '/zona1'],
   carla: ['/', '/zona1', '/acesso'],
   davi: ['/', '/zona1'],
 }
@@ -100,7 +101,7 @@ test('N5/D6: modulo nao permitido responde 404 pela URL direta; permitido respon
   const casos = [
     ['ana', '/zona1/relatorios', 404], ['ana', '/acesso', 404], ['ana', '/zona2', 200],
     ['bruno', '/zona1/relatorios', 200], ['bruno', '/zona2', 404], ['bruno', '/acesso', 404],
-    ['carla', '/acesso', 200], ['carla', '/zona2', 404],
+    ['carla', '/acesso', 200], ['carla', '/zona2', 404], ['carla', '/zona1/relatorios', 404],
     ['davi', '/zona2', 404], ['davi', '/zona1', 200],
   ]
   for (const [u, caminho, status] of casos) {
@@ -139,46 +140,55 @@ test('token nunca chega ao navegador, em nenhuma pagina', async () => {
   }
 })
 
-const CONCEDER = { app: 'erp-zona-acesso', arquivo: 'app/acesso/acoes.ts', nome: 'alterarConcessao', caminho: '/acesso' }
-const celula = async (carla) => formularios((await pedir('/acesso', { cookie: carla })).html)
-  .find((c) => c.perfil === 'zona1.analista' && c.modulo === 'zona1.relatorios')
+// Gestão de acesso v2: pessoas × módulos na zona de acesso (ADR-0014, adendo 1). Só o davi é revogado e
+// reconcedido: o módulo zona1 é de concessão direta, e ele volta com o mesmo perfil padrão.
+const ACAO_DE_ACESSO = (nome) => ({ app: 'erp-zona-acesso', arquivo: 'app/acesso/acoes.ts', nome, caminho: '/acesso' })
+const DAVI = 'p-20'
+const CARLA = 'p-19'
+const formDeAcesso = async (carla, pessoa, modulo) => formularios((await pedir('/acesso', { cookie: carla })).html)
+  .find((c) => c.pessoa === pessoa && c.modulo === modulo)
 
-test('N6/N5: revogar uma concessao na zona de acesso vale na proxima navegacao, sem novo login', async () => {
+async function administrar(nome, campos, cookie) {
+  assert.ok(campos, `formulario de ${nome} nao encontrado`)
+  const r = await acaoPeloCliente({ ...ACAO_DE_ACESSO(nome), campos, cookie })
+  assert.equal(r.status, 200)
+  assert.equal(r.redirecionamento, null, 'nenhuma action usa redirect() (limitacao 11)')
+  return r
+}
+
+test('N6/N5 e invariante 16 comportamental: revogar o acesso vale na proxima navegacao, sem novo login', async () => {
   const carla = (await entrar('carla')).cookie
-  const bruno = (await entrar('bruno')).cookie
-  assert.equal((await pedir('/zona1/relatorios', { cookie: bruno })).status, 200)
+  const davi = (await entrar('davi')).cookie
+  assert.equal((await pedir('/zona1', { cookie: davi })).status, 200)
 
-  const alternar = async (conceder) => {
-    const campos = await celula(carla)
-    assert.ok(campos, 'formulario de concessao nao encontrado')
-    assert.equal(campos.conceder, String(conceder))
-    const r = await acaoPeloCliente({ ...CONCEDER, campos, cookie: carla })
-    assert.equal(r.status, 200)
-    assert.equal(r.redirecionamento, null, 'nenhuma action usa redirect() (limitacao 11)')
-    assert.match(r.corpo, /"destino":"\/acesso"/)
-    assert.ok(valorDoCookie(r.cookies, '__Host-flash'), 'toast de resultado')
+  const revogar = await formDeAcesso(carla, DAVI, 'zona1')
+  assert.ok(revogar?.acesso, 'davi deveria ter acesso vigente a zona1')
+  const r = await administrar('revogarAcesso', revogar, carla)
+  assert.match(r.corpo, /"destino":"\/acesso"/)
+  assert.ok(valorDoCookie(r.cookies, '__Host-flash'), 'toast de resultado')
+  try {
+    for (const caminho of ['/zona1', '/zona1/recursos/r-1']) assert.equal((await pedir(caminho, { cookie: davi })).status, 404, caminho)
+    assert.ok(!menu((await pedir('/', { cookie: davi })).html).hrefs.includes('/zona1'))
+  } finally {
+    await administrar('concederAcesso', await formDeAcesso(carla, DAVI, 'zona1'), carla)
   }
-
-  await alternar(false)
-  assert.equal((await pedir('/zona1/relatorios', { cookie: bruno })).status, 404)
-  assert.ok(!menu((await pedir('/', { cookie: bruno })).html).hrefs.includes('/zona1/relatorios'))
-  await alternar(true)
-  assert.equal((await pedir('/zona1/relatorios', { cookie: bruno })).status, 200)
+  assert.equal((await pedir('/zona1/recursos/r-1', { cookie: davi })).status, 200)
 })
 
-test('D8: a tela de acesso nao oferece perfil de zona para modulo de outra zona', async () => {
+test('segregacao: quem administra nao se concede modulo; o dominio recusa e nada muda', async () => {
   const carla = (await entrar('carla')).cookie
-  const forms = formularios((await pedir('/acesso', { cookie: carla })).html)
-  assert.ok(!forms.some((f) => f.perfil === 'zona1.analista' && f.modulo === 'zona2.tarefas'))
-  assert.ok(forms.some((f) => f.perfil === 'plataforma.usuario' && f.modulo === 'zona2.tarefas'))
+  const r = await administrar('concederAcesso', await formDeAcesso(carla, CARLA, 'zona2'), carla)
+  assert.match(r.corpo, /"destino":"\/acesso"/)
+  assert.equal((await pedir('/zona2', { cookie: carla })).status, 404, 'carla se concedeu a zona 2')
 })
 
-test('Server Action e reverificada no servidor: quem nao tem o modulo nao executa', async () => {
+test('Server Action e reverificada no servidor: quem nao tem papel nao administra', async () => {
   const carla = (await entrar('carla')).cookie
   const bruno = (await entrar('bruno')).cookie
-  const r = await acaoPeloCliente({ ...CONCEDER, campos: await celula(carla), cookie: bruno })
+  const davi = (await entrar('davi')).cookie
+  const r = await acaoPeloCliente({ ...ACAO_DE_ACESSO('concederAcesso'), campos: await formDeAcesso(carla, DAVI, 'zona2'), cookie: bruno })
   assert.match(r.corpo, /"destino":"\/"/, 'a action de administracao rodou para o bruno')
-  assert.equal((await pedir('/zona1/relatorios', { cookie: bruno })).status, 200, 'a concessao mudou')
+  assert.equal((await pedir('/zona2', { cookie: davi })).status, 404, 'o acesso mudou')
 })
 
 /** Toda Server Action de toda app, lida dos manifestos do build. */
@@ -198,7 +208,7 @@ const CONCLUIR = { app: 'erp-zona-2', arquivo: 'app/zona2/acoes.ts', nome: 'conc
 
 test('Server Action sem Origin, ou com Origin de outro site, nao executa em nenhuma app', async () => {
   const acoes = todasAsAcoes()
-  assert.ok(acoes.length >= 4)
+  assert.ok(acoes.length >= 3, `so ${acoes.length} actions encontradas`)
   for (const acao of acoes) {
     const cookie = (await entrar(DONO[acao.app] ?? 'carla')).cookie
     const campos = acao.app === 'erp-zona-2' ? { id: 't-2', versao: '1' }
@@ -258,7 +268,7 @@ test('invariante 16: toda Server Action de toda app recusa quem nao tem o modulo
       total++
     }
   }
-  assert.ok(total >= 4, `so ${total} actions encontradas`)
+  assert.ok(total >= 3, `so ${total} actions encontradas`)
   const ana = (await entrar('ana')).cookie
   assert.match((await pedir('/zona2', { cookie: ana })).html, /Conferir inventário(<!-- -->)? — (<!-- -->)?pendente/)
 })
@@ -279,20 +289,6 @@ test('o cabecalho interno de flash vindo do navegador e ignorado', async () => {
   const falso = encodeURIComponent(JSON.stringify({ tipo: 'erro', texto: 'Forjado pelo cliente', id: 'x1' }))
   const r = await pedir('/zona1', { cookie: ana, cabecalhos: { 'x-erp-flash': falso } })
   assert.ok(!r.html.includes('Forjado pelo cliente'))
-})
-
-test('invariante 16 comportamental: restringir o painel da zona 1 tira pagina e detalhe de quem nao tem concessao', async () => {
-  const carla = (await entrar('carla')).cookie
-  const davi = (await entrar('davi')).cookie
-  const restringir = (restrito) => acaoPeloCliente({ app: 'erp-zona-acesso', arquivo: 'app/acesso/acoes.ts', nome: 'alterarRestricao',
-    caminho: '/acesso', campos: { modulo: 'zona1.painel', restrito: String(restrito) }, cookie: carla })
-  await restringir(true)
-  try {
-    for (const caminho of ['/zona1', '/zona1/recursos/r-1']) assert.equal((await pedir(caminho, { cookie: davi })).status, 404, caminho)
-  } finally {
-    await restringir(false)
-  }
-  assert.equal((await pedir('/zona1/recursos/r-1', { cookie: davi })).status, 200)
 })
 
 test('N3: sair no shell encerra a sessao em todas as zonas', async () => {
@@ -357,16 +353,45 @@ test('N3 estatico: nenhuma zona monta store de escrita, identidade ou grava o co
   }
 })
 
-test('invariante 16 estatico: toda pagina de modulo chama exigirModulo', () => {
+test('invariante 16 estatico: toda pagina de zona exige modulo e funcionalidade; a zona de acesso, papel; o shell consulta o acesso', () => {
   // `(publico)` so e pulado no shell (login); nas zonas toda pagina e de modulo
+  const exigido = {
+    'erp-shell': /await Promise\.all\(\[\s*modulosPermitidos\(\)/,   // D4: fail-closed pela consulta
+    'erp-zona-1': /await exigirModulo\('zona1', '[a-z0-9-]+\.[a-z0-9-]+'\)/,
+    'erp-zona-2': /await exigirModulo\('zona2', '[a-z0-9-]+\.[a-z0-9-]+'\)/,
+    'erp-zona-acesso': /await exigirPapel\(\)/,
+  }
   let total = 0
-  for (const app of ['erp-shell', 'erp-zona-1', 'erp-zona-2', 'erp-zona-acesso']) {
+  for (const [app, padrao] of Object.entries(exigido)) {
     for (const { arquivo } of paginasDaApp(app, { pularPublico: app === 'erp-shell' })) {
-      assert.match(readFileSync(arquivo, 'utf8'), /await exigirModulo\('[a-z0-9-]+\.[a-z0-9-]+'\)/, `${arquivo} sem exigirModulo`)
+      assert.match(readFileSync(arquivo, 'utf8'), padrao, `${arquivo} sem a verificacao de acesso`)
       total++
     }
   }
   assert.ok(total >= 6)
+})
+
+test('toda funcionalidade que a zona exige esta no manifesto dela (e o id do modulo e o da zona)', async () => {
+  const fontes = (d) => readdirSync(d).flatMap((n) => {
+    if (['node_modules', '.next'].includes(n)) return []
+    const p = join(d, n)
+    return statSync(p).isDirectory() ? fontes(p) : /\.(ts|tsx)$/.test(n) ? [p] : []
+  })
+  for (const [app, zona] of [['erp-zona-1', 'zona1'], ['erp-zona-2', 'zona2']]) {
+    const manifesto = readFileSync(join(RAIZ, app, 'acesso.manifesto.ts'), 'utf8')
+    assert.match(manifesto, new RegExp(`id: '${zona}'`))
+    const declaradas = [...manifesto.match(/funcionalidades: \[([^\]]*)\]/)[1].matchAll(/'([^']+)'/g)].map((m) => m[1])
+    let usadas = 0
+    for (const f of fontes(join(RAIZ, app, 'app'))) {
+      const t = readFileSync(f, 'utf8')
+      for (const m of t.matchAll(/(?:exigirModulo\('|modulo: ')([a-z0-9-]+)'(?:, | *, *funcionalidade: )'([a-z0-9.-]+)'/g)) {
+        assert.equal(m[1], zona, `${f} exige modulo de outra zona`)
+        assert.ok(declaradas.includes(m[2]), `${f} exige ${m[2]}, fora do manifesto de ${zona}`)
+        usadas++
+      }
+    }
+    assert.ok(usadas > 0, `nenhuma exigencia achada em ${app}`)
+  }
 })
 
 test('N8: nenhuma app faz saida de rede fora do registro de destinos (analise estrutural)', () => {
@@ -401,7 +426,7 @@ test('D5: dominio de negocio fora apaga so o bloco dele', async () => {
 
 test('D4: gestao de acesso fora da a pagina de servico indisponivel, sem detalhe interno', async () => {
   const ana = (await entrar('ana')).cookie
-  await ambiente.derrubarDominio('gestao-acesso')
+  await ambiente.derrubarDominio('gestao-acesso-v2')
   try {
     for (const caminho of ['/', '/zona1', '/zona2']) {
       const r = await pedir(caminho, { cookie: ana })
@@ -410,7 +435,7 @@ test('D4: gestao de acesso fora da a pagina de servico indisponivel, sem detalhe
       assert.ok(!r.html.includes('Olá,') && !r.html.includes('Painel da zona 1</h1>'), `${caminho} renderizou a pagina sem acesso`)
       assert.ok(!/ECONNREFUSED|at [A-Za-z]+ \(|node:internal|DestinoInvalido|ErroDeAplicacao/.test(r.html), `${caminho} vaza detalhe`)
     }
-  } finally { await ambiente.subirDominio('gestao-acesso') }
+  } finally { await ambiente.subirDominio('gestao-acesso-v2') }
   assert.equal((await pedir('/zona1', { cookie: ana })).status, 200, 'voltou depois de reenviar os manifestos')
 })
 
@@ -424,7 +449,7 @@ const CONTEUDO_DE_MODULO = {
   '/zona1': /Painel da zona 1|recursos no seu escopo/,
   '/zona1/relatorios': /Relatórios|com custo/,
   '/zona2': /Conferir inventário|Revisar cadastro|Concluir e ir/,
-  '/acesso': /Zonas registradas|Módulos: restrição/,
+  '/acesso': /Acesso a módulos —/,
   // o auditor_shell_3 voltou o fail-open só no detalhe do recurso e tudo ficou verde (V1)
   '/zona1/recursos/r-1': /Identificador:|CC-10/,
 }
@@ -459,7 +484,7 @@ test('completude: o padrao de rota distingue pagina dinamica de literal irma (de
 test('L1/V1: gestao de acesso fora nao entrega pagina de modulo de nenhuma zona, nem no payload RSC', async () => {
   const quem = {}
   for (const u of ['davi', 'bruno', 'ana', 'carla']) quem[u] = (await entrar(u)).cookie
-  await ambiente.derrubarDominio('gestao-acesso')
+  await ambiente.derrubarDominio('gestao-acesso-v2')
   try {
     for (const [u, cookie] of Object.entries(quem)) {
       for (const [c, conteudo] of Object.entries(CONTEUDO_DE_MODULO)) {
@@ -467,7 +492,7 @@ test('L1/V1: gestao de acesso fora nao entrega pagina de modulo de nenhuma zona,
         assert.ok(!conteudo.test(r.html), `${u} ${c}: conteudo do modulo chegou com a gestao de acesso fora`)
       }
     }
-  } finally { await ambiente.subirDominio('gestao-acesso') }
+  } finally { await ambiente.subirDominio('gestao-acesso-v2') }
 })
 
 test('L1 tem dentes: com a gestao de acesso no ar, quem tem o modulo ve o conteudo que L1 procura', async () => {
@@ -606,7 +631,7 @@ test('L6: navegacao do cliente (RSC) com a gestao de acesso fora nao traz o modu
     await pagina.cookie('__Host-session', id, SHELL_URL)
     await pagina.ir(`${SHELL_URL}/zona1`)
     assert.match(await pagina.avaliar('document.body.innerText'), /Painel da zona 1/, 'a zona 1 nao abriu com a gestao de acesso no ar')
-    await ambiente.derrubarDominio('gestao-acesso')
+    await ambiente.derrubarDominio('gestao-acesso-v2')
     try {
       pagina.respostas.length = 0
       pagina.pedidos.length = 0
@@ -620,7 +645,7 @@ test('L6: navegacao do cliente (RSC) com a gestao de acesso fora nao traz o modu
         assert.ok(!/recursos no seu escopo|com custo|Relatórios/.test(r.corpo ?? ''), `modulo restrito no corpo de ${r.url}`)
       }
       assert.ok(!/recursos no seu escopo|com custo/.test(await pagina.avaliar('document.body.innerText')), 'modulo restrito na tela')
-    } finally { await ambiente.subirDominio('gestao-acesso') }
+    } finally { await ambiente.subirDominio('gestao-acesso-v2') }
   } finally { await fechar() }
 })
 
@@ -673,5 +698,45 @@ test('T1 (nucleo 8): o trace do navegador chega ao dominio, sem dado pessoal', a
   } finally {
     await new Promise((ok) => falso.close(ok))
     await ambiente.subirDominio('dominio-a')
+  }
+})
+
+// ---------------------------------------------------------------------------------------------
+// Gestão de acesso v2 (ADR-0014, adendo 1): uma autoridade só, e fechada.
+
+test('v2 fora e v1 no ar: as apps nao voltam a v1; servico indisponivel, nunca conteudo', async () => {
+  const ana = (await entrar('ana')).cookie
+  const davi = (await entrar('davi')).cookie
+  await ambiente.derrubarDominio('gestao-acesso-v2')
+  await ambiente.subirDominio('gestao-acesso')   // a v1 concederia o painel e a zona 2
+  try {
+    for (const [cookie, caminho, conteudo] of [[ana, '/zona2', CONTEUDO_DE_MODULO['/zona2']], [davi, '/zona1', CONTEUDO_DE_MODULO['/zona1']]]) {
+      const r = await pedir(caminho, { cookie })
+      assert.match(r.html, /<h1>Serviço indisponível<\/h1>/, caminho)
+      assert.ok(!conteudo.test(r.html), `${caminho}: conteudo veio da v1`)
+    }
+  } finally {
+    await ambiente.derrubarDominio('gestao-acesso')
+    await ambiente.subirDominio('gestao-acesso-v2')
+  }
+  assert.equal((await pedir('/zona2', { cookie: ana })).status, 200)
+})
+
+test('pessoa desligada na gestao de acesso vai ao login na requisicao seguinte, nunca ao conteudo', async () => {
+  const davi = (await entrar('davi')).cookie
+  assert.equal((await pedir('/zona1', { cookie: davi })).status, 200)
+  // o desligamento acontece no domínio (quem administra, pela API dele); o BFF só observa
+  const r = await fetch('http://127.0.0.1:4020/v2/pessoas/p-20/desligamento', { method: 'POST', headers: { authorization: 'Bearer dev.carla' } })
+  assert.equal(r.status, 204)
+  try {
+    for (const caminho of ['/zona1', '/']) {
+      const p = await pedir(caminho, { cookie: davi })
+      assert.ok(!CONTEUDO_DE_MODULO['/zona1'].test(p.html) && !p.html.includes('Olá,'), `${caminho}: conteudo para pessoa desligada`)
+      assert.match(p.local ?? p.html, /\/login/, `${caminho}: nao foi ao login`)
+    }
+  } finally {
+    // o domínio falso guarda tudo em memória: reiniciar volta à semente
+    await ambiente.derrubarDominio('gestao-acesso-v2')
+    await ambiente.subirDominio('gestao-acesso-v2')
   }
 })

@@ -21,10 +21,10 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
 
 | O quê | Estado | Evidência |
 |---|---|---|
-| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **60/60** com sessão em arquivo e **60/60** com Redis (`CONSTRUIR=tudo`) | `task verificar`, `task verificar:redis` |
+| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **62/62** com sessão em arquivo e **62/62** com Redis | `task verificar:construir`, `task verificar:redis` |
 | Unidades | contratos 16, núcleo 109, moldura 25, stub 39, shell 38; typecheck das 4 apps; estática 16/16; scripts 9/9 | `task test`, `task typecheck`, `task verificar:estatica` |
-| `@erp/nucleo` | **0.8.2** nas 4 apps (kit `/app`, timeouts configuráveis, campos OIDC na sessão, acesso v2 parcial) | lockstep 4 apps |
-| `@erp/contratos` / `@erp/moldura` | **0.3.1** (contratos da v2) / **0.4.0** (`/servidor`) | ADR-0012, ADR-0014 |
+| `@erp/nucleo` | **0.9.1** nas 4 apps (acesso v2 só, `exigirModulo(modulo, funcionalidade)`, `exigirPapel`) | lockstep 4 apps |
+| `@erp/contratos` / `@erp/moldura` | **0.4.0** / **0.5.0** | ADR-0012, ADR-0014 adendo 1 |
 | Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
 | Gate B1+D1 | **iteração 2 REPROVADA** (auditor Opus, 77 mutações + 29 contornos; vetos V1–V8); iteração 1 superada | `GATE_STATUS.md`; `.agents/auditor_b1_d1_2/` |
 | Submódulos | os 8 no `master`, iguais a `origin/master` | `git submodule foreach git status -sb` |
@@ -55,7 +55,7 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | | E5 verificação ponta a ponta contra o showcase | ⬜ | #19 | E4 |
 | **G. Gestão de acesso v2** | G1 modelo de referência e mock da API (porta 4020) | ✅ | #21 | — |
 | | G2 decisão de arquitetura (**ADR-0014**, proposto) | ✅ | #21 | — |
-| | G3 alinhar à v2 conforme o **adendo 1 do ADR-0014**: corte seco para a 4020, `acessoEfetivo`, `exigirModulo(modulo, funcionalidade)`, `exigirPapel` na zona de acesso, manifesto v2, atores ana…davi na semente v2; contratos 0.4.0, núcleo 0.9.0 | ⏳ decidido; implementação depois do veredito do auditor | #21 | gate B1+D1 |
+| | G3 alinhar à v2 conforme o **adendo 1 do ADR-0014** | ✅ implementado (contratos 0.4.0, núcleo 0.9.1, moldura 0.5.0); 62/62 nos dois modos; **falta gate** (iteração 3, junto com B1+D1) | #21 | — |
 | | G4 gate e showcase com os atores da v2 | ⬜ | #21, #19 | G3 |
 | | G5 revogação ativa: shell consome `/v2/eventos` e encerra sessões por sujeito (núcleo, não extensão) | ⬜ **lacuna declarada**: até lá não há revogação ativa | #21 | G3, D2 |
 
@@ -114,37 +114,28 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 
 Todo contorno achado pelo auditor vira caso de teste (AMBIENTE §3).
 
-## Em andamento: G3 + fatia K (salvo em 2026-09-22, noite)
+## G3 implementado (2026-09-22, noite) — falta o resto da fatia K e o gate
 
-Trabalho enviado ao branch **`g3`** de cada submódulo (o principal ainda aponta para o estado antigo,
-porque o ponta a ponta não migrou). `erp-contratos` já está no `master`.
+Tudo no `master` dos submódulos e fixado no principal. **Ponta a ponta 62/62 com arquivo e 62/62 com Redis.**
 
-| Repositório | Commit (`g3`) | O que tem | Verificado |
-|---|---|---|---|
-| erp-contratos | `b56320e` (master) | 0.4.0: `AcessoEfetivo`, `ModuloEfetivo {id,nome,funcionalidades}`, manifesto v2 validado | 20/20; publicado no Verdaccio desta máquina |
-| erp-nucleo | `8e958ba` | 0.9.0: só `/v2/eu`, sem fallback (K4/V4); `exigirModulo(modulo, funcionalidade)` (V6); `exigirPapel`; `acaoProtegida(requisito…)`; fronteira por import real (K3/V3); nenhum subpath fora de `/shell` exporta escritor (K2/V2); tetos nos parâmetros (L2); sessão sem token é ausente (L7); servidores de teste fecham em `finally` (L5) | 130/130; 7 mutações pegas; publicado |
-| erp-moldura | `a875c21` | 0.5.0: `acaoProtegida(requisito, …)` repassa a funcionalidade (L7) | 26/26; publicado |
-| erp-dominio-stub | `064dccf` | token `dev.<login>.<uuid>` aceito; `nome` no `/v2/eu`; ana…davi na unidade central | 42/42; 2 mutações pegas |
-| erp-shell | `1053cc6` | destino 4020 só `/v2/eu`; `shell.inicio` e manifesto v1 saem | typecheck; 38/38 |
-| erp-zona-1 / erp-zona-2 | `75ca0dc` / `3605cee` | `exigirModulo(zona, funcionalidade)`; manifesto v2; link de relatórios só com `relatorios.ver` | typecheck |
-| erp-zona-acesso | `a4eae4d` | `exigirPapel`; pessoas × módulos com conceder/revogar em `/v2/acessos` | typecheck |
+| Repositório | Versão / commit | O que tem |
+|---|---|---|
+| erp-contratos | 0.4.0 | `AcessoEfetivo`, `ModuloEfetivo {id,nome,funcionalidades}`, manifesto v2 validado (20 testes) |
+| erp-nucleo | 0.9.1 | só `/v2/eu`, sem fallback (V4); `exigirModulo(modulo, funcionalidade)` (V6); `exigirPapel`; `acaoProtegida(requisito…)`; `entradaInicial`/`entradaAdministrativa` no menu; fronteira por import real (V3); nenhum subpath fora de `/shell` com escritor (V2); tetos (L2); sessão sem token é ausente (L7); testes fecham servidores (L5). 131 testes; 7 mutações pegas |
+| erp-moldura | 0.5.0 | `acaoProtegida(requisito, …)` repassa a funcionalidade (L7) |
+| erp-dominio-stub | — | token `dev.<login>.<uuid>`, `nome` no `/v2/eu`, ana…davi na unidade central (42 testes) |
+| apps | — | destino 4020 só `/v2/eu`; páginas por funcionalidade; zona de acesso com pessoas × módulos (conceder/revogar); manifestos v2 só nas zonas 1 e 2 |
+| base | — | `ambiente.mjs` sobe a v2 (4020), v1 só sob demanda; verificação migrada: revogação do davi, segregação (carla não se concede), v2 fora com v1 no ar → indisponível, pessoa desligada → login, funcionalidade exigida tem de estar no manifesto |
 
-**Falta, nesta ordem:**
-1. `base/scripts/ambiente.mjs`: subir a gestão de acesso v2 (4020) no lugar da v1 (4010) e registrar manifestos
-   só das zonas 1 e 2 (shell e zona de acesso não têm mais `registrar`).
-2. `base/verificacao/base.test.mjs` em termos da v2: MENUS (uma entrada por módulo + "Gestão de acesso" para
-   carla), N5/D6 (casos por funcionalidade), revogação (N6: revogar davi em `zona1` → 404, reconceder), D8 sai,
-   Server Action da zona de acesso (`concederAcesso`/`revogarAcesso`), "restringir o painel" vira revogação,
-   estático do invariante 16 aceita `exigirPapel` só na zona de acesso, e os casos † do adendo 1 (v2 fora e v1
-   no ar → indisponível; pessoa desligada → login).
-3. Fatia K restante em `base/verificacao`: K1 (zona só com `get` no Redis + ACL de leitura no showcase),
-   K5 (DTO por spread), K6 (`NEXT_PUBLIC_*`, `next.config.ts`), K7 (saída de rede), K3 estático (`'use client';`
-   com ponto e vírgula ou comentário), K8 no shell (sonda exige 2xx, `redirect: 'manual'`, tetos).
-4. Ponta a ponta verde nos dois modos → ponteiros do principal para os commits `g3`, merge `g3` → `master` em cada
-   submódulo, docs (AGENTS.md invariantes 16 e 17, `02-nucleo.md`, `CONFIGURACAO.md` com `ACESSO_URL` e tetos).
-5. Iteração 3 do gate B1+D1+G3 com revisor, challenger e auditor novos.
-6. Depois: **D2** (núcleo 0.10.0, OIDC), G4, G5, C1–C3, E4–E5.
+## Próximo passo
 
-Ambiente desta máquina: Verdaccio (com contratos 0.4.0, núcleo 0.9.0 e moldura 0.5.0), Redis e Keycloak no ar.
-Outra máquina: para testar o `g3`, publicar contratos 0.4.0 → núcleo 0.9.0 → moldura 0.5.0 no próprio Verdaccio e
-rodar `task pacotes:alinhar-hashes` antes do `task instalar`.
+1. **Fatia K restante** (tabela acima): K1 (zona só com `get` no Redis; ACL de leitura no showcase),
+   K3 estático (`'use client';` com ponto e vírgula ou comentário antes), K5 (DTO por spread), K6
+   (`NEXT_PUBLIC_*`, `next.config.ts`), K7 (saída de rede indireta), K8 no shell (sonda exige 2xx,
+   `redirect: 'manual'`, tetos da sonda e da telemetria). Todo contorno do auditor vira caso de teste.
+2. **Iteração 3 do gate B1+D1+G3** com revisor (Sonnet), challenger (Sonnet) e auditor (Opus) novos.
+3. **D2** (núcleo 0.10.0, OIDC + PKCE, ADR-0013, pessoa casada por `sub`); G4; G5 (eventos); C1–C3; E4–E5.
+
+Ambiente desta máquina: Verdaccio (com contratos 0.4.0, núcleo 0.9.1 e moldura 0.5.0), Redis e Keycloak no ar.
+Outra máquina: publicar contratos 0.4.0 → núcleo 0.9.1 → moldura 0.5.0 no próprio Verdaccio (`task pacotes:publicar`)
+e rodar `task pacotes:alinhar-hashes` antes do `task instalar`.

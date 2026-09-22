@@ -1,5 +1,5 @@
 import { spawn, execFileSync } from 'node:child_process'
-import { existsSync, mkdtempSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -15,8 +15,14 @@ export const APPS = [
 ]
 
 export const PORTAS_DE_DOMINIO = {
-  'dominio-a': 4001, 'dominio-b': 4002, 'dominio-c': 4003, plataforma: 4004, 'gestao-acesso': 4010,
+  'dominio-a': 4001, 'dominio-b': 4002, 'dominio-c': 4003, plataforma: 4004, 'gestao-acesso-v2': 4020,
 }
+/**
+ * Domínios que só sobem quando uma verificação pede (`subirDominio`). A gestão de acesso v1 fica
+ * aqui para provar que as apps não voltam a ela com a v2 fora (ADR-0014, adendo 1).
+ */
+export const PORTAS_SOB_DEMANDA = { 'gestao-acesso': 4010 }
+const PORTA = { ...PORTAS_DE_DOMINIO, ...PORTAS_SOB_DEMANDA }
 
 /** O que entra no build de uma aplicação: fonte, configuração e as versões de pacote travadas. */
 const ENTRADAS_DO_BUILD = ['app', 'lib', 'proxy.ts', 'next.config.ts', 'package.json', 'pnpm-lock.yaml', 'zonas.json', 'acesso.manifesto.ts']
@@ -35,6 +41,8 @@ export function precisaConstruir(dirDaApp) {
   const build = statSync(id).mtimeMs
   return ENTRADAS_DO_BUILD.some((e) => maisRecente(join(dirDaApp, e)) > build)
 }
+
+const temScript = (dir, nome) => !!JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')).scripts?.[nome]
 
 async function esperar(url, ms = 60_000) {
   const fim = Date.now() + ms
@@ -55,7 +63,7 @@ async function esperar(url, ms = 60_000) {
 export async function subir({ construir = false, log = false } = {}) {
   // Um processo antigo numa porta faria a verificação falar com a base errada (outro
   // diretório de sessão, outro build) e reprovar por motivo nenhum do código.
-  for (const porta of [...APPS.map((a) => a.porta), ...Object.values(PORTAS_DE_DOMINIO)]) {
+  for (const porta of [...APPS.map((a) => a.porta), ...Object.values(PORTA)]) {
     // Só "conexão recusada" é porta livre. Timeout é processo que aceita e não responde (ex.: zona
     // congelada por uma verificação interrompida no L7) e conta como ocupada.
     const livre = await fetch(`http://127.0.0.1:${porta}/`, { signal: AbortSignal.timeout(500) })
@@ -83,15 +91,16 @@ export async function subir({ construir = false, log = false } = {}) {
   const dominios = new Map()
   const apps = new Map()
   const registrar = () => {
-    for (const { dir } of APPS) {
+    // só as zonas que são módulo têm manifesto (shell e zona de acesso não: ADR-0014, adendo 1)
+    for (const { dir } of APPS.filter(({ dir }) => temScript(join(RAIZ, dir), 'registrar'))) {
       execFileSync('pnpm', ['registrar'], { cwd: join(RAIZ, dir), env, stdio: log ? 'inherit' : 'ignore' })
     }
   }
   const subirDominio = async (nome) => {
     dominios.set(nome, iniciar('node', ['src/servidor.mjs', nome], join(RAIZ, 'erp-dominio-stub')))
-    await esperar(`http://127.0.0.1:${PORTAS_DE_DOMINIO[nome]}/`)
+    await esperar(`http://127.0.0.1:${PORTA[nome]}/`)
     // o domínio falso de acesso guarda tudo em memória: ao voltar, os manifestos são reenviados
-    if (nome === 'gestao-acesso') registrar()
+    if (nome === 'gestao-acesso-v2') registrar()
   }
   const derrubarDominio = async (nome) => {
     const p = dominios.get(nome)
