@@ -2,7 +2,7 @@
   "name": "nextjs-mfe",
   "version": "1.0.0",
   "private": true,
-  "description": "Base BFF + Multi-Zones: cada parte é um repositório próprio em repos/ (submódulos)",
+  "description": "Base BFF + Multi-Zones: cada parte é um repositório próprio em repos/ (submódulos). Comandos: Taskfile.yml (task)",
   "scripts": {
     "registry:up": "node base/scripts/registry.mjs up",
     "registry:down": "node base/scripts/registry.mjs down",

@@ -48,6 +48,9 @@
 
 ## 3. Testes e servidores
 
+- **Use o Taskfile** (`task`, na raiz): é o padrão desde 2026-09-22. `task test`, `task verificar`,
+  `task verificar:construir`, `task showcase:*`. Os comandos abaixo são o que as tarefas chamam.
+
 - `node --test` precisa de **glob explícito** (`node --test test/*.test.mjs`). No Node 24.7,
   `node --test <pasta>` roda zero testes e sai com 0.
 - Núcleo: `node --conditions react-server --test test/*.test.mjs`, depois de `tsc -p tsconfig.json`.

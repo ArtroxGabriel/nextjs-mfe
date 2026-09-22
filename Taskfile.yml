@@ -1,0 +1,115 @@
+# Porta de entrada única da base: `task` lista tudo, `task <nome>` roda.
+# As tarefas chamam os scripts que já existem (pnpm, node, docker compose); regra e motivo no README.
+version: '3'
+
+vars:
+  PACOTES: erp-contratos erp-nucleo erp-moldura            # ordem de publicação (AMBIENTE.md §1)
+  APPS: erp-shell erp-zona-1 erp-zona-2 erp-zona-acesso
+  REPOS: erp-contratos erp-nucleo erp-moldura erp-dominio-stub erp-shell erp-zona-1 erp-zona-2 erp-zona-acesso
+  SHOWCASE: docker compose -f base/showcase/docker-compose.yml
+
+tasks:
+  default:
+    desc: Lista as tarefas
+    silent: true
+    cmd: task --list
+
+  # --- preparar a máquina -------------------------------------------------------------------
+  submodulos:
+    desc: Busca os 8 repositórios (submódulos)
+    cmd: git submodule update --init
+
+  hooks:
+    desc: Ativa o pre-push que recusa submódulo não enviado e núcleo fora de lockstep
+    cmd: git config core.hooksPath .githooks
+
+  registry:subir:
+    desc: Sobe o Verdaccio (registro local de pacotes, porta 4873)
+    cmd: node base/scripts/registry.mjs up
+
+  registry:descer:
+    desc: Derruba o Verdaccio (os pacotes publicados ficam no volume)
+    cmd: node base/scripts/registry.mjs down
+
+  pacotes:publicar:
+    desc: "Publica contratos, núcleo e moldura no Verdaccio — só num Verdaccio vazio ou com versão nova (ADR-0010)"
+    cmds:
+      - for: { var: PACOTES, split: ' ' }
+        cmd: cd repos/{{.ITEM}} && pnpm install && pnpm publicar
+
+  instalar:
+    desc: Instala as dependências das apps e do stub (os pacotes já têm de estar no Verdaccio)
+    cmds:
+      - for: [erp-shell, erp-zona-1, erp-zona-2, erp-zona-acesso, erp-dominio-stub]
+        cmd: cd repos/{{.ITEM}} && pnpm install
+
+  preparar:
+    desc: "Máquina nova: submódulos, hooks, Verdaccio, publicação e instalação, nesta ordem"
+    cmds:
+      - task: submodulos
+      - task: hooks
+      - task: registry:subir
+      - task: pacotes:publicar
+      - task: instalar
+
+  # --- rodar -------------------------------------------------------------------------------
+  base:
+    desc: Sobe domínios, shell e zonas em http://localhost:3000 (Ctrl-C derruba)
+    cmd: node base/scripts/subir-base.mjs
+
+  base:construir:
+    desc: Igual a `base`, refazendo os builds das apps
+    cmd: node base/scripts/subir-base.mjs --construir
+
+  # --- testar ------------------------------------------------------------------------------
+  test:
+    desc: Testes de unidade dos 8 repositórios
+    cmds:
+      - for: { var: REPOS, split: ' ' }
+        cmd: 'if node -e "process.exit(require(\"./repos/{{.ITEM}}/package.json\").scripts?.test ? 0 : 1)"; then echo "== {{.ITEM}}" && (cd repos/{{.ITEM}} && pnpm test); fi'
+
+  typecheck:
+    desc: Checagem de tipos das 4 apps
+    cmds:
+      - for: { var: APPS, split: ' ' }
+        cmd: echo "== {{.ITEM}}" && cd repos/{{.ITEM}} && pnpm typecheck
+
+  verificar:
+    desc: Ponta a ponta — sobe tudo, verifica e derruba (usa os builds existentes)
+    cmd: node --test base/verificacao/*.test.mjs
+
+  verificar:construir:
+    desc: Ponta a ponta reconstruindo as apps com fonte mais novo que o build (CONSTRUIR=tudo força todas)
+    cmd: node --test base/verificacao/*.test.mjs
+    env:
+      CONSTRUIR: '{{.CONSTRUIR | default "1"}}'
+
+  scripts:test:
+    desc: Testes dos scripts da base (ambiente, lockstep)
+    cmd: node --test base/scripts/*.test.mjs
+
+  # --- enviar ------------------------------------------------------------------------------
+  lockstep:
+    desc: Confere que as 4 apps usam a mesma versão exata do @erp/nucleo
+    cmd: node base/scripts/verificar-lockstep.mjs
+
+  checar-envio:
+    desc: Confere que todo commit de submódulo fixado já está num branch remoto
+    cmd: node base/scripts/checar-envio.mjs
+
+  # --- showcase ----------------------------------------------------------------------------
+  showcase:subir:
+    desc: Sobe Redis e Keycloak do showcase (tempos de sessão em docs/CONFIGURACAO.md)
+    cmd: '{{.SHOWCASE}} up -d'
+
+  showcase:descer:
+    desc: Derruba Redis e Keycloak do showcase (o volume do Redis fica)
+    cmd: '{{.SHOWCASE}} down'
+
+  showcase:checar:
+    desc: "Confere o SSO: PKCE obrigatório, verifier errado recusado, token e inatividade configurados"
+    cmd: node base/showcase/checar-keycloak.mjs
+
+  showcase:recriar-keycloak:
+    desc: Recria o Keycloak para reimportar o realm depois de mudar configuração
+    cmd: '{{.SHOWCASE}} up -d --force-recreate keycloak'

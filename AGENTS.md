@@ -67,10 +67,14 @@ experiência de uso; nenhuma substitui o domínio.
 
 ## Comandos
 
+**O Taskfile da raiz é a porta de entrada padrão** (`task` lista tudo). Tarefa nova de rotina entra
+nele, com `desc`, em vez de virar comando solto em README ou script.
+
 ```bash
-pnpm verificar                          # ponta a ponta, na raiz (sobe, verifica, derruba)
-cd repos/erp-<parte> && pnpm test       # testes de um pacote ou do shell
-node --test test/*.test.mjs             # sempre com glob explícito
+task verificar                          # ponta a ponta, na raiz (sobe, verifica, derruba)
+task test                               # unidades dos 8 repositórios
+cd repos/erp-<parte> && pnpm test       # um repositório só
+node --test test/*.test.mjs             # à mão, sempre com glob explícito
 ```
 
 Antes de abrir PR ou enviar: nenhum invariante violado; testes do repositório e ponta a ponta

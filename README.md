@@ -38,15 +38,16 @@ para a arquitetura final em [`docs/arquitetura/alvo.md`](docs/arquitetura/alvo.m
 
 ## 2. Instalar e rodar
 
+**Todo comando da base passa pelo [Taskfile](Taskfile.yml)** ([Task](https://taskfile.dev) 3.x).
+`task` sozinho lista as tarefas com a descrição de cada uma.
+
 ```bash
-git clone --recurse-submodules <url> && cd nextjs-mfe   # ou: git submodule update --init
-pnpm registry:up                                         # Verdaccio (docker compose)
-# num Verdaccio novo o volume está vazio: publique os pacotes, nesta ordem
-for d in repos/erp-{contratos,nucleo,moldura}; do (cd $d && pnpm install && pnpm publicar); done
-for d in repos/erp-{shell,zona-1,zona-2,zona-acesso,dominio-stub}; do (cd $d && pnpm install); done
-pnpm base                                                # sobe tudo em http://localhost:3000
-git config core.hooksPath .githooks                      # uma vez: bloqueia push com submódulo não enviado
+git clone --recurse-submodules <url> && cd nextjs-mfe
+task preparar      # máquina nova: submódulos, hooks, Verdaccio, publicação dos pacotes, instalação
+task base          # sobe tudo em http://localhost:3000 (Ctrl-C derruba)
 ```
+
+`task preparar` publica os pacotes; num Verdaccio que já os tem, rode só `task instalar`.
 
 Entre como `ana`, `bruno`, `carla` ou `davi`: cada um vê um menu diferente. Use `localhost`, não
 `127.0.0.1`, porque o cookie `__Host-session` exige origem segura.
@@ -63,13 +64,13 @@ Entre como `ana`, `bruno`, `carla` ou `davi`: cada um vê um menu diferente. Use
 |---|---|---|---|
 | `erp-contratos` | `pnpm test` | 15 | manifesto: prefixo de zona, concessão entre zonas, duplicatas |
 | `erp-nucleo` | `pnpm test` | 107 | registro de destinos, sessão leitor/escritor (arquivo e Redis), fragmentos entre zonas, acesso, fronteira entre camadas, exports |
-| `erp-moldura` | `pnpm test` | 16 | menu e `aria-current`, host de toast, flash, `FormularioDeAcao` |
+| `erp-moldura` | `pnpm test` | 25 | menu e `aria-current`, host de toast, flash, `FormularioDeAcao` |
 | `erp-dominio-stub` | `pnpm test` | 16 | projeção e escopo dos domínios, `If-Match`, regras da gestão de acesso |
 | `erp-shell` | `pnpm test` | 36 | decisão do proxy, sonda de saúde das zonas, mapa de zonas, gateway de telemetria |
-| ponta a ponta | `pnpm verificar` | 50 | N3–N8 pelo shell com os quatro atores; toda Server Action pelo caminho do navegador; toast uma vez só; domínios e uma zona derrubados; zona travada vira 503 em < 2 s; nonce novo a cada requisição; gestão de acesso fora sem vazamento em nenhuma página de módulo |
+| ponta a ponta | `task verificar` | 50 | N3–N8 pelo shell com os quatro atores; toda Server Action pelo caminho do navegador; toast uma vez só; domínios e uma zona derrubados; zona travada vira 503 em < 2 s; nonce novo a cada requisição; gestão de acesso fora sem vazamento em nenhuma página de módulo |
 
-`pnpm verificar` sobe domínios, shell e zonas, verifica e derruba tudo. Depois de mudar código de
-uma app, use `pnpm verificar:construir` para refazer os builds. Rodando uma suíte à mão, use sempre
+`task test` roda as unidades dos 8 repositórios. `task verificar` sobe domínios, shell e zonas, verifica
+e derruba tudo. Depois de mudar código de uma app, use `task verificar:construir` para refazer os builds. Rodando uma suíte à mão, use sempre
 o glob explícito (`node --test test/*.test.mjs`): no Node 24.7, `node --test <pasta>` roda zero
 testes e sai com 0.
 
@@ -102,8 +103,7 @@ A verificação manual, item a item, está em
 - O 503 de zona fora e o gateway de telemetria do shell **ainda não passaram por gate** (iteração 4
   em andamento; ver `.agents/orchestrator/RETOMADA.md`).
 - O showcase (mocks em JSON, Keycloak e Redis) está em construção: por enquanto só a infraestrutura
-  em `base/showcase/` (`docker compose -f base/showcase/docker-compose.yml up -d` e
-  `node base/showcase/checar-keycloak.mjs`); as apps ainda não usam Keycloak nem Redis.
+  em `base/showcase/` (`task showcase:subir` e `task showcase:checar`); as apps ainda não usam Keycloak nem Redis.
 - O domínio falso de gestão de acesso guarda tudo em memória: reiniciado, perde manifestos e
   concessões. `pnpm registrar` em cada app os recria.
 
