@@ -18,7 +18,7 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
 
 | O quê | Estado | Evidência |
 |---|---|---|
-| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **50/50** com navegador real | `pnpm verificar:construir` |
+| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **50/50** com navegador real | `task verificar:construir` |
 | `@erp/nucleo` | **0.6.0** nas 4 apps (CSP e trace); **0.7.0** publicado com o kit `/app`, ainda não consumido | `e624c0c`; ADR-0012 |
 | `@erp/moldura` | 0.3.0 nas apps; **0.4.0** (`/servidor`) publicado, não consumido | ADR-0012 |
 | Gate "Shell novo" (#3, #18) | iteração 3 **reprovada** pelo auditor (V1 página de recurso fora do L1; V2 zona travada); corrigida na verificação, **50/50**; falta a iteração 4 | `GATE_STATUS.md` |
@@ -45,7 +45,7 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | | D2 OIDC + PKCE no shell contra o Keycloak local; renovação proativa com lock no proxy do shell; núcleo 0.8.0 | ⬜ desenho decidido: **ADR-0013** (proposto) | #9 | B1, D1 |
 | **E. Showcase** | E1 domínios mock com dados em JSON por domínio (sementes por ator, persistência em arquivo, reset por comando) | ✅ commit `35cb4c7` no branch `e1-dados-json` do `erp-dominio-stub` (worktree em scratchpad); 24/24, 6 mutações pegas. **Falta:** merge no `master` do submódulo depois do auditor, envio, fixar no principal e rodar `pnpm verificar` | #19 | A1 (só para o merge) |
 | | E2 `docker-compose` do showcase: Redis, Keycloak (realm `erp` com ana/bruno/carla/davi) | ✅ `base/showcase/` **no ar e conferido** (`docker compose -f base/showcase/docker-compose.yml up -d`; `node base/showcase/checar-keycloak.mjs`: sem PKCE recusado, verifier errado recusado, login da ana com token de 300 s e refresh): Redis 7.4 com AOF e `noeviction`; Keycloak 26 com cliente confidencial `erp-shell` + PKCE S256, sessão de 30 min. Grupos ficam nos domínios (ADR-0009), não no Keycloak | #19 | D1, D2 (imagens aprovadas) |
-| | E3 `pnpm showcase`: sobe imagens, mocks e apps; derruba com um comando | ⬜ | #19 | E1, E2 |
+| | E3 `task showcase`: sobe imagens, mocks e apps; `task showcase:descer` derruba | ⬜ | #19 | E1, E2 |
 | | E4 roteiro do showcase: cada funcionalidade basilar com passo e resultado esperado (login OIDC, sessão entre zonas, módulo negado = 404, fragmento, SSE, toast, zona fora = 503, `If-Match`, erro `{ codigo, supportId }`, trace) | ⬜ | #19 | C1–C3, E3 |
 | | E5 verificação ponta a ponta rodando contra o showcase | ⬜ | #19 | E4 |
 | **P. Caminho para produção** | P1 registro de pacotes único / CI com lockstep e verificação | 🔒 | #14 | **decisão de infraestrutura** |
