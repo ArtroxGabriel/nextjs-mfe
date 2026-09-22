@@ -1,9 +1,19 @@
 {
   "realm": "erp",
   "enabled": true,
+  "sslRequired": "external",
+  "defaultSignatureAlgorithm": "RS256",
   "accessTokenLifespan": "${ERP_TOKEN_VIDA_S}",
   "ssoSessionIdleTimeout": "${ERP_SESSAO_INATIVIDADE_S}",
   "ssoSessionMaxLifespan": "${ERP_SESSAO_MAXIMA_S}",
+  "revokeRefreshToken": true,
+  "refreshTokenMaxReuse": 0,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "failureFactor": 5,
+  "waitIncrementSeconds": 60,
+  "maxFailureWaitSeconds": 900,
+  "maxDeltaTimeSeconds": 43200,
   "clients": [
     {
       "clientId": "erp-shell",
@@ -11,7 +21,7 @@
       "enabled": true,
       "publicClient": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "dev-erp-shell-segredo",
+      "secret": "${IDP_CLIENTE_SEGREDO}",
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
@@ -23,7 +33,21 @@
       "attributes": {
         "pkce.code.challenge.method": "S256",
         "post.logout.redirect.uris": "http://localhost:3000/login"
-      }
+      },
+      "fullScopeAllowed": false,
+      "protocolMappers": [
+        {
+          "name": "audiencia-erp-dominios",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "erp-dominios",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
     }
   ],
   "users": [

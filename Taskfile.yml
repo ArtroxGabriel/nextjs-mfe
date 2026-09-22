@@ -107,7 +107,7 @@ tasks:
     cmd: '{{.SHOWCASE}} down'
 
   showcase:checar:
-    desc: "Confere o SSO: PKCE obrigatório, verifier errado recusado, token e inatividade configurados"
+    desc: "Confere o SSO: PKCE, fluxos proibidos, redirect exato, audiência, rotação de refresh, força bruta, realm endurecido"
     cmd: node base/showcase/checar-keycloak.mjs
 
   showcase:recriar-keycloak:

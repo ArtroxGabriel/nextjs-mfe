@@ -1,6 +1,7 @@
 # Showcase: infraestrutura que a base usa fora do processo das apps.
 # Conferido em 2026-09-22 (checar-keycloak.mjs); entra em uso em D1 (Redis) e D2 (Keycloak).
-# Só para desenvolvimento: senhas e segredo de cliente abaixo são públicos de propósito.
+# Só para desenvolvimento: os padrões de senha e segredo abaixo são públicos de propósito;
+# fora da máquina local, defina-os no ambiente (docs/CONFIGURACAO.md §1).
 name: erp-showcase
 
 services:
@@ -17,8 +18,10 @@ services:
     image: quay.io/keycloak/keycloak:26.0
     command: ["start-dev", "--import-realm", "--http-port=8080"]
     environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USUARIO:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_SENHA:-admin}
+      # Segredo do cliente confidencial erp-shell; o shell usa o mesmo valor (docs/CONFIGURACAO.md)
+      IDP_CLIENTE_SEGREDO: ${IDP_CLIENTE_SEGREDO:-dev-erp-shell-segredo}
       # Tempos de sessão vêm do ambiente (padrões e significado em docs/CONFIGURACAO.md);
       # o realm os lê por placeholder no import.
       ERP_TOKEN_VIDA_S: ${ERP_TOKEN_VIDA_S:-300}

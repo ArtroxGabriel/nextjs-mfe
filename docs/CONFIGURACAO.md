@@ -19,7 +19,9 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 | `ERP_RENOVACAO_LOCK_S` | `15` | Duração do lock de renovação (`SET NX PX`) | núcleo (D2) | ⬜ D2 |
 | `ERP_LOGIN_TRANSACAO_S` | `600` | Validade da transação de login (`state`, `code_verifier`) | núcleo (D2) | ⬜ D2 |
 | `IDP_EMISSOR` | — | URL do emissor OIDC. Presente: OIDC; ausente: identidade de desenvolvimento | shell (D2); stub dos domínios | ⬜ D2 |
-| `IDP_CLIENTE_ID`, `IDP_CLIENTE_SEGREDO` | — | Cliente confidencial do shell no IdP. Segredo só no servidor, nunca `NEXT_PUBLIC_*` (invariante 11) | shell (D2) | ⬜ D2 |
+| `IDP_CLIENTE_ID` | `erp-shell` | Cliente confidencial do shell no IdP | shell (D2) | ⬜ D2 |
+| `IDP_CLIENTE_SEGREDO` | `dev-erp-shell-segredo` (só showcase) | Segredo do cliente. Só no servidor, nunca `NEXT_PUBLIC_*` (invariante 11); fora da máquina local, obrigatório e sem padrão | Keycloak (placeholder no realm); shell (D2) | Keycloak ✅; shell ⬜ D2 |
+| `KEYCLOAK_ADMIN_USUARIO`, `KEYCLOAK_ADMIN_SENHA` | `admin` / `admin` (só showcase) | Administrador inicial do Keycloak | compose; `checar-keycloak.mjs` | ✅ |
 | `ERP_PERMITIR_IDENTIDADE_DEV` | — | `1` permite `identidadeDev` com `NODE_ENV=production` (só verificação local) | núcleo | ✅ |
 | `SESSAO_DIR` | temporário | Pasta do store de sessão em arquivo (desenvolvimento; some com o Redis) | núcleo, apps | ✅ |
 | `REDIS_URL` | — | Store de sessão (ADR-0002) | apps (D1) | ⬜ D1 |
