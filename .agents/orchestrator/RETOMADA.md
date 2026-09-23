@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-23 (fatia K2)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-23 (encerramento: gate iteração 4 reprovado; esperando decisões)**.
 
 ## Objetivo final
 
@@ -17,17 +17,67 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
   papéis com escopo, módulos com validação, segregação de funções, auditoria — e a arquitetura (núcleo, BFFs,
   zonas, domínios, shell) alinhada a ele, sem perder nenhum invariante de segurança.
 
-## Estado (conferido nesta máquina em 2026-09-22)
+## ⛔ Parado esperando o humano — leia primeiro
+
+O trabalho está **parado de propósito** até o humano responder, **por inteiro**, o pedido
+[`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-decisoes-gate-c2-d2.md) (instrução do humano,
+2026-09-23: "espera uma resposta toda para prosseguir"). São três decisões:
+
+| | Decisão | Recomendação | O que destrava |
+|---|---|---|---|
+| **A** | Critério de veto do auditor: A1 manter (todo contorno é veto) · **A2** veto só para defeito de produto ou erro plausível de boa-fé, contorno deliberado vira limite declarado · A3 encerrar como está | A2 | escopo da fatia K3 e o despacho da iteração 5 |
+| **B** | Fase C2: `proxyTimeout` (B1 10 s · B2 30–60 s · B3 padrão) + 3 propostas (aviso vindo do domínio falso; Redis pub/sub só com mais de uma cópia do shell; meta de 2 s) | B1 10 s, propostas ok | o desenho do C2 e o D7 |
+| **C** | Medição 1 do D2 (duas renovações simultâneas no Keycloak): agora ou no início do D2 | agora | o rigor do lock de renovação (ADR-0013) |
+
+**Ao retomar:** leia a seção "Resposta do humano" do pedido. Vazia → não faça nada além de lembrar o humano.
+Preenchida → marque o pedido como `respondido`, registre as decisões em "Pendências com o humano" abaixo e siga
+"Próximos passos".
+
+## Estado (conferido nesta máquina em 2026-09-23)
 
 | O quê | Estado | Evidência |
 |---|---|---|
-| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **88/88** com Redis e **85 + 3 pulados** com arquivo (2026-09-23, fatia K2) | `task verificar:redis`, `task verificar:construir` |
+| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **88/88** com Redis e **85 + 3 pulados** com arquivo (conferido de novo pelo auditor da iteração 4 ao fim) | `task verificar:redis`, `task verificar:construir` |
 | Unidades | contratos 20, núcleo 135, moldura 26, stub 43, shell 42; typecheck das 4 apps; estática 33/33; scripts 14/14 | `task test`, `task typecheck`, `task verificar:estatica`, `task scripts:test` |
-| `@erp/nucleo` | **0.9.2** nas 4 apps (acesso v2 só, `exigirModulo(modulo, funcionalidade)`, `exigirPapel`) | lockstep 4 apps |
+| `@erp/nucleo` | **0.9.2** nas 4 apps (acesso v2, `exigirModulo(modulo, funcionalidade)`, `exigirPapel`) | lockstep 4 apps |
 | `@erp/contratos` / `@erp/moldura` | **0.4.0** / **0.5.0** | ADR-0012, ADR-0014 adendo 1 |
+| ADRs | **0013 aceito** e **0014 + adendo 1 aceito** (humano, 2026-09-23) | `docs/adr/` |
 | Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
-| Gate B1+D1+G3+K | iteração 4 reprovada pelo auditor (V1–V5 novos; revisor e challenger aprovaram); correção: fatia K3 | `GATE_STATUS.md`; `.agents/*_b1_d1_3/` |
-| Submódulos | os 8 no `master`, iguais a `origin/master` | `git submodule foreach git status -sb` |
+| Gate B1+D1+G3+K | **iteração 4 reprovada** pelo auditor (vetos V1–V5 novos); revisor e challenger aprovaram. Correção: fatia K3, **esperando a decisão A** | `GATE_STATUS.md`; `.agents/*_b1_d1_4/` |
+| Submódulos | os 8 no `master`, iguais a `origin/master`; só `pnpm-lock.yaml` de hash local modificado em `erp-dominio-stub` e `erp-moldura` (não commitar) | `git submodule foreach git status -sb` |
+
+## Histórico curto do gate B1+D1+G3+K
+
+| Iteração | Resultado | Correção |
+|---|---|---|
+| 1 | considerada rasa | iteração 2 com auditor Opus |
+| 2 | auditor vetou V1–V8 | fatia K |
+| 3 | revisor e challenger aprovaram; auditor vetou V1–V7 (127 mutações, 55 sobreviventes) | fatia **K2** (2026-09-23): cada veto com teste que reprova a mutação; P07 adiado (D13) |
+| 4 | revisor e challenger aprovaram; auditor vetou **V1–V5** novos (127, 55 sobreviventes; tudo da iteração 3 agora pego) | fatia **K3**, escopo depende da decisão A |
+
+**Por que a decisão A existe:** os vetos restantes são, em boa parte, contornos deliberados de analisadores estáticos;
+cada iteração fecha os da anterior e o auditor acha os seguintes (55 e 55). Analisador estático protege contra erro de
+boa-fé; contra burla deliberada, a defesa é revisão obrigatória (CODEOWNERS) e barreira no ambiente. Detalhe no pedido §2.
+
+## Próximos passos (depois da resposta)
+
+1. **Fatia K3** conforme a decisão A. Tabela dos vetos (correções sugeridas pelo auditor; com A2, K3-2 e K3-4 viram
+   "fechar o barato + declarar o limite"):
+
+| # | Veto | Correção |
+|---|---|---|
+| K3-1 | V1 (E01f) | zona não recebe `REDIS_URL` no ambiente (`subir()`, `base/showcase/subir.mjs`, Taskfile); teste lê `/proc/<pid>/environ` de cada processo de zona e exige a ausência |
+| K3-2 | V2 (N38d–f) | fronteira: símbolos de `src/shell` só importados por `src/shell`; `src/index.ts` tratado como camada |
+| K3-3 | V3 (E10d/XE26) | prop de ilha com tipo escalar pelo TypeChecker do TypeScript; ilha por `createElement`/`next/dynamic`/`export const`; E2E procura `CC-` em `/zona1` |
+| K3-4 | V4 (XR20p/38p/23p) | sombra de `fetch` só no escopo declarado; não pular `test/` aninhado em `fontesDaApp`; `next/*` por lista explícita; chave calculada em `constructor`/`binding` |
+| K3-5 | V5 (XN01p) | `next.config`: recusar atribuição a `.env`, chave calculada e spread de outro módulo; E2E procura origens internas no JS do navegador |
+| K3-6 | L1–L5 | contornos do `P0-acao-protegida`; N4 conclui com o `If-Match` da página numa tarefa cuja versão o teste não fixa (P16b); cache de "fora" com duração mínima; `router.push(variavel)`; `rewrites()`/`assetPrefix` com endereço interno |
+
+2. **Iteração 5** com verificadores novos (revisor e challenger Sonnet; auditor Opus), o critério da decisão A escrito no
+   despacho do auditor, e a lista de sobreviventes da iteração 4 como casos para o challenger.
+3. Medição 1 do D2 (quando a decisão C mandar) — script em `base/showcase/`, sem instalar nada.
+4. **D2** (núcleo 0.10.0, OIDC + PKCE, ADR-0013; medição 2 do `sub` fixo no início; ator "eva" do D13); G4; G5; C1–C3 (C2 com a
+   decisão B); E4–E5; B2. Registro de pacotes/CI (P1) **no fim** (humano).
 
 ## Plano até o objetivo
 
@@ -38,26 +88,26 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | Fase | Item | Estado | Atividade | Depende de / bloqueio |
 |---|---|---|---|---|
 | **A. Fechar o aberto** | A1 gate do shell | ✅ aprovado na iteração 4 | #3, #18 | — |
-| **B. Base consistente** | B1 migrar as 4 apps para o kit e apagar as cópias | ✅ implementado; gate: iteração 3 reprovada → K2 | #20 | — |
+| **B. Base consistente** | B1 migrar as 4 apps para o kit | ✅ implementado; gate: iteração 4 reprovada → K3 | #20 | 🔒 decisão A |
 | | B2 exportar spans (SDK OpenTelemetry) | ⬜ | #18 | — (instalação aprovada) |
-| | B3 `/{zona}/api/health` sem tocar domínio; sonda do shell passa a usá-lo | ✅ implementado; sonda só 2xx; gate junto com B1 (K2-8: health sem domínio) | #3 | — |
-| | B5 parâmetros fixos no código: B5a (shell: sonda e telemetria) e B5b (núcleo: timeouts) | ✅ B5a e B5b (núcleo 0.8.0); os de sessão entram com o D2 | #20 | — |
-| | B4/B6 verificações da spec e lacunas de segurança (server-only, DTO como prop de ilha, `<Link>` entre zonas) | ✅ analisadores endurecidos (23 testes); iteração 3 achou novos contornos → K2-3/4/6/7 | #20 | — |
-| **C. Funcionalidades** | C1 fragmentos: rota `_fragmento` na zona 2, bloco na zona 1 com `<Suspense>`, recusa no shell | ⬜ | #10 | B1 |
-| | C2 SSE no shell (`/api/stream` + `SharedWorker`); fechar D7 (`proxyTimeout`) | ⬜ | #11 | B1 |
-| | C3 mapa de zonas vindo dos manifestos da gestão de acesso | ⬜ | #14 | B1 |
-| **D. Sessão e identidade reais** | D1 sessão no Redis quando `REDIS_URL` existe (shell grava, zonas leem com usuário ACL só de leitura) | ✅ implementado; gate: iteração 3 reprovada → K2-1 | #9 | — |
-| | D2 OIDC + PKCE no shell contra o Keycloak local; renovação proativa com lock (**ADR-0013**; pessoa casada por `sub`, adendo 1 do ADR-0014) | ⏳ só os campos da sessão (núcleo 0.8.0); login e renovação não começaram; núcleo 0.10.0 | #9 | G3 |
+| | B3 `/{zona}/api/health` sem domínio; sonda do shell o usa | ✅ implementado e testado (K2); gate junto com B1 | #3 | — |
+| | B5 parâmetros em configuração (B5a shell, B5b núcleo) | ✅; os de sessão entram com o D2 | #20 | — |
+| | B4/B6 verificações estáticas de segurança | ✅ endurecidas na K2 (33 testes); iteração 4 achou contornos → K3 | #20 | 🔒 decisão A |
+| **C. Funcionalidades** | C1 fragmentos entre zonas | ⬜ | #10 | B1 |
+| | C2 SSE no shell (`/api/stream` + `SharedWorker`); fechar D7 (`proxyTimeout`) | ⬜ | #11 | B1; 🔒 decisão B |
+| | C3 mapa de zonas vindo dos manifestos | ⬜ | #14 | B1 |
+| **D. Sessão e identidade reais** | D1 sessão no Redis (shell grava, zonas leem com ACL só de leitura) | ✅ implementado; gate → K3-1 | #9 | 🔒 decisão A |
+| | D2 OIDC + PKCE e renovação proativa com lock (**ADR-0013 aceito**; pessoa por `sub`) | ⏳ só os campos da sessão; login e renovação não começaram; núcleo 0.10.0 | #9 | gate B1+D1; decisão C |
 | **E. Showcase** | E1 domínios mock com dados em JSON | ✅ | #19 | — |
-| | E2 `docker-compose` do showcase: Redis e Keycloak (realm `erp`, atores ana/bruno/carla/davi) | ✅ | #19 | — |
-| | E3 `task showcase` sobe tudo; `task showcase:conferir` | ✅ parcial: com Redis; falta login pelo Keycloak (D2) | #19 | D2 |
-| | E4 roteiro do showcase (login OIDC, sessão entre zonas, 404 de módulo, fragmento, SSE, toast, 503, `If-Match`, erro normalizado, trace) | ⬜ | #19 | C1–C3, E3 |
+| | E2 `docker-compose` com Redis e Keycloak | ✅ | #19 | — |
+| | E3 `task showcase` e `task showcase:conferir` | ✅ parcial: falta login pelo Keycloak | #19 | D2 |
+| | E4 roteiro do showcase | ⬜ | #19 | C1–C3, E3 |
 | | E5 verificação ponta a ponta contra o showcase | ⬜ | #19 | E4 |
-| **G. Gestão de acesso v2** | G1 modelo de referência e mock da API (porta 4020) | ✅ | #21 | — |
-| | G2 decisão de arquitetura (**ADR-0014**, proposto) | ✅ | #21 | — |
-| | G3 alinhar à v2 conforme o **adendo 1 do ADR-0014** | ✅ implementado (contratos 0.4.0, núcleo 0.9.2, moldura 0.5.0); gate iteração 3 reprovado → fatia K2 | #21 | — |
+| **G. Gestão de acesso v2** | G1 modelo e mock (porta 4020) | ✅ | #21 | — |
+| | G2 **ADR-0014 + adendo 1, aceito** | ✅ | #21 | — |
+| | G3 alinhar à v2 | ✅ implementado; gate → K3 | #21 | 🔒 decisão A |
 | | G4 gate e showcase com os atores da v2 | ⬜ | #21, #19 | G3 |
-| | G5 revogação ativa: shell consome `/v2/eventos` e encerra sessões por sujeito (núcleo, não extensão) | ⬜ **lacuna declarada**: até lá não há revogação ativa | #21 | G3, D2 |
+| | G5 revogação ativa por `/v2/eventos` | ⬜ **lacuna declarada e aceita** até lá | #21 | G3, D2 |
 
 ### Lista 2 — refinamento (separada; **não começar agora**)
 
@@ -90,59 +140,35 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 - **Nada específico do material de levantamento** (cliente, órgãos, sistemas externos, documentos, pessoas,
   time) entra no repositório; só o vocabulário genérico da base, com dados fictícios.
 
+## Como o trabalho é conduzido
+
+- **Estado salvo e commitado a cada passo concluído**; nunca deixar trabalho só na árvore local.
+  Submódulo enviado antes do principal (`AMBIENTE.md` §2). Commits sem rodapé de coautoria (hook `no-ai-authorship`).
+- **Handoff aos 80% do uso da sessão:** reescrever este arquivo com o passo exato, atualizar `ATIVIDADES.md`, commitar e enviar.
+  Verificadores mantêm o próprio handoff "(parcial)" desde o começo.
+- **Decisão do humano em aberto → pedido em `pedidos/` e parar** o que depende dele.
+- **Pendências do GitLab revisadas a cada passo:** `ATIVIDADES.md` atualizado e bloco 📌 GitLab na resposta.
+- **Gate segue o `LEIA-PRIMEIRO.md`:** revisor e challenger em Sonnet, auditor forense em Opus com veto; o auditor só roda
+  quando o challenger libera as portas. Verificador que já entregou handoff não é reusado.
+- **Nada específico do material de levantamento** entra no repositório; só o vocabulário genérico da base, com dados fictícios.
+
 ## Pendências com o humano
 
-1. ✅ Instalações aprovadas (2026-09-22): `redis`, SDK OpenTelemetry, biblioteca OIDC, imagens do Redis e do Keycloak. Continua valendo mostrar o que entra antes de instalar.
-2. ✅ Sessão de 30 min **por inatividade** (2026-09-22); parâmetros em `docs/CONFIGURACAO.md`.
-3. ✅ **Decisões de 2026-09-23:** iteração 4 do gate autorizada; **ADR-0013 aceito**; **ADR-0014 + adendo 1 aceito** (com a
-   lacuna até o G5); P07 adiado para o D2 (`DEFERRED.md` D13).
-4. **Registro de pacotes / CI (P1): deixado para o fim do plano** (humano, 2026-09-23). Até lá, `task pacotes:alinhar-hashes`.
-5. **Fase C2:** o humano pediu mais detalhes antes de decidir o `proxyTimeout` (D7); levar proposta com números no início do C2.
-6. Aplicar no GitLab o que estiver "pendente" em `ATIVIDADES.md` §2.
+1. ⛔ **Pedido `pedidos/2026-09-23-decisoes-gate-c2-d2.md`** — decisões A, B e C (acima). Bloqueia tudo.
+2. ✅ Decisões de 2026-09-23: iteração 4 autorizada; ADR-0013 aceito; ADR-0014 + adendo 1 aceito (com a lacuna até o G5);
+   P07 adiado para o D2 (`DEFERRED.md` D13).
+3. ✅ Instalações aprovadas (2026-09-22): `redis`, SDK OpenTelemetry, biblioteca OIDC, imagens do Redis e do Keycloak.
+   Continua valendo mostrar o que entra antes de instalar.
+4. ✅ Sessão de 30 min por inatividade (2026-09-22); parâmetros em `docs/CONFIGURACAO.md`.
+5. **Registro de pacotes / CI (P1): no fim do plano** (humano, 2026-09-23). Até lá, `task pacotes:alinhar-hashes`.
+6. Aplicar no GitLab o que estiver "pendente" em `ATIVIDADES.md` §2 (hoje só comentários opcionais).
 
-## O que foi feito nesta sessão (2026-09-22)
+## Ambiente ao encerrar (2026-09-23)
 
-1. Ambiente desta máquina refeito (Verdaccio local; `task pacotes:alinhar-hashes`); B1+D1 conferido 60/60.
-2. Gate B1+D1 iteração 2 (auditor Opus): **reprovado**, vetos V1–V8.
-3. G2 fechado com o **adendo 1 do ADR-0014** (arquiteto): corte seco para a v2, eventos no G5.
-4. **G3 implementado** (contratos 0.4.0, núcleo 0.9.x, moldura 0.5.0, stub, 4 apps, `base/verificacao`).
-5. **Fatia K**: V1–V8 e L1–L8 da iteração 2 com correção e teste (ACL de leitura no Redis, analisadores endurecidos, sonda 2xx, tetos).
-6. Gate iteração 3: revisor **APPROVE**, challenger **APPROVE**, auditor **INTEGRITY VIOLATION** (vetos abaixo).
-
-## Fatia K2 (2026-09-23): feita — próximo passo é a iteração 4 do gate B1+D1+G3+K
-
-| # | Veto | O que mudou | Teste que pega a mutação do auditor |
-|---|---|---|---|
-| K2-1 | V1 | zonas sem fallback para `REDIS_URL`: com ele e sem `REDIS_URL_ZONA`, `lib/redis.ts` recusa (docs/CONFIGURACAO.md) | E2E: `CLIENT KILL USER default` + zonas chamadas direto na porta → nenhuma conexão `default` nova; zona avulsa (porta 3012) sem `REDIS_URL_ZONA` → 5xx e nenhuma conexão de escrita; estático sem comentários |
-| K2-2 | V2 | — | núcleo: identidade dos valores de `/shell` em todo subpath (o `./proxy` carrega com stub de `next/server`) |
-| K2-3 | V3 | `fronteira.mjs` e `seguranca-estatica.mjs` leem imports e `server-only` pela árvore do compilador | todo módulo fora de `app/`/`scripts/` que chega ao servidor declara `import 'server-only'` |
-| K2-4 | V4 | prop e filho de ilha só com valor escalar; ilha por barril, namespace e apelido | XE23–XE31, E10b/E10c; E2E procura CPF e e-mail da semente no HTML e no RSC de `/acesso` |
-| K2-5 | V5 | actions da zona de acesso chamam o domínio dentro do corpo do `acaoProtegida` | estático: action começa por `return acaoProtegida(` e só toca `nucleo` dentro dele; E2E de Origin com os campos reais de cada action e estado conferido (+ contraprova com Origin válido) |
-| K2-6 | V6 | N8: exceção por construção (`permite: fetch/redis`), lista de módulos permitidos, app inteira varrida | XR08–XR17 |
-| K2-7 | V7 | `NEXT_PUBLIC_*` só da lista permitida; `next.config` sem `env`/`define`/`webpack` | XE38–XE41 |
-| K2-8 | L1–L8 | health sem nada importado e corpo fixo; link de Relatórios; `precisaConstruir` por entrada e porta ocupada; `<Link>`/`router.push`; TTL e cache da sonda; `nome` vazio; `same-site`; âncora e 401 do mock; `ERP_DESTINO_TIMEOUT_MS` usado; t-1 na versão 3 (P16); `hostsPermitidos` só de `SHELL_HOSTS` | um teste por lacuna; **P07 (ator só-leitura) adiado para o D2** (`DEFERRED.md` D13) |
-
-Cada teste novo foi conferido contra a mutação (ou contra o analisador antigo do HEAD): reprova com ela, passa sem ela.
-Núcleo sem mudança de fonte (só testes e `scripts/`): continua 0.9.2, nada a publicar.
-
-**Resultado (2026-09-23): iteração 4 reprovada.** Revisor e challenger APPROVE; `auditor_b1_d1_4` **INTEGRITY VIOLATION** com vetos
-V1–V5 novos (`GATE_STATUS.md`). **Próximo: fatia K3**, depois iteração 5:
-
-| # | Veto | Correção (do auditor) |
-|---|---|---|
-| K3-1 | V1 (E01f) | zona não recebe `REDIS_URL` no ambiente (`subir()`, showcase, Taskfile); teste que lê o ambiente do processo de cada zona (`/proc/<pid>/environ`) e exige a ausência |
-| K3-2 | V2 (N38d–f) | fronteira: símbolos de `src/shell` só importados por `src/shell`; `src/index.ts` tratado como camada |
-| K3-3 | V3 (E10d/XE26) | prop de ilha com tipo escalar pelo verificador de tipos (TypeChecker); ilha por `createElement`/`next/dynamic`/`export const`; E2E procura `CC-` em `/zona1` |
-| K3-4 | V4 (XR20p/38p/23p) | sombra de `fetch` só no escopo onde foi declarada; não pular `test/` aninhado; `next/*` por lista explícita de subpaths; chave calculada em `constructor`/`binding` |
-| K3-5 | V5 (XN01p) | `next.config`: recusar atribuição a `.env`, chave calculada e spread de outro módulo; E2E procura origens internas no bundle do navegador |
-| K3-6 | L1–L5 | contornos do `P0-acao-protegida`; N4 conclui t-2 com If-Match da página (P16b); cache de "fora" com duração mínima; P1 com `router.push(variavel)`; `rewrites()`/`assetPrefix` com endereço interno |
-
-**Plano original:** iteração 4 com três verificadores novos (revisor Sonnet, challenger Sonnet — pedir que exercite P09, E10c, E01b/c
-e a zona avulsa sem `REDIS_URL_ZONA` —, auditor Opus com veto). Depois **D2** (núcleo 0.10.0, OIDC + PKCE, ADR-0013, ator "eva"
-do D13); G4; G5; C1–C3; E4–E5.
-
-**Ambiente ao encerrar (2026-09-23):** Verdaccio, Redis e Keycloak do showcase no ar; nenhuma porta da base (3000–3003, 4001–4004, 4020) ocupada. Em 2026-09-22 estava derrubado — showcase (Redis e Keycloak) e Verdaccio parados; nenhuma porta da base
-ocupada. O volume do Redis e os pacotes publicados no Verdaccio ficam. Para retomar: `task registry:subir`, `task showcase:subir`,
-`task instalar` (se faltar), `task verificar:redis`. Resta um `pnpm start` antigo de outra sessão (pasta de rascunho, sem porta da base).
-Outra máquina: publicar contratos 0.4.0 → núcleo 0.9.2 → moldura 0.5.0 no próprio Verdaccio (`task pacotes:publicar`) e rodar
-`task pacotes:alinhar-hashes` antes do `task instalar`.
+- **No ar:** Verdaccio (4873), Redis (6379) e Keycloak (8080) do showcase. **Livres:** portas da base 3000–3003, 3012, 4001–4004,
+  4010, 4020 (conferido depois do auditor).
+- Nenhum agente rodando. Pastas dos verificadores da iteração 4 (`.agents/*_b1_d1_4/`) commitadas; as da iteração 3 ficam enquanto
+  a K3 citar os achados delas.
+- Para retomar noutra sessão: `git fetch origin`, `git submodule update --init`, `task registry:subir`, `task showcase:subir`,
+  `task verificar:redis` (esperado 88/88). Outra máquina: publicar contratos 0.4.0 → núcleo 0.9.2 → moldura 0.5.0 no próprio
+  Verdaccio (`task pacotes:publicar`) e `task pacotes:alinhar-hashes` antes do `task instalar`.
