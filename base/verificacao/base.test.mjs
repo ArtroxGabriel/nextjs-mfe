@@ -902,3 +902,64 @@ test('pessoa desligada na gestao de acesso vai ao login na requisicao seguinte, 
     await ambiente.subirDominio('gestao-acesso-v2')
   }
 })
+
+// ---------------------------------------------------------------------------------------------
+// Slice K3 (auditor_b1_d1_4: V1-V5, L1-L5)
+
+test('V1 (E01f): REDIS_URL de escrita do shell nao esta presente no ambiente das zonas', () => {
+  for (const dir of ['erp-zona-1', 'erp-zona-2', 'erp-zona-acesso']) {
+    const proc = ambiente.apps.get(dir)
+    assert.ok(proc?.pid, `${dir}: processo nao encontrado`)
+    const environ = readFileSync(`/proc/${proc.pid}/environ`, 'utf8')
+    assert.ok(!environ.includes('REDIS_URL='), `${dir}: processo contem REDIS_URL de escrita em /proc/<pid>/environ`)
+  }
+  const procShell = ambiente.apps.get('erp-shell')
+  assert.ok(procShell?.pid, 'erp-shell: processo nao encontrado')
+  const environShell = readFileSync(`/proc/${procShell.pid}/environ`, 'utf8')
+  assert.ok(environShell.includes('REDIS_URL='), 'erp-shell: processo deve conter REDIS_URL')
+})
+
+test('V3 (E10d): centro de custo nao vaza no HTML nem no RSC da listagem /zona1 para o bruno', async () => {
+  const bruno = (await entrar('bruno')).cookie
+  const html = (await pedir('/zona1', { cookie: bruno })).html
+  const rsc = (await pedir('/zona1', { cookie: bruno, cabecalhos: { rsc: '1' } })).html
+  for (const [nome, corpo] of [['HTML', html], ['RSC', rsc]]) {
+    assert.ok(!/CC-10|CC-20|CC-99/.test(corpo), `centro de custo vazou no ${nome} de /zona1`)
+    assert.ok(!/"custo"|\\"custo\\"/.test(corpo), `campo de custo vazou no ${nome} de /zona1`)
+  }
+})
+
+test('V5 (XN01p): bundles estaticos do cliente (.next/static) nao vazam portas de dominio nem redis', () => {
+  const varrerArquivos = (dir) => {
+    let encontrados = []
+    for (const item of readdirSync(dir)) {
+      const p = join(dir, item)
+      if (statSync(p).isDirectory()) encontrados.push(...varrerArquivos(p))
+      else if (item.endsWith('.js')) encontrados.push(p)
+    }
+    return encontrados
+  }
+  for (const app of ['erp-shell', 'erp-zona-1', 'erp-zona-2', 'erp-zona-acesso']) {
+    const dirEstatico = join(RAIZ, app, '.next', 'static')
+    const arquivos = varrerArquivos(dirEstatico)
+    assert.ok(arquivos.length > 0, `${app}: nenhum arquivo .js encontrado em .next/static`)
+    for (const arquivo of arquivos) {
+      const conteudo = readFileSync(arquivo, 'utf8')
+      assert.ok(!/127\.0\.0\.1:40\d\d/.test(conteudo), `${arquivo} contem endereco interno de dominio 127.0.0.1:40xx`)
+      assert.ok(!/redis:\/\//.test(conteudo), `${arquivo} contem URL do Redis redis://`)
+    }
+  }
+})
+
+test('L2 (P16b): mutacao envia a versao real do recurso (versao 1 em t-2), provando que If-Match nao e fixo em 3', async () => {
+  const ana = (await entrar('ana')).cookie
+  const campos = formularios((await pedir('/zona2', { cookie: ana })).html).find((c) => c.id === 't-2')
+  assert.ok(campos, 'formulario da tarefa t-2')
+  assert.equal(campos.versao, '1', 'a tarefa t-2 deve vir com versao 1 da semente')
+  const r = await acaoPeloCliente({ ...CONCLUIR, campos, cookie: ana })
+  assert.equal(r.status, 200)
+  assert.match(r.corpo, /"destino":"\/zona1"/, 'a action concluiu com sucesso usando If-Match: 1')
+  // restaura dominio-c para nao alterar o estado das outras assercoes
+  await ambiente.derrubarDominio('dominio-c')
+  await ambiente.subirDominio('dominio-c')
+})

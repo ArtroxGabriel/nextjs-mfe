@@ -288,6 +288,8 @@ export function analisarSeguranca(fonte, nomeArquivo = 'arquivo.tsx', idZona = n
    * condicional e `+ ?? || &&` de escalares, objeto/array de escalares, JSX e ação 'use server'.
    * Recusa chamada qualquer (`JSON.stringify(p)`), identificador local e objeto espalhado.
    */
+const CAMPOS_COMPLEXOS = new Set(['lista', 'recursos', 'items', 'itens', 'dados', 'objeto', 'payload', 'cadastro', 'pessoas', 'unidades', 'tarefas', 'modulos', 'acessos', 'indicadores', 'relatorios'])
+
   const valorSeguro = (e) => {
     if (!e) return true
     if (ts.isParenthesizedExpression(e) || ts.isAsExpression(e) || ts.isNonNullExpression(e)) return valorSeguro(e.expression)
@@ -298,8 +300,12 @@ export function analisarSeguranca(fonte, nomeArquivo = 'arquivo.tsx', idZona = n
     if (ts.isTemplateExpression(e)) return e.templateSpans.every((t) => valorSeguro(t.expression))
     if (ts.isPropertyAccessExpression(e)) {
       if (nomeSensivel(e)) return false
+      if (CAMPOS_COMPLEXOS.has(e.name.text.toLowerCase())) return false
       let x = e.expression
-      while (ts.isPropertyAccessExpression(x) || ts.isNonNullExpression(x)) x = x.expression
+      while (ts.isPropertyAccessExpression(x) || ts.isNonNullExpression(x)) {
+        if (ts.isPropertyAccessExpression(x) && CAMPOS_COMPLEXOS.has(x.name.text.toLowerCase())) return false
+        x = x.expression
+      }
       return ts.isIdentifier(x) || x.kind === ts.SyntaxKind.ThisKeyword
     }
     if (ts.isConditionalExpression(e)) return valorSeguro(e.whenTrue) && valorSeguro(e.whenFalse)
@@ -377,12 +383,52 @@ export function analisarSeguranca(fonte, nomeArquivo = 'arquivo.tsx', idZona = n
     if (ts.isTemplateExpression(no) && no.head.text.includes('NEXT_PUBLIC_')) {
       achar(no, 'nome de NEXT_PUBLIC_ montado em tempo de execucao', 'P2-next-public')
     }
-    if (ehNextConfig && (ts.isPropertyAssignment(no) || ts.isShorthandPropertyAssignment(no) || ts.isMethodDeclaration(no))
-      && no.name && CHAVES_QUE_EMBUTEM.has(no.name.getText(sf).replace(/['"]/g, ''))) {
-      achar(no, `next.config com '${no.name.getText(sf)}': embute valor do servidor no bundle do navegador`, 'P2-next-public')
+    // --- chamada createElement ou dynamic com ilha de cliente ---
+    if (ts.isCallExpression(no)) {
+      if (ts.isIdentifier(no.expression) && (no.expression.text === 'createElement' || no.expression.text === 'dynamic')) {
+        const arg0 = no.arguments[0]
+        if (arg0 && (ehIlha(arg0.getText(sf)) || (ts.isArrowFunction(arg0) && /import\(/.test(arg0.getText(sf))))) {
+          achar(no, `${no.expression.text} com ilha de cliente nao permitido`, 'P0-dto-sensivel')
+        }
+      }
+      if (ts.isPropertyAccessExpression(no.expression) && no.expression.name.text === 'createElement') {
+        const arg0 = no.arguments[0]
+        if (arg0 && ehIlha(arg0.getText(sf))) {
+          achar(no, 'React.createElement com ilha de cliente nao permitido', 'P0-dto-sensivel')
+        }
+      }
     }
-    if (ehNextConfig && ts.isIdentifier(no) && no.text === 'DefinePlugin') {
-      achar(no, 'next.config com DefinePlugin: embute valor do servidor no bundle do navegador', 'P2-next-public')
+
+    // --- variaveis de ambiente em 'use client' ---
+    if (cliente && ts.isPropertyAccessExpression(no) && ts.isPropertyAccessExpression(no.expression)) {
+      if (no.expression.name.text === 'env' && ts.isIdentifier(no.expression.expression) && no.expression.expression.text === 'process') {
+        const varName = no.name.text
+        if (!PUBLICAS_PERMITIDAS.has(varName)) {
+          achar(no, `'use client' acessa variavel de ambiente '${varName}' fora da allowlist publica`, 'P2-next-public')
+        }
+      }
+    }
+
+    if (ehNextConfig) {
+      if (ts.isBinaryExpression(no) && no.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
+        const ladoEsq = no.left.getText(sf)
+        if (/(^|\.)(env|define|defineServer|webpack)\b/.test(ladoEsq) || /\[['"](env|define|defineServer|webpack)['"]\]/.test(ladoEsq)) {
+          achar(no, 'next.config com atribuicao proibida: embute valor do servidor no bundle do navegador', 'P2-next-public')
+        }
+      }
+      if ((ts.isPropertyAssignment(no) || ts.isShorthandPropertyAssignment(no) || ts.isMethodDeclaration(no))
+        && no.name && CHAVES_QUE_EMBUTEM.has(no.name.getText(sf).replace(/['"]/g, ''))) {
+        achar(no, `next.config com '${no.name.getText(sf)}': embute valor do servidor no bundle do navegador`, 'P2-next-public')
+      }
+      if (ts.isElementAccessExpression(no)) {
+        const chave = texto(no.argumentExpression)
+        if (chave && CHAVES_QUE_EMBUTEM.has(chave)) {
+          achar(no, `next.config com '${chave}': embute valor do servidor no bundle do navegador`, 'P2-next-public')
+        }
+      }
+      if (ts.isIdentifier(no) && no.text === 'DefinePlugin') {
+        achar(no, 'next.config com DefinePlugin: embute valor do servidor no bundle do navegador', 'P2-next-public')
+      }
     }
     ts.forEachChild(no, visitar)
   }
@@ -393,7 +439,8 @@ export function analisarSeguranca(fonte, nomeArquivo = 'arquivo.tsx', idZona = n
 /** Fontes de uma app inteira, fora de dependências e build (auditor_b1_d1_3, V6/V7: pasta nova não escapa). */
 export function fontesDaApp(raizDaApp) {
   const andar = (d) => !existsSync(d) ? [] : readdirSync(d).flatMap((n) => {
-    if (['node_modules', '.next', '.git', 'test'].includes(n)) return []
+    if (['node_modules', '.next', '.git'].includes(n)) return []
+    if (d === raizDaApp && n === 'test') return []
     const p = join(d, n)
     return statSync(p).isDirectory() ? andar(p) : /\.(ts|tsx|mts|cts|js|mjs|cjs|jsx)$/.test(n) && !n.endsWith('.d.ts') ? [p] : []
   })

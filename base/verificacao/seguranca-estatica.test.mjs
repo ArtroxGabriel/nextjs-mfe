@@ -3,11 +3,11 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { analisarSeguranca, varrerSeguranca, fontesDaApp } from './seguranca-estatica.mjs'
 
-const pega = (fonte, nome = 'teste.tsx', zona = null) =>
-  assert.ok(analisarSeguranca(fonte, nome, zona).length > 0, `nao pegou violacao:\n${fonte}`)
+const pega = (fonte, nome = 'teste.tsx', zona = null, opcoes = {}) =>
+  assert.ok(analisarSeguranca(fonte, nome, zona, opcoes).length > 0, `nao pegou violacao:\n${fonte}`)
 
-const passa = (fonte, nome = 'teste.tsx', zona = null) =>
-  assert.deepEqual(analisarSeguranca(fonte, nome, zona), [], `falso positivo:\n${fonte}`)
+const passa = (fonte, nome = 'teste.tsx', zona = null, opcoes = {}) =>
+  assert.deepEqual(analisarSeguranca(fonte, nome, zona, opcoes), [], `falso positivo:\n${fonte}`)
 
 test('P0-server-only: reprova import de server-only ou servidor dentro de "use client"', () => {
   pega("'use client'\nimport 'server-only'\nexport function C() { return <div /> }")
@@ -235,3 +235,20 @@ test('V5 (P09): Server Action comeca pela verificacao e so toca o nucleo dentro 
   pega(imp + "export const b = async () => ({ destino: '/x' })", 'app/x/acoes.ts')
   pega(imp + "const x = nucleo.destino('d')\n" + ok.slice(imp.length), 'app/x/acoes.ts')
 })
+
+// --- auditor_b1_d1_4: V3 (E10d, XE26), V5 (XN01p, XN02-XN04) ---
+test('V3 (E10d, XE26): reprova campos complexos e objetos aninhados passados a ilhas', () => {
+  pega("import { Ilha } from './Ilha'\nexport function P({ envio }) { return <Ilha extra={envio.lista} /> }", 'app/p.tsx', null, { componentesCliente: ['Ilha'] })
+  pega("import { Ilha } from './Ilha'\nexport function P({ p }) { return <Ilha extra={{ a: p.cadastro }} /> }", 'app/p.tsx', null, { componentesCliente: ['Ilha'] })
+  pega("import { Ilha } from './Ilha'\nexport function P() { return createElement(Ilha, { x: 1 }) }", 'app/p.tsx', null, { componentesCliente: ['Ilha'] })
+  pega("const Ilha = dynamic(() => import('./Ilha'))\nexport function P() { return <Ilha /> }", 'app/p.tsx', null, { componentesCliente: ['Ilha'] })
+})
+
+test('V5 (XN01p): reprova atribuicao a .env no next.config e process.env fora da allowlist em use client', () => {
+  pega("const config = {}; config.env = { ZONA2_INTERNO: 'x' }; export default config", 'next.config.ts')
+  pega("const config = {}; config['env'] = { ZONA2_INTERNO: 'x' }; export default config", 'next.config.ts')
+  pega("'use client'\nexport const db = process.env.DATABASE_URL")
+  pega("'use client'\nexport const secret = process.env.APP_SECRET")
+  passa("'use client'\nexport const name = process.env.NEXT_PUBLIC_APP_NAME")
+})
+

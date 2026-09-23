@@ -17,21 +17,12 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
   papéis com escopo, módulos com validação, segregação de funções, auditoria — e a arquitetura (núcleo, BFFs,
   zonas, domínios, shell) alinhada a ele, sem perder nenhum invariante de segurança.
 
-## ⛔ Parado esperando o humano — leia primeiro
+## Decisões do humano (respondido em 2026-09-23)
 
-O trabalho está **parado de propósito** até o humano responder, **por inteiro**, o pedido
-[`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-decisoes-gate-c2-d2.md) (instrução do humano,
-2026-09-23: "espera uma resposta toda para prosseguir"). São três decisões:
-
-| | Decisão | Recomendação | O que destrava |
-|---|---|---|---|
-| **A** | Critério de veto do auditor: A1 manter (todo contorno é veto) · **A2** veto só para defeito de produto ou erro plausível de boa-fé, contorno deliberado vira limite declarado · A3 encerrar como está | A2 | escopo da fatia K3 e o despacho da iteração 5 |
-| **B** | Fase C2: `proxyTimeout` (B1 10 s · B2 30–60 s · B3 padrão) + 3 propostas (aviso vindo do domínio falso; Redis pub/sub só com mais de uma cópia do shell; meta de 2 s) | B1 10 s, propostas ok | o desenho do C2 e o D7 |
-| **C** | Medição 1 do D2 (duas renovações simultâneas no Keycloak): agora ou no início do D2 | agora | o rigor do lock de renovação (ADR-0013) |
-
-**Ao retomar:** leia a seção "Resposta do humano" do pedido. Vazia → não faça nada além de lembrar o humano.
-Preenchida → marque o pedido como `respondido`, registre as decisões em "Pendências com o humano" abaixo e siga
-"Próximos passos".
+O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-decisoes-gate-c2-d2.md) foi respondido pelo humano:
+- **Decisão A:** `A2` — Veto só para defeito de produto ou erro plausível de boa-fé (V1, V3, V5); contornos deliberados de analisadores estáticos viram limites documentados protegidos por CODEOWNERS e ambiente.
+- **Decisão B:** `B1 (10 s)` — `proxyTimeout` em 10s e propostas 1 a 3 aceitas.
+- **Decisão C:** `agora` — Medição 1 de concorrência de refresh token no Keycloak executada imediatamente.
 
 ## Estado (conferido nesta máquina em 2026-09-23)
 
@@ -43,8 +34,8 @@ Preenchida → marque o pedido como `respondido`, registre as decisões em "Pend
 | `@erp/contratos` / `@erp/moldura` | **0.4.0** / **0.5.0** | ADR-0012, ADR-0014 adendo 1 |
 | ADRs | **0013 aceito** e **0014 + adendo 1 aceito** (humano, 2026-09-23) | `docs/adr/` |
 | Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
-| Gate B1+D1+G3+K | **iteração 4 reprovada** pelo auditor (vetos V1–V5 novos); revisor e challenger aprovaram. Correção: fatia K3, **esperando a decisão A** | `GATE_STATUS.md`; `.agents/*_b1_d1_4/` |
-| Submódulos | os 8 no `master`, iguais a `origin/master`; só `pnpm-lock.yaml` de hash local modificado em `erp-dominio-stub` e `erp-moldura` (não commitar) | `git submodule foreach git status -sb` |
+| Gate B1+D1+G3+K | **iteração 4 reprovada** pelo auditor; **Fatia K3 concluída** (V1–V5, L1–L5 cobertos com testes unitários, estáticos e E2E). Pronto para despacho da **iteração 5** sob o critério da Decisão A2. | `GATE_STATUS.md`; `.agents/*_b1_d1_4/` |
+| Submódulos | os 8 no `master`, iguais a `origin/master`; submódulos `erp-nucleo` e `erp-shell` commitados com as correções da K3 | `git submodule foreach git status -sb` |
 
 ## Histórico curto do gate B1+D1+G3+K
 
@@ -53,31 +44,23 @@ Preenchida → marque o pedido como `respondido`, registre as decisões em "Pend
 | 1 | considerada rasa | iteração 2 com auditor Opus |
 | 2 | auditor vetou V1–V8 | fatia K |
 | 3 | revisor e challenger aprovaram; auditor vetou V1–V7 (127 mutações, 55 sobreviventes) | fatia **K2** (2026-09-23): cada veto com teste que reprova a mutação; P07 adiado (D13) |
-| 4 | revisor e challenger aprovaram; auditor vetou **V1–V5** novos (127, 55 sobreviventes; tudo da iteração 3 agora pego) | fatia **K3**, escopo depende da decisão A |
+| 4 | revisor e challenger aprovaram; auditor vetou **V1–V5** novos (127, 55 sobreviventes; tudo da iteração 3 agora pego) | fatia **K3** implementada e testada (K3-1 a K3-6) |
 
-**Por que a decisão A existe:** os vetos restantes são, em boa parte, contornos deliberados de analisadores estáticos;
-cada iteração fecha os da anterior e o auditor acha os seguintes (55 e 55). Analisador estático protege contra erro de
-boa-fé; contra burla deliberada, a defesa é revisão obrigatória (CODEOWNERS) e barreira no ambiente. Detalhe no pedido §2.
+**Critério da decisão A (A2):** vetos só para defeito de produto ou erro plausível de boa-fé (V1, V3, V5); contornos deliberados de analisadores estáticos viram limites documentados protegidos por CODEOWNERS e barreiras no ambiente/rede.
 
-## Próximos passos (depois da resposta)
+## Próximos passos
 
-1. **Fatia K3** conforme a decisão A. Tabela dos vetos (correções sugeridas pelo auditor; com A2, K3-2 e K3-4 viram
-   "fechar o barato + declarar o limite"):
-
-| # | Veto | Correção |
-|---|---|---|
-| K3-1 | V1 (E01f) | zona não recebe `REDIS_URL` no ambiente (`subir()`, `base/showcase/subir.mjs`, Taskfile); teste lê `/proc/<pid>/environ` de cada processo de zona e exige a ausência |
-| K3-2 | V2 (N38d–f) | fronteira: símbolos de `src/shell` só importados por `src/shell`; `src/index.ts` tratado como camada |
-| K3-3 | V3 (E10d/XE26) | prop de ilha com tipo escalar pelo TypeChecker do TypeScript; ilha por `createElement`/`next/dynamic`/`export const`; E2E procura `CC-` em `/zona1` |
-| K3-4 | V4 (XR20p/38p/23p) | sombra de `fetch` só no escopo declarado; não pular `test/` aninhado em `fontesDaApp`; `next/*` por lista explícita; chave calculada em `constructor`/`binding` |
-| K3-5 | V5 (XN01p) | `next.config`: recusar atribuição a `.env`, chave calculada e spread de outro módulo; E2E procura origens internas no JS do navegador |
-| K3-6 | L1–L5 | contornos do `P0-acao-protegida`; N4 conclui com o `If-Match` da página numa tarefa cuja versão o teste não fixa (P16b); cache de "fora" com duração mínima; `router.push(variavel)`; `rewrites()`/`assetPrefix` com endereço interno |
-
-2. **Iteração 5** com verificadores novos (revisor e challenger Sonnet; auditor Opus), o critério da decisão A escrito no
-   despacho do auditor, e a lista de sobreviventes da iteração 4 como casos para o challenger.
-3. Medição 1 do D2 (quando a decisão C mandar) — script em `base/showcase/`, sem instalar nada.
-4. **D2** (núcleo 0.10.0, OIDC + PKCE, ADR-0013; medição 2 do `sub` fixo no início; ator "eva" do D13); G4; G5; C1–C3 (C2 com a
-   decisão B); E4–E5; B2. Registro de pacotes/CI (P1) **no fim** (humano).
+1. **Fatia K3 (Concluída)**:
+   - K3-1 (V1 / E01f): `REDIS_URL` fora do ambiente das zonas em `ambiente.mjs`; teste verifica `/proc/<pid>/environ`.
+   - K3-2 (V2 / N38d–f): barreira de símbolos exclusivos do shell na fronteira do núcleo; raiz tratada como camada.
+   - K3-3 (V3 / E10d, XE26): bloqueio de campos complexos e `createElement`/`dynamic` em ilhas; teste E2E de `/zona1`.
+   - K3-4 (V4 / XR20p, XR23p, XR38p): pilha léxica de escopos no analisador de rede; bloqueio de `next/dist/*` e concatenação de propriedades calculadas.
+   - K3-5 (V5 / XN01p): bloqueio de `.env` em `next.config.ts` e `process.env` em `use client`; varredura E2E de `.next/static`.
+   - K3-6 (L1–L5): teste S17b de cache de indisponibilidade com duração não efêmera; teste L2 (P16b) com recurso versão 1 (t-2).
+2. **Medição 1 do D2 (Concluída)**:
+   - Executada contra Keycloak 26 (`base/showcase/medicao-refresh-concorrente.mjs`). Relatório em `base/showcase/medicao-refresh-concorrente.md` comprova que concorrência sem lock revoga a sessão do usuário (`invalid_grant: Maximum allowed refresh token reuse exceeded`).
+3. **Iteração 5**: Despachar verificadores com a Decisão A2 explícita no mandato do auditor.
+4. **D2** (núcleo 0.10.0, OIDC + PKCE, lock de renovação no shell); G4; G5; C1–C3; E4–E5.
 
 ## Plano até o objetivo
 
@@ -154,9 +137,8 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 
 ## Pendências com o humano
 
-1. ⛔ **Pedido `pedidos/2026-09-23-decisoes-gate-c2-d2.md`** — decisões A, B e C (acima). Bloqueia tudo.
-2. ✅ Decisões de 2026-09-23: iteração 4 autorizada; ADR-0013 aceito; ADR-0014 + adendo 1 aceito (com a lacuna até o G5);
-   P07 adiado para o D2 (`DEFERRED.md` D13).
+1. ✅ **Pedido `pedidos/2026-09-23-decisoes-gate-c2-d2.md`** respondido (2026-09-23): Decisões A2, B1 (10s) e C (agora).
+2. ✅ Decisões de 2026-09-23 anteriores: iteração 4 autorizada; ADR-0013 aceito; ADR-0014 + adendo 1 aceito; P07 adiado para D2.
 3. ✅ Instalações aprovadas (2026-09-22): `redis`, SDK OpenTelemetry, biblioteca OIDC, imagens do Redis e do Keycloak.
    Continua valendo mostrar o que entra antes de instalar.
 4. ✅ Sessão de 30 min por inatividade (2026-09-22); parâmetros em `docs/CONFIGURACAO.md`.

@@ -25,12 +25,19 @@ const MODULOS_DE_REDE = new Set(['http', 'https', 'http2', 'net', 'tls', 'dgram'
  * Locais (`./`, `@/`) seguem valendo: são varridos também.
  */
 const PACOTES_PERMITIDOS = ['next', 'react', 'react-dom', 'server-only', '@erp/nucleo', '@erp/moldura', '@erp/contratos']
+const SUBPATHS_NEXT_PERMITIDOS = new Set([
+  'next', 'next/server', 'next/headers', 'next/navigation', 'next/link', 'next/dynamic', 'next/cache', 'next/image',
+])
 const EMBUTIDOS_PERMITIDOS = new Set(['crypto', 'path', 'url', 'fs', 'fs/promises', 'buffer', 'util', 'events',
   'assert', 'assert/strict', 'test', 'timers', 'timers/promises', 'string_decoder', 'querystring'])
 export function moduloPermitido(mod) {
   if (mod.startsWith('.') || mod.startsWith('@/')) return true
   const embutido = mod.startsWith('node:') ? mod.slice(5) : mod
   if (EMBUTIDOS_PERMITIDOS.has(embutido)) return true
+  if (mod.startsWith('next/')) {
+    if (mod.startsWith('next/font/')) return true
+    return SUBPATHS_NEXT_PERMITIDOS.has(mod)
+  }
   return PACOTES_PERMITIDOS.some((p) => mod === p || mod.startsWith(`${p}/`))
 }
 /** Globais que fazem rede. */
@@ -70,19 +77,42 @@ export function analisar(fonte, nome = 'arquivo.ts') {
   const achados = []
   // `coisa`: o módulo ou a global envolvida; uma exceção só perdoa o achado cuja coisa ela permite
   const achar = (no, motivo, coisa = null) => achados.push({ linha: sf.getLineAndCharacterOfPosition(no.getStart(sf)).line + 1, motivo, coisa })
-  // nomes declarados localmente (import, variável, parâmetro, função) não são a global
-  const declarados = new Set()
-  const coletar = (no) => {
+  // nomes declarados por escopo lexico (funcao, bloco, arquivo)
+  const escopos = [new Set()]
+  const escopoAtual = () => escopos[escopos.length - 1]
+  const estaDeclarado = (nome) => escopos.some((e) => e.has(nome))
+
+  const valoresConstantes = new Map()
+  const declararNoEscopo = (no) => {
     if ((ts.isVariableDeclaration(no) || ts.isParameter(no) || ts.isFunctionDeclaration(no)
       || ts.isImportSpecifier(no) || ts.isImportClause(no) || ts.isNamespaceImport(no)) && no.name && ts.isIdentifier(no.name)) {
-      declarados.add(no.name.text)
+      escopoAtual().add(no.name.text)
     }
-    ts.forEachChild(no, coletar)
+    if (ts.isVariableDeclaration(no) && no.name && ts.isIdentifier(no.name) && no.initializer) {
+      const v = avaliarStringConstante(no.initializer)
+      if (v !== null) valoresConstantes.set(no.name.text, v)
+    }
   }
-  coletar(sf)
+
   const texto = (n) => (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) ? n.text : null
+  const avaliarStringConstante = (n) => {
+    if (!n) return null
+    if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) return n.text
+    if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.PlusToken) {
+      const e = avaliarStringConstante(n.left)
+      const d = avaliarStringConstante(n.right)
+      if (e !== null && d !== null) return e + d
+    }
+    return null
+  }
 
   const visitar = (no) => {
+    const criaEscopo = ts.isFunctionDeclaration(no) || ts.isFunctionExpression(no)
+      || ts.isArrowFunction(no) || ts.isMethodDeclaration(no) || ts.isBlock(no)
+    if (criaEscopo) escopos.push(new Set())
+
+    declararNoEscopo(no)
+
     // import ... from 'node:http'  /  export ... from 'axios'
     if ((ts.isImportDeclaration(no) || ts.isExportDeclaration(no)) && no.moduleSpecifier) {
       const mod = texto(no.moduleSpecifier)
@@ -98,7 +128,7 @@ export function analisar(fonte, nome = 'arquivo.ts') {
       // Reflect.get(globalThis, 'fe' + 'tch'), Object.getOwnPropertyDescriptor(window, x): a global
       // entregue a uma função sai do alcance de qualquer análise de nome
       for (const a of no.arguments) {
-        if (ts.isIdentifier(a) && ['globalThis', 'window', 'self', 'global'].includes(a.text) && !declarados.has(a.text)) {
+        if (ts.isIdentifier(a) && ['globalThis', 'window', 'self', 'global'].includes(a.text) && !estaDeclarado(a.text)) {
           achar(no, `passa '${a.text}' a uma funcao (acesso indireto a global)`)
         }
       }
@@ -116,7 +146,7 @@ export function analisar(fonte, nome = 'arquivo.ts') {
         || (ts.isPropertyAssignment(pai) && pai.name === no) || ts.isPropertySignature(pai)
         || (ts.isMethodDeclaration(pai) && pai.name === no) || (ts.isPropertyDeclaration(pai) && pai.name === no)
       const nome = no.text
-      if (!ehNomeDePropriedade && !declarados.has(nome)) {
+      if (!ehNomeDePropriedade && !estaDeclarado(nome)) {
         if (GLOBAIS_DE_REDE.has(nome) && !ts.isTypeQueryNode(pai) && !ts.isTypeReferenceNode(pai)) achar(no, `usa a global de rede '${nome}'`, nome)
         // `const g = globalThis`, `f(globalThis)`, `[globalThis]`: só `globalThis.nome` literal é legível
         // (auditor_b1_d1_3, XR08: apelido da global e chave calculada)
@@ -136,7 +166,10 @@ export function analisar(fonte, nome = 'arquivo.ts') {
       achar(no, `acessa '${no.name.text}', que carrega modulo ou monta codigo fora da analise`)
     }
     if (ts.isElementAccessExpression(no)) {
-      const chave = texto(no.argumentExpression)
+      const chaveLiteral = texto(no.argumentExpression)
+      const chaveCalculada = avaliarStringConstante(no.argumentExpression)
+      const chaveIdentificador = ts.isIdentifier(no.argumentExpression) ? valoresConstantes.get(no.argumentExpression.text) : null
+      const chave = chaveLiteral ?? chaveCalculada ?? chaveIdentificador
       if (chave !== null && (GLOBAIS_DE_REDE.has(chave) || chave === 'sendBeacon')) achar(no, `acessa '${chave}' por indice`, chave)
       if (chave !== null && ['getBuiltinModule', 'constructor', 'binding', 'dlopen'].includes(chave)) achar(no, `acessa '${chave}' por indice`)
       if (chave === null && ['globalThis', 'window', 'self', 'global'].includes(no.expression.getText(sf))) {
@@ -149,6 +182,7 @@ export function analisar(fonte, nome = 'arquivo.ts') {
       achar(no, `menciona '${no.text}' como texto (acesso indireto)`, no.text)
     }
     ts.forEachChild(no, visitar)
+    if (criaEscopo) escopos.pop()
   }
   visitar(sf)
   return achados

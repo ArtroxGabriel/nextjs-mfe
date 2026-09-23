@@ -128,3 +128,19 @@ test('toda excecao de store de sessao e mesmo o cliente Redis (a excecao nao sob
     assert.ok(analisar(readFileSync(new URL(`../../repos/${arq}`, import.meta.url), 'utf8')).length > 0, `${arq} nao precisa de excecao`)
   }
 })
+
+// --- auditor_b1_d1_4: V4 (XR20p, XR23p, XR38p) ---
+test('V4 (XR20p): parametro fetch em uma funcao nao mascara fetch global em outra funcao', () => {
+  pega("function f(fetch) { return fetch }\nfunction g() { fetch('http://alvo/xr20') }")
+})
+
+test('V4 (XR23p): subpaths proibidos de next (ex: next/dist/compiled/ws) sao recusados', () => {
+  pega("import ws from 'next/dist/compiled/ws'")
+  pega("const { WebSocket } = require('next/dist/compiled/ws')")
+})
+
+test('V4 (XR38p): chave calculada montada por concatenacao para acessar constructor/binding e pega', () => {
+  pega("const k = 'const' + 'ructor'; const f = (()=>{})[k]")
+  pega("const b = 'bind' + 'ing'; process[b]('tcp_wrap')")
+})
+

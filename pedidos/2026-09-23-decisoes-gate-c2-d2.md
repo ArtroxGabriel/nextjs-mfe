@@ -1,7 +1,7 @@
 # Decisões pendentes: critério do gate, fase C2 e medição do D2
 
-**Estado:** aberto — o trabalho está **parado** esperando a resposta completa das três decisões (§5).
-**Aberto em:** 2026-09-23 · **Quem responde:** o humano responsável pela base.
+**Estado:** respondido em 2026-09-23 · **Quem respondeu:** humano responsável pela base.
+**Aberto em:** 2026-09-23
 
 Este documento reúne três decisões que só o humano pode tomar. Cada uma vem com o contexto
 necessário para decidir sem ler o resto do repositório, as opções, o que acontece em cada uma
@@ -206,4 +206,8 @@ C (medição 1 do D2):  agora / no início do D2
 
 ### Resposta do humano
 
-_(vazio até o humano preencher)_
+```
+A (critério do gate): A2 (veto para defeito de produto ou erro plausível de boa-fé; contorno deliberado vira limite declarado)
+B (fase C2):          B1 (valor: 10 s) · propostas 1-3: ok
+C (medição 1 do D2):  agora (verificar tolerância a concorrência de refresh token no Keycloak vs lock de enfileiramento no shell)
+```

@@ -122,8 +122,15 @@ export async function subir({ construir = false, log = false } = {}) {
    */
   const congelarApp = (dir) => { const p = apps.get(dir); if (p) process.kill(-p.pid, 'SIGSTOP') }
   const descongelarApp = (dir) => { const p = apps.get(dir); if (p) process.kill(-p.pid, 'SIGCONT') }
+  const envDaApp = (dir) => {
+    if (dir === 'erp-shell') return env
+    const envZona = { ...env }
+    delete envZona.REDIS_URL
+    return envZona
+  }
+
   const subirApp = async (dir) => {
-    apps.set(dir, iniciar('pnpm', ['start'], join(RAIZ, dir)))
+    apps.set(dir, iniciar('pnpm', ['start'], join(RAIZ, dir), envDaApp(dir)))
     const { porta, saude } = APPS.find((a) => a.dir === dir)
     await esperar(`http://localhost:${porta}${saude}`)
   }
@@ -134,7 +141,7 @@ export async function subir({ construir = false, log = false } = {}) {
    * sem mexer na instância que o resto da verificação usa. Devolve a função que a derruba.
    */
   const subirAppAvulsa = async (dir, { porta, envExtra = {}, caminho = '/' }) => {
-    const envAvulso = { ...env }
+    const envAvulso = { ...envDaApp(dir) }
     for (const [k, v] of Object.entries(envExtra)) { if (v === null) delete envAvulso[k]; else envAvulso[k] = v }
     const p = spawn('pnpm', ['exec', 'next', 'start', '-p', String(porta)], { cwd: join(RAIZ, dir), env: envAvulso, stdio: log ? 'inherit' : 'ignore', detached: true })
     processos.push(p)
@@ -159,11 +166,11 @@ export async function subir({ construir = false, log = false } = {}) {
         execFileSync('pnpm', ['build'], { cwd, env, stdio: log ? 'inherit' : 'ignore' })
       }
     }
-    for (const { dir } of APPS) apps.set(dir, iniciar('pnpm', ['start'], join(RAIZ, dir)))
+    for (const { dir } of APPS) apps.set(dir, iniciar('pnpm', ['start'], join(RAIZ, dir), envDaApp(dir)))
     for (const { porta, saude } of APPS) await esperar(`http://localhost:${porta}${saude}`)
   } catch (e) {
     derrubar()
     throw e
   }
-  return { derrubar, derrubarDominio, subirDominio, derrubarApp, subirApp, subirAppAvulsa, congelarApp, descongelarApp, sessaoDir: env.SESSAO_DIR }
+  return { derrubar, derrubarDominio, subirDominio, derrubarApp, subirApp, subirAppAvulsa, congelarApp, descongelarApp, sessaoDir: env.SESSAO_DIR, apps }
 }

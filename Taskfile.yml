@@ -15,9 +15,19 @@ tasks:
     cmd: task --list
 
   # --- preparar a máquina -------------------------------------------------------------------
-  submodulos:
+  submodulos:init:
     desc: Busca os 8 repositórios (submódulos)
-    cmd: git submodule update --init
+    cmd: git submodule update --init --recursive
+
+  submodulos:pull:
+    desc: Atualiza os 8 repositórios (submódulos) com o mesmo commit do repositório principal
+    cmd: git pull --recurse-submodules --jobs 8
+
+  submodulos:push:
+    desc: Envia commits dos submódulos para seus remotos e sincroniza o repositório principal
+    cmds:
+      - git submodule foreach 'git push origin HEAD'
+      - git push
 
   hooks:
     desc: Ativa o pre-push que recusa submódulo não enviado e núcleo fora de lockstep
