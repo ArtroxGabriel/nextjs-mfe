@@ -179,3 +179,15 @@ Gate Result: **não aceito** (humano, 2026-09-23, após revisão do orquestrador
 (a iteração 4 executou 127) e o V3 continuava aberto: `valorSeguro` barrava só uma lista de nomes, e `extra={envio.resumo}` com
 objeto passava sem achado. Correção na fatia K4 (V3 pelo verificador de tipos; limites em `DEFERRED.md` D14); iteração 6 a seguir.
 As pastas `.agents/*_b1_d1_5/` saíram com `git rm`; estão no commit `bf40a18`.
+
+## Gate — B1 + D1 + G3 (acesso v2) + fatias K3/K4, iteração 6
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_b1_d1_6 | revisor-mfe (sonnet) | REQUEST_CHANGES | .agents/reviewer_b1_d1_6/handoff.md | `iniciar` em `ambiente.mjs` descartava o 4º argumento: `envDaApp` era código morto e toda zona recebia `REDIS_URL`; V2–V5 e L2/L3 fechados com teste; XN09 sem registro |
+| challenger_b1_d1_6 | simulador-condicoes (sonnet) | REQUEST_CHANGES | .agents/challenger_b1_d1_6/handoff.md | `task verificar:redis` 96/98 (`base.test.mjs:482` e `:909`), 2x; sessão forjada da carla gravada com a `REDIS_URL` da zona abriu `/` e `/acesso`; V3 (tipo), V5, If-Match, 401/404/403 e revogação sustentam |
+| auditor | — | não despachado | — | gate já reprovado pelos dois |
+
+Gate Result: **FAIL**. A K3 nunca foi rodada no modo Redis nem, depois do teste novo, no modo arquivo. Correção **K4-3**: `iniciar(cmd, args,
+cwd, envProc)` usa o ambiente por processo; o teste `:482` injeta `REDIS_URL` de propósito para provar a recusa do produto; a parte do shell
+em `:909` só vale no modo Redis; XN09 em D14. Conferido: `task verificar:redis` 98/98, `task verificar` 95 + 3 pulados. Iteração 7 a seguir.

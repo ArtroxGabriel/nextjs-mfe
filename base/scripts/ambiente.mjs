@@ -76,8 +76,10 @@ export async function subir({ construir = false, log = false } = {}) {
     ERP_PERMITIR_IDENTIDADE_DEV: '1',
   }
   const processos = []
-  const iniciar = (cmd, args, cwd) => {
-    const p = spawn(cmd, args, { cwd, env, stdio: log ? 'inherit' : 'ignore', detached: true })
+  // `envProc` por processo: a zona sobe sem a credencial de escrita do Redis (`envDaApp`). Na K3 o
+  // quarto argumento era descartado e toda zona recebia `REDIS_URL` (challenger_b1_d1_6, V1)
+  const iniciar = (cmd, args, cwd, envProc = env) => {
+    const p = spawn(cmd, args, { cwd, env: envProc, stdio: log ? 'inherit' : 'ignore', detached: true })
     processos.push(p)
     return p
   }

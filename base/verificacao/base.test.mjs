@@ -482,7 +482,9 @@ test('V1 (auditor_b1_d1_3): no ar, as zonas conectam ao Redis so com o usuario d
 test('V1 (auditor_b1_d1_3): zona com REDIS_URL e sem REDIS_URL_ZONA nao le sessao nem conecta como o shell', { skip: !process.env.REDIS_URL_ZONA && 'so no modo Redis (task verificar:redis)', timeout: 90_000 }, async () => {
   const { cookie } = await entrar('ana')
   const antes = new Set((await conexoesRedis()).filter((c) => c.usuario === 'default').map((c) => c.id))
-  const derrubar = await ambiente.subirAppAvulsa('erp-zona-2', { porta: 3012, envExtra: { REDIS_URL_ZONA: null }, caminho: '/zona2/api/health' })
+  // a zona nunca recebe REDIS_URL (K4, V1); aqui ela é posta de propósito, para provar a recusa do produto
+  assert.ok(process.env.REDIS_URL, 'modo Redis sem REDIS_URL no ambiente da verificacao')
+  const derrubar = await ambiente.subirAppAvulsa('erp-zona-2', { porta: 3012, envExtra: { REDIS_URL_ZONA: null, REDIS_URL: process.env.REDIS_URL }, caminho: '/zona2/api/health' })
   try {
     const r = await fetch('http://localhost:3012/zona2', { headers: { cookie }, redirect: 'manual' })
     await r.text()
@@ -913,6 +915,8 @@ test('V1 (E01f): REDIS_URL de escrita do shell nao esta presente no ambiente das
     const environ = readFileSync(`/proc/${proc.pid}/environ`, 'utf8')
     assert.ok(!environ.includes('REDIS_URL='), `${dir}: processo contem REDIS_URL de escrita em /proc/<pid>/environ`)
   }
+  // dentes: no modo Redis o shell tem a variável, então a leitura de /proc acima enxerga o que procura
+  if (!process.env.REDIS_URL) return
   const procShell = ambiente.apps.get('erp-shell')
   assert.ok(procShell?.pid, 'erp-shell: processo nao encontrado')
   const environShell = readFileSync(`/proc/${procShell.pid}/environ`, 'utf8')
