@@ -115,3 +115,31 @@ L6 `obterEu` com CPF; L7 `ehSessao` aceita sessão sem token; L8 `<Link>` via ex
 Gate Result: **FAIL** (veto). A iteração 1 (PASS) fica superada. Correção: V4, V6 e L6 pelo G3 (adendo 1 do ADR-0014,
 corte seco); V1, V2, V3, V5, V7, V8 e as lacunas numa fatia de correção antes da iteração 3. Estado final conferido pelo
 orquestrador: fontes iguais ao início, `dist` instalado igual ao tarball 0.8.2 nas 4 apps, 60/60 nos dois modos.
+
+## Gate — B1 + D1 + G3 (acesso v2) + fatia K, iteração 3 (contratos 0.4.0 / núcleo 0.9.2 / moldura 0.5.0)
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_b1_d1_3 | revisor-mfe (sonnet) | APPROVE | .agents/reviewer_b1_d1_3/handoff.md | V1–V8 e L1–L8 da iteração 2 com correção e teste; notas: fallback `REDIS_URL_ZONA ?? REDIS_URL`, `valorSeguro` aceita qualquer import |
+| challenger_b1_d1_3 | simulador-condicoes (sonnet) | APPROVE | .agents/challenger_b1_d1_3/handoff.md | base no ar: v2 fora sem voltar à v1, desligado → login, ACL do Redis NOPERM, sonda 404/307/travada → 503, sem vazamento; M1: negação antes do domínio só provada indiretamente |
+| auditor_b1_d1_3 | general-purpose forense (opus) | **INTEGRITY VIOLATION** | .agents/auditor_b1_d1_3/handoff.md, mutacoes.txt, anexos/ | 127 mutações e contornos: 72 pegos, 55 sobreviventes (interrompido uma vez pelo limite de uso e retomado) |
+
+Fechado desde a iteração 2 (agora pego): fallback v1, erro do `/v2/eu` virando lista, funcionalidade ignorada, CPF/papéis no
+acesso efetivo, `force-cache`, `set` no cliente da zona, escrita com a credencial ACL, spread de DTO, health 404, `server-only` em comentário.
+
+Vetos: **V1** (inv. 15) zona conecta com `REDIS_URL` e monta o comando em tempo de execução → grava sessão forjada, 71/71; o fallback
+`?? REDIS_URL` real entrega a credencial de escrita se `REDIS_URL_ZONA` faltar. **V2** (inv. 15) escritor reexportado com outro nome em
+`/app` ou na raiz passa (teste compara nomes; regex da fronteira não aceita aspas duplas). **V3** (inv. 3) `lib/redis.ts`, `lib/nucleo.ts`,
+`lib/pagina.ts` das zonas sem `server-only` passam; `temServerOnly` aceita template literal. **V4** (inv. 2) `campos={{…, cadastro:
+JSON.stringify(p)}}` põe o CPF no HTML de `/acesso`, 71/71; `valorSeguro` aceita template, `String()`, chamada em objeto, qualquer import;
+não vê filho da ilha, barril, alias. **V5** (inv. 5) mutação: action da zona de acesso chamando o domínio antes de `acaoProtegida` passa —
+o teste de Origin usa campos da v1, que o domínio recusaria de qualquer jeito. **V6** (inv. 4) exceção do N8 pula `lib/redis.ts` inteiro;
+varredura só em `app/`, `lib/`, `proxy.ts`; alias de `globalThis`, `process.getBuiltinModule`, `node:dns`, `.constructor` passam.
+**V7** (inv. 11) `next.config` com `env:`/`compiler.define` expondo endpoint interno sem `NEXT_PUBLIC_`; `NEXT_PUBLIC_BEARER`.
+Lacunas L1–L8: health que toca domínio; semente sem ator só com `tarefas.ver`; link de Relatórios para todos; `precisaConstruir` e checagem
+de portas sem teste; `<Link>`/`router.push`; `TIMEOUT_PADRAO_MS` só por texto, TTL da sonda, só "saudável" em cache, módulo com nome vazio;
+N53 (`same-site`), G02, G05 do mock.
+
+Gate Result: **FAIL** (veto). Revisor e challenger aprovaram; a correção (fatia K2 no `RETOMADA.md`) vai para a iteração 4, com os três
+verificadores novos (o auditor vetou comportamento que o challenger não exercitou: P09 e E10c). Estado conferido pelo orquestrador ao fim:
+fontes iguais ao início, `dist` = tarball 0.9.2 nas 4 apps, portas livres, `tee` residual do auditor encerrado.

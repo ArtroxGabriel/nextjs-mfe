@@ -1,0 +1,1 @@
+"$132\r\n{\"sub\":\"forjado\",\"nome\":\"Forjado pela zona\",\"accessToken\":\"dev.carla.00000000-0000-0000-0000-000000000000\",\"expiraEm\":1790126110513}\r\n:590919\r\n"

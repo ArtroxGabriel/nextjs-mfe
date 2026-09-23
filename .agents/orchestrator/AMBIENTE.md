@@ -87,5 +87,12 @@
   ou com checklist (revisor, challenger, re-rodar scripts). Escolha o `model` em todo despacho.
 - Nunca reusar um verificador que já entregou handoff: gate novo, agente novo.
 - Pesquisa aberta ou busca na web: escrever em `pedidos/AAAA-MM-DD-<assunto>.md` e esperar o humano.
+- **Limite de uso interrompe agente no meio de uma mutação.** Em 2026-09-22 o auditor parou duas vezes (uma por engano do
+  orquestrador, outra pelo limite da API) com mutação aplicada no `dist` instalado e um `tee` pendurado. Ao retomar: conferir
+  fontes (`git status` dos submódulos), `dist` contra o tarball do Verdaccio (hash da árvore), portas e processos (`ps`), e
+  retomar o MESMO agente com SendMessage dizendo o que achou. Nunca parar um verificador por conta própria.
+- **Mutação que só o comportamento revela exige o challenger certo.** Na iteração 3, P09 (action chamando o domínio antes da
+  checagem) e E10c (CPF numa prop de ilha) passaram 71/71 e só o auditor viu. No despacho do challenger, listar as mutações
+  sobreviventes da rodada anterior como casos a exercitar com a base no ar.
 - O auto mode pode bloquear `pnpm install`, `git` em submódulos e `push`. Quando bloquear, salve o
   estado em `RETOMADA.md`, explique o que falta e peça a liberação.
