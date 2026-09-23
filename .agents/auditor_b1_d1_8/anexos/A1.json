@@ -1,0 +1,316 @@
+[
+ {
+  "id": "N08b",
+  "inv": "inv. 3",
+  "desc": "import 'server-only' trocado por template literal com o import na linha do meio",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/adaptadores/sessao-redis.ts",
+    "de": "import 'server-only'\n",
+    "para": "export const _x = `\nimport 'server-only'\n`\n"
+   }
+  ]
+ },
+ {
+  "id": "N36b",
+  "inv": "config",
+  "desc": "TIMEOUT_PADRAO_MS lido mas nao usado (60 s fixo)",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/interno/destinos.ts",
+    "de": "AbortSignal.timeout(d.timeoutMs ?? TIMEOUT_PADRAO_MS)",
+    "para": "AbortSignal.timeout(d.timeoutMs ?? 60_000)"
+   }
+  ]
+ },
+ {
+  "id": "N53",
+  "inv": "inv. 5",
+  "desc": "origemPermitida aceita Sec-Fetch-Site same-site",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/fabricas/criarPaginas.ts",
+    "de": "if (site && site !== 'same-origin') return false",
+    "para": "if (site && site !== 'same-origin' && site !== 'same-site') return false"
+   }
+  ]
+ },
+ {
+  "id": "A05",
+  "inv": "-",
+  "desc": "reduzirEu aceita nome de modulo vazio",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/interno/acesso-v2.ts",
+    "de": "if (typeof m.nome !== 'string' || m.nome.length === 0) return invalido()",
+    "para": "if (typeof m.nome !== 'string') return invalido()"
+   }
+  ]
+ },
+ {
+  "id": "N38b",
+  "inv": "inv. 15",
+  "desc": "/app reexporta sessaoRedisDeEscrita as lojaDeSessao, aspas duplas",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/app/index.ts",
+    "de": "} from '../fabricas/criarPaginas.js'\n",
+    "para": "} from '../fabricas/criarPaginas.js'\nexport { sessaoRedisDeEscrita as lojaDeSessao } from \"../adaptadores/sessao-redis.js\"\n"
+   }
+  ]
+ },
+ {
+  "id": "N38c",
+  "inv": "inv. 15",
+  "desc": "raiz reexporta sessaoArquivoDeEscrita as sessaoArquivoCompleta",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/index.ts",
+    "de": "export { acessoHttp } from './adaptadores/acesso-http.js'\n",
+    "para": "export { acessoHttp } from './adaptadores/acesso-http.js'\nexport { sessaoArquivoDeEscrita as sessaoArquivoCompleta } from './adaptadores/sessao-arquivo.js'\n"
+   }
+  ]
+ },
+ {
+  "id": "N38d",
+  "inv": "inv. 15",
+  "desc": "raiz exporta embrulho do escritor: sessaoRedisCompleta = (...a) => sessaoRedisDeEscrita(...a)",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/index.ts",
+    "de": "export { acessoHttp } from './adaptadores/acesso-http.js'\n",
+    "para": "export { acessoHttp } from './adaptadores/acesso-http.js'\nimport { sessaoRedisDeEscrita } from './adaptadores/sessao-redis.js'\nexport const sessaoRedisCompleta = (...a: Parameters<typeof sessaoRedisDeEscrita>) => sessaoRedisDeEscrita(...a)\n"
+   }
+  ]
+ },
+ {
+  "id": "N38e",
+  "inv": "inv. 15",
+  "desc": "/app exporta objeto { criar: criarNucleoDoShell }",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/app/index.ts",
+    "de": "} from '../fabricas/criarPaginas.js'\n",
+    "para": "} from '../fabricas/criarPaginas.js'\nimport { criarNucleoDoShell } from '../fabricas/criarNucleo.js'\nexport const kit = { criar: criarNucleoDoShell }\n"
+   }
+  ]
+ },
+ {
+  "id": "N38f",
+  "inv": "inv. 15",
+  "desc": "/app exporta criarNucleoCompleto = (c) => criarNucleoDoShell(c)",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/app/index.ts",
+    "de": "} from '../fabricas/criarPaginas.js'\n",
+    "para": "} from '../fabricas/criarPaginas.js'\nimport { criarNucleoDoShell } from '../fabricas/criarNucleo.js'\nexport const criarNucleoCompleto = (c: Parameters<typeof criarNucleoDoShell>[0]) => criarNucleoDoShell(c)\n"
+   }
+  ]
+ },
+ {
+  "id": "N38g",
+  "inv": "inv. 15",
+  "desc": "NOVA: embrulho declarado no PROPRIO arquivo definidor (fabricas/criarNucleo.ts: criarNucleoCompleto = (c) => criarNucleoDoShell(c)) e reexportado por /app",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/fabricas/criarNucleo.ts",
+    "de": "export function criarNucleoDoShell(",
+    "para": "export const criarNucleoCompleto = (c: ConfigDoNucleoDoShell) => criarNucleoDoShell(c)\nexport function criarNucleoDoShell("
+   },
+   {
+    "arquivo": "repos/erp-nucleo/src/app/index.ts",
+    "de": "} from '../fabricas/criarPaginas.js'\n",
+    "para": "} from '../fabricas/criarPaginas.js'\nexport { criarNucleoCompleto } from '../fabricas/criarNucleo.js'\n"
+   }
+  ]
+ },
+ {
+  "id": "N38h",
+  "inv": "inv. 15",
+  "desc": "NOVA: embrulho no arquivo definidor (adaptadores/sessao-redis.ts: sessaoRedisPlena) reexportado pela raiz",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/adaptadores/sessao-redis.ts",
+    "de": "export function sessaoRedisDeEscrita(",
+    "para": "export const sessaoRedisPlena = (c: ConfigSessaoRedis) => sessaoRedisDeEscrita(c)\nexport function sessaoRedisDeEscrita("
+   },
+   {
+    "arquivo": "repos/erp-nucleo/src/index.ts",
+    "de": "export { acessoHttp } from './adaptadores/acesso-http.js'\n",
+    "para": "export { acessoHttp } from './adaptadores/acesso-http.js'\nexport { sessaoRedisPlena } from './adaptadores/sessao-redis.js'\n"
+   }
+  ]
+ },
+ {
+  "id": "N38i",
+  "inv": "inv. 15",
+  "desc": "NOVA: o leitor da raiz (sessaoRedis) devolve o escritor quando a config pede escrita",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/adaptadores/sessao-redis.ts",
+    "de": "export function sessaoRedis(cfg: ConfigSessaoRedis<ClienteRedisDeLeitura>): LeitorDeSessao {\n",
+    "para": "export function sessaoRedis(cfg: ConfigSessaoRedis<ClienteRedisDeLeitura> & { escrita?: boolean }): LeitorDeSessao {\n  if (cfg.escrita) return sessaoRedisDeEscrita(cfg as ConfigSessaoRedis)\n"
+   }
+  ]
+ },
+ {
+  "id": "N38k",
+  "inv": "inv. 15",
+  "desc": "NOVA: adaptador de escrita novo (adaptadores/sessao-memoria.ts, sessaoMemoriaDeEscrita com gravar/remover) exportado pela raiz",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/adaptadores/sessao-memoria.ts",
+    "novo": true,
+    "para": "import 'server-only'\nimport type { StoreDeSessao, SessaoArmazenada } from '../portas/sessao.js'\nexport function sessaoMemoriaDeEscrita(): StoreDeSessao {\n  const m = new Map<string, SessaoArmazenada>()\n  return {\n    async ler(id) { return m.get(id) ?? null },\n    async gravar(id, s) { m.set(id, s) },\n    async remover(id) { m.delete(id) },\n  } as StoreDeSessao\n}\n"
+   },
+   {
+    "arquivo": "repos/erp-nucleo/src/index.ts",
+    "de": "export { acessoHttp } from './adaptadores/acesso-http.js'\n",
+    "para": "export { acessoHttp } from './adaptadores/acesso-http.js'\nexport { sessaoMemoriaDeEscrita } from './adaptadores/sessao-memoria.js'\n"
+   }
+  ]
+ },
+ {
+  "id": "G02",
+  "inv": "mock",
+  "desc": "token dev sem ancora ^",
+  "cmd": "cd repos/erp-dominio-stub && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-dominio-stub/src/gestao-acesso-v2/servidor.mjs",
+    "de": "/^Bearer dev\\.",
+    "para": "/Bearer dev\\."
+   }
+  ]
+ },
+ {
+  "id": "G05",
+  "inv": "mock",
+  "desc": "/v2/eu sem usuario responde 200 {}",
+  "cmd": "cd repos/erp-dominio-stub && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-dominio-stub/src/gestao-acesso-v2/servidor.mjs",
+    "de": "if (!usuario) return erro(res, 401, 'SESSAO_EXPIRADA')\n      const p = pessoa(usuario)",
+    "para": "if (!usuario) return json(res, 200, {})\n      const p = pessoa(usuario)"
+   }
+  ]
+ },
+ {
+  "id": "S05",
+  "inv": "L3",
+  "desc": "TTL padrao da sonda 1 s -> 10 s",
+  "cmd": "cd repos/erp-shell && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-shell/lib/saude-zonas.ts",
+    "de": "lerNumeroPositivo(process.env.ERP_SONDA_TTL_MS, 1000,",
+    "para": "lerNumeroPositivo(process.env.ERP_SONDA_TTL_MS, 10_000,"
+   }
+  ]
+ },
+ {
+  "id": "S17",
+  "inv": "L1",
+  "desc": "so \"saudavel\" entra no cache",
+  "cmd": "cd repos/erp-shell && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-shell/lib/saude-zonas.ts",
+    "de": "cache.set(urlSaude, { saudavel, expiraEm: Date.now() + ttlMs })",
+    "para": "if (saudavel) cache.set(urlSaude, { saudavel, expiraEm: Date.now() + ttlMs })"
+   }
+  ]
+ },
+ {
+  "id": "S17b",
+  "inv": "L1",
+  "desc": "\"fora\" entra no cache com validade de 1 ms",
+  "cmd": "cd repos/erp-shell && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-shell/lib/saude-zonas.ts",
+    "de": "cache.set(urlSaude, { saudavel, expiraEm: Date.now() + ttlMs })",
+    "para": "cache.set(urlSaude, { saudavel, expiraEm: Date.now() + (saudavel ? ttlMs : 1) })"
+   }
+  ]
+ },
+ {
+  "id": "S17c",
+  "inv": "L1",
+  "desc": "NOVA: \"fora\" no cache por 1/10 do TTL (100 ms com TTL 1 s)",
+  "cmd": "cd repos/erp-shell && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-shell/lib/saude-zonas.ts",
+    "de": "cache.set(urlSaude, { saudavel, expiraEm: Date.now() + ttlMs })",
+    "para": "cache.set(urlSaude, { saudavel, expiraEm: Date.now() + (saudavel ? ttlMs : ttlMs / 10) })"
+   }
+  ]
+ },
+ {
+  "id": "AM1",
+  "inv": "verificacao",
+  "desc": "precisaConstruir ignora app/",
+  "cmd": "node --test base/scripts/*.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "const ENTRADAS_DO_BUILD = ['app', ",
+    "para": "const ENTRADAS_DO_BUILD = ["
+   }
+  ]
+ },
+ {
+  "id": "AM2",
+  "inv": "verificacao",
+  "desc": "precisaConstruir ignora zonas.json e acesso.manifesto.ts",
+  "cmd": "node --test base/scripts/*.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": ", 'zonas.json', 'acesso.manifesto.ts']",
+    "para": "]"
+   }
+  ]
+ },
+ {
+  "id": "AM3",
+  "inv": "verificacao",
+  "desc": "subir nao confere porta ocupada",
+  "cmd": "node --test base/scripts/*.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "if (!livre) throw new Error(",
+    "para": "if (false && !livre) throw new Error("
+   }
+  ]
+ },
+ {
+  "id": "AM1b",
+  "inv": "verificacao",
+  "desc": "maisRecente so olha o primeiro nivel da pasta",
+  "cmd": "node --test base/scripts/*.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "readdirSync(caminho).map((n) => maisRecente(join(caminho, n)))",
+    "para": "readdirSync(caminho).map((n) => statSync(join(caminho, n)).mtimeMs)"
+   }
+  ]
+ }
+]

@@ -59,7 +59,15 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 4. ❌ **Iteração 7:** reprovada pelo challenger: o Redis do showcase aceitava escrita sem senha. ✅ **K4-4** corrige
    (`GATE_STATUS.md`); `task verificar:redis` 100/100, `task verificar` 96 + 4 pulados. **Outra máquina: recriar o Redis
    (`task showcase:subir`) para valer a senha nova.**
-5. ⬜ **Iteração 8:** revisor e challenger (Sonnet) e auditor forense (Opus) com o critério A2 escrito no despacho e o
+5. ⏳ **Iteração 8** (retomada exata, 2026-09-23 ~20h40, cota semanal em 95%): revisor e challenger **aprovaram**
+   (handoffs commitados). **Auditor (Opus) rodando**, parcial em `.agents/auditor_b1_d1_8/` (commitado como estava):
+   lotes A1, A2 e B estático feitos (91 mutações); faltam o catálogo da iteração 4 no ponta a ponta, as mutações novas
+   da K3/K4 e a conferência do estado final. Achados parciais (ainda sem veredito): fronteira do núcleo por lista de nomes
+   (N38g–l), `fetch` declarado em `constructor`/`catch`/`for` esconde o global (XR20q/r), correção do XR38p sem teste (SR3).
+   **Se a sessão cair:** (1) `git status` e `git -C repos/<x> status`: reverter qualquer mutação que o auditor deixou
+   (ele mutava o `Taskfile.yml` ao parar); (2) conferir chaves forjadas no Redis; (3) despachar um auditor novo
+   (`auditor_b1_d1_8b`) que continue do `mutacoes.txt`, sem refazer o que já tem linha.
+   Antes, a iteração estava descrita assim: revisor e challenger (Sonnet) e auditor forense (Opus) com o critério A2 escrito no despacho e o
    catálogo de 127 mutações da iteração 4 como piso.
 6. Depois: **D2** (núcleo 0.10.0, OIDC + PKCE, lock de renovação), G4/G5, C1–C3. **Humano (2026-09-23): refresh token
    sem reuso** (`refreshTokenMaxReuse = 0`); o lock no Redis é requisito e o teste de corrida prova que duas renovações

@@ -1,0 +1,602 @@
+[
+ {
+  "id": "E02",
+  "inv": "inv. 3",
+  "desc": "zona 1 lib/redis.ts sem import server-only",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/lib/redis.ts",
+    "de": "import 'server-only'\n",
+    "para": ""
+   }
+  ]
+ },
+ {
+  "id": "E02b",
+  "inv": "inv. 3",
+  "desc": "zona 1 lib/nucleo.ts sem import server-only",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/lib/nucleo.ts",
+    "de": "import 'server-only'\n",
+    "para": ""
+   }
+  ]
+ },
+ {
+  "id": "E02c",
+  "inv": "inv. 3",
+  "desc": "zona 2 lib/pagina.ts sem import server-only",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-2/lib/pagina.ts",
+    "de": "import 'server-only'\n",
+    "para": ""
+   }
+  ]
+ },
+ {
+  "id": "E10c",
+  "inv": "inv. 2",
+  "desc": "acesso/page.tsx: campos com cadastro: JSON.stringify(p)",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-acesso/app/acesso/page.tsx",
+    "de": "campos={{ pessoa: p.id, modulo: m.id }}>",
+    "para": "campos={{ pessoa: p.id, modulo: m.id, cadastro: JSON.stringify(p) }}>"
+   }
+  ]
+ },
+ {
+  "id": "E10b",
+  "inv": "inv. 2",
+  "desc": "zona1: `${JSON.stringify(recursos)}` na prop texto da ilha",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "{recursos && <BotaoDeAviso texto={`${recursos.length} recursos visíveis para você`} />}",
+    "para": "{recursos && <BotaoDeAviso texto={`${JSON.stringify(recursos)}`} />}"
+   }
+  ]
+ },
+ {
+  "id": "XR15",
+  "inv": "inv. 4 (N8)",
+  "desc": "fetch para fora dentro do arquivo da excecao (zona 1 lib/redis.ts)",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/lib/redis.ts",
+    "de": "import 'server-only'\n",
+    "para": "import 'server-only'\nexport const _v = () => fetch('http://127.0.0.1:4999/xr15')\n"
+   }
+  ]
+ },
+ {
+  "id": "XR16",
+  "inv": "inv. 4 (N8)",
+  "desc": "fetch em pasta nova fora de app/ e lib/ (servicos/rede.ts)",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/servicos/rede.ts",
+    "novo": true,
+    "para": "import 'server-only'\nexport const v = () => fetch('http://127.0.0.1:4999/xr16')\n"
+   }
+  ]
+ },
+ {
+  "id": "XE41",
+  "inv": "inv. 11",
+  "desc": "NEXT_PUBLIC_API_TOKEN em componentes/x.ts",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/componentes/x.ts",
+    "novo": true,
+    "para": "export const t = process.env.NEXT_PUBLIC_API_TOKEN\n"
+   }
+  ]
+ },
+ {
+  "id": "XR17",
+  "inv": "inv. 4 (N8)",
+  "desc": "excecao nova (lib/dominio-a.ts da zona 1) com motivo longo",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/saida-de-rede.mjs",
+    "de": "  'erp-zona-2/scripts/registrar-manifesto.ts': { permite: ['fetch'], motivo: DEPLOY },\n",
+    "para": "  'erp-zona-2/scripts/registrar-manifesto.ts': { permite: ['fetch'], motivo: DEPLOY },\n  'erp-zona-1/lib/dominio-a.ts': { permite: ['fetch'], motivo: 'cliente do dominio A com timeout e sem seguir redirecionamento, auditado' },\n"
+   }
+  ]
+ },
+ {
+  "id": "T1",
+  "inv": "inv. 2",
+  "desc": "NOVA: objeto opcional: extra={primeiro?.custo} (custo?: {valor, centro})",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/BotaoDeAviso.tsx",
+    "de": "export function BotaoDeAviso({ texto }: { texto: string })",
+    "para": "export function BotaoDeAviso({ texto }: { texto: string; extra?: unknown })"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "  return (\n    <>\n      <h1>Painel da zona 1</h1>",
+    "para": "  const primeiro = recursos?.[0]\n  return (\n    <>\n      <h1>Painel da zona 1</h1>"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "{recursos && <BotaoDeAviso texto={`${recursos.length} recursos visíveis para você`} />}",
+    "para": "{recursos && <BotaoDeAviso texto=\"x\" extra={primeiro?.custo} />}"
+   }
+  ]
+ },
+ {
+  "id": "T2",
+  "inv": "inv. 2",
+  "desc": "NOVA: uniao objeto|string: envio.resumo: string | Recurso[]",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/BotaoDeAviso.tsx",
+    "de": "export function BotaoDeAviso({ texto }: { texto: string })",
+    "para": "export function BotaoDeAviso({ texto }: { texto: string; extra?: unknown })"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "  return (\n    <>\n      <h1>Painel da zona 1</h1>",
+    "para": "  const envio: { resumo: string | NonNullable<typeof recursos> } = { resumo: recursos ?? 'nenhum' }\n  return (\n    <>\n      <h1>Painel da zona 1</h1>"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "{recursos && <BotaoDeAviso texto={`${recursos.length} recursos visíveis para você`} />}",
+    "para": "{recursos && <BotaoDeAviso texto=\"x\" extra={envio.resumo} />}"
+   }
+  ]
+ },
+ {
+  "id": "T3",
+  "inv": "inv. 2",
+  "desc": "NOVA: array de string com o centro de custo: envio.centros: string[]",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/BotaoDeAviso.tsx",
+    "de": "export function BotaoDeAviso({ texto }: { texto: string })",
+    "para": "export function BotaoDeAviso({ texto }: { texto: string; extra?: unknown })"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "  return (\n    <>\n      <h1>Painel da zona 1</h1>",
+    "para": "  const envio = { centros: (recursos ?? []).map((r) => r.custo?.centro ?? '') }\n  return (\n    <>\n      <h1>Painel da zona 1</h1>"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "{recursos && <BotaoDeAviso texto={`${recursos.length} recursos visíveis para você`} />}",
+    "para": "{recursos && <BotaoDeAviso texto=\"x\" extra={envio.centros} />}"
+   }
+  ]
+ },
+ {
+  "id": "T4",
+  "inv": "inv. 2",
+  "desc": "NOVA: tipo generico: Aviso<T>({ v }: { v: { item: T } }) passa v.item a ilha",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/BotaoDeAviso.tsx",
+    "de": "export function BotaoDeAviso({ texto }: { texto: string })",
+    "para": "export function BotaoDeAviso({ texto }: { texto: string; extra?: unknown })"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "  return (\n    <>\n      <h1>Painel da zona 1</h1>",
+    "para": "  function Aviso<T>({ v }: { v: { item: T } }) { return <BotaoDeAviso texto=\"x\" extra={v.item} /> }\n  return (\n    <>\n      <h1>Painel da zona 1</h1>"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "{recursos && <BotaoDeAviso texto={`${recursos.length} recursos visíveis para você`} />}",
+    "para": "{recursos && <Aviso v={{ item: recursos }} />}"
+   }
+  ]
+ },
+ {
+  "id": "T5",
+  "inv": "inv. 2",
+  "desc": "NOVA: any implicito: JSON.parse(JSON.stringify(recursos)) em envio.copia",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/BotaoDeAviso.tsx",
+    "de": "export function BotaoDeAviso({ texto }: { texto: string })",
+    "para": "export function BotaoDeAviso({ texto }: { texto: string; extra?: unknown })"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "  return (\n    <>\n      <h1>Painel da zona 1</h1>",
+    "para": "  const envio = { copia: JSON.parse(JSON.stringify(recursos)) }\n  return (\n    <>\n      <h1>Painel da zona 1</h1>"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "{recursos && <BotaoDeAviso texto={`${recursos.length} recursos visíveis para você`} />}",
+    "para": "{recursos && <BotaoDeAviso texto=\"x\" extra={envio.copia} />}"
+   }
+  ]
+ },
+ {
+  "id": "T6",
+  "inv": "inv. 2",
+  "desc": "NOVA: tipo {} (qualquer nao-nulo): envio.resumo: {}",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/BotaoDeAviso.tsx",
+    "de": "export function BotaoDeAviso({ texto }: { texto: string })",
+    "para": "export function BotaoDeAviso({ texto }: { texto: string; extra?: unknown })"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "  return (\n    <>\n      <h1>Painel da zona 1</h1>",
+    "para": "  const envio: { resumo: {} } = { resumo: recursos ?? 0 }\n  return (\n    <>\n      <h1>Painel da zona 1</h1>"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "{recursos && <BotaoDeAviso texto={`${recursos.length} recursos visíveis para você`} />}",
+    "para": "{recursos && <BotaoDeAviso texto=\"x\" extra={envio.resumo} />}"
+   }
+  ]
+ },
+ {
+  "id": "T7",
+  "inv": "inv. 2",
+  "desc": "NOVA: cast mentiroso: extra={envio.resumo as unknown as string}",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/BotaoDeAviso.tsx",
+    "de": "export function BotaoDeAviso({ texto }: { texto: string })",
+    "para": "export function BotaoDeAviso({ texto }: { texto: string; extra?: unknown })"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "  return (\n    <>\n      <h1>Painel da zona 1</h1>",
+    "para": "  const envio = { resumo: recursos }\n  return (\n    <>\n      <h1>Painel da zona 1</h1>"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "{recursos && <BotaoDeAviso texto={`${recursos.length} recursos visíveis para você`} />}",
+    "para": "{recursos && <BotaoDeAviso texto=\"x\" extra={envio.resumo as unknown as string} />}"
+   }
+  ]
+ },
+ {
+  "id": "T8",
+  "inv": "inv. 2",
+  "desc": "NOVA: objeto por elemento: extra={recursos[0]}",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/BotaoDeAviso.tsx",
+    "de": "export function BotaoDeAviso({ texto }: { texto: string })",
+    "para": "export function BotaoDeAviso({ texto }: { texto: string; extra?: unknown })"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "  return (\n    <>\n      <h1>Painel da zona 1</h1>",
+    "para": "\n  return (\n    <>\n      <h1>Painel da zona 1</h1>"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "{recursos && <BotaoDeAviso texto={`${recursos.length} recursos visíveis para você`} />}",
+    "para": "{recursos && <BotaoDeAviso texto=\"x\" extra={recursos[0]} />}"
+   }
+  ]
+ },
+ {
+  "id": "TA1",
+  "inv": "inv. 2",
+  "desc": "NOVA: ehTipoEscalar com some em vez de every na uniao",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/seguranca-estatica.mjs",
+    "de": "t.types.every(ehTipoEscalar)",
+    "para": "t.types.some(ehTipoEscalar)"
+   }
+  ]
+ },
+ {
+  "id": "TA2",
+  "inv": "inv. 2",
+  "desc": "NOVA: ESCALARES inclui Object",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/seguranca-estatica.mjs",
+    "de": "| ts.TypeFlags.Null | ts.TypeFlags.Undefined | ts.TypeFlags.Void",
+    "para": "| ts.TypeFlags.Null | ts.TypeFlags.Undefined | ts.TypeFlags.Void | ts.TypeFlags.Object"
+   }
+  ]
+ },
+ {
+  "id": "TA3",
+  "inv": "inv. 2",
+  "desc": "NOVA: x.campo volta a passar sem o verificador de tipos (revert do K4-1)",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/seguranca-estatica.mjs",
+    "de": "return !tipos || ehTipoEscalar(tipos.getTypeAtLocation(e))",
+    "para": "return true"
+   }
+  ]
+ },
+ {
+  "id": "TA4",
+  "inv": "inv. 2",
+  "desc": "NOVA: programaDaApp ignora os arquivos varridos (so cfg.fileNames)",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/seguranca-estatica.mjs",
+    "de": "rootNames: [...new Set([...(cfg?.fileNames ?? []), ...arquivos])]",
+    "para": "rootNames: [...new Set([...(cfg?.fileNames ?? [])])]"
+   }
+  ]
+ },
+ {
+  "id": "TA5",
+  "inv": "inv. 2",
+  "desc": "NOVA: programaDaApp sem allowJs (.js/.mjs sem tipo)",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/seguranca-estatica.mjs",
+    "de": "allowJs: true, noEmit: true",
+    "para": "allowJs: false, noEmit: true"
+   }
+  ]
+ },
+ {
+  "id": "TA6",
+  "inv": "inv. 2",
+  "desc": "NOVA: any conta como escalar",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/seguranca-estatica.mjs",
+    "de": "(t.flags & ESCALARES) !== 0)",
+    "para": "(t.flags & (ESCALARES | ts.TypeFlags.Any)) !== 0)"
+   }
+  ]
+ },
+ {
+  "id": "TA9",
+  "inv": "inv. 2",
+  "desc": "NOVA: varrerSeguranca deixa de passar o programa (apps reais sem tipo)",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/seguranca-estatica.mjs",
+    "de": "{ raizDaApp, exigirServerOnly, programa })",
+    "para": "{ raizDaApp, exigirServerOnly })"
+   }
+  ]
+ },
+ {
+  "id": "TA10",
+  "inv": "inv. 2",
+  "desc": "NOVA: sem programa, x.campo passa (falha aberta) mesmo com CAMPOS_COMPLEXOS vazio",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/seguranca-estatica.mjs",
+    "de": "const CAMPOS_COMPLEXOS = new Set(['lista',",
+    "para": "const CAMPOS_COMPLEXOS = new Set([] || ['lista',"
+   }
+  ]
+ },
+ {
+  "id": "XN09a",
+  "inv": "inv. 11",
+  "desc": "NOVA: zona 1 next.config: assetPrefix por shorthand de variavel lida do ambiente",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/next.config.ts",
+    "de": "const config: NextConfig = {\n  poweredByHeader: false,\n  // Prefixo exclusivo de assets (limitação 5). O shell reencaminha /zona1-static/* para cá.\n  assetPrefix: '/zona1-static',",
+    "para": "const assetPrefix = process.env.ZONA1_ASSET_PREFIX ?? '/zona1-static'\nconst config: NextConfig = {\n  poweredByHeader: false,\n  assetPrefix,"
+   }
+  ]
+ },
+ {
+  "id": "XN09b",
+  "inv": "inv. 11",
+  "desc": "NOVA: zona 1 next.config: config.assetPrefix = process.env.X por atribuicao",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/next.config.ts",
+    "de": "export default config",
+    "para": "if (process.env.ZONA1_ASSET_PREFIX) config.assetPrefix = process.env.ZONA1_ASSET_PREFIX\nexport default config"
+   }
+  ]
+ },
+ {
+  "id": "XN09c",
+  "inv": "inv. 11",
+  "desc": "NOVA: analisador: regra XN09 removida",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/seguranca-estatica.mjs",
+    "de": "if (ts.isPropertyAssignment(no) && ['assetPrefix', 'basePath'].includes(",
+    "para": "if (false && ts.isPropertyAssignment(no) && ['assetPrefix', 'basePath'].includes("
+   }
+  ]
+ },
+ {
+  "id": "SR1",
+  "inv": "inv. 4 (N8)",
+  "desc": "NOVA: bloco nao abre escopo",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/saida-de-rede.mjs",
+    "de": "|| ts.isArrowFunction(no) || ts.isMethodDeclaration(no) || ts.isBlock(no)",
+    "para": "|| ts.isArrowFunction(no) || ts.isMethodDeclaration(no)"
+   }
+  ]
+ },
+ {
+  "id": "SR2",
+  "inv": "inv. 4 (N8)",
+  "desc": "NOVA: volta o conjunto unico por arquivo (revert do XR20)",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/saida-de-rede.mjs",
+    "de": "if (criaEscopo) escopos.push(new Set())",
+    "para": "if (false) escopos.push(new Set())"
+   }
+  ]
+ },
+ {
+  "id": "SR3",
+  "inv": "inv. 4 (N8)",
+  "desc": "NOVA: fontesDaApp volta a pular test/ em qualquer nivel",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/seguranca-estatica.mjs",
+    "de": "if (d === raizDaApp && n === 'test') return []",
+    "para": "if (n === 'test') return []"
+   }
+  ]
+ },
+ {
+  "id": "SR4",
+  "inv": "inv. 4 (N8)",
+  "desc": "NOVA: todo next/* permitido de novo",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/saida-de-rede.mjs",
+    "de": "    return SUBPATHS_NEXT_PERMITIDOS.has(mod)\n",
+    "para": "    return true\n"
+   }
+  ]
+ },
+ {
+  "id": "SR5",
+  "inv": "inv. 4 (N8)",
+  "desc": "NOVA: chave por identificador constante ignorada",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/saida-de-rede.mjs",
+    "de": "const chave = chaveLiteral ?? chaveCalculada ?? chaveIdentificador",
+    "para": "const chave = chaveLiteral ?? chaveCalculada"
+   }
+  ]
+ },
+ {
+  "id": "SR6",
+  "inv": "inv. 4 (N8)",
+  "desc": "NOVA: chave calculada por concatenacao ignorada",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/saida-de-rede.mjs",
+    "de": "const chave = chaveLiteral ?? chaveCalculada ?? chaveIdentificador",
+    "para": "const chave = chaveLiteral ?? chaveIdentificador"
+   }
+  ]
+ },
+ {
+  "id": "SR7",
+  "inv": "inv. 4 (N8)",
+  "desc": "NOVA: next/font/* aberto para qualquer subpath de next/ que comece por font",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "base/verificacao/saida-de-rede.mjs",
+    "de": "if (mod.startsWith('next/font/')) return true",
+    "para": "if (mod.startsWith('next/font')) return true"
+   }
+  ]
+ },
+ {
+  "id": "XR20q",
+  "inv": "inv. 4 (N8)",
+  "desc": "NOVA: zona 1 lib/dominio-a.ts: classe com constructor(fetch) no arquivo + listarRecursos faz fetch direto para fora",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/lib/dominio-a.ts",
+    "de": "export const listarRecursos = cache(async () =>\n",
+    "para": "export class Transporte { enviar: (u: string) => Promise<unknown>; constructor(fetch: (u: string) => Promise<unknown>) { this.enviar = fetch } }\nexport const listarRecursos = cache(async () =>\n  (await fetch('http://127.0.0.1:4999/xr20q').catch(() => null), 0) ||\n"
+   }
+  ]
+ },
+ {
+  "id": "XR20r",
+  "inv": "inv. 4 (N8)",
+  "desc": "NOVA: zona 1 lib/dominio-a.ts: try/catch (fetch) no topo + fetch direto para fora",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/lib/dominio-a.ts",
+    "de": "export const listarRecursos = cache(async () =>\n",
+    "para": "try { /* nada */ } catch (fetch) { void fetch }\nexport const listarRecursos = cache(async () =>\n  (await fetch('http://127.0.0.1:4999/xr20r').catch(() => null), 0) ||\n"
+   }
+  ]
+ },
+ {
+  "id": "FR1",
+  "inv": "inv. 15",
+  "desc": "NOVA: fronteira: arquivo na raiz de src/ volta a nao ser camada",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/scripts/fronteira.mjs",
+    "de": "if (primeira.endsWith('.ts')) return 'raiz'",
+    "para": "if (false) return 'raiz'"
+   }
+  ]
+ },
+ {
+  "id": "FR2",
+  "inv": "inv. 15",
+  "desc": "NOVA: fronteira: identidadeDev e ATORES_DE_DESENVOLVIMENTO fora da lista",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/scripts/fronteira.mjs",
+    "de": "  ['identidadeDev', 'adaptadores/identidade-dev.ts'],\n  ['ATORES_DE_DESENVOLVIMENTO', 'adaptadores/identidade-dev.ts'],\n",
+    "para": ""
+   }
+  ]
+ },
+ {
+  "id": "FR3",
+  "inv": "inv. 15",
+  "desc": "NOVA: fronteira: checagem de simbolo so em app/ (raiz liberada)",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/scripts/fronteira.mjs",
+    "de": "if (origem !== 'shell') {",
+    "para": "if (origem === 'app') {"
+   }
+  ]
+ }
+]

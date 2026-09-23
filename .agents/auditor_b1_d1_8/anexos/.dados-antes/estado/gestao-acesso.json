@@ -1,0 +1,113 @@
+{
+  "manifestos": {
+    "shell": {
+      "zona": "shell",
+      "modulos": [
+        {
+          "id": "shell.inicio",
+          "rotulo": "Início",
+          "prefixo": "/",
+          "restritoPorPadrao": false
+        }
+      ],
+      "perfis": [],
+      "concessoes": {}
+    },
+    "zona1": {
+      "zona": "zona1",
+      "modulos": [
+        {
+          "id": "zona1.painel",
+          "rotulo": "Painel da zona 1",
+          "prefixo": "/zona1",
+          "restritoPorPadrao": false
+        },
+        {
+          "id": "zona1.relatorios",
+          "rotulo": "Relatórios",
+          "prefixo": "/zona1/relatorios",
+          "restritoPorPadrao": true
+        }
+      ],
+      "perfis": [
+        {
+          "id": "zona1.analista",
+          "rotulo": "Analista da zona 1"
+        }
+      ],
+      "concessoes": {
+        "zona1.analista": [
+          "zona1.relatorios"
+        ]
+      }
+    },
+    "zona2": {
+      "zona": "zona2",
+      "modulos": [
+        {
+          "id": "zona2.tarefas",
+          "rotulo": "Tarefas",
+          "prefixo": "/zona2",
+          "restritoPorPadrao": true
+        }
+      ],
+      "perfis": [
+        {
+          "id": "zona2.operador",
+          "rotulo": "Operador da zona 2"
+        }
+      ],
+      "concessoes": {
+        "zona2.operador": [
+          "zona2.tarefas"
+        ]
+      }
+    },
+    "acesso": {
+      "zona": "acesso",
+      "modulos": [
+        {
+          "id": "acesso.admin",
+          "rotulo": "Gestão de acesso",
+          "prefixo": "/acesso",
+          "restritoPorPadrao": true
+        }
+      ],
+      "perfis": [],
+      "concessoes": {}
+    }
+  },
+  "concessoes": {
+    "plataforma.admin-acesso": [
+      "acesso.admin"
+    ],
+    "zona1.analista": [
+      "zona1.relatorios"
+    ],
+    "zona2.operador": [
+      "zona2.tarefas"
+    ]
+  },
+  "restrito": {
+    "shell.inicio": false,
+    "zona1.painel": false,
+    "zona1.relatorios": true,
+    "zona2.tarefas": true,
+    "acesso.admin": true
+  },
+  "atribuicoes": {
+    "ana": [
+      "plataforma.usuario",
+      "zona2.operador"
+    ],
+    "bruno": [
+      "plataforma.usuario",
+      "zona1.analista"
+    ],
+    "carla": [
+      "plataforma.usuario",
+      "plataforma.admin-acesso"
+    ],
+    "davi": []
+  }
+}

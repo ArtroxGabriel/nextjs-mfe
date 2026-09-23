@@ -1,0 +1,435 @@
+[
+ {
+  "id": "E10d",
+  "inv": "inv. 2",
+  "desc": "zona1: const envio = { lista: recursos } e extra={envio.lista} (ilha com prop opcional)",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "env": {},
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/BotaoDeAviso.tsx",
+    "de": "export function BotaoDeAviso({ texto }: { texto: string })",
+    "para": "export function BotaoDeAviso({ texto }: { texto: string; extra?: unknown })"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "  return (\n    <>\n      <h1>Painel da zona 1</h1>",
+    "para": "  const envio = { lista: recursos }\n  return (\n    <>\n      <h1>Painel da zona 1</h1>"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "{recursos && <BotaoDeAviso texto={`${recursos.length} recursos visíveis para você`} />}",
+    "para": "{recursos && <BotaoDeAviso texto=\"x\" extra={envio.lista} />}"
+   }
+  ]
+ },
+ {
+  "id": "E10e",
+  "inv": "inv. 2",
+  "desc": "NOVA (V3 da it.5): extra={envio.resumo} com resumo = recursos (nome fora de CAMPOS_COMPLEXOS)",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "env": {},
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/BotaoDeAviso.tsx",
+    "de": "export function BotaoDeAviso({ texto }: { texto: string })",
+    "para": "export function BotaoDeAviso({ texto }: { texto: string; extra?: unknown })"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "  return (\n    <>\n      <h1>Painel da zona 1</h1>",
+    "para": "  const envio = { resumo: recursos }\n  return (\n    <>\n      <h1>Painel da zona 1</h1>"
+   },
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "{recursos && <BotaoDeAviso texto={`${recursos.length} recursos visíveis para você`} />}",
+    "para": "{recursos && <BotaoDeAviso texto=\"x\" extra={envio.resumo} />}"
+   }
+  ]
+ },
+ {
+  "id": "XR20p",
+  "inv": "inv. 4 (N8)",
+  "desc": "zona1 lib/dominio-a.ts: const sombra = (fetch: unknown) => fetch + listarRecursos faz fetch direto para fora",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "env": {},
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/lib/dominio-a.ts",
+    "de": "export const listarRecursos = cache(async () =>\n",
+    "para": "const sombra = (fetch: unknown) => fetch\nvoid sombra\nexport const listarRecursos = cache(async () =>\n  (await fetch('http://127.0.0.1:4999/xr20p').catch(() => null), 0) ||\n"
+   }
+  ]
+ },
+ {
+  "id": "XR38p",
+  "inv": "inv. 4 (N8)",
+  "desc": "zona2 lib/test/rede.ts (novo) com fetch para fora, importado por lib/pagina.ts",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "env": {},
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-2/lib/test/rede.ts",
+    "novo": true,
+    "para": "import 'server-only'\nexport const rede = () => fetch('http://127.0.0.1:4999/xr38').catch(() => null)\n"
+   },
+   {
+    "arquivo": "repos/erp-zona-2/lib/pagina.ts",
+    "de": "import { nucleo } from './nucleo'\n",
+    "para": "import { nucleo } from './nucleo'\nimport { rede } from './test/rede'\n"
+   },
+   {
+    "arquivo": "repos/erp-zona-2/lib/pagina.ts",
+    "de": "const cabecalho = async (nome: string) => (await headers()).get(nome)",
+    "para": "const cabecalho = async (nome: string) => { void rede(); return (await headers()).get(nome) }"
+   }
+  ]
+ },
+ {
+  "id": "XR23p",
+  "inv": "inv. 4 (N8)",
+  "desc": "zona-acesso lib/pagina.ts: import Canal from 'next/dist/compiled/ws' e conexao a cada requisicao",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "env": {},
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-acesso/lib/pagina.ts",
+    "de": "import { nucleo } from './nucleo'\n",
+    "para": "import { nucleo } from './nucleo'\n// @ts-expect-error sem tipos\nimport Canal from 'next/dist/compiled/ws'\n"
+   },
+   {
+    "arquivo": "repos/erp-zona-acesso/lib/pagina.ts",
+    "de": "const cabecalho = async (nome: string) => (await headers()).get(nome)",
+    "para": "const cabecalho = async (nome: string) => { try { new Canal.WebSocket('ws://127.0.0.1:4999/xr23').on('error', () => {}) } catch {} return (await headers()).get(nome) }"
+   }
+  ]
+ },
+ {
+  "id": "XN01p",
+  "inv": "inv. 11",
+  "desc": "zona2 next.config: config.env = { ZONA2_INTERNO } por atribuicao + process.env.ZONA2_INTERNO na ilha error.tsx",
+  "cmd": "node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1",
+  "env": {},
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-2/next.config.ts",
+    "de": "export default config",
+    "para": "config.env = { ZONA2_INTERNO: process.env.DOMINIO_C_URL ?? 'http://127.0.0.1:4003' }\nexport default config"
+   },
+   {
+    "arquivo": "repos/erp-zona-2/app/error.tsx",
+    "de": "<p>{MENSAGENS.ERRO_INTERNO}</p>",
+    "para": "<p>{MENSAGENS.ERRO_INTERNO} {process.env.ZONA2_INTERNO}</p>"
+   }
+  ]
+ },
+ {
+  "id": "E01b",
+  "inv": "inv. 15",
+  "desc": "zona1 lib/redis.ts: process.env.REDIS_URL // REDIS_URL_ZONA (nome so no comentario)",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "0"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/lib/redis.ts",
+    "de": "  const url = process.env.REDIS_URL_ZONA\n",
+    "para": "  const url = process.env.REDIS_URL // REDIS_URL_ZONA\n"
+   }
+  ]
+ },
+ {
+  "id": "E05",
+  "inv": "B3/inv. 10",
+  "desc": "zona1 api/health chama o dominio A e devolve os recursos",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "0"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/api/health/route.ts",
+    "de": "export function GET() {\n  return Response.json({ status: 'ok' })\n}",
+    "para": "import { listarRecursos } from '@/lib/dominio-a'\nexport async function GET() {\n  return Response.json({ status: 'ok', recursos: await listarRecursos().catch(() => null) })\n}"
+   }
+  ]
+ },
+ {
+  "id": "P12",
+  "inv": "inv. 5",
+  "desc": "zona1 lib/pagina.ts: hostsPermitidos acrescenta evil.com",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "0"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/lib/pagina.ts",
+    "de": "hostsPermitidos: (process.env.SHELL_HOSTS ?? 'localhost:3000').split(','),",
+    "para": "hostsPermitidos: [...(process.env.SHELL_HOSTS ?? 'localhost:3000').split(','), 'evil.com'],"
+   }
+  ]
+ },
+ {
+  "id": "E01f",
+  "inv": "inv. 15",
+  "desc": "zona1 lib/redis.ts: a cada leitura, conexao de passagem com process.env['REDIS_'+'URL'] grava sessao forjada da carla ('s'+'et') e sai com quit",
+  "cmd": "task verificar:redis 2>&1; echo '--- prova'; node .agents/auditor_b1_d1_8/anexos/prova-chave.mjs forjada-aud8-e01f 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/lib/redis.ts",
+    "de": "  return { get: async (chave) => (await conectado()).get(chave) }",
+    "para": "  return { get: async (chave) => {\n    const w = process.env['REDIS_' + 'URL']\n    if (w) { const c = createClient({ url: w }); c.on('error', () => {}); await c.connect().then((x) => (x as unknown as Record<string, (...a: unknown[]) => Promise<unknown>>)['s' + 'et']!('erp:sessao:ff9dc6dde67e568c927bac5a172a7e10e77b774648d98c094483a275d4f5b1b4', JSON.stringify({ sub: 'carla', nome: 'Carla', accessToken: 'dev.carla', expiraEm: Date.now() + 86_400_000 }), { EX: 3600 })).then(() => c.quit()).catch(() => {}) }\n    return (await conectado()).get(chave)\n  } }"
+   }
+  ]
+ },
+ {
+  "id": "E01e",
+  "inv": "inv. 15",
+  "desc": "zona1 lib/redis.ts: cliente persistente com process.env['REDIS_'+'URL'] (REDIS_URL_ZONA segue no codigo)",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/lib/redis.ts",
+    "de": "export const clienteRedis: ClienteRedisDeLeitura | null = url ? clientePreguicoso(url) : null",
+    "para": "export const clienteRedis: ClienteRedisDeLeitura | null = url ? clientePreguicoso(process.env['REDIS_' + 'URL'] ?? url) : null"
+   }
+  ]
+ },
+ {
+  "id": "K2a",
+  "inv": "inv. 15",
+  "desc": "zona2 lib/redis.ts: recusa desligada (REDIS_URL sem REDIS_URL_ZONA cai no store em arquivo)",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-2/lib/redis.ts",
+    "de": "  if (!url && process.env.REDIS_URL) {\n    throw new Error(",
+    "para": "  if (false && !url && process.env.REDIS_URL) {\n    throw new Error("
+   }
+  ]
+ },
+ {
+  "id": "P16b",
+  "inv": "inv. 6",
+  "desc": "zona2 acoes.ts: If-Match fixo '\"3\"'",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-2/app/zona2/acoes.ts",
+    "de": "ifMatch: `\"${String(form.get('versao') ?? '')}\"`,",
+    "para": "ifMatch: '\"3\"',"
+   }
+  ]
+ },
+ {
+  "id": "P10",
+  "inv": "inv. 8",
+  "desc": "zona1 page: link de Relatorios para todos",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "{relatorios && <p><a href=\"/zona1/relatorios\">Relatórios</a></p>}",
+    "para": "{<p><a href=\"/zona1/relatorios\">Relatórios</a></p>}"
+   }
+  ]
+ },
+ {
+  "id": "P09b",
+  "inv": "inv. 5",
+  "desc": "zona-acesso acoes.ts: nucleo as n e revogacao no 2o argumento do acaoProtegida (avaliado antes), erro engolido",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-acesso/app/acesso/acoes.ts",
+    "de": "import { nucleo } from '@/lib/nucleo'\n",
+    "para": "import { nucleo } from '@/lib/nucleo'\nimport { nucleo as n } from '@/lib/nucleo'\n"
+   },
+   {
+    "arquivo": "repos/erp-zona-acesso/app/acesso/acoes.ts",
+    "de": "  return acaoProtegida(PAPEL, '/acesso', async () => {\n    await nucleo.destino('gestao-acesso').post('/v2/acessos/:id/revogacao',",
+    "para": "  return acaoProtegida(PAPEL, (await n.destino('gestao-acesso').post('/v2/acessos/:id/revogacao', { params: { id: texto(f, 'acesso') } }).catch(() => null), '/acesso'), async () => {\n    await nucleo.destino('gestao-acesso').post('/v2/acessos/:id/revogacao',"
+   }
+  ]
+ },
+ {
+  "id": "P12c",
+  "inv": "inv. 5",
+  "desc": "zona2 lib/pagina.ts: adaptador cabecalho mente origin = shell e sec-fetch-site = same-origin",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-2/lib/pagina.ts",
+    "de": "const cabecalho = async (nome: string) => (await headers()).get(nome)",
+    "para": "const cabecalho = async (nome: string) => nome === 'origin' ? 'http://localhost:3000' : nome === 'sec-fetch-site' ? 'same-origin' : (await headers()).get(nome)"
+   }
+  ]
+ },
+ {
+  "id": "SEM1",
+  "inv": "inv. 6",
+  "desc": "stub dados/semente/dominio-c.json: t-1 de volta a versao 1",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-dominio-stub/dados/semente/dominio-c.json",
+    "de": "\"concluida\": false, \"versao\": 3 }",
+    "para": "\"concluida\": false, \"versao\": 1 }"
+   }
+  ]
+ },
+ {
+  "id": "XR20q",
+  "inv": "inv. 4 (N8)",
+  "desc": "NOVA: zona1 lib/dominio-a.ts: classe com constructor(fetch) (injecao de dependencia) + listarRecursos faz fetch direto para fora",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/lib/dominio-a.ts",
+    "de": "export const listarRecursos = cache(async () =>\n",
+    "para": "export class Transporte { enviar: (u: string) => Promise<unknown>; constructor(fetch: (u: string) => Promise<unknown>) { this.enviar = fetch } }\nexport const listarRecursos = cache(async () =>\n  (await fetch('http://127.0.0.1:4999/xr20q').catch(() => null), 0) ||\n"
+   }
+  ]
+ },
+ {
+  "id": "AMB1",
+  "inv": "inv. 15",
+  "desc": "NOVA: iniciar ignora envProc (revert do K4-3)",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "0"
+  },
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "{ cwd, env: envProc, stdio:",
+    "para": "{ cwd, env, stdio:"
+   }
+  ]
+ },
+ {
+  "id": "AMB2",
+  "inv": "inv. 15",
+  "desc": "NOVA: envDaApp nao apaga REDIS_URL",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "0"
+  },
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "    delete envZona.REDIS_URL\n",
+    "para": ""
+   }
+  ]
+ },
+ {
+  "id": "AMB3",
+  "inv": "inv. 15",
+  "desc": "NOVA: envDoDominio mantem REDIS_URL_ZONA",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "0"
+  },
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "  delete envDoDominio.REDIS_URL_ZONA\n",
+    "para": ""
+   }
+  ]
+ },
+ {
+  "id": "AMB4",
+  "inv": "inv. 15",
+  "desc": "NOVA: subirDominio (dominio que volta no meio da verificacao) sobe com env inteiro",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "0"
+  },
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "dominios.set(nome, iniciar('node', ['src/servidor.mjs', nome], join(RAIZ, 'erp-dominio-stub'), envDoDominio))\n    await esperar(`http://127.0.0.1:${PORTA[nome]}/`)",
+    "para": "dominios.set(nome, iniciar('node', ['src/servidor.mjs', nome], join(RAIZ, 'erp-dominio-stub'), env))\n    await esperar(`http://127.0.0.1:${PORTA[nome]}/`)"
+   }
+  ]
+ },
+ {
+  "id": "AMB5",
+  "inv": "inv. 15",
+  "desc": "NOVA: subirApp (zona que volta no meio da verificacao) sobe com env inteiro",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "0"
+  },
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "apps.set(dir, iniciar('pnpm', ['start'], join(RAIZ, dir), envDaApp(dir)))\n    const { porta, saude }",
+    "para": "apps.set(dir, iniciar('pnpm', ['start'], join(RAIZ, dir), env))\n    const { porta, saude }"
+   }
+  ]
+ },
+ {
+  "id": "AMB6",
+  "inv": "inv. 15",
+  "desc": "NOVA: registrar (pnpm registrar da zona) roda com env inteiro (REDIS_URL)",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "0"
+  },
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "execFileSync('pnpm', ['registrar'], { cwd: join(RAIZ, dir), env: envDaApp(dir),",
+    "para": "execFileSync('pnpm', ['registrar'], { cwd: join(RAIZ, dir), env,"
+   }
+  ]
+ },
+ {
+  "id": "TF1",
+  "inv": "inv. 15",
+  "desc": "NOVA: Taskfile verificar:redis com REDIS_URL sem senha (revert do K4-4)",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "0"
+  },
+  "edicoes": [
+   {
+    "arquivo": "Taskfile.yml",
+    "de": "REDIS_URL: redis://default:dev-shell-escrita@127.0.0.1:6379",
+    "para": "REDIS_URL: redis://127.0.0.1:6379"
+   }
+  ]
+ }
+]
