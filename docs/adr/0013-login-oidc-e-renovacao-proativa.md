@@ -1,6 +1,6 @@
 # ADR-0013 — Login OIDC e renovação proativa no shell
 
-**Status:** proposto (2026-09-22), decisão do `arquiteto-mfe`; implementação no item D2 do plano, depois de B1 e D1.
+**Status:** aceito (humano, 2026-09-23); proposto em 2026-09-22 pelo `arquiteto-mfe`; implementação no item D2 do plano, depois de B1 e D1.
 **Substitui:** ADR-0009, decisão 3 (endpoint interno do shell que a zona chamaria para renovar).
 
 ## Contexto
@@ -40,7 +40,7 @@ um fluxo com redirecionamento.
    `iss`, `exp`/`nbf`, `aud` contém `erp-dominios`, cache por `kid`); sem ele, só token dev. Ator =
    `preferred_username`. Realm ganha o mapper de audiência `erp-dominios`, `revokeRefreshToken: true` e
    `refreshTokenMaxReuse: 0`.
-8. **Versão:** núcleo **0.8.0** (quebra a porta), nas 4 apps no mesmo commit (ADR-0012, decisão 6).
+8. **Versão:** núcleo **0.10.0** (quebra a porta), nas 4 apps no mesmo commit (ADR-0012, decisão 6). O texto original dizia 0.8.0; o adendo 1 do ADR-0014 (item 9) pôs o G3 antes, no 0.9.x.
 
 ## Consequências
 

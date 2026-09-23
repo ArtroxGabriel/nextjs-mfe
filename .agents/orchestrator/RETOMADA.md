@@ -92,12 +92,13 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 
 ## Pendências com o humano
 
-1. ✅ **Instalações aprovadas pelo humano em 2026-09-22** ("tudo está aprovado de instalação"): `redis`, SDK OpenTelemetry, biblioteca OIDC, imagens do Redis e do Keycloak. Continua valendo mostrar o que entra antes de instalar.
-2. **Decidir infraestrutura** de registro de pacotes / CI (P1). Enquanto cada máquina tiver o próprio
-   Verdaccio, os lockfiles trocam de hash a cada máquina (ver `AMBIENTE.md` §1).
-3. Aplicar no GitLab o que está em `ATIVIDADES.md` §2 com "pendente".
-4. ✅ Sessão de 30 min **por inatividade**, capturada pelos refresh tokens (humano, 2026-09-22); teto absoluto configurável. Parâmetros assim ficam em configuração documentada (`docs/CONFIGURACAO.md`), não no código.
-5. Aceitar (ou pedir ajuste de) **ADR-0013** e **ADR-0014 com o adendo 1** (corte seco para a v2, eventos no G5).
+1. ✅ Instalações aprovadas (2026-09-22): `redis`, SDK OpenTelemetry, biblioteca OIDC, imagens do Redis e do Keycloak. Continua valendo mostrar o que entra antes de instalar.
+2. ✅ Sessão de 30 min **por inatividade** (2026-09-22); parâmetros em `docs/CONFIGURACAO.md`.
+3. ✅ **Decisões de 2026-09-23:** iteração 4 do gate autorizada; **ADR-0013 aceito**; **ADR-0014 + adendo 1 aceito** (com a
+   lacuna até o G5); P07 adiado para o D2 (`DEFERRED.md` D13).
+4. **Registro de pacotes / CI (P1): deixado para o fim do plano** (humano, 2026-09-23). Até lá, `task pacotes:alinhar-hashes`.
+5. **Fase C2:** o humano pediu mais detalhes antes de decidir o `proxyTimeout` (D7); levar proposta com números no início do C2.
+6. Aplicar no GitLab o que estiver "pendente" em `ATIVIDADES.md` §2.
 
 ## O que foi feito nesta sessão (2026-09-22)
 

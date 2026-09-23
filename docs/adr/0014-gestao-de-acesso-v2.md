@@ -1,6 +1,6 @@
 # ADR-0014 — Alinhamento à gestão de acesso v2
 
-**Status:** proposto (2026-09-22), decisão do `arquiteto-mfe`; **adendo 1** no fim (corte seco, núcleo 0.9.0) · **Afeta:** `@erp/nucleo` 0.8.0–0.9.0, `@erp/contratos`, as 4 apps, `erp-dominio-stub` · **Evolui:** ADR-0009 (decisão 2)
+**Status:** aceito com o adendo 1 (humano, 2026-09-23), inclusive a lacuna declarada até o G5 (sem revogação ativa); proposto em 2026-09-22 pelo `arquiteto-mfe`; **adendo 1** no fim (corte seco, núcleo 0.9.0) · **Afeta:** `@erp/nucleo` 0.8.0–0.9.0, `@erp/contratos`, as 4 apps, `erp-dominio-stub` · **Evolui:** ADR-0009 (decisão 2)
 
 ## Contexto
 
