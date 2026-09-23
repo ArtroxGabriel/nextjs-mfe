@@ -26,7 +26,7 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
 | `@erp/nucleo` | **0.9.2** nas 4 apps (acesso v2 só, `exigirModulo(modulo, funcionalidade)`, `exigirPapel`) | lockstep 4 apps |
 | `@erp/contratos` / `@erp/moldura` | **0.4.0** / **0.5.0** | ADR-0012, ADR-0014 adendo 1 |
 | Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
-| Gate B1+D1+G3+K | iteração 3 reprovada pelo auditor (V1–V7); **fatia K2 feita** (abaixo); falta a iteração 4 | `GATE_STATUS.md`; `.agents/*_b1_d1_3/` |
+| Gate B1+D1+G3+K | iteração 4 reprovada pelo auditor (V1–V5 novos; revisor e challenger aprovaram); correção: fatia K3 | `GATE_STATUS.md`; `.agents/*_b1_d1_3/` |
 | Submódulos | os 8 no `master`, iguais a `origin/master` | `git submodule foreach git status -sb` |
 
 ## Plano até o objetivo
@@ -125,7 +125,17 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 Cada teste novo foi conferido contra a mutação (ou contra o analisador antigo do HEAD): reprova com ela, passa sem ela.
 Núcleo sem mudança de fonte (só testes e `scripts/`): continua 0.9.2, nada a publicar.
 
-**Em andamento (2026-09-23):** iteração 4 despachada — `reviewer_b1_d1_4` **APPROVE** (sem bloqueio; nota: a regra `P0-acao-protegida` exige `return acaoProtegida(` como primeira instrução — documentar para zonas novas); `challenger_b1_d1_4` **APPROVE** (88/88 e 85+3; P09, E10c, E01b/c, zona avulsa, health, If-Match exercitados com a base no ar; portas livres); `auditor_b1_d1_4` (Opus) despachado; o `auditor_b1_d1_4` (Opus) entra quando o challenger liberar as portas. Handoffs em `.agents/<nome>/handoff.md`.
+**Resultado (2026-09-23): iteração 4 reprovada.** Revisor e challenger APPROVE; `auditor_b1_d1_4` **INTEGRITY VIOLATION** com vetos
+V1–V5 novos (`GATE_STATUS.md`). **Próximo: fatia K3**, depois iteração 5:
+
+| # | Veto | Correção (do auditor) |
+|---|---|---|
+| K3-1 | V1 (E01f) | zona não recebe `REDIS_URL` no ambiente (`subir()`, showcase, Taskfile); teste que lê o ambiente do processo de cada zona (`/proc/<pid>/environ`) e exige a ausência |
+| K3-2 | V2 (N38d–f) | fronteira: símbolos de `src/shell` só importados por `src/shell`; `src/index.ts` tratado como camada |
+| K3-3 | V3 (E10d/XE26) | prop de ilha com tipo escalar pelo verificador de tipos (TypeChecker); ilha por `createElement`/`next/dynamic`/`export const`; E2E procura `CC-` em `/zona1` |
+| K3-4 | V4 (XR20p/38p/23p) | sombra de `fetch` só no escopo onde foi declarada; não pular `test/` aninhado; `next/*` por lista explícita de subpaths; chave calculada em `constructor`/`binding` |
+| K3-5 | V5 (XN01p) | `next.config`: recusar atribuição a `.env`, chave calculada e spread de outro módulo; E2E procura origens internas no bundle do navegador |
+| K3-6 | L1–L5 | contornos do `P0-acao-protegida`; N4 conclui t-2 com If-Match da página (P16b); cache de "fora" com duração mínima; P1 com `router.push(variavel)`; `rewrites()`/`assetPrefix` com endereço interno |
 
 **Plano original:** iteração 4 com três verificadores novos (revisor Sonnet, challenger Sonnet — pedir que exercite P09, E10c, E01b/c
 e a zona avulsa sem `REDIS_URL_ZONA` —, auditor Opus com veto). Depois **D2** (núcleo 0.10.0, OIDC + PKCE, ADR-0013, ator "eva"

@@ -143,3 +143,26 @@ N53 (`same-site`), G02, G05 do mock.
 Gate Result: **FAIL** (veto). Revisor e challenger aprovaram; a correção (fatia K2 no `RETOMADA.md`) vai para a iteração 4, com os três
 verificadores novos (o auditor vetou comportamento que o challenger não exercitou: P09 e E10c). Estado conferido pelo orquestrador ao fim:
 fontes iguais ao início, `dist` = tarball 0.9.2 nas 4 apps, portas livres, `tee` residual do auditor encerrado.
+
+## Gate — B1 + D1 + G3 (acesso v2) + fatias K e K2, iteração 4 (contratos 0.4.0 / núcleo 0.9.2 / moldura 0.5.0)
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_b1_d1_4 | revisor-mfe (sonnet) | APPROVE | .agents/reviewer_b1_d1_4/handoff.md | V1–V7 e L1–L8 da iteração 3 com correção e teste; nota: `P0-acao-protegida` exige `return acaoProtegida(` como primeira instrução |
+| challenger_b1_d1_4 | simulador-condicoes (sonnet) | APPROVE | .agents/challenger_b1_d1_4/handoff.md | 88/88 e 85+3; P09, E10c (inclusive Chrome real), E01b/c, zona avulsa sem `REDIS_URL_ZONA`, health, If-Match exercitados |
+| auditor_b1_d1_4 | general-purpose forense (opus) | **INTEGRITY VIOLATION** | .agents/auditor_b1_d1_4/handoff.md, mutacoes.txt, anexos/ | 127 mutações e contornos: 72 pegos, 55 sobreviventes (7 equivalentes; 5 só no estático, pegos no ponta a ponta) |
+
+Fechado desde a iteração 3 (agora pego): E01b/E01e, E02–E02c, E10b/E10c, XE23–XE25, XE27–XE40, XR08–XR17, XF01, N08b, N36b, N38b/c,
+N53, A05, G02, G05, S05, S17, AM1–AM3, P09b, P10, P12/P12c, E05, zona sem `REDIS_URL_ZONA`, t-1 na versão 3.
+
+Vetos: **V1** (inv. 15, E01f) a zona ainda recebe `REDIS_URL` no ambiente: conexão de passagem grava sessão forjada e fecha antes do
+`CLIENT LIST`, 88/88. **V2** (inv. 15, N38d–f) escritor embrulhado numa função nova na raiz ou em `/app` passa o teste de identidade.
+**V3** (inv. 2, E10d/XE26) `valorSeguro` aceita `x.campo` que é objeto (`CC-10` no HTML de `/zona1`); ilha por `createElement`,
+`next/dynamic`, barril com `export const`, apelido condicional. **V4** (inv. 4, XR20p/XR38p/XR23p) parâmetro `fetch` esconde a global,
+`fontesDaApp` pula `test/` em qualquer nível, `next/*` inteiro permitido (`next/dist/compiled/ws`). **V5** (inv. 11, XN01p) `config.env = {…}`
+por atribuição, chave calculada e spread de outro arquivo no `next.config`.
+Lacunas: L1 contornos do `P0-acao-protegida`; L2 `If-Match` fixo "3" (N4 usa justo a t-1); L3 cache de "fora" por 1 ms; L4 P1 por
+`router.push(variavel)`/push desestruturado/`Link` por const; L5 `rewrites()` e `assetPrefix` para endereço interno.
+
+Gate Result: **FAIL** (veto). Correção na fatia K3 (`RETOMADA.md`). Estado conferido pelo auditor ao fim: fontes iguais, `dist` = tarball
+0.9.2, dados do stub iguais, chave forjada apagada, 88/88, portas livres.

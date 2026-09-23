@@ -1,0 +1,127 @@
+N08b | repos/erp-nucleo/src/adaptadores/sessao-redis.ts — import 'server-only' trocado por template literal cuja linha do meio é o import — inv. 3 — CAUGHT — fronteira: adaptadores/sessao-redis.ts: falta import 'server-only'
+N36b | repos/erp-nucleo/src/interno/destinos.ts — TIMEOUT_PADRAO_MS lido mas não usado (60 s fixo) — config — CAUGHT — N36b: destino sem timeoutMs usa ERP_DESTINO_TIMEOUT_MS do ambiente
+N53 | repos/erp-nucleo/src/fabricas/criarPaginas.ts — origemPermitida aceita Sec-Fetch-Site same-site — inv. 5 — CAUGHT — acaoProtegida: origem ruim nega sem consultar sessao nem acesso
+A05 | repos/erp-nucleo/src/interno/acesso-v2.ts — reduzirEu aceita nome de módulo vazio — - — CAUGHT — reduzirEu: papeis vazios nao administram; papeis e modulos mal formados sao erro
+N38b | repos/erp-nucleo/src/app/index.ts — /app reexporta sessaoRedisDeEscrita as lojaDeSessao, aspas duplas — inv. 15 — CAUGHT — fronteira: app/index.ts: app/ nao pode importar adaptadores/
+N38c | repos/erp-nucleo/src/index.ts — raiz reexporta sessaoArquivoDeEscrita as sessaoArquivoCompleta — inv. 15 — CAUGHT — invariante 15: NENHUM subpath fora de /shell entrega o que escreve sessao ou autentica (identidade)
+N38d | repos/erp-nucleo/src/index.ts — raiz exporta EMBRULHO do escritor: sessaoRedisCompleta = (...a) => sessaoRedisDeEscrita(...a) — inv. 15 — SURVIVED — (135/135; a raiz não é camada da fronteira e a identidade difere)
+N38e | repos/erp-nucleo/src/app/index.ts — /app exporta objeto { criar: criarNucleoDoShell } (valor aninhado) — inv. 15 — SURVIVED — (135/135; o teste só olha o valor de topo)
+N38f | repos/erp-nucleo/src/app/index.ts — /app exporta criarNucleoCompleto = (c) => criarNucleoDoShell(c) — inv. 15 — SURVIVED — (135/135; app/ pode importar fabricas/, identidade difere)
+G02 | repos/erp-dominio-stub/src/gestao-acesso-v2/servidor.mjs — token dev sem âncora ^ — mock — CAUGHT — G02/G05 (auditor_b1_d1_3): o token de desenvolvimento e ancorado; /v2/eu sem pessoa e 401
+G05 | repos/erp-dominio-stub/src/gestao-acesso-v2/servidor.mjs — /v2/eu sem usuário responde 200 {} — mock — CAUGHT — G02/G05 (auditor_b1_d1_3)
+S05 | repos/erp-shell/lib/saude-zonas.ts — TTL padrão da sonda 1 s → 10 s — L3 — CAUGHT — S05: sem ERP_SONDA_TTL_MS o TTL da sonda e 1 s
+S17 | repos/erp-shell/lib/saude-zonas.ts — só "saudável" entra no cache — L1 — CAUGHT — S17: zona "fora" tambem fica no cache durante o TTL
+S17b | repos/erp-shell/lib/saude-zonas.ts — "fora" entra no cache com validade de 1 ms (equivalente a não guardar) — L1 — SURVIVED — (42/42; o teste só confere que houve um set, não o TTL do "fora")
+AM1 | base/scripts/ambiente.mjs — precisaConstruir ignora app/ — verificação — CAUGHT — AM1/AM2: cada entrada do build, mudada sozinha, pede reconstrucao
+AM2 | base/scripts/ambiente.mjs — precisaConstruir ignora zonas.json e acesso.manifesto.ts — verificação — CAUGHT — AM1/AM2
+AM3 | base/scripts/ambiente.mjs — subir não confere porta ocupada — verificação — CAUGHT — AM3: subir recusa porta ocupada antes de subir qualquer coisa
+AM1b | base/scripts/ambiente.mjs — maisRecente só olha o primeiro nível da pasta (página aninhada não reconstrói) — verificação — CAUGHT — AM1/AM2 (entrada app/zona/page.tsx)
+E10d | repos/erp-zona-1/app/zona1/page.tsx (+ BotaoDeAviso.tsx prop opcional) — `const envio = { lista: recursos }` e `<BotaoDeAviso … extra={envio.lista} />`: a lista inteira do domínio A (com custo) vai para a ilha — inv. 2 — SURVIVED — 88/88 (LOTE1); com a base no ar o HTML de /zona1 do bruno traz CC-10, que a página não renderiza (prova-lote1.log); valorSeguro aceita qualquer `x.campo`
+XR20p | repos/erp-zona-1/lib/dominio-a.ts — `const sombra = (fetch: unknown) => fetch` em qualquer lugar do arquivo torna invisível o `fetch` global: listarRecursos faz fetch direto para fora — inv. 4 (N8) — SURVIVED — 88/88 (LOTE1); o alvo externo recebeu /xr20
+XR38p | repos/erp-zona-2/lib/test/rede.ts (novo) importado por lib/pagina.ts — fetch para fora em pasta chamada `test` dentro de lib/ (fontesDaApp pula `test` em qualquer nível) — inv. 4 (N8) — SURVIVED — 88/88 (LOTE1); o alvo externo recebeu /xr38
+XR23p | repos/erp-zona-acesso/lib/pagina.ts — `import Canal from 'next/dist/compiled/ws'` (a allowlist aceita todo `next/*`) e conexão WebSocket para fora a cada requisição — inv. 4 (N8) — SURVIVED — 88/88 (LOTE1); o alvo externo recebeu `upgrade /xr23`
+XN01p | repos/erp-zona-2/next.config.ts (+ app/error.tsx) — `config.env = { ZONA2_INTERNO: … }` por atribuição (não PropertyAssignment) e `process.env.ZONA2_INTERNO` numa ilha — inv. 11 — SURVIVED — 88/88 (LOTE1); `127.0.0.1:4003` no bundle do navegador (.next/static/chunks/…)
+E01f | repos/erp-zona-1/lib/redis.ts — a cada leitura, conexão de passagem com process.env['REDIS_'+'URL'] (credencial de escrita do shell, presente no ambiente da zona), grava sessão forjada da carla (admin) com o comando montado ('s'+'et') e sai com quit antes do CLIENT LIST — inv. 15 — SURVIVED — 88/88; chave no Redis depois da rodada e o cookie `__Host-session=forjada-aud4` (nunca emitido) abriu /, /acesso e /zona1 como carla (anexos/E01f-chave-forjada.txt); chave apagada (DEL 1, EXISTS 0)
+E01e | repos/erp-zona-1/lib/redis.ts — E01b/E01c na forma que passa pelo estático: cliente persistente com process.env['REDIS_'+'URL'] (REDIS_URL_ZONA segue no código) — inv. 15 — CAUGHT — V1 (auditor_b1_d1_3): no ar, as zonas conectam ao Redis so com o usuario de leitura
+E01b | repos/erp-zona-1/lib/redis.ts — `process.env.REDIS_URL // REDIS_URL_ZONA` (nome só no comentário) — inv. 15 — CAUGHT — V1 estatico: o cliente Redis das zonas so le
+E02 | repos/erp-zona-1/lib/redis.ts — sem import 'server-only' — inv. 3 — CAUGHT — as quatro aplicacoes reais passam 100% nas regras estaticas (P0-server-only)
+E02b | repos/erp-zona-1/lib/nucleo.ts — sem import 'server-only' — inv. 3 — CAUGHT — idem
+E02c | repos/erp-zona-2/lib/pagina.ts — sem import 'server-only' — inv. 3 — CAUGHT — idem
+E10c | repos/erp-zona-acesso/app/acesso/page.tsx — campos com cadastro: JSON.stringify(p) — inv. 2 — CAUGHT — idem (P0-dto-sensivel)
+E10b | repos/erp-zona-1/app/zona1/page.tsx — `${JSON.stringify(recursos)}` na prop texto da ilha — inv. 2 — CAUGHT — idem (P0-dto-sensivel)
+XR15 | repos/erp-zona-1/lib/redis.ts — fetch para fora dentro do arquivo da exceção do N8 — inv. 4 (N8) — CAUGHT — as quatro aplicacoes reais nao tem saida de rede fora do registro
+XR16 | repos/erp-zona-1/servicos/rede.ts (novo) — fetch em pasta fora de app/ e lib/ — inv. 4 (N8) — CAUGHT — idem
+XE41 | repos/erp-zona-1/componentes/x.ts (novo) — NEXT_PUBLIC_API_TOKEN fora de app/ e lib/ — inv. 11 — CAUGHT — as quatro aplicacoes reais passam 100% nas regras estaticas
+XR17 | base/verificacao/saida-de-rede.mjs — exceção nova (lib/dominio-a.ts da zona 1) com motivo longo — inv. 4 (N8) — CAUGHT — as excecoes sao exatamente estas
+P16b | repos/erp-zona-2/app/zona2/acoes.ts — If-Match fixo '"3"' (a versão da t-1 na semente) em vez da versão que o cliente conhece — inv. 6 — SURVIVED — 86/88 no LOTE2 (só L1 e L3, das outras mutações); N4 conclui justamente a t-1 na versão 3
+P10 | repos/erp-zona-1/app/zona1/page.tsx — link de Relatórios para todos — inv. 8 — CAUGHT — L3 (auditor_b1_d1_3, P10): o link de Relatorios so aparece para quem tem a funcionalidade
+E05 | repos/erp-zona-1/app/zona1/api/health/route.ts — health chama o domínio A e devolve recursos e a origem interna — B3/inv. 10 — CAUGHT — L1 (auditor_b1_d1_3, E05): /{zona}/api/health nao toca dominio nem sessao
+P09b | repos/erp-zona-acesso/app/acesso/acoes.ts — `import { nucleo as n }` e revogação chamada no 2º argumento do acaoProtegida (avaliado antes da verificação), erro engolido — inv. 5 — CAUGHT — Server Action sem Origin… nao executa (campos validos, estado conferido); o estático (P0-acao-protegida) NÃO pega (varrerSeguranca vazio)
+P12c | repos/erp-zona-2/lib/pagina.ts — adaptador `cabecalho` mente: origin = shell e sec-fetch-site = same-origin sempre — inv. 5 — CAUGHT — Server Action sem Origin… nao executa; invariante 16: toda Server Action…; invariante 12
+K2a | repos/erp-zona-2/lib/redis.ts — recusa desligada (REDIS_URL sem REDIS_URL_ZONA cai no store em arquivo) — inv. 15 — CAUGHT — V1 (auditor_b1_d1_3): zona com REDIS_URL e sem REDIS_URL_ZONA nao le sessao nem conecta como o shell
+SEM1 | repos/erp-dominio-stub/dados/semente/dominio-c.json — t-1 de volta à versão 1 — inv. 6 — CAUGHT — N4 (campos.versao === '3')
+XE26 | base/verificacao/seguranca-estatica.mjs — contorno it.3 reaplicado: sub-objeto por acesso de propriedade em objeto literal `campos={{ a: p.cadastro }}` (o teste da K2 usa `p.cpf`, pego só pelo nome) — inv. 2 — SURVIVED — analisador direto: nenhum achado
+XA01 | seguranca-estatica.mjs — `const w = { v: p }; <Ilha dados={w.v} />` — inv. 2 — SURVIVED — analisador direto (produto: E10d)
+XA02 | seguranca-estatica.mjs — `<Ilha dados={props.pessoa} />` — inv. 2 — SURVIVED — analisador direto
+XA03 | seguranca-estatica.mjs — `<Ilha {...props.pessoa} />` (spread de x.campo) — inv. 2 — SURVIVED — analisador direto
+XA04 | seguranca-estatica.mjs — `<Ilha dados={r.corpo ?? null} />` — inv. 2 — SURVIVED — analisador direto
+XA05 | seguranca-estatica.mjs — `campos={{ a: r.body }}` — inv. 2 — SURVIVED — analisador direto
+XA06 | seguranca-estatica.mjs — `itens={[r.body]}` — inv. 2 — SURVIVED — analisador direto
+XA07 | seguranca-estatica.mjs — `createElement(Ilha, { dados: p })` sem JSX — inv. 2 — SURVIVED — analisador direto
+XA08 | seguranca-estatica.mjs — ilha por `dynamic(() => import('./Ilha').then(m => m.Ilha))` — inv. 2 — SURVIVED — analisador direto
+XA09 | seguranca-estatica.mjs — barril com `export const Outra = Ilha` — inv. 2 — SURVIVED — analisador direto
+XA10 | seguranca-estatica.mjs — barril com `import { Ilha } …; export { Ilha as Terceira }` (sem from) — inv. 2 — SURVIVED — analisador direto
+XA11 | seguranca-estatica.mjs — barril `export { default } from './Ilha'` — inv. 2 — CAUGHT — valor nao projetado na prop 'dados'
+XA12 | seguranca-estatica.mjs — apelido condicional `const C = x ? Ilha : Ilha` — inv. 2 — SURVIVED — analisador direto
+XA13 | seguranca-estatica.mjs — `const M = { Ilha }; <M.Ilha dados={p} />` — inv. 2 — SURVIVED — analisador direto
+XA14 | seguranca-estatica.mjs — `<Ilha>{[p]}</Ilha>` — inv. 2 — CAUGHT — valor nao projetado entre as tags da ilha
+XA15 | seguranca-estatica.mjs — identificador não-função importado de módulo 'use server' — inv. 2 — SURVIVED (equivalente: o Next recusa export que não seja função async em 'use server') — analisador direto
+XA16 | seguranca-estatica.mjs — `this.props.pessoa` — inv. 2 — SURVIVED — analisador direto
+XA18 | seguranca-estatica.mjs — `r?.body` — inv. 2 — SURVIVED — analisador direto
+XA19 | seguranca-estatica.mjs — ilha de pacote externo — inv. 2 — SURVIVED no analisador, mas o N8 recusa o import de pacote fora da lista (coberto)
+XA20 | seguranca-estatica.mjs — moldura por namespace + apelido — inv. 2 — CAUGHT
+XP01 | seguranca-estatica.mjs (P0-acao-protegida) — `import { nucleo as n }` e domínio no argumento do acaoProtegida — inv. 5 — SURVIVED no estático; o ponta a ponta pega no produto (P09b) — lacuna
+XP02 | seguranca-estatica.mjs — domínio no 2º argumento com `nucleo` literal — inv. 5 — CAUGHT
+XP03 | seguranca-estatica.mjs — helper local (`./ajuda`) que chama o domínio, no argumento — inv. 5 — SURVIVED no estático — lacuna (o ponta a ponta de Origin tem dentes para as actions existentes)
+XP04 | seguranca-estatica.mjs — `acaoProtegida` falsa declarada no próprio arquivo — inv. 5 — SURVIVED no estático — lacuna (idem)
+XP05 | seguranca-estatica.mjs — `acaoProtegida` importada de módulo falso — inv. 5 — SURVIVED no estático — lacuna (idem)
+XP06 | seguranca-estatica.mjs — action inline (`'use server'` no corpo) em page.tsx, domínio antes — inv. 5 — SURVIVED no estático — lacuna (action nova reprova o teste de Origin por falta de CAMPOS_VALIDOS)
+XP07 | seguranca-estatica.mjs — namespace import do núcleo antes — inv. 5 — CAUGHT
+XP08 | seguranca-estatica.mjs — parâmetro padrão com efeito — inv. 5 — CAUGHT
+XP09 | seguranca-estatica.mjs — `export let` reatribuída — inv. 5 — CAUGHT
+XP10 | seguranca-estatica.mjs — dois declarators no mesmo export const — inv. 5 — CAUGHT
+XP11 | seguranca-estatica.mjs — `cookies().delete('__Host-session')` no argumento — inv. 5/15 — SURVIVED no estático P0; pego pelo "N3 estatico" (cookie de sessão fora de leitura)
+XP12 | seguranca-estatica.mjs — núcleo reexportado por @/lib/pagina — inv. 5 — CAUGHT
+XS01 | seguranca-estatica.mjs (exigirServerOnly) — lib só com process.env de segredo — inv. 3 — SURVIVED (equivalente: env sem NEXT_PUBLIC_ não chega ao bundle)
+XS02 | seguranca-estatica.mjs — lib com node:fs lendo sessão — inv. 3 — SURVIVED (equivalente: node:fs não empacota para o navegador; build falha)
+XS03 | seguranca-estatica.mjs — server-only fora do topo — inv. 3 — CAUGHT
+XS04 | seguranca-estatica.mjs — ../lib/nucleo relativo, pasta componentes/ — inv. 3 — CAUGHT
+XS05 | seguranca-estatica.mjs — `import type {} from 'server-only'` — inv. 3 — CAUGHT
+XN01 | seguranca-estatica.mjs — next.config `cfg.env = {…}` por atribuição — inv. 11 — SURVIVED (produto: XN01p)
+XN02 | seguranca-estatica.mjs — next.config chave calculada `['env']` — inv. 11 — SURVIVED
+XN03 | seguranca-estatica.mjs — next.config `{ ['e' + 'nv']: e }` — inv. 11 — SURVIVED
+XN04 | seguranca-estatica.mjs — next.config espalha configuração importada de outro arquivo — inv. 11 — SURVIVED
+XN05 | seguranca-estatica.mjs — next.config.js commonjs com env — inv. 11 — CAUGHT
+XN07 | seguranca-estatica.mjs — `process.env['NEXT_' + 'PUBLIC_TOKEN']` — inv. 11 — SURVIVED (equivalente: o Next só embute acesso literal)
+XN08 | seguranca-estatica.mjs — next.config `rewrites()` para a origem do domínio — inv. 10 — SURVIVED — lacuna (o domínio responde 401 sem a credencial, mas a rota do domínio fica exposta pelo BFF)
+XN09 | seguranca-estatica.mjs — `assetPrefix: process.env.DOMINIO_A_URL` — inv. 11 — SURVIVED — lacuna (endereço interno no HTML)
+XL01 | seguranca-estatica.mjs — `router.push(D)` com D = '/zona2' — P1 — SURVIVED — lacuna
+XL02 | seguranca-estatica.mjs — `const { push } = useRouter(); push('/zona2')` — P1 — SURVIVED — lacuna
+XL03 | seguranca-estatica.mjs — Link por barril `export const Ir = Link` — P1 — SURVIVED — lacuna
+XL04 | seguranca-estatica.mjs — `r['push']('/zona2')` — P1 — SURVIVED — lacuna
+XL06 | seguranca-estatica.mjs — href por constante importada — P1 — CAUGHT
+XR20 | saida-de-rede.mjs — um parâmetro chamado `fetch` em qualquer função torna invisível o `fetch` global no arquivo inteiro (`declarados` é por arquivo, não por escopo) — inv. 4 (N8) — SURVIVED (produto: XR20p)
+XR23 | saida-de-rede.mjs — `next/dist/compiled/…` passa pela allowlist `next/*` (ws, httpxy, http-proxy-agent existem no node_modules) — inv. 4 (N8) — SURVIVED (produto: XR23p)
+XR26 | saida-de-rede.mjs — `{ fetch }` abreviado — inv. 4 — CAUGHT
+XR27 | saida-de-rede.mjs — `const fetch = 1` noutra função — inv. 4 (N8) — SURVIVED (mesma causa do XR20)
+XR28 | saida-de-rede.mjs — `Object.getPrototypeOf(async function () {})['const' + 'ructor']('return fetch')` — inv. 4 (N8) — SURVIVED (chave calculada fora da global; contorno do XR12)
+XR31 | saida-de-rede.mjs — `process['bind' + 'ing']('tcp_wrap')` — inv. 4 (N8) — SURVIVED (chave calculada)
+XR32 | saida-de-rede.mjs — createRequire — inv. 4 — CAUGHT
+XR34 | saida-de-rede.mjs — setTimeout com string — inv. 4 — SURVIVED (equivalente no servidor: o Node recusa string)
+XR35 | saida-de-rede.mjs — import() de data: URL — inv. 4 — CAUGHT
+XR38 | saida-de-rede.mjs (fontesDaApp) — `lib/test/rede.ts` com fetch, importado pela lib: pasta `test` pulada em qualquer nível — inv. 4 (N8) e inv. 11 — SURVIVED (produto: XR38p)
+XR30 | saida-de-rede.mjs — `NextResponse.rewrite('http://127.0.0.1:4001/…')` num proxy de zona — inv. 10 — SURVIVED — lacuna (mesma de XN08)
+XE23 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — valor nao projetado na prop 'texto' da ilha <Ilha>
+XE24 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — valor nao projetado na prop 'texto' da ilha <Ilha>
+XE25 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — valor nao projetado na prop 'campos' da ilha <Ilha>
+XE27 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — valor nao projetado entre as tags da ilha <Ilha>
+XE28 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — valor nao projetado na prop 'dados' da ilha <Ilha>
+XE29 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — valor nao projetado na prop 'dados' da ilha <I>
+XE30 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — valor nao projetado na prop 'dados' da ilha <Ilha>
+XE31 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — valor nao projetado na prop 'campos' da ilha <Ilha>
+XE32 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — 'use client' importa modulo de servidor 'next/headers'
+XE33 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — 'use client' importa modulo de servidor 'redis'
+XE34 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — <Link> para outra zona '/zona2' deve ser <a href>
+XE35 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — <Link> para outra zona '/zona2' deve ser <a href>
+XE36 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — <Link> para outra zona '/zona2' deve ser <a href>
+XE37 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — navegacao de cliente para outra zona '/zona2/tarefas': use <a href> ou window.location
+XE38 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — next.config com 'env': embute valor do servidor no bundle do navegador
+XE39 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — variavel de ambiente publica fora da lista permitida: 'NEXT_PUBLIC_BEARER'
+XE40 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 2/3/11/P1 — CAUGHT — next.config com 'define': embute valor do servidor no bundle do navegador
+XR08 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 4 (N8) — CAUGHT — usa 'globalThis' como valor (apelido da global)
+XR09 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 4 (N8) — CAUGHT — acessa 'getBuiltinModule', que carrega modulo ou monta codigo fora da analise
+XR10 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 4 (N8) — CAUGHT — importa modulo fora da lista permitida 'node:dns'
+XR11 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 4 (N8) — CAUGHT — importa modulo fora da lista permitida 'needle'
+XR12 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 4 (N8) — CAUGHT — acessa 'constructor', que carrega modulo ou monta codigo fora da analise
+XF01 | contorno da iteração 3 reaplicado ao analisador atual (anexos/contornos-it3.mjs) — inv. 3 — CAUGHT — temServerOnly false
+P12 | repos/erp-zona-1/lib/pagina.ts — hostsPermitidos acrescenta evil.com — inv. 5 — CAUGHT — P12: toda zona aceita Server Action so dos hosts do shell (SHELL_HOSTS)

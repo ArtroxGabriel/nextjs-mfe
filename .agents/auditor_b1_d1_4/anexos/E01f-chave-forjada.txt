@@ -1,0 +1,4 @@
+{"sub":"carla","nome":"Carla","accessToken":"dev.carla","expiraEm":1790185985618}
+cookie forjado (nunca emitido pelo shell) /: 200 (pagina de administracao)
+cookie forjado (nunca emitido pelo shell) /acesso: 200 (pagina de administracao)
+cookie forjado (nunca emitido pelo shell) /zona1: 200 (pagina de administracao)
