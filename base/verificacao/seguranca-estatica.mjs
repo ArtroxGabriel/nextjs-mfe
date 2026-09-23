@@ -13,6 +13,28 @@ import { RAIZ } from '../scripts/ambiente.mjs'
 
 const ts = createRequire(join(RAIZ, 'erp-shell', 'package.json'))('typescript')
 
+/**
+ * Tipo que vai à ilha sem carregar objeto do domínio: texto, número, booleano, `null`/`undefined`.
+ * `any` não é escalar (falha fechada). auditor_b1_d1_4, V3: `extra={envio.lista}` levou o custo ao
+ * HTML, e uma lista de nomes (`lista`, `dados`…) não pega `envio.resumo`; quem decide é o tipo.
+ */
+const ESCALARES = ts.TypeFlags.StringLike | ts.TypeFlags.NumberLike | ts.TypeFlags.BooleanLike | ts.TypeFlags.BigIntLike
+  | ts.TypeFlags.Null | ts.TypeFlags.Undefined | ts.TypeFlags.Void
+const ehTipoEscalar = (t) => (t.isUnion() ? t.types.every(ehTipoEscalar) : (t.flags & ESCALARES) !== 0)
+
+/**
+ * Programa TypeScript de uma app (o `tsconfig.json` dela mais `arquivos`), para o analisador saber o
+ * tipo de cada valor passado a uma ilha. Todo arquivo varrido entra, para nenhum ficar sem tipo.
+ */
+export function programaDaApp(raizDaApp, arquivos = []) {
+  const caminho = join(raizDaApp, 'tsconfig.json')
+  const cfg = existsSync(caminho)
+    ? ts.getParsedCommandLineOfConfigFile(caminho, {}, { ...ts.sys, onUnRecoverableConfigFileDiagnostic: () => {} })
+    : null
+  const options = { ...(cfg?.options ?? { jsx: ts.JsxEmit.ReactJSX, strict: true }), allowJs: true, noEmit: true, incremental: false }
+  return ts.createProgram({ rootNames: [...new Set([...(cfg?.fileNames ?? []), ...arquivos])], options })
+}
+
 /** Módulos que só existem no servidor. `@erp/nucleo` inteiro é servidor, menos `/permissoes` (feito para ilhas). */
 const ehModuloDeServidor = (mod) =>
   ['server-only', 'next/headers', '@erp/moldura/servidor', 'redis', 'ioredis'].includes(mod) || mod.startsWith('@redis/') ||
@@ -140,11 +162,14 @@ function arrastaServidor(arquivo, raizDaApp, vistos = new Set(), fonte = null) {
 
 /**
  * Achados estáticos num arquivo: `{ linha, motivo, regra }`.
- * `opcoes.raizDaApp` resolve `@/…`; `opcoes.componentesCliente` acrescenta nomes de ilha (testes).
+ * `opcoes.raizDaApp` resolve `@/…`; `opcoes.componentesCliente` acrescenta nomes de ilha (testes);
+ * `opcoes.programa` (de `programaDaApp`) liga o verificador de tipos à regra da ilha.
  */
 export function analisarSeguranca(fonte, nomeArquivo = 'arquivo.tsx', idZona = null, opcoes = {}) {
-  const sf = ts.createSourceFile(nomeArquivo, fonte, ts.ScriptTarget.Latest, true,
+  // com `opcoes.programa` (varredura das apps), o nó vem do programa e o verificador de tipos vale
+  const sf = opcoes.programa?.getSourceFile(nomeArquivo) ?? ts.createSourceFile(nomeArquivo, fonte, ts.ScriptTarget.Latest, true,
     /\.(tsx|jsx)$/.test(nomeArquivo) ? ts.ScriptKind.TSX : ts.ScriptKind.TS)
+  const tipos = opcoes.programa?.getSourceFile(nomeArquivo) ? opcoes.programa.getTypeChecker() : null
   const achados = []
   const achar = (no, motivo, regra) => achados.push({ linha: sf.getLineAndCharacterOfPosition(no.getStart(sf)).line + 1, motivo, regra })
   const texto = (n) => (n && (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) ? n.text : null)
@@ -306,7 +331,8 @@ const CAMPOS_COMPLEXOS = new Set(['lista', 'recursos', 'items', 'itens', 'dados'
         if (ts.isPropertyAccessExpression(x) && CAMPOS_COMPLEXOS.has(x.name.text.toLowerCase())) return false
         x = x.expression
       }
-      return ts.isIdentifier(x) || x.kind === ts.SyntaxKind.ThisKeyword
+      if (!ts.isIdentifier(x) && x.kind !== ts.SyntaxKind.ThisKeyword) return false
+      return !tipos || ehTipoEscalar(tipos.getTypeAtLocation(e))
     }
     if (ts.isConditionalExpression(e)) return valorSeguro(e.whenTrue) && valorSeguro(e.whenFalse)
     if (ts.isBinaryExpression(e) && [ts.SyntaxKind.PlusToken, ts.SyntaxKind.QuestionQuestionToken, ts.SyntaxKind.BarBarToken,
@@ -453,11 +479,13 @@ export function varrerSeguranca(apps = ['erp-shell', 'erp-zona-1', 'erp-zona-2',
   for (const app of apps) {
     const raizDaApp = join(RAIZ, app)
     const idZona = { 'erp-zona-1': 'zona1', 'erp-zona-2': 'zona2', 'erp-zona-acesso': 'acesso' }[app] ?? null
-    for (const f of fontesDaApp(raizDaApp)) {
+    const fontes = fontesDaApp(raizDaApp)
+    const programa = programaDaApp(raizDaApp, fontes)
+    for (const f of fontes) {
       const rel = relative(raizDaApp, f)
       // app/ é servidor por convenção do Next; scripts/ roda fora do Next (sem a condição react-server)
       const exigirServerOnly = !/^(app|scripts)\//.test(rel) && !/^(proxy|next\.config|next-env)\./.test(rel)
-      for (const a of analisarSeguranca(readFileSync(f, 'utf8'), f, idZona, { raizDaApp, exigirServerOnly })) {
+      for (const a of analisarSeguranca(readFileSync(f, 'utf8'), f, idZona, { raizDaApp, exigirServerOnly, programa })) {
         resultado.push(`${relative(RAIZ, f)}:${a.linha} [${a.regra}] ${a.motivo}`)
       }
     }

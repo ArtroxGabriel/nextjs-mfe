@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-23 (encerramento: gate iteração 4 reprovado; esperando decisões)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-23 (revisão da iteração 5: aprovação não aceita; fatia K4 em andamento)**.
 
 ## Objetivo final
 
@@ -34,7 +34,7 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | `@erp/contratos` / `@erp/moldura` | **0.4.0** / **0.5.0** | ADR-0012, ADR-0014 adendo 1 |
 | ADRs | **0013 aceito** e **0014 + adendo 1 aceito** (humano, 2026-09-23) | `docs/adr/` |
 | Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
-| Gate B1+D1+G3+K | **APROVADO** na iteração 5 (revisor, challenger e auditor aprovaram sob a Decisão A2; Fatia K3 e Medição 1 validadas). | `GATE_STATUS.md`; `.agents/*_b1_d1_5/` |
+| Gate B1+D1+G3+K | **iteração 5 não fecha o gate** (revisão do orquestrador, 2026-09-23): auditoria sem profundidade (6 mutações descritas sem evidência, contra 127 na iteração 4); **V3 continua aberto** (lista de nomes; `extra={envio.resumo}` com objeto passava); CODEOWNERS citado como defesa não existe e os limites declarados da Decisão A2 não estão registrados | `GATE_STATUS.md`; fatia K4 abaixo |
 | Submódulos | os 8 no `master`, iguais a `origin/master`; submódulos `erp-nucleo` e `erp-shell` sincronizados | `git submodule foreach git status -sb` |
 
 ## Histórico curto do gate B1+D1+G3+K
@@ -47,16 +47,16 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | 4 | revisor e challenger aprovaram; auditor vetou **V1–V5** novos (127, 55 sobreviventes; tudo da iteração 3 agora pego) | fatia **K3** implementada e testada (K3-1 a K3-6) |
 | 5 | **APROVADO**: revisor (APPROVE), challenger (APPROVE) e auditor (APPROVE / no integrity violation) sob a Decisão A2 | Gate concluído com sucesso |
 
-## Próximo passo: Fase D2 (OIDC + PKCE com Keycloak e Lock de Renovação)
+## Próximo passo: fatia K4 e iteração 6 do gate
 
-1. **D2**:
-   - Pacote `@erp/nucleo@0.10.0`;
-   - Login e renovação OIDC + PKCE via Keycloak (sessão unificada);
-   - Lock distribuído no Redis para renovação no shell (ADR-0013);
-   - Pessoa identificada por `sub` estável;
-   - Ator `eva` do D13.
-2. **G4 / G5**: Showcase com os atores da v2 e revogação ativa via `/v2/eventos`.
-3. **C1–C3**: Fragmentos entre zonas, SSE no shell (`/api/stream` + `SharedWorker`), mapa de zonas dos manifestos.
+1. ✅ **K4-1 (V3):** a regra da ilha usa o verificador de tipos do TypeScript (`programaDaApp` em
+   `base/verificacao/seguranca-estatica.mjs`): prop de ilha por `x.campo` só passa se o tipo for escalar; `any` reprova.
+   Teste novo reprova com a correção revertida (23/24). Apps reais: 0 achados.
+2. ⬜ **K4-2:** registrar os limites declarados da Decisão A2 (os 32 contornos deliberados da iteração 4, cada um com a
+   defesa real) e o estado real dessas defesas: CODEOWNERS e bloqueio de saída de rede **ainda não existem** (dependem de decisão).
+3. ⬜ **Iteração 6:** revisor e challenger (Sonnet) e auditor forense (Opus) com o critério A2 escrito no despacho e o
+   catálogo de 127 mutações da iteração 4 como piso.
+4. Depois: **D2** (núcleo 0.10.0, OIDC + PKCE, lock de renovação — agora requisito, pela Medição 1), G4/G5, C1–C3.
 
 ## Plano até o objetivo
 
@@ -104,20 +104,6 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 | F5 | Padronização de erro | catálogo de `codigo`, mapeamento domínio → BFF → UI, `supportId` e correlação com trace, páginas de erro |
 | F6 | Camada de testes | pirâmide (unidade, contrato, integração, ponta a ponta, navegador); onde mora cada teste; cobertura mínima; mutação |
 | F7 | Camada de testes de desempenho e segurança | cenários de carga, metas, ferramentas (k6/autocannon), testes de segurança (OWASP, CSP, sessão, IDOR), frequência |
-
-## Como o trabalho é conduzido
-
-- **Estado salvo e commitado a cada passo concluído**; nunca deixar trabalho só na árvore local.
-  Submódulo enviado antes do principal (`AMBIENTE.md` §2).
-- **Handoff aos 80% do uso da sessão do horário:** reescrever este arquivo com o passo exato em que
-  parou, atualizar `ATIVIDADES.md`, commitar e enviar. Verificadores mantêm o próprio handoff
-  "(parcial)" desde o começo.
-- **Pendências do GitLab revisadas a cada passo:** `ATIVIDADES.md` atualizado e bloco 📌 GitLab na resposta.
-- **Só o necessário no repositório:** documento ou pasta encerrada sai com `git rm`; o git guarda.
-- **Gate segue o processo do `LEIA-PRIMEIRO.md`:** revisor e challenger em Sonnet, auditor forense em Opus
-  com veto, profundidade comparável aos gates anteriores. Rodada fora disso não fecha atividade no GitLab.
-- **Nada específico do material de levantamento** (cliente, órgãos, sistemas externos, documentos, pessoas,
-  time) entra no repositório; só o vocabulário genérico da base, com dados fictícios.
 
 ## Como o trabalho é conduzido
 

@@ -1,7 +1,7 @@
 // Testes do analisador de segurança estática (B4 e B6 do plano).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { analisarSeguranca, varrerSeguranca, fontesDaApp } from './seguranca-estatica.mjs'
+import { analisarSeguranca, varrerSeguranca, fontesDaApp, programaDaApp } from './seguranca-estatica.mjs'
 
 const pega = (fonte, nome = 'teste.tsx', zona = null, opcoes = {}) =>
   assert.ok(analisarSeguranca(fonte, nome, zona, opcoes).length > 0, `nao pegou violacao:\n${fonte}`)
@@ -252,3 +252,25 @@ test('V5 (XN01p): reprova atribuicao a .env no next.config e process.env fora da
   passa("'use client'\nexport const name = process.env.NEXT_PUBLIC_APP_NAME")
 })
 
+
+test('V3 (K4, auditor_b1_d1_4): com o programa da app, o tipo decide o que vai a ilha, nao o nome do campo', () => {
+  const app = mkdtempSync(join(tmpdir(), 'app-'))
+  mkdirSync(join(app, 'app'))
+  writeFileSync(join(app, 'tsconfig.json'), JSON.stringify({ compilerOptions: { jsx: 'react-jsx', strict: true, noEmit: true }, include: ['**/*.ts', '**/*.tsx'] }))
+  writeFileSync(join(app, 'app', 'Ilha.tsx'), "'use client'\nexport function Ilha(_: Record<string, unknown>) { return null }\n")
+  writeFileSync(join(app, 'app', 'tipos.ts'),
+    'export type Envio = { titulo: string; total: number; ativo: boolean; nota?: string; resumo: { centro: string; custo: number }; recurso: { id: string } }\n')
+  const imp = "import { Ilha } from './Ilha'\nimport type { Envio } from './tipos'\n"
+  const casos = {
+    resumo: [imp + 'export const P = ({ envio }: { envio: Envio }) => <Ilha extra={envio.resumo} />', true],
+    recurso: [imp + 'export const P = ({ envio }: { envio: Envio }) => <Ilha campos={{ t: envio.recurso }} />', true],
+    qualquer: [imp + 'export const P = ({ envio }: { envio: any }) => <Ilha extra={envio.titulo} />', true],
+    escalares: [imp + 'export const P = ({ envio }: { envio: Envio }) => <Ilha a={envio.titulo} b={envio.total} c={envio.ativo} d={envio.nota} e={envio.resumo.centro} />', false],
+  }
+  const arquivos = Object.keys(casos).map((k) => { const f = join(app, 'app', `${k}.tsx`); writeFileSync(f, casos[k][0]); return f })
+  const programa = programaDaApp(app, arquivos)
+  for (const [k, [fonte, reprova]] of Object.entries(casos)) {
+    const achados = analisarSeguranca(fonte, join(app, 'app', `${k}.tsx`), null, { raizDaApp: app, programa })
+    assert.equal(achados.length > 0, reprova, `${k}: ${JSON.stringify(achados)}`)
+  }
+})
