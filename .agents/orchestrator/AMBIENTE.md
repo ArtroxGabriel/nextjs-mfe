@@ -61,7 +61,13 @@
   `node --test <pasta>` roda zero testes e sai com 0.
 - Núcleo: `node --conditions react-server --test test/*.test.mjs`, depois de `tsc -p tsconfig.json`.
 - Ponta a ponta: `pnpm verificar` (usa os builds existentes) ou `pnpm verificar:construir` (refaz).
-  Esperado hoje: 60/60 (nos dois modos, arquivo e Redis).
+  Esperado hoje (2026-09-23): Redis 100/100; arquivo 96 + 4 pulados (os 4 só valem com Redis).
+- **Teste que só roda num modo esconde defeito.** A K3 passou por revisor e challenger sem nunca ter rodado com
+  `task verificar:redis`, e o teste novo dela quebrava o modo arquivo. Fatia que toca sessão, Redis ou ambiente roda
+  **os dois modos** antes do commit.
+- **O Redis do showcase exige senha para escrita desde a K4-4** (`ERP_REDIS_SENHA_SHELL`). Um container criado antes
+  aceita escrita anônima e o teste `so o endereco do Redis nao grava sessao` reprova: `task showcase:descer` e
+  `task showcase:subir` para recriar (o volume fica).
 - Um teste estático que dá para contornar (`globalThis['fetch']` no lugar de `fetch(`) foi contornado. Checagem por regex tem de cobrir as formas indiretas, e todo contorno achado vira caso do teste.
 - **Mutação em código que grava arquivo pode sujar dados versionados.** Em 2026-09-22 a mutação
   "sem pasta, grave na semente" do `erp-dominio-stub` gravou em `dados/semente/*.json`; restaurar o
