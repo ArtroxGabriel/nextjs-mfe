@@ -150,7 +150,9 @@ Unidades: contratos 20, núcleo 132, moldura 26, stub 42, shell 40; estáticas 2
 ## Próximo passo
 
 1. **Iteração 3 do gate B1+D1+G3+K — em andamento:** `reviewer_b1_d1_3` **APPROVE** e `challenger_b1_d1_3`
-   **APPROVE** (handoffs commitados); `auditor_b1_d1_3` (Opus) rodando, dono das portas. Durante o gate, ninguém
+   **APPROVE** (handoffs commitados); `auditor_b1_d1_3` (Opus) rodando, dono das portas. Interrompido uma vez pelo
+   limite de uso e retomado; parcial: 65 mutações, 11 sobreviventes (entre elas N37 `force-cache`, N38b/c escritor
+   exportado com outro nome, N53 `same-site` aceito na action) — veredito ainda não saiu. Durante o gate, ninguém
    mexe no código dos submódulos. Endurecimentos anotados pelos dois, para depois do gate: zona recusar subir sem
    `REDIS_URL_ZONA` fora de desenvolvimento; `valorSeguro` aceitar só import de ação (`'use server'`), não qualquer
    import; teste que espione que a action negada não chama `nucleo.destino`.
