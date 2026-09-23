@@ -20,16 +20,16 @@
 
 | # | Título | Estado real | Ação | No GitLab? | Evidência |
 |---|---|---|---|---|---|
-| 3 | Isolar a falha de zona no shell da base *(era "Tratar zonas travadas")* | gate do shell **aprovado** na iteração 4; `/{zona}/api/health` **implementado** nas 3 zonas e a sonda do shell o usa (B3), ainda sem gate independente (entra no gate B1+D1 iteração 2) | reescrever título; mover para **em andamento**; fechar depois do gate que cobre o B3 | pendente | `erp-zona-1` `677a79c`; `erp-shell` `d7a27a9`; `GATE_STATUS.md` |
+| 3 | Isolar a falha de zona no shell da base *(era "Tratar zonas travadas")* | gate do shell **aprovado** na iteração 4; `/{zona}/api/health` **implementado** nas 3 zonas e a sonda do shell o usa (B3), ainda sem gate independente (entra no gate B1+D1 iteração 2) | reescrever título; mover para **em andamento**; fechar depois do gate que cobre o B3 | feito (2026-09-23, #114; segue em #132) | `erp-zona-1` `677a79c`; `erp-shell` `d7a27a9`; `GATE_STATUS.md` |
 | 9 | Trocar login e store de desenvolvimento por OIDC e Redis *(era "Implementar sessão e autorização no servidor")* | cookie opaco, escritor único e autorização por módulo entregues; **Redis ligado** quando `REDIS_URL` existe (60/60 com Redis, conferido de novo em 2026-09-22; gate B1+D1+G3 **reprovado** nas iterações 2 e 3; revisor e challenger aprovaram a 3, auditor vetou V1–V7 → fatia K2 e iteração 4; zonas leem a sessão com usuário ACL só de leitura); sessão já tem os campos `refreshToken`/`idToken`/`tokenExpiraEm` (núcleo 0.8.0); **faltam** login OIDC + PKCE com o Keycloak e a renovação com lock (D2, ADR-0013) | reescrever título e critérios; mover para **em andamento** | pendente | ADR-0009 decisão 3; ADR-0013; `GATE_STATUS.md` |
-| 10 | Implementar composição por fragmentos | núcleo pronto (`@erp/nucleo` 0.5.0, 18 testes, 16 mutações); falta ligar zona 1 ← zona 2 e bloquear no shell | mover para **em andamento** | pendente | ADR-0011; `erp-nucleo` `1841771` |
-| 11 | Centralizar o tempo real no shell | não iniciado | manter; tirar a dependência da #2 | pendente | `alvo.md` §6 (SSE) |
+| 10 | Implementar composição por fragmentos | núcleo pronto (`@erp/nucleo` 0.5.0, 18 testes, 16 mutações); falta ligar zona 1 ← zona 2 e bloquear no shell | mover para **em andamento** | feito (2026-09-23, #121) | ADR-0011; `erp-nucleo` `1841771` |
+| 11 | Centralizar o tempo real no shell | não iniciado | manter; tirar a dependência da #2 | feito (2026-09-23, #122) | `alvo.md` §6 (SSE) |
 | 12 | Publicar o pacote visual @erp/ui | não iniciado; depende de medir duplicação de bundle | manter | — | `alvo.md` §6 |
-| 14 | Definir estratégia de publicação e compatibilidade | submódulos **feitos**; hook `pre-push` que recusa submódulo não enviado **feito** (`base/scripts/checar-envio.mjs`, provado com commit só local); **gate de lockstep do núcleo feito** (`base/scripts/verificar-lockstep.mjs`, no `pre-push`, provado com divergência real); falta registro único ou publicação pelo CI — em 2026-09-22 as duas máquinas alternaram commits só de hash de lockfile, cada um quebrando a instalação da outra; paliativo: `task pacotes:alinhar-hashes` e não commitar hash local | acrescentar critérios: gate de lockstep no CI, registro único, nunca republicar a mesma versão,  checar submódulo não enviado antes do push, mapa de zonas vindo do domínio de acesso | pendente | ADR-0010; `AMBIENTE.md` §1–2; `4eb128b` |
-| 19 | Entregar o showcase da base com mocks, Keycloak e Redis *(nova)* | **`task showcase` sobe tudo** (Redis, Keycloak, domínios com dados em JSON gravados, shell e 3 zonas) e `task showcase:conferir` mostra ator × zona; sessão já no Redis; falta login pelo Keycloak (D2) e o roteiro completo (E4, E5) | **criar** (texto em §3) | pendente | `RETOMADA.md` |
-| 20 | Migrar as apps para o kit de app e fechar as verificações da spec *(nova)* | **migração feita** nas 4 apps (núcleo 0.8.2, moldura 0.4.0); **B4/B6 feitos** (`base/verificacao/seguranca-estatica.mjs`, 16/16); **B5 feito** (B5a no shell, B5b no núcleo 0.8.0; os tempos de sessão entram com o D2); ponta a ponta 60/60; gate B1+D1+G3 **reprovado** na iteração 3 (auditor, vetos V1–V7; revisor e challenger aprovaram) → fatia K2 e iteração 4 | **criar** (texto em §3, atualizado) | pendente | ADR-0012; `GATE_STATUS.md` |
-| 21 | Evoluir a gestão de acesso para o modelo de referência v2 *(nova)* | **modelo e mock prontos** (G1); **ADR-0014 + adendo 1** (G2); **alinhamento implementado** (G3: corte seco para a v2, acesso por funcionalidade, papel administrativo separado de módulo, zona de acesso com pessoas × módulos; ponta a ponta 62/62 nos dois modos); faltam o gate (iteração 3 reprovada pelo auditor → K2 e iteração 4), o showcase com os atores (G4) e a revogação ativa por eventos (G5, lacuna declarada) | **criar** em andamento (texto em §3) | pendente | ADR-0014 adendo 1; `GATE_STATUS.md` |
-| 18 | Centralizar a telemetria das zonas no shell *(nova)* — **ampliar para "Trace contínuo sem dado pessoal (núcleo 8)"**: o elemento 8 é núcleo e está ausente (`alvo.md` §6) | gateway e propagação de trace **aprovados no gate do shell** (iteração 4); falta exportar spans (SDK OpenTelemetry, instalação aprovada; B2) | **criar** em andamento (texto em §3) | pendente | `erp-shell` `6de4939`; `alvo.md` §6 (Operação) |
+| 14 | Definir estratégia de publicação e compatibilidade | submódulos **feitos**; hook `pre-push` que recusa submódulo não enviado **feito** (`base/scripts/checar-envio.mjs`, provado com commit só local); **gate de lockstep do núcleo feito** (`base/scripts/verificar-lockstep.mjs`, no `pre-push`, provado com divergência real); falta registro único ou publicação pelo CI — em 2026-09-22 as duas máquinas alternaram commits só de hash de lockfile, cada um quebrando a instalação da outra; paliativo: `task pacotes:alinhar-hashes` e não commitar hash local | acrescentar critérios: gate de lockstep no CI, registro único, nunca republicar a mesma versão,  checar submódulo não enviado antes do push, mapa de zonas vindo do domínio de acesso | feito (2026-09-23, #125; segue em #133) | ADR-0010; `AMBIENTE.md` §1–2; `4eb128b` |
+| 19 | Entregar o showcase da base com mocks, Keycloak e Redis *(nova)* | **`task showcase` sobe tudo** (Redis, Keycloak, domínios com dados em JSON gravados, shell e 3 zonas) e `task showcase:conferir` mostra ator × zona; sessão já no Redis; falta login pelo Keycloak (D2) e o roteiro completo (E4, E5) | **criar** (texto em §3) | feito (2026-09-23, #135) | `RETOMADA.md` |
+| 20 | Migrar as apps para o kit de app e fechar as verificações da spec *(nova)* | **migração feita** nas 4 apps (núcleo 0.8.2, moldura 0.4.0); **B4/B6 feitos** (`base/verificacao/seguranca-estatica.mjs`, 16/16); **B5 feito** (B5a no shell, B5b no núcleo 0.8.0; os tempos de sessão entram com o D2); ponta a ponta 60/60; gate B1+D1+G3 **reprovado** na iteração 3 (auditor, vetos V1–V7; revisor e challenger aprovaram) → fatia K2 e iteração 4 | **criar** (texto em §3, atualizado) | feito (2026-09-23, #136) | ADR-0012; `GATE_STATUS.md` |
+| 21 | Evoluir a gestão de acesso para o modelo de referência v2 *(nova)* | **modelo e mock prontos** (G1); **ADR-0014 + adendo 1** (G2); **alinhamento implementado** (G3: corte seco para a v2, acesso por funcionalidade, papel administrativo separado de módulo, zona de acesso com pessoas × módulos; ponta a ponta 62/62 nos dois modos); faltam o gate (iteração 3 reprovada pelo auditor → K2 e iteração 4), o showcase com os atores (G4) e a revogação ativa por eventos (G5, lacuna declarada) | **criar** em andamento (texto em §3) | feito (2026-09-23, #137) | ADR-0014 adendo 1; `GATE_STATUS.md` |
+| 18 | Centralizar a telemetria das zonas no shell *(nova)* — **ampliar para "Trace contínuo sem dado pessoal (núcleo 8)"**: o elemento 8 é núcleo e está ausente (`alvo.md` §6) | gateway e propagação de trace **aprovados no gate do shell** (iteração 4); falta exportar spans (SDK OpenTelemetry, instalação aprovada; B2) | **criar** em andamento (texto em §3) | feito (2026-09-23, #134) | `erp-shell` `6de4939`; `alvo.md` §6 (Operação) |
 
 ### Lista 2 — refinamento (separada das atuais; não começar agora)
 
@@ -39,29 +39,29 @@ Sugestão para o GitLab: criar agora com a etiqueta "refinamento" e o estado "bl
 
 | # | Título | Estado real | Ação | No GitLab? |
 |---|---|---|---|---|
-| F1 | Refinar a arquitetura com design patterns e padrões de arquitetura | espera a lista 1; precisa de detalhamento | criar bloqueada (texto em §3) | pendente |
-| F2 | Otimizar desenvolvimento e produção | idem | criar bloqueada | pendente |
-| F3 | Tornar o mapa de zonas robusto | idem | criar bloqueada | pendente |
-| F4 | Refinar a gestão de acesso | idem | criar bloqueada | pendente |
-| F5 | Padronizar os erros | idem | criar bloqueada | pendente |
-| F6 | Estruturar a camada de testes | idem | criar bloqueada | pendente |
-| F7 | Estruturar os testes de desempenho e segurança | idem | criar bloqueada | pendente |
+| F1 | Refinar a arquitetura com design patterns e padrões de arquitetura | espera a lista 1; precisa de detalhamento | criar bloqueada (texto em §3) | feito (2026-09-23, #139) |
+| F2 | Otimizar desenvolvimento e produção | idem | criar bloqueada | feito (2026-09-23, #140) |
+| F3 | Tornar o mapa de zonas robusto | idem | criar bloqueada | feito (2026-09-23, #141) |
+| F4 | Refinar a gestão de acesso | idem | criar bloqueada | feito (2026-09-23, #142) |
+| F5 | Padronizar os erros | idem | criar bloqueada | feito (2026-09-23, #143) |
+| F6 | Estruturar a camada de testes | idem | criar bloqueada | feito (2026-09-23, #144) |
+| F7 | Estruturar os testes de desempenho e segurança | idem | criar bloqueada | feito (2026-09-23, #145) |
 
 ### Fechar — entregues ou substituídas
 
 | # | Título | Motivo | No GitLab? | Evidência |
 |---|---|---|---|---|
-| 1 | Finalizar a validação da prova de conceito | substituída pela base; PoC removida | pendente | tag `poc-final`; `73bdc8b` |
-| 2 | Corrigir o encerramento do SSE | substituída (era da PoC); SSE da base é a #11 | pendente | `DEFERRED.md` D1 |
-| 4 | Padronizar a moldura compartilhada | entregue | pendente | `@erp/moldura` 0.3.0 |
-| 5 | Adicionar testes no navegador | substituída; a base testa as actions pelo caminho do navegador | pendente | `base/verificacao` |
-| 6 | Retomar a implementação do @erp/nucleo | entregue | pendente | `@erp/nucleo` 0.3.2, 60 testes, ADR-0010 |
-| 7 | Construir o shell real | entregue | pendente | `repos/erp-shell` |
-| 8 | Construir a zona inicial e stub de domínio | entregue | pendente | `erp-zona-1`, `erp-zona-2`, `erp-dominio-stub` |
-| 13 | Criar o mapa central de zonas | entregue (`zonas.json`); resíduo foi para a #14 | pendente | `repos/erp-shell/zonas.json` |
-| 15 | Migrar para Next.js 16 e App Router | entregue | pendente | Next 16.3.4 + `proxy.ts` |
-| 16 | Documentar riscos e decisões em aberto | entregue | pendente | ADR-0009, ADR-0010, `alvo.md` §6 |
-| 17 | Validar a base genérica BFF + Multi-Zones *(nova)* | **criar já fechada**, para registro (texto em §3) | pendente | ADR-0009; `base/verificacao` 26/26; `GATE_STATUS.md` |
+| 1 | Finalizar a validação da prova de conceito | substituída pela base; PoC removida | feito (2026-09-23, #112) | tag `poc-final`; `73bdc8b` |
+| 2 | Corrigir o encerramento do SSE | substituída (era da PoC); SSE da base é a #11 | feito (2026-09-23, #113) | `DEFERRED.md` D1 |
+| 4 | Padronizar a moldura compartilhada | entregue | feito (2026-09-23, #115) | `@erp/moldura` 0.3.0 |
+| 5 | Adicionar testes no navegador | substituída; a base testa as actions pelo caminho do navegador | feito (2026-09-23, #116) | `base/verificacao` |
+| 6 | Retomar a implementação do @erp/nucleo | entregue | feito (2026-09-23, #117) | `@erp/nucleo` 0.3.2, 60 testes, ADR-0010 |
+| 7 | Construir o shell real | entregue | feito (2026-09-23, #118) | `repos/erp-shell` |
+| 8 | Construir a zona inicial e stub de domínio | entregue | feito (2026-09-23, #119) | `erp-zona-1`, `erp-zona-2`, `erp-dominio-stub` |
+| 13 | Criar o mapa central de zonas | entregue (`zonas.json`); resíduo foi para a #14 | feito (2026-09-23, #124) | `repos/erp-shell/zonas.json` |
+| 15 | Migrar para Next.js 16 e App Router | entregue | feito (2026-09-23, #126) | Next 16.3.4 + `proxy.ts` |
+| 16 | Documentar riscos e decisões em aberto | entregue | feito (2026-09-23, #127) | ADR-0009, ADR-0010, `alvo.md` §6 |
+| 17 | Validar a base genérica BFF + Multi-Zones *(nova)* | **criar já fechada**, para registro (texto em §3) | feito (2026-09-23, #138) | ADR-0009; `base/verificacao` 26/26; `GATE_STATUS.md` |
 
 As quatro atividades do anexo de `docs/historico/revisao/2026-09-15-revisao-base-generica.md` não
 serão criadas: o trabalho delas está na #17.
@@ -389,3 +389,4 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-09-22 (noite, 3) | #21 com o G3 implementado (62/62); #20 e #9 com os vetos V2–V4 e V6 corrigidos; o gate da iteração 3 decide |
 | 2026-09-22 (noite, 2) | Gate B1+D1 iteração 2 **reprovado** (auditor Opus, vetos V1–V8): #9 e #20 continuam em andamento; comentar o bloqueio no GitLab |
 | 2026-09-22 (noite) | Reconferido nesta máquina: 60/60 com arquivo e com Redis. #3 com o health implementado; #20 com B4/B6 e B5 feitos e texto no núcleo 0.8.2; #21 com ADR-0014 e G3 só iniciado; #9 com campos OIDC na sessão; #14 com a alternância de hash entre máquinas. Gate B1+D1 iteração 1 considerada rasa; iteração 2 com auditor Opus |
+| 2026-09-23 | Sincronização com o GitLab (filhos do #72): 12 fechadas, 14 criadas, 2 atualizadas; o que mudou de plano nas #3, #9 e #14 virou atividade nova. Resultado em `MANUTENCAO-GITLAB.md` §3 |
