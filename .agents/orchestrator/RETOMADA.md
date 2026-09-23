@@ -125,7 +125,9 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 Cada teste novo foi conferido contra a mutação (ou contra o analisador antigo do HEAD): reprova com ela, passa sem ela.
 Núcleo sem mudança de fonte (só testes e `scripts/`): continua 0.9.2, nada a publicar.
 
-**Próximo:** iteração 4 com três verificadores novos (revisor Sonnet, challenger Sonnet — pedir que exercite P09, E10c, E01b/c
+**Em andamento (2026-09-23):** iteração 4 despachada — `reviewer_b1_d1_4` e `challenger_b1_d1_4` (Sonnet) rodando; o `auditor_b1_d1_4` (Opus) entra quando o challenger liberar as portas. Handoffs em `.agents/<nome>/handoff.md`.
+
+**Plano original:** iteração 4 com três verificadores novos (revisor Sonnet, challenger Sonnet — pedir que exercite P09, E10c, E01b/c
 e a zona avulsa sem `REDIS_URL_ZONA` —, auditor Opus com veto). Depois **D2** (núcleo 0.10.0, OIDC + PKCE, ADR-0013, ator "eva"
 do D13); G4; G5; C1–C3; E4–E5.
 
