@@ -8,9 +8,11 @@ services:
   redis:
     image: redis:7.4-alpine
     # ADR-0002: instância só de sessão, sem despejo de chave e com AOF.
-    # ACL (invariante 15; auditor_b1_d1_2, V1): `default` é o do shell, único escritor; `zona` só lê
-    # as chaves de sessão. A senha é de desenvolvimento (docs/CONFIGURACAO.md, `REDIS_URL_ZONA`).
+    # ACL (invariante 15; auditor_b1_d1_2, V1): `default` é o do shell, único escritor, e exige senha
+    # (challenger_b1_d1_7: sem ela, o endereço bastava para gravar sessão); `zona` só lê as chaves de
+    # sessão. As senhas são de desenvolvimento (docs/CONFIGURACAO.md, `REDIS_URL` e `REDIS_URL_ZONA`).
     command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction",
+              "--requirepass", "${ERP_REDIS_SENHA_SHELL:-dev-shell-escrita}",
               "--user", "zona", "on", ">${ERP_REDIS_SENHA_ZONA:-dev-zona-leitura}", "~erp:sessao:*", "-@all", "+get", "+@connection"]
     ports:
       - "127.0.0.1:6379:6379"

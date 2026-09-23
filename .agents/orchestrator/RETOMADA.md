@@ -56,9 +56,12 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
    defesa de cada uma; o bloqueio de saída de rede fica para o deploy).
 3. ❌ **Iteração 6:** reprovada (revisor e challenger): na K3 as zonas continuavam recebendo `REDIS_URL`. ✅ **K4-3** corrige
    (`GATE_STATUS.md`); `task verificar:redis` 98/98, `task verificar` 95 + 3 pulados.
-4. ⬜ **Iteração 7:** revisor e challenger (Sonnet) e auditor forense (Opus) com o critério A2 escrito no despacho e o
+4. ❌ **Iteração 7:** reprovada pelo challenger: o Redis do showcase aceitava escrita sem senha. ✅ **K4-4** corrige
+   (`GATE_STATUS.md`); `task verificar:redis` 100/100, `task verificar` 96 + 4 pulados. **Outra máquina: recriar o Redis
+   (`task showcase:subir`) para valer a senha nova.**
+5. ⬜ **Iteração 8:** revisor e challenger (Sonnet) e auditor forense (Opus) com o critério A2 escrito no despacho e o
    catálogo de 127 mutações da iteração 4 como piso.
-5. Depois: **D2** (núcleo 0.10.0, OIDC + PKCE, lock de renovação), G4/G5, C1–C3. **Humano (2026-09-23): refresh token
+6. Depois: **D2** (núcleo 0.10.0, OIDC + PKCE, lock de renovação), G4/G5, C1–C3. **Humano (2026-09-23): refresh token
    sem reuso** (`refreshTokenMaxReuse = 0`); o lock no Redis é requisito e o teste de corrida prova que duas renovações
    simultâneas fazem uma só chamada ao Keycloak (Medição 1: reuso derruba a sessão inteira).
 

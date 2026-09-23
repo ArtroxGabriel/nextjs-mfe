@@ -456,6 +456,19 @@ test('V1 dinamico: com a ACL do showcase, o usuario das zonas nao grava nem apag
   assert.equal((r.match(/NOPERM/g) ?? []).length, 2, `a zona conseguiu escrever: ${r}`)
 })
 
+test('V1 (challenger_b1_d1_7): so o endereco do Redis nao grava sessao; a escrita exige a senha do shell', { skip: !process.env.REDIS_URL_ZONA && 'so no modo Redis (task verificar:redis)' }, async () => {
+  const anonimo = new URL(process.env.REDIS_URL)
+  anonimo.username = ''
+  anonimo.password = ''
+  const r = await redisCru(anonimo.href, [['SET', 'erp:sessao:forjada-anonima', '{}']])
+  assert.match(r, /NOAUTH/, `conexao sem senha gravou no Redis: ${r}`)
+  const conferir = await redisCru(process.env.REDIS_URL, [['EXISTS', 'erp:sessao:forjada-anonima']])
+  assert.match(conferir, /:0\r\n/, 'a chave forjada existe')
+  for (const [nome, proc] of [...ambiente.dominios]) {
+    assert.ok(!readFileSync(`/proc/${proc.pid}/environ`, 'utf8').includes('REDIS_URL'), `dominio ${nome} recebeu credencial do Redis`)
+  }
+})
+
 test('V1 (auditor_b1_d1_3): no ar, as zonas conectam ao Redis so com o usuario de leitura', { skip: !process.env.REDIS_URL_ZONA && 'so no modo Redis (task verificar:redis)' }, async () => {
   const ana = (await entrar('ana')).cookie
   const carla = (await entrar('carla')).cookie

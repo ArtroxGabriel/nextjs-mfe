@@ -76,6 +76,10 @@ export async function subir({ construir = false, log = false } = {}) {
     ERP_PERMITIR_IDENTIDADE_DEV: '1',
   }
   const processos = []
+  // domínio falso não fala com o Redis: sobe sem nenhuma credencial dele (reviewer_b1_d1_7)
+  const envDoDominio = { ...env }
+  delete envDoDominio.REDIS_URL
+  delete envDoDominio.REDIS_URL_ZONA
   // `envProc` por processo: a zona sobe sem a credencial de escrita do Redis (`envDaApp`). Na K3 o
   // quarto argumento era descartado e toda zona recebia `REDIS_URL` (challenger_b1_d1_6, V1)
   const iniciar = (cmd, args, cwd, envProc = env) => {
@@ -95,11 +99,11 @@ export async function subir({ construir = false, log = false } = {}) {
   const registrar = () => {
     // só as zonas que são módulo têm manifesto (shell e zona de acesso não: ADR-0014, adendo 1)
     for (const { dir } of APPS.filter(({ dir }) => temScript(join(RAIZ, dir), 'registrar'))) {
-      execFileSync('pnpm', ['registrar'], { cwd: join(RAIZ, dir), env, stdio: log ? 'inherit' : 'ignore' })
+      execFileSync('pnpm', ['registrar'], { cwd: join(RAIZ, dir), env: envDaApp(dir), stdio: log ? 'inherit' : 'ignore' })
     }
   }
   const subirDominio = async (nome) => {
-    dominios.set(nome, iniciar('node', ['src/servidor.mjs', nome], join(RAIZ, 'erp-dominio-stub')))
+    dominios.set(nome, iniciar('node', ['src/servidor.mjs', nome], join(RAIZ, 'erp-dominio-stub'), envDoDominio))
     await esperar(`http://127.0.0.1:${PORTA[nome]}/`)
     // o domínio falso de acesso guarda tudo em memória: ao voltar, os manifestos são reenviados
     if (nome === 'gestao-acesso-v2') registrar()
@@ -156,7 +160,7 @@ export async function subir({ construir = false, log = false } = {}) {
 
   try {
     for (const nome of Object.keys(PORTAS_DE_DOMINIO)) {
-      dominios.set(nome, iniciar('node', ['src/servidor.mjs', nome], join(RAIZ, 'erp-dominio-stub')))
+      dominios.set(nome, iniciar('node', ['src/servidor.mjs', nome], join(RAIZ, 'erp-dominio-stub'), envDoDominio))
     }
     for (const porta of Object.values(PORTAS_DE_DOMINIO)) await esperar(`http://127.0.0.1:${porta}/`)
     registrar()
@@ -174,5 +178,5 @@ export async function subir({ construir = false, log = false } = {}) {
     derrubar()
     throw e
   }
-  return { derrubar, derrubarDominio, subirDominio, derrubarApp, subirApp, subirAppAvulsa, congelarApp, descongelarApp, sessaoDir: env.SESSAO_DIR, apps }
+  return { derrubar, derrubarDominio, subirDominio, derrubarApp, subirApp, subirAppAvulsa, congelarApp, descongelarApp, sessaoDir: env.SESSAO_DIR, apps, dominios }
 }

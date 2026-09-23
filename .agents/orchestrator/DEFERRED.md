@@ -44,7 +44,7 @@
 | chave calculada ou sintaxe montada (`['e'+'nv']`, `'const'+'ructor'`, `process['bind'+'ing']`) | XN02–XN04, XR28, XR31 | a zona não tem credencial nem endereço de domínio que valha fora do registro de destinos |
 | `acaoProtegida` falsa ou domínio chamado por helper no argumento | XP01, XP03–XP06 | ponta a ponta de `Origin` e `CAMPOS_VALIDOS` (P09b); o domínio recusa sem credencial |
 | navegação entre zonas escrita de forma indireta | XL01–XL04 | só experiência de uso: a zona de destino exige sessão e `exigirModulo` |
-| rota do domínio repassada por `rewrites`/`NextResponse.rewrite`, ou endereço interno em `assetPrefix` | XN08, XR30, XN09 | o domínio responde 401 sem credencial; bloqueio de saída de rede no deploy |
+| rota do domínio repassada por `rewrites`/`NextResponse.rewrite` | XN08, XR30 | o domínio responde 401 sem credencial; bloqueio de saída de rede no deploy |
 
 - **Barreira de ambiente em vigor desde a K4-3:** a zona não recebe `REDIS_URL` (credencial de escrita), conferido em
   `/proc/<pid>/environ` por `base/verificacao/base.test.mjs` (na K3 o ambiente filtrado era descartado; challenger_b1_d1_6).

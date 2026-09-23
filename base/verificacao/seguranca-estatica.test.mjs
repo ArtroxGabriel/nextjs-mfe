@@ -252,6 +252,13 @@ test('V5 (XN01p): reprova atribuicao a .env no next.config e process.env fora da
   passa("'use client'\nexport const name = process.env.NEXT_PUBLIC_APP_NAME")
 })
 
+test('XN09 (K4-4): assetPrefix e basePath do next.config so com texto literal', () => {
+  pega('export default { assetPrefix: process.env.DOMINIO_A_URL }', 'next.config.ts')
+  pega('const p = process.env.X; export default { basePath: p }', 'next.config.ts')
+  pega('export default { assetPrefix: `${process.env.CDN}` }', 'next.config.ts')
+  passa("export default { assetPrefix: '/zona1-static', basePath: '' }", 'next.config.ts')
+})
+
 
 test('V3 (K4, auditor_b1_d1_4): com o programa da app, o tipo decide o que vai a ilha, nao o nome do campo', () => {
   const app = mkdtempSync(join(tmpdir(), 'app-'))

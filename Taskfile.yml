@@ -98,7 +98,8 @@ tasks:
     desc: Ponta a ponta com a sessão no Redis do showcase (task showcase:subir antes)
     cmd: node --test base/verificacao/*.test.mjs
     env:
-      REDIS_URL: redis://127.0.0.1:6379
+      # shell com a senha do usuário de escrita (docker-compose do showcase)
+      REDIS_URL: redis://default:dev-shell-escrita@127.0.0.1:6379
       # zonas com o usuário ACL só de leitura (docker-compose do showcase)
       REDIS_URL_ZONA: redis://zona:dev-zona-leitura@127.0.0.1:6379
       CONSTRUIR: '{{.CONSTRUIR | default "1"}}'

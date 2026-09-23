@@ -191,3 +191,16 @@ As pastas `.agents/*_b1_d1_5/` saíram com `git rm`; estão no commit `bf40a18`.
 Gate Result: **FAIL**. A K3 nunca foi rodada no modo Redis nem, depois do teste novo, no modo arquivo. Correção **K4-3**: `iniciar(cmd, args,
 cwd, envProc)` usa o ambiente por processo; o teste `:482` injeta `REDIS_URL` de propósito para provar a recusa do produto; a parte do shell
 em `:909` só vale no modo Redis; XN09 em D14. Conferido: `task verificar:redis` 98/98, `task verificar` 95 + 3 pulados. Iteração 7 a seguir.
+
+## Gate — B1 + D1 + G3 (acesso v2) + fatias K3/K4, iteração 7
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_b1_d1_7 | revisor-mfe (sonnet) | APPROVE | .agents/reviewer_b1_d1_7/handoff.md | K4-3 corrige o V1; sem veto. Não bloqueantes: domínios falsos recebiam `REDIS_URL`; XN09 é erro de boa-fé, não cabe em D14 |
+| challenger_b1_d1_7 | simulador-condicoes (sonnet) | REQUEST_CHANGES | .agents/challenger_b1_d1_7/handoff.md | 98/98 e 95+3, 2x cada; nenhuma zona tem `REDIS_URL`. Mas o usuário `default` do Redis do showcase era `nopass`: só com o endereço (público no Taskfile) gravou sessão forjada da carla, aceita em `/` e `/acesso` |
+| auditor | — | não despachado | — | gate já reprovado |
+
+Gate Result: **FAIL**. Correção **K4-4**: `--requirepass` no usuário de escrita (`ERP_REDIS_SENHA_SHELL`, `docs/CONFIGURACAO.md`), `REDIS_URL`
+com a senha no Taskfile e no `subir.mjs`; teste novo prova que conexão sem senha recebe `NOAUTH` e que nenhum domínio falso recebe
+credencial do Redis; domínios e `pnpm registrar` sobem sem a credencial de escrita; XN09 vira regra estática (`assetPrefix`/`basePath` só
+literal) com teste, e sai do D14. Conferido: `task verificar:redis` 100/100, `task verificar` 96 + 4 pulados, estática 40/40. Iteração 8 a seguir.

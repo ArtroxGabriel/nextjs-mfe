@@ -452,6 +452,12 @@ const CAMPOS_COMPLEXOS = new Set(['lista', 'recursos', 'items', 'itens', 'dados'
           achar(no, `next.config com '${chave}': embute valor do servidor no bundle do navegador`, 'P2-next-public')
         }
       }
+      // XN09 (auditor_b1_d1_4; reviewer_b1_d1_7): `assetPrefix`/`basePath` vão ao HTML; valor lido do
+      // ambiente pode ser o endereço de um domínio. Só texto literal.
+      if (ts.isPropertyAssignment(no) && ['assetPrefix', 'basePath'].includes(no.name.getText(sf).replace(/['"]/g, ''))
+        && !ts.isStringLiteral(no.initializer) && !ts.isNoSubstitutionTemplateLiteral(no.initializer)) {
+        achar(no, `next.config com '${no.name.getText(sf)}' que nao e texto literal: vai ao HTML do navegador`, 'P2-next-public')
+      }
       if (ts.isIdentifier(no) && no.text === 'DefinePlugin') {
         achar(no, 'next.config com DefinePlugin: embute valor do servidor no bundle do navegador', 'P2-next-public')
       }

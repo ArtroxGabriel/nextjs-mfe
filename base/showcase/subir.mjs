@@ -30,7 +30,7 @@ await esperar('Keycloak', async () => (await fetch(KEYCLOAK, { signal: AbortSign
 console.log('2/3 domínios falsos com estado gravado; 3/3 shell e zonas (pode levar alguns minutos no primeiro build)')
 process.env.DADOS_DIR ??= join(RAIZ, 'erp-dominio-stub', 'dados', 'estado')
 // sessão no Redis do compose (D1): shell grava, zonas leem; ver docs/CONFIGURACAO.md
-process.env.REDIS_URL ??= 'redis://127.0.0.1:6379'
+process.env.REDIS_URL ??= `redis://default:${process.env.ERP_REDIS_SENHA_SHELL ?? 'dev-shell-escrita'}@127.0.0.1:6379`
 // zonas só leem a sessão: usuário ACL com GET e nada mais (invariante 15)
 process.env.REDIS_URL_ZONA ??= `redis://zona:${process.env.ERP_REDIS_SENHA_ZONA ?? 'dev-zona-leitura'}@127.0.0.1:6379`
 const { derrubar } = await subir({
