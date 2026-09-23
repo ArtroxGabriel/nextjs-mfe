@@ -25,7 +25,7 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 | `ERP_PERMITIR_IDENTIDADE_DEV` | — | `1` permite `identidadeDev` com `NODE_ENV=production` (só verificação local) | núcleo | ✅ |
 | `SESSAO_DIR` | temporário | Pasta do store de sessão em arquivo (desenvolvimento; some com o Redis) | núcleo, apps | ✅ |
 | `REDIS_URL` | — | Store de sessão (ADR-0002). Definido: shell grava e zonas leem no Redis; ausente: arquivo em `SESSAO_DIR`. O showcase usa `redis://127.0.0.1:6379` | apps (`lib/redis.ts`) | ✅ D1 |
-| `REDIS_URL_ZONA` | `REDIS_URL` | Conexão das **zonas** ao Redis, com um usuário ACL que só tem `GET` em `erp:sessao:*` (invariante 15). Fora da máquina local, obrigatório: sem ele a zona conectaria com o usuário do shell | zonas (`lib/redis.ts`) | ✅ |
+| `REDIS_URL_ZONA` | — (obrigatório com `REDIS_URL`) | Conexão das **zonas** ao Redis, com um usuário ACL que só tem `GET` em `erp:sessao:*` (invariante 15). Sem fallback: com `REDIS_URL` e sem ele, a zona recusa ler sessão (erro na carga de `lib/redis.ts`) em vez de conectar com o usuário de escrita do shell | zonas (`lib/redis.ts`) | ✅ |
 | `ERP_REDIS_SENHA_ZONA` | `dev-zona-leitura` (só showcase) | Senha do usuário `zona` no Redis do showcase | `docker-compose` do showcase | ✅ |
 
 ## 2. Rede, destinos e zonas

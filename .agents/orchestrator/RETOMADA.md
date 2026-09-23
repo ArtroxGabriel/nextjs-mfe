@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-22 (encerramento da sessão)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-23 (fatia K2)**.
 
 ## Objetivo final
 
@@ -21,12 +21,12 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
 
 | O quê | Estado | Evidência |
 |---|---|---|
-| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **71/71** com Redis e **70 + 1 pulado** com arquivo (conferido de novo pelo auditor ao fim) | `task verificar:construir`, `task verificar:redis` |
-| Unidades | contratos 16, núcleo 109, moldura 25, stub 39, shell 38; typecheck das 4 apps; estática 16/16; scripts 9/9 | `task test`, `task typecheck`, `task verificar:estatica` |
+| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **88/88** com Redis e **85 + 3 pulados** com arquivo (2026-09-23, fatia K2) | `task verificar:redis`, `task verificar:construir` |
+| Unidades | contratos 20, núcleo 135, moldura 26, stub 43, shell 42; typecheck das 4 apps; estática 33/33; scripts 14/14 | `task test`, `task typecheck`, `task verificar:estatica`, `task scripts:test` |
 | `@erp/nucleo` | **0.9.2** nas 4 apps (acesso v2 só, `exigirModulo(modulo, funcionalidade)`, `exigirPapel`) | lockstep 4 apps |
 | `@erp/contratos` / `@erp/moldura` | **0.4.0** / **0.5.0** | ADR-0012, ADR-0014 adendo 1 |
 | Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
-| Gate B1+D1+G3+K | iteração 2 reprovada (V1–V8, corrigidos na fatia K); **iteração 3 reprovada** pelo auditor (vetos V1–V7 novos; revisor e challenger aprovaram). Correção: fatia K2 abaixo | `GATE_STATUS.md`; `.agents/*_b1_d1_3/` |
+| Gate B1+D1+G3+K | iteração 3 reprovada pelo auditor (V1–V7); **fatia K2 feita** (abaixo); falta a iteração 4 | `GATE_STATUS.md`; `.agents/*_b1_d1_3/` |
 | Submódulos | os 8 no `master`, iguais a `origin/master` | `git submodule foreach git status -sb` |
 
 ## Plano até o objetivo
@@ -108,26 +108,27 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 5. **Fatia K**: V1–V8 e L1–L8 da iteração 2 com correção e teste (ACL de leitura no Redis, analisadores endurecidos, sonda 2xx, tetos).
 6. Gate iteração 3: revisor **APPROVE**, challenger **APPROVE**, auditor **INTEGRITY VIOLATION** (vetos abaixo).
 
-## Próximo passo: fatia K2 (correção da iteração 3), depois iteração 4 com três verificadores novos
+## Fatia K2 (2026-09-23): feita — próximo passo é a iteração 4 do gate B1+D1+G3+K
 
-Ordem sugerida (cada item com o teste que reprova a mutação do auditor; ids em `.agents/auditor_b1_d1_3/mutacoes.txt`):
-
-| # | Veto | Correção | Onde |
+| # | Veto | O que mudou | Teste que pega a mutação do auditor |
 |---|---|---|---|
-| K2-1 | V1 zona com credencial de escrita | tirar o `?? REDIS_URL` das zonas: sem `REDIS_URL_ZONA` com `REDIS_URL` presente, falhar na subida; teste ponta a ponta que confira `ACL WHOAMI` = `zona` na conexão das zonas (E01b/E01c) | zonas `lib/redis.ts`, `base/verificacao` |
-| K2-2 | V2 escritor com outro nome | comparar pela **identidade** das funções exportadas por `/shell` (não por nome) em todo subpath e na raiz; regex da fronteira com aspas duplas (N38b/N38c) | núcleo `test/fronteira.test.mjs`, `scripts/fronteira.mjs` |
-| K2-3 | V3 `server-only` | exigir o import pela AST em todo `lib/` das apps; `temServerOnly` pela AST (template literal não conta) (E02, E02b, E02c, N08b) | `base/verificacao`, núcleo `fronteira.mjs` |
-| K2-4 | V4 DTO para ilha | prop de ilha só com valor escalar (string/number/boolean literal ou identificador de ação `'use server'`); ver filho da ilha, barril e alias; ponta a ponta procura CPF da semente em todo HTML (E10b/E10c, XE23–XE31) | `seguranca-estatica.mjs`, `base.test.mjs` |
-| K2-5 | V5 action antes da checagem | teste de Origin com campos reais de `formularios()` e conferência do estado depois (P09); teste que espiona que action negada não chama `nucleo.destino` | `base.test.mjs` |
-| K2-6 | V6 saída de rede | exceção do N8 só para o `import 'redis'`, não o arquivo inteiro; varrer todo fonte da app; alias de `globalThis`, `process.getBuiltinModule`, `node:dns`, `.constructor` (XR08–XR16) | `saida-de-rede.mjs` |
-| K2-7 | V7 `next.config` | `env:` e `compiler.define` no `next.config` só com valores não sensíveis; `NEXT_PUBLIC_*` em qualquer arquivo; `BEARER` na lista (XE38–XE41) | `seguranca-estatica.mjs` |
-| K2-8 | L1–L8 | health sem domínio; ator só com `tarefas.ver`; link de Relatórios só com a funcionalidade (conferir P10); testes de `precisaConstruir`/portas; `<Link>`/`router.push`; TTL da sonda e cache de "fora"; `nome` vazio em `reduzirEu`; `same-site` (N53); âncora e 401 no mock (G02/G05) | vários |
+| K2-1 | V1 | zonas sem fallback para `REDIS_URL`: com ele e sem `REDIS_URL_ZONA`, `lib/redis.ts` recusa (docs/CONFIGURACAO.md) | E2E: `CLIENT KILL USER default` + zonas chamadas direto na porta → nenhuma conexão `default` nova; zona avulsa (porta 3012) sem `REDIS_URL_ZONA` → 5xx e nenhuma conexão de escrita; estático sem comentários |
+| K2-2 | V2 | — | núcleo: identidade dos valores de `/shell` em todo subpath (o `./proxy` carrega com stub de `next/server`) |
+| K2-3 | V3 | `fronteira.mjs` e `seguranca-estatica.mjs` leem imports e `server-only` pela árvore do compilador | todo módulo fora de `app/`/`scripts/` que chega ao servidor declara `import 'server-only'` |
+| K2-4 | V4 | prop e filho de ilha só com valor escalar; ilha por barril, namespace e apelido | XE23–XE31, E10b/E10c; E2E procura CPF e e-mail da semente no HTML e no RSC de `/acesso` |
+| K2-5 | V5 | actions da zona de acesso chamam o domínio dentro do corpo do `acaoProtegida` | estático: action começa por `return acaoProtegida(` e só toca `nucleo` dentro dele; E2E de Origin com os campos reais de cada action e estado conferido (+ contraprova com Origin válido) |
+| K2-6 | V6 | N8: exceção por construção (`permite: fetch/redis`), lista de módulos permitidos, app inteira varrida | XR08–XR17 |
+| K2-7 | V7 | `NEXT_PUBLIC_*` só da lista permitida; `next.config` sem `env`/`define`/`webpack` | XE38–XE41 |
+| K2-8 | L1–L8 | health sem nada importado e corpo fixo; link de Relatórios; `precisaConstruir` por entrada e porta ocupada; `<Link>`/`router.push`; TTL e cache da sonda; `nome` vazio; `same-site`; âncora e 401 do mock; `ERP_DESTINO_TIMEOUT_MS` usado; t-1 na versão 3 (P16); `hostsPermitidos` só de `SHELL_HOSTS` | um teste por lacuna; **P07 (ator só-leitura) adiado para o D2** (`DEFERRED.md` D13) |
 
-Endurecimentos anotados pelo revisor e pelo challenger entram junto (K2-1, K2-4, K2-5 cobrem os três).
-Depois: **iteração 4** (revisor Sonnet, challenger Sonnet — pedir que exercite P09 e E10c —, auditor Opus); então **D2** (núcleo
-0.10.0, OIDC + PKCE, ADR-0013); G4; G5; C1–C3; E4–E5.
+Cada teste novo foi conferido contra a mutação (ou contra o analisador antigo do HEAD): reprova com ela, passa sem ela.
+Núcleo sem mudança de fonte (só testes e `scripts/`): continua 0.9.2, nada a publicar.
 
-**Ambiente ao encerrar (2026-09-22):** derrubado — showcase (Redis e Keycloak) e Verdaccio parados; nenhuma porta da base
+**Próximo:** iteração 4 com três verificadores novos (revisor Sonnet, challenger Sonnet — pedir que exercite P09, E10c, E01b/c
+e a zona avulsa sem `REDIS_URL_ZONA` —, auditor Opus com veto). Depois **D2** (núcleo 0.10.0, OIDC + PKCE, ADR-0013, ator "eva"
+do D13); G4; G5; C1–C3; E4–E5.
+
+**Ambiente ao encerrar (2026-09-23):** Verdaccio, Redis e Keycloak do showcase no ar; nenhuma porta da base (3000–3003, 4001–4004, 4020) ocupada. Em 2026-09-22 estava derrubado — showcase (Redis e Keycloak) e Verdaccio parados; nenhuma porta da base
 ocupada. O volume do Redis e os pacotes publicados no Verdaccio ficam. Para retomar: `task registry:subir`, `task showcase:subir`,
 `task instalar` (se faltar), `task verificar:redis`. Resta um `pnpm start` antigo de outra sessão (pasta de rascunho, sem porta da base).
 Outra máquina: publicar contratos 0.4.0 → núcleo 0.9.2 → moldura 0.5.0 no próprio Verdaccio (`task pacotes:publicar`) e rodar

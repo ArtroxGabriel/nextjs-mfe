@@ -1,7 +1,7 @@
 // Testes do analisador de segurança estática (B4 e B6 do plano).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { analisarSeguranca, varrerSeguranca } from './seguranca-estatica.mjs'
+import { analisarSeguranca, varrerSeguranca, fontesDaApp } from './seguranca-estatica.mjs'
 
 const pega = (fonte, nome = 'teste.tsx', zona = null) =>
   assert.ok(analisarSeguranca(fonte, nome, zona).length > 0, `nao pegou violacao:\n${fonte}`)
@@ -63,9 +63,12 @@ test('P2-next-public: reprova variaveis NEXT_PUBLIC_ com termos sensiveis', () =
   pega("const segredo = process.env.NEXT_PUBLIC_CLIENT_SECRET")
 })
 
-test('P2-next-public: permite variaveis NEXT_PUBLIC_ normais', () => {
+test('P2-next-public: so as NEXT_PUBLIC_ da lista permitida passam', () => {
   passa("const appName = process.env.NEXT_PUBLIC_APP_NAME")
   passa("const versao = process.env.NEXT_PUBLIC_APP_VERSION")
+  pega("const t = process.env.NEXT_PUBLIC_BEARER")                       // XE39
+  pega("const t = process.env.NEXT_PUBLIC_QUALQUER_OUTRA")
+  pega("const t = process.env[`NEXT_PUBLIC_${nome}`]")
 })
 
 // --- contornos do auditor_b1_d1_2 (anexos/contornos-estatica.log): cada um reprova -------------
@@ -104,9 +107,12 @@ test('E07-E10: DTO nao chega a ilha por spread, objeto inteiro ou nome parecido'
   pega('export function P({ r }) { return <Card custoTotal={r.total} /> }')                // E10
   pega('export function P({ r }) { return <Card dados={{ cpf: r.cpf }} /> }')
   pegaIlha('export function P({ r }) { return <Ilha campos={{ ...r }} /> }')
-  // projetado: literal, template, objeto literal de campos, ação importada
+  // projetado: literal, template, objeto literal de campos, ação importada de 'use server'
+  const app = mkdtempSync(join(tmpdir(), 'app-'))
+  mkdirSync(join(app, 'app'))
+  writeFileSync(join(app, 'app', 'acoes.ts'), "'use server'\nexport async function acao() {}\n")
   assert.deepEqual(analisarSeguranca("import { acao } from './acoes'\nexport function P({ r }) { return <Ilha texto={`${r.n} itens`} campos={{ id: r.id, versao: String(r.v) }} acao={acao} /> }",
-    't.tsx', null, ilha), [])
+    join(app, 'app', 'p.tsx'), null, { ...ilha, raizDaApp: app }), [])
 })
 
 test('E12-E18: <Link> so com href literal da propria zona, com qualquer nome e tambem no shell', () => {
@@ -132,4 +138,100 @@ test('E19-E22: NEXT_PUBLIC_ sensivel escrito de qualquer forma', () => {
 test('as quatro aplicacoes reais passam 100% nas regras estaticas de seguranca', () => {
   const violacoes = varrerSeguranca()
   assert.deepEqual(violacoes, [], `encontrou violacoes nas aplicacoes:\n${violacoes.join('\n')}`)
+})
+
+// --- contornos do auditor_b1_d1_3 (mutacoes.txt): cada um reprova -----------------------------
+test('XE23-XE31/E10b/E10c (V4): so valor escalar vai para a ilha', () => {
+  const app = mkdtempSync(join(tmpdir(), 'app-'))
+  mkdirSync(join(app, 'app'))
+  writeFileSync(join(app, 'app', 'Ilha.tsx'), "'use client'\nexport function Ilha() { return null }\n")
+  writeFileSync(join(app, 'app', 'index.ts'), "export { Ilha as Outra } from './Ilha'\n")
+  writeFileSync(join(app, 'app', 'dados.ts'), "export const pessoa = { cpf: '1' }\n")
+  const pg = join(app, 'app', 'p.tsx')
+  const pegaIlha = (f) => assert.ok(analisarSeguranca(f, pg, null, { raizDaApp: app }).length > 0, f)
+  const imp = "import { Ilha } from './Ilha'\n"
+  pegaIlha(imp + 'export const P = ({ p }) => <Ilha texto={`${p}`} />')                                  // XE23
+  pegaIlha(imp + 'export const P = ({ p }) => <Ilha texto={String(JSON.stringify(p))} />')              // XE24
+  pegaIlha(imp + 'export const P = ({ p }) => <Ilha campos={{ a: Object.assign({}, p) }} />')           // XE25
+  pegaIlha(imp + 'export const P = ({ p }) => <Ilha campos={{ a: p.cpf }} />')                          // XE26
+  pegaIlha(imp + 'export const P = ({ p }) => <Ilha>{p}</Ilha>')                                         // XE27
+  pegaIlha(imp + 'export const P = ({ p }) => <Ilha>{JSON.stringify(p)}</Ilha>')
+  pegaIlha("import { Outra } from './index'\nexport const P = ({ p }) => <Outra dados={p} />")          // XE28
+  pegaIlha(imp + 'const I = Ilha\nexport const P = ({ p }) => <I dados={p} />')                         // XE29
+  pegaIlha(imp + "import { pessoa } from './dados'\nexport const P = () => <Ilha dados={pessoa} />")   // XE30
+  pegaIlha(imp + 'export const P = async ({ f }) => <Ilha campos={{ a: await f() }} />')                // XE31
+  pegaIlha("import * as I from './Ilha'\nexport const P = ({ p }) => <I.Ilha dados={p} />")
+  pegaIlha(imp + 'export const P = ({ p }) => <Ilha campos={{ cadastro: JSON.stringify(p) }} />')       // E10c
+  pegaIlha(imp + 'export const P = ({ r }) => <Ilha texto={`${JSON.stringify(r)}`} />')                 // E10b
+  // o que as apps reais fazem continua passando
+  assert.deepEqual(analisarSeguranca(imp + 'export const P = ({ a, p, n }) => <Ilha texto={`${n.length} itens`} campos={{ acesso: a.id, versao: String(a.versao) }}>{a.situacao}{a.perfil ? ` · ${a.perfil}` : \'\'}<b aria-label={`x ${p.id}`} /></Ilha>',
+    pg, null, { raizDaApp: app }), [])
+})
+
+test('XE32/XE33 (L6): ilha nao chega ao servidor por import = require nem pelo redis', () => {
+  pega("'use client'\nimport m = require('next/headers')")
+  pega("'use client'\nimport { createClient } from 'redis'")
+})
+
+test('V3 (E02, E02b, E02c): fora de app/, modulo que chega ao servidor declara server-only (pela arvore)', () => {
+  const app = mkdtempSync(join(tmpdir(), 'app-'))
+  mkdirSync(join(app, 'lib'))
+  writeFileSync(join(app, 'lib', 'nucleo.ts'), "import 'server-only'\nexport const n = 1\n")
+  const lib = join(app, 'lib', 'x.ts')
+  const exigir = (f) => analisarSeguranca(f, lib, null, { raizDaApp: app, exigirServerOnly: true })
+  for (const f of [
+    "import { createClient } from 'redis'\nexport const c = 1",                          // E02
+    "import { criarNucleo } from '@erp/nucleo'\nexport const n = 1",                     // E02b
+    "import { nucleo } from './nucleo'\nexport const p = 1",                             // E02c (transitivo)
+    "// import 'server-only'\nimport { cookies } from 'next/headers'",
+    "const t = `\nimport 'server-only'\n`\nimport { cookies } from 'next/headers'",    // N08b/XF01
+  ]) assert.ok(exigir(f).length > 0, f)
+  assert.deepEqual(exigir("import 'server-only'\nimport { createClient } from 'redis'\nexport const c = 1"), [])
+  assert.deepEqual(exigir("export const puro = 1"), [])
+})
+
+test('XE34-XE37 (L5): <Link> e navegacao de cliente para outra zona, por barril, namespace, apelido e router', () => {
+  const app = mkdtempSync(join(tmpdir(), 'app-'))
+  mkdirSync(join(app, 'app'))
+  writeFileSync(join(app, 'app', 'nav.ts'), "export { default as Ir } from 'next/link'\n")
+  const pg = join(app, 'app', 'zona1', 'page.tsx')
+  const pegaZ1 = (f) => assert.ok(analisarSeguranca(f, pg, 'zona1', { raizDaApp: app }).length > 0, f)
+  pegaZ1("import { Ir } from '../nav'\nexport const M = () => <Ir href='/zona2'>x</Ir>")            // XE34
+  pegaZ1("import * as L from 'next/link'\nexport const M = () => <L.default href='/zona2'>x</L.default>") // XE35
+  pegaZ1("import Link from 'next/link'\nconst Ir = Link\nexport const M = () => <Ir href='/zona2'>x</Ir>") // XE36
+  pegaZ1("'use client'\nimport { useRouter } from 'next/navigation'\nexport function M() { const r = useRouter(); r.push('/zona2') }") // XE37
+  pegaZ1("'use client'\nexport function M({ r, id }) { r.push(`/acesso/${id}`) }")
+  assert.deepEqual(analisarSeguranca("'use client'\nexport function M({ r }) { r.push('/zona1/relatorios') }", pg, 'zona1', { raizDaApp: app }), [])
+})
+
+test('XE38/XE40 (V7): next.config nao embute valor do servidor no bundle', () => {
+  const nc = (f) => pega(f, 'next.config.ts')
+  nc("export default { env: { DOMINIO_A: process.env.DOMINIO_A_URL } }")                    // XE38
+  nc("export default { compiler: { define: { API: process.env.DOMINIO_A_URL } } }")         // XE40
+  nc("export default { webpack: (c) => c }")
+  nc("import webpack from 'webpack'\nexport default { x: new webpack.DefinePlugin({}) }")
+  nc("const env = {}\nexport default { env }")
+  passa("export default { poweredByHeader: false, assetPrefix: '/zona1-static' }", 'next.config.ts')
+})
+
+test('V6/V7 (XR16, XE41): a varredura cobre a app inteira, nao so app/ e lib/', () => {
+  const app = mkdtempSync(join(tmpdir(), 'app-'))
+  mkdirSync(join(app, 'componentes'))
+  mkdirSync(join(app, 'node_modules'))
+  writeFileSync(join(app, 'componentes', 'x.ts'), "export const t = process.env.NEXT_PUBLIC_API_TOKEN\n")
+  writeFileSync(join(app, 'node_modules', 'y.ts'), "export const t = 1\n")
+  assert.deepEqual(fontesDaApp(app), [join(app, 'componentes', 'x.ts')])
+})
+
+test('V5 (P09): Server Action comeca pela verificacao e so toca o nucleo dentro dela', () => {
+  const imp = "'use server'\nimport { nucleo } from '@/lib/nucleo'\nimport { acaoProtegida } from '@/lib/pagina'\n"
+  const ok = imp + "export async function a(f) {\n  return acaoProtegida({ administra: true }, '/x', async () => {\n    await nucleo.destino('d').post('/v', {})\n    return { destino: '/x' }\n  })\n}"
+  passa(ok, 'app/x/acoes.ts')
+  // P09: o dominio antes da verificacao, por closure montada fora
+  pega(imp + "const adm = (enviar) => acaoProtegida({ administra: true }, '/x', async () => { await enviar(); return { destino: '/x' } })\n" +
+    "export async function a(f) { return adm(() => nucleo.destino('d').post('/v', {})) }", 'app/x/acoes.ts')
+  pega(imp + "export async function a(f) {\n  await nucleo.destino('d').post('/v', {})\n  return acaoProtegida({ administra: true }, '/x', async () => ({ destino: '/x' }))\n}", 'app/x/acoes.ts')
+  pega(imp + "export async function a(f) { const n = nucleo; return acaoProtegida({ administra: true }, '/x', async () => ({ destino: '/x' })) }", 'app/x/acoes.ts')
+  pega(imp + "export const b = async () => ({ destino: '/x' })", 'app/x/acoes.ts')
+  pega(imp + "const x = nucleo.destino('d')\n" + ok.slice(imp.length), 'app/x/acoes.ts')
 })

@@ -97,6 +97,12 @@ test('N5: o menu mostra so os modulos permitidos, igual no shell e nas zonas (mo
   }
 })
 
+test('L3 (auditor_b1_d1_3, P10): o link de Relatorios so aparece para quem tem a funcionalidade (invariante 8)', async () => {
+  const link = /href="\/zona1\/relatorios"/
+  assert.doesNotMatch((await pedir('/zona1', { cookie: (await entrar('davi')).cookie })).html, link, 'davi (so painel.ver) ve o link')
+  assert.match((await pedir('/zona1', { cookie: (await entrar('bruno')).cookie })).html, link, 'bruno (relatorios.ver) nao ve o link')
+})
+
 test('N5/D6: modulo nao permitido responde 404 pela URL direta; permitido responde 200', async () => {
   const casos = [
     ['ana', '/zona1/relatorios', 404], ['ana', '/acesso', 404], ['ana', '/zona2', 200],
@@ -128,6 +134,21 @@ test('perfil administrativo nao concede dado: carla nao ve custo nem r-3; bruno 
   assert.match((await pedir('/zona1/recursos/r-1', { cookie: bruno })).html, /CC-10/)
   assert.equal((await pedir('/zona1/recursos/r-3', { cookie: carla })).status, 404)
   assert.equal((await pedir('/zona1/recursos/r-3', { cookie: bruno })).status, 200)
+})
+
+test('V4 (auditor_b1_d1_3, E10c): nenhum CPF nem e-mail da semente chega ao HTML ou ao payload RSC de /acesso', async () => {
+  const semente = JSON.parse(readFileSync(join(RAIZ, 'erp-dominio-stub', 'dados', 'semente', 'gestao-acesso-v2.json'), 'utf8'))
+  const cpfs = semente.pessoas.map((p) => p.cpf).filter(Boolean)
+  const emails = semente.pessoas.map((p) => p.emailFuncional).filter(Boolean)
+  assert.ok(cpfs.length >= 4 && emails.length >= 4, 'semente sem CPF ou e-mail: o teste nao provaria nada')
+  const carla = (await entrar('carla')).cookie
+  const html = (await pedir('/acesso', { cookie: carla })).html
+  const rsc = (await pedir('/acesso', { cookie: carla, cabecalhos: { rsc: '1' } })).html
+  assert.match(html, /revogar|conceder/i, 'a pagina de acesso nao listou pessoas (o teste nao provaria nada)')
+  for (const [nome, corpo] of [['HTML', html], ['RSC', rsc]]) {
+    for (const v of [...cpfs, ...emails]) assert.ok(!corpo.includes(v), `${v} chegou ao ${nome} de /acesso`)
+    assert.ok(!/"cpf"|\\"cpf\\"|emailFuncional/.test(corpo), `campo de cadastro chegou ao ${nome} de /acesso`)
+  }
 })
 
 test('token nunca chega ao navegador, em nenhuma pagina', async () => {
@@ -206,29 +227,61 @@ const DONO = { 'erp-zona-2': 'ana', 'erp-zona-acesso': 'carla' }
 
 const CONCLUIR = { app: 'erp-zona-2', arquivo: 'app/zona2/acoes.ts', nome: 'concluirTarefa', caminho: '/zona2' }
 
-test('Server Action sem Origin, ou com Origin de outro site, nao executa em nenhuma app', async () => {
+/**
+ * Campos VALIDOS de cada action, lidos do formulario que a propria pagina renderiza (auditor_b1_d1_3, V5):
+ * com campos da v1, o dominio recusaria com 422 de qualquer jeito e o teste de Origin nao teria dentes.
+ * Action nova sem entrada aqui reprova o teste.
+ */
+const CAMPOS_VALIDOS = {
+  concluirTarefa: async () => formularios((await pedir('/zona2', { cookie: (await entrar('ana')).cookie })).html).find((c) => c.id === 't-2'),
+  revogarAcesso: async () => formDeAcesso((await entrar('carla')).cookie, DAVI, 'zona1'),
+  concederAcesso: async () => formDeAcesso((await entrar('carla')).cookie, DAVI, 'zona2'),
+}
+
+test('Server Action sem Origin, ou com Origin de outro site, nao executa em nenhuma app (campos validos, estado conferido)', async () => {
   const acoes = todasAsAcoes()
   assert.ok(acoes.length >= 3, `so ${acoes.length} actions encontradas`)
   for (const acao of acoes) {
+    assert.ok(CAMPOS_VALIDOS[acao.nome], `action ${acao.app} ${acao.nome} sem campos validos neste teste`)
+    const campos = await CAMPOS_VALIDOS[acao.nome]()
+    assert.ok(campos, `${acao.nome}: formulario nao encontrado na pagina (o teste nao provaria nada)`)
     const cookie = (await entrar(DONO[acao.app] ?? 'carla')).cookie
-    const campos = acao.app === 'erp-zona-2' ? { id: 't-2', versao: '1' }
-      : { perfil: 'zona1.analista', modulo: 'zona1.relatorios', conceder: 'false', modulo2: '', restrito: 'false', usuario: 'davi', atribuir: 'true' }
     for (const origem of [null, 'http://evil.com']) {
       const r = await acaoPeloCliente({ ...acao, campos, cookie, origem })
       assert.ok(!valorDoCookie(r.cookies, '__Host-flash'), `${acao.app} ${acao.nome} rodou com Origin ${origem}`)
     }
   }
-  const bruno = (await entrar('bruno')).cookie
-  assert.equal((await pedir('/zona1/relatorios', { cookie: bruno })).status, 200, 'concessao mudou')
-  assert.ok(!menu((await pedir('/', { cookie: (await entrar('davi')).cookie })).html).hrefs.includes('/zona2'), 'atribuicao mudou')
+  // nada mudou no dominio: davi segue com a zona 1 e sem a zona 2; a tarefa segue pendente
+  const davi = (await entrar('davi')).cookie
+  assert.equal((await pedir('/zona1', { cookie: davi })).status, 200, 'revogacao executou sem Origin valido')
+  assert.equal((await pedir('/zona2', { cookie: davi })).status, 404, 'concessao executou sem Origin valido')
+  // zona 2 e modulo validado: a concessao ficaria pendente (sem 200); o estado se confere no dominio
+  assert.ok(!(await formDeAcesso((await entrar('carla')).cookie, DAVI, 'zona2'))?.acesso, 'concessao pendente criada sem Origin valido')
   const ana = (await entrar('ana')).cookie
   assert.match((await pedir('/zona2', { cookie: ana })).html, /Conferir inventário(<!-- -->)? — (<!-- -->)?pendente/)
+})
+
+test('Server Action com Origin do shell e os mesmos campos executa (dentes do teste acima)', async () => {
+  const carla = (await entrar('carla')).cookie
+  const davi = (await entrar('davi')).cookie
+  await administrar('concederAcesso', await CAMPOS_VALIDOS.concederAcesso(), carla)
+  const criado = await formDeAcesso(carla, DAVI, 'zona2')
+  try {
+    // zona 2 e modulo validado: a concessao nasce pendente (vigente, revogavel), sem dar a zona ainda
+    assert.ok(criado?.acesso, 'a concessao com Origin valido nao chegou ao dominio')
+  } finally {
+    if (criado?.acesso) await administrar('revogarAcesso', criado, carla)
+  }
+  assert.ok(!(await formDeAcesso(carla, DAVI, 'zona2'))?.acesso, 'a limpeza nao revogou')
+  assert.equal((await pedir('/zona2', { cookie: davi })).status, 404)
 })
 
 test('N4: acao na zona 2 leva para a zona 1 e o toast aparece no documento seguinte, uma vez', async () => {
   const ana = (await entrar('ana')).cookie
   const campos = formularios((await pedir('/zona2', { cookie: ana })).html).find((c) => c.id === 't-1')
   assert.ok(campos, 'formulario da tarefa t-1')
+  // a semente guarda t-1 na versao 3: o If-Match vem do que o cliente conhece, nunca fixo (invariante 6; P16)
+  assert.equal(campos.versao, '3', 'a pagina deveria mandar a versao que conhece')
   const r = await acaoPeloCliente({ ...CONCLUIR, campos, cookie: ana })
   assert.equal(r.status, 200)
   // Sem redirect() da action: o Next buscaria /zona1 dentro do processo da zona 2 (limitação de Multi-Zones).
@@ -360,9 +413,11 @@ test('V1 estatico: o cliente Redis das zonas so le (sem set, del nem outro coman
     return statSync(p).isDirectory() ? fontes(p) : /\.(ts|tsx|mjs|js)$/.test(n) ? [p] : []
   })
   for (const zona of ['erp-zona-1', 'erp-zona-2', 'erp-zona-acesso']) {
-    const cliente = readFileSync(join(RAIZ, zona, 'lib', 'redis.ts'), 'utf8')
+    // sem comentarios: o auditor_b1_d1_3 (V1) satisfez a checagem com REDIS_URL_ZONA num comentario
+    const cliente = readFileSync(join(RAIZ, zona, 'lib', 'redis.ts'), 'utf8').replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '')
     assert.match(cliente, /ClienteRedisDeLeitura/, `${zona}: cliente sem o tipo so de leitura`)
-    assert.match(cliente, /REDIS_URL_ZONA/, `${zona}: nao usa o usuario de leitura`)
+    assert.match(cliente, /process\.env\.REDIS_URL_ZONA\b/, `${zona}: nao usa o usuario de leitura`)
+    assert.ok(!/(\?\?|\|\|)\s*process\.env\.REDIS_URL\b(?!_)/.test(cliente), `${zona}: cai na credencial de escrita do shell sem REDIS_URL_ZONA`)
     assert.ok(!/\b(set|del|unlink|expire|pexpire|getdel|getex|rename|flushall|flushdb|sendCommand|multi|eval)\b/i.test(cliente.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '')),
       `${zona}: lib/redis.ts expoe comando alem de get`)
     for (const f of fontes(join(RAIZ, zona))) {
@@ -372,20 +427,92 @@ test('V1 estatico: o cliente Redis das zonas so le (sem set, del nem outro coman
   }
 })
 
-test('V1 dinamico: com a ACL do showcase, o usuario das zonas nao grava nem apaga sessao', { skip: !process.env.REDIS_URL_ZONA && 'so no modo Redis (task verificar:redis)' }, async () => {
+/** Conversa RESP crua com o Redis de `url` (usuário e senha da URL); termina com QUIT e devolve tudo o que veio. */
+async function redisCru(url, comandos) {
   const { createConnection } = await import('node:net')
-  const u = new URL(process.env.REDIS_URL_ZONA)
+  const u = new URL(url)
   const resp = (...args) => `*${args.length}\r\n` + args.map((a) => `$${Buffer.byteLength(a)}\r\n${a}\r\n`).join('')
-  const conversar = (comandos) => new Promise((ok, falha) => {
+  const auth = u.username || u.password ? [['AUTH', decodeURIComponent(u.username || 'default'), decodeURIComponent(u.password)]] : []
+  return new Promise((ok, falha) => {
     const c = createConnection({ host: u.hostname, port: Number(u.port || 6379) })
     let dados = ''
-    c.on('data', (d) => { dados += d; if (dados.split('\r\n').filter(Boolean).length >= comandos.length) { c.end(); ok(dados) } })
+    c.on('data', (d) => { dados += d })
+    c.on('close', () => ok(dados))
     c.on('error', falha)
-    c.write(comandos.map((a) => resp(...a)).join(''))
+    c.write([...auth, ...comandos, ['QUIT']].map((a) => resp(...a)).join(''))
   })
-  const r = await conversar([['AUTH', decodeURIComponent(u.username), decodeURIComponent(u.password)], ['SET', 'erp:sessao:forjada', '{}'], ['DEL', 'erp:sessao:qualquer']])
+}
+/** Conexões abertas no Redis (id, usuário, último comando), sem a própria conexão de quem pergunta. */
+async function conexoesRedis() {
+  const lista = await redisCru(process.env.REDIS_URL, [['CLIENT', 'LIST']])
+  return lista.split('\n').filter((l) => l.startsWith('id=') && !/ cmd=client\|list /.test(l)).map((l) => ({
+    id: l.match(/^id=(\d+)/)[1], usuario: l.match(/ user=(\S+)/)[1], cmd: l.match(/ cmd=(\S+)/)[1], idade: l.match(/ age=(\d+)/)[1],
+  }))
+}
+
+test('V1 dinamico: com a ACL do showcase, o usuario das zonas nao grava nem apaga sessao', { skip: !process.env.REDIS_URL_ZONA && 'so no modo Redis (task verificar:redis)' }, async () => {
+  const r = await redisCru(process.env.REDIS_URL_ZONA, [['SET', 'erp:sessao:forjada', '{}'], ['DEL', 'erp:sessao:qualquer']])
   assert.match(r, /^\+OK/, 'AUTH do usuario da zona falhou')
   assert.equal((r.match(/NOPERM/g) ?? []).length, 2, `a zona conseguiu escrever: ${r}`)
+})
+
+test('V1 (auditor_b1_d1_3): no ar, as zonas conectam ao Redis so com o usuario de leitura', { skip: !process.env.REDIS_URL_ZONA && 'so no modo Redis (task verificar:redis)' }, async () => {
+  const ana = (await entrar('ana')).cookie
+  const carla = (await entrar('carla')).cookie
+  // O shell abre mais de uma conexao de escrita (rota e pagina sao instancias de modulo separadas), entao
+  // contar nao separa processos. Derrubam-se as conexoes `default` (o shell reconecta sozinho, ocioso) e
+  // as zonas sao chamadas direto na porta delas, sem passar pelo shell: nenhuma conexao `default` pode
+  // surgir nem executar comando nesse intervalo.
+  await redisCru(process.env.REDIS_URL, [['CLIENT', 'KILL', 'USER', 'default', 'SKIPME', 'yes']])
+  await new Promise((ok) => setTimeout(ok, 500))
+  const antes = new Map((await conexoesRedis()).filter((c) => c.usuario === 'default').map((c) => [c.id, c.cmd]))
+  for (const [cookie, url] of [[ana, 'http://localhost:3001/zona1'], [ana, 'http://localhost:3002/zona2'], [carla, 'http://localhost:3003/acesso']]) {
+    const r = await fetch(url, { headers: { cookie }, redirect: 'manual' })
+    await r.text()
+    assert.equal(r.status, 200, url)
+  }
+  const depois = await conexoesRedis()
+  const suspeitas = depois.filter((c) => c.usuario === 'default' && antes.get(c.id) !== c.cmd)
+  assert.deepEqual(suspeitas, [], `uma zona usou a credencial de escrita: ${JSON.stringify(depois)}`)
+  assert.ok(depois.filter((c) => c.usuario === 'zona').length >= 3, `alguma zona nao conectou com o usuario de leitura: ${JSON.stringify(depois)}`)
+  // o shell segue funcionando depois de perder as conexoes
+  assert.equal((await pedir('/', { cookie: ana })).status, 200)
+})
+
+test('V1 (auditor_b1_d1_3): zona com REDIS_URL e sem REDIS_URL_ZONA nao le sessao nem conecta como o shell', { skip: !process.env.REDIS_URL_ZONA && 'so no modo Redis (task verificar:redis)', timeout: 90_000 }, async () => {
+  const { cookie } = await entrar('ana')
+  const antes = new Set((await conexoesRedis()).filter((c) => c.usuario === 'default').map((c) => c.id))
+  const derrubar = await ambiente.subirAppAvulsa('erp-zona-2', { porta: 3012, envExtra: { REDIS_URL_ZONA: null }, caminho: '/zona2/api/health' })
+  try {
+    const r = await fetch('http://localhost:3012/zona2', { headers: { cookie }, redirect: 'manual' })
+    await r.text()
+    assert.ok(r.status >= 500, `a zona sem REDIS_URL_ZONA respondeu ${r.status}`)
+    const novas = (await conexoesRedis()).filter((c) => c.usuario === 'default' && !antes.has(c.id))
+    assert.deepEqual(novas, [], 'a zona conectou com a credencial de escrita do shell')
+  } finally {
+    await derrubar()
+  }
+})
+
+test('L1 (auditor_b1_d1_3, E05): /{zona}/api/health nao toca dominio nem sessao e responde corpo fixo', async () => {
+  for (const [app, zona, porta] of [['erp-zona-1', 'zona1', 3001], ['erp-zona-2', 'zona2', 3002], ['erp-zona-acesso', 'acesso', 3003]]) {
+    const fonte = readFileSync(join(RAIZ, app, 'app', zona, 'api', 'health', 'route.ts'), 'utf8')
+    assert.ok(!/\bimport\b|\brequire\s*\(|nucleo|process\.env|fetch|cookies|headers\(/.test(fonte), `${app}: health importa ou le algo`)
+    // a sonda do shell pergunta a zona direto, sem cookie (rota publica da zona)
+    const r = await fetch(`http://localhost:${porta}/${zona}/api/health`, { redirect: 'manual' })
+    assert.equal(r.status, 200, zona)
+    assert.deepEqual(await r.json(), { status: 'ok' }, `${zona}: health devolve mais que o estado`)
+    // pelo shell, sem sessao, nao e alcancavel (invariante 10)
+    assert.equal((await fetch(`${SHELL_URL}/${zona}/api/health`, { redirect: 'manual' })).status, 307, `${zona}: health exposto pelo shell`)
+  }
+})
+
+test('P12: toda zona aceita Server Action so dos hosts do shell (SHELL_HOSTS), nunca uma lista escrita no codigo', () => {
+  for (const app of ['erp-zona-1', 'erp-zona-2', 'erp-zona-acesso']) {
+    const fonte = readFileSync(join(RAIZ, app, 'lib', 'pagina.ts'), 'utf8')
+    const hosts = [...fonte.matchAll(/hostsPermitidos:\s*([^\n]+)/g)].map((m) => m[1].trim())
+    assert.deepEqual(hosts, ["(process.env.SHELL_HOSTS ?? 'localhost:3000').split(','),"], `${app}: hostsPermitidos`)
+  }
 })
 
 test('invariante 16 estatico: toda pagina de zona exige modulo e funcionalidade; a zona de acesso, papel; o shell consulta o acesso', () => {

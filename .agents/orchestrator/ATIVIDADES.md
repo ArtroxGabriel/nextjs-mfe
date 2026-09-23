@@ -4,7 +4,7 @@
 > atualiza ao fim de todo gate, task ou decisão; o humano copia para o GitLab e marca a coluna
 > "No GitLab?". Regras de quando avisar: `MANUTENCAO-GITLAB.md`.
 >
-> Última revisão: **2026-09-22 (encerramento)** (G3 implementado e fatia K feita; gate B1+D1+G3 iteração 3 reprovado pelo auditor, correção na fatia K2; ponta a ponta 71/71 com Redis).
+> Última revisão: **2026-09-23 (fatia K2)** (vetos V1–V7 da iteração 3 corrigidos com teste; ponta a ponta 88/88 com Redis; falta a iteração 4 do gate).
 
 ## 1. Como ler e manter
 
@@ -390,3 +390,4 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-09-22 (noite, 2) | Gate B1+D1 iteração 2 **reprovado** (auditor Opus, vetos V1–V8): #9 e #20 continuam em andamento; comentar o bloqueio no GitLab |
 | 2026-09-22 (noite) | Reconferido nesta máquina: 60/60 com arquivo e com Redis. #3 com o health implementado; #20 com B4/B6 e B5 feitos e texto no núcleo 0.8.2; #21 com ADR-0014 e G3 só iniciado; #9 com campos OIDC na sessão; #14 com a alternância de hash entre máquinas. Gate B1+D1 iteração 1 considerada rasa; iteração 2 com auditor Opus |
 | 2026-09-23 | Sincronização com o GitLab (filhos do #72): 12 fechadas, 14 criadas, 2 atualizadas; o que mudou de plano nas #3, #9 e #14 virou atividade nova. Resultado em `MANUTENCAO-GITLAB.md` §3 |
+| 2026-09-23 (K2) | Fatia K2 feita (V1–V7 e L1–L8 com teste; P07 adiado para o D2). #136, #137 e o Redis da #9 seguem **em andamento** até a iteração 4 do gate; nada a mudar no GitLab além de um comentário opcional |

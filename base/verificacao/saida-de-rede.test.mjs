@@ -63,11 +63,49 @@ test('as quatro aplicacoes reais nao tem saida de rede fora do registro (fora as
   assert.deepEqual(varrerAplicacoes(), [])
 })
 
-test('toda excecao declarada tem motivo, e a sonda de saude do shell e mesmo uma saida de rede', () => {
-  for (const [arq, motivo] of Object.entries(EXCECOES)) assert.ok(motivo.length > 40, `${arq} sem motivo`)
+test('as excecoes sao exatamente estas, cada uma com motivo e com o que permite; e cada uma e necessaria', () => {
+  // XR17 (auditor_b1_d1_3): exceção nova passava só com um motivo longo. Agora a lista é fixa aqui:
+  // acrescentar uma exige mudar este teste, e a revisão vê as duas coisas juntas.
+  assert.deepEqual(Object.keys(EXCECOES).sort(), [
+    'erp-shell/lib/redis.ts', 'erp-shell/lib/saude-zonas.ts', 'erp-zona-1/lib/redis.ts', 'erp-zona-1/scripts/registrar-manifesto.ts',
+    'erp-zona-2/lib/redis.ts', 'erp-zona-2/scripts/registrar-manifesto.ts', 'erp-zona-acesso/lib/redis.ts',
+  ])
   const { readFileSync } = require_('node:fs')
-  const fonte = readFileSync(new URL('../../repos/erp-shell/lib/saude-zonas.ts', import.meta.url), 'utf8')
-  assert.ok(analisar(fonte).length > 0, 'a excecao nao e necessaria: remova-a de EXCECOES')
+  for (const [arq, { motivo, permite }] of Object.entries(EXCECOES)) {
+    assert.ok(motivo.length > 40, `${arq} sem motivo`)
+    assert.ok(permite.length === 1 && ['fetch', 'redis'].includes(permite[0]), `${arq} permite ${permite}`)
+    const achados = analisar(readFileSync(new URL(`../../repos/${arq}`, import.meta.url), 'utf8'), arq)
+    assert.ok(achados.some((a) => a.coisa === permite[0]), `${arq}: a excecao nao e necessaria, remova-a de EXCECOES`)
+  }
+})
+
+test('XR15 (V6): a excecao vale so para o que ela permite, nao para o arquivo', () => {
+  const achados = analisar("import 'server-only'\nimport { createClient } from 'redis'\nawait fetch('http://fora')", 'lib/redis.ts')
+  const sobra = achados.filter((a) => !EXCECOES['erp-zona-1/lib/redis.ts'].permite.includes(a.coisa))
+  assert.ok(sobra.some((a) => /fetch/.test(a.motivo)), 'o fetch dentro de lib/redis.ts passou pela excecao')
+})
+
+test('XR08-XR12 (V6): apelido da global, getBuiltinModule, dns, biblioteca HTTP fora da lista, construtor de funcao', () => {
+  pega("const g = globalThis; const k = 'fe' + 'tch'; await g[k]('x')")                // XR08
+  pega("const h = process.getBuiltinModule('node:http')")                             // XR09
+  pega("import { lookup } from 'node:dns'")                                           // XR10
+  pega("import dns from 'dns'")
+  pega("import { request } from 'undici-alternativo'")                                // XR11
+  pega("const F = (() => {}).constructor; F('return 1')()")                           // XR12
+  pega("const F = (async () => {})['constructor']")
+  pega("import x = require('node:dns')")
+  passa("import { randomUUID } from 'node:crypto'\nimport { NextResponse } from 'next/server'\nimport { nucleo } from '@/lib/nucleo'\nconst v = globalThis.crypto")
+  passa("import type { Algo } from 'pacote-de-tipos'")
+})
+
+test('XR16 (V6): a varredura cobre a app inteira, inclusive pasta fora de app/ e lib/', () => {
+  const { mkdtempSync, mkdirSync, writeFileSync } = require_('node:fs')
+  const { tmpdir } = require_('node:os')
+  const { join } = require_('node:path')
+  const raiz = mkdtempSync(join(tmpdir(), 'raiz-'))
+  mkdirSync(join(raiz, 'erp-x', 'servicos'), { recursive: true })
+  writeFileSync(join(raiz, 'erp-x', 'servicos', 'rede.ts'), "await fetch('http://fora')\n")
+  assert.ok(varrerAplicacoes(['erp-x'], raiz).some((l) => l.startsWith('erp-x/servicos/rede.ts')))
 })
 
 import { createRequire } from 'node:module'

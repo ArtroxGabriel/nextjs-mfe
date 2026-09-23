@@ -20,3 +20,13 @@
 | `sessaoArquivo.ler`: `existsSync` antes de `readFileSync` (TOCTOU inofensivo) | aberto | D1 |
 | `sanitizarSupportId` valida formato, não semântica | aceito | F4 (padronização de erro) |
 | teste de namespace passa com `caminhos` vazio | a conferir | F6 (camada de testes) |
+
+## D13 — Ator só com `tarefas.ver` (auditor_b1_d1_3, L2/P07)
+
+- **Evidência:** a mutação P07 (`concluirTarefa` exigindo `tarefas.ver` em vez de `tarefas.concluir`) sobrevive porque
+  nenhum ator da base tem a leitura sem a conclusão (`mutacoes.txt`).
+- **Por que não foi corrigido na K2:** um ator novo entra em `identidadeDev` do núcleo (versão nova, lockstep nas 4 apps)
+  e na semente da v2; o D2 já sobe o núcleo para 0.10.0 e traz os atores do Keycloak. A outra metade do L2 (P16, `If-Match`
+  fixo) foi fechada na K2: a tarefa t-1 nasce na versão 3.
+- **Fecha em:** D2 — ator "eva" com perfil `zona2.leitor` no realm e na semente; teste que a action dela é negada antes do
+  domínio (`"destino":"/"`).

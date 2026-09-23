@@ -128,6 +128,23 @@ export async function subir({ construir = false, log = false } = {}) {
     await esperar(`http://localhost:${porta}${saude}`)
   }
 
+  /**
+   * Sobe mais uma instância de uma app já construída, noutra porta e com o ambiente alterado
+   * (`null` apaga a variável). Serve para provar como a app se comporta com configuração errada
+   * sem mexer na instância que o resto da verificação usa. Devolve a função que a derruba.
+   */
+  const subirAppAvulsa = async (dir, { porta, envExtra = {}, caminho = '/' }) => {
+    const envAvulso = { ...env }
+    for (const [k, v] of Object.entries(envExtra)) { if (v === null) delete envAvulso[k]; else envAvulso[k] = v }
+    const p = spawn('pnpm', ['exec', 'next', 'start', '-p', String(porta)], { cwd: join(RAIZ, dir), env: envAvulso, stdio: log ? 'inherit' : 'ignore', detached: true })
+    processos.push(p)
+    await esperar(`http://localhost:${porta}${caminho}`)
+    return async () => {
+      parar(p)
+      await new Promise((ok) => (p.exitCode !== null || p.signalCode !== null ? ok() : p.once('exit', ok)))
+    }
+  }
+
   try {
     for (const nome of Object.keys(PORTAS_DE_DOMINIO)) {
       dominios.set(nome, iniciar('node', ['src/servidor.mjs', nome], join(RAIZ, 'erp-dominio-stub')))
@@ -148,5 +165,5 @@ export async function subir({ construir = false, log = false } = {}) {
     derrubar()
     throw e
   }
-  return { derrubar, derrubarDominio, subirDominio, derrubarApp, subirApp, congelarApp, descongelarApp, sessaoDir: env.SESSAO_DIR }
+  return { derrubar, derrubarDominio, subirDominio, derrubarApp, subirApp, subirAppAvulsa, congelarApp, descongelarApp, sessaoDir: env.SESSAO_DIR }
 }

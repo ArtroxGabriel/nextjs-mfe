@@ -6,9 +6,10 @@
 // instalar), não o texto. A primeira versão procurava a palavra `fetch(` e foi contornada com
 // `globalThis['fetch'](...)`; esta vê o `fetch` escrito de qualquer jeito.
 import { createRequire } from 'node:module'
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { RAIZ } from '../scripts/ambiente.mjs'
+import { fontesDaApp } from './seguranca-estatica.mjs'
 
 const ts = createRequire(join(RAIZ, 'erp-shell', 'package.json'))('typescript')
 
@@ -18,25 +19,48 @@ const ts = createRequire(join(RAIZ, 'erp-shell', 'package.json'))('typescript')
 const MODULOS_DE_REDE = new Set(['http', 'https', 'http2', 'net', 'tls', 'dgram', 'undici', 'axios',
   'node-fetch', 'got', 'ky', 'superagent', 'ws', 'redis', 'ioredis', '@redis/client', 'pg', 'mysql2', 'mongodb',
   'child_process', 'worker_threads', 'vm', 'module', 'cluster'].flatMap((m) => [m, `node:${m}`]))
+/**
+ * Módulos que uma app PODE importar (auditor_b1_d1_3, V6: uma lista de proibidos deixava passar
+ * `node:dns` e qualquer biblioteca HTTP fora dela). Qualquer outro pacote é tratado como rede.
+ * Locais (`./`, `@/`) seguem valendo: são varridos também.
+ */
+const PACOTES_PERMITIDOS = ['next', 'react', 'react-dom', 'server-only', '@erp/nucleo', '@erp/moldura', '@erp/contratos']
+const EMBUTIDOS_PERMITIDOS = new Set(['crypto', 'path', 'url', 'fs', 'fs/promises', 'buffer', 'util', 'events',
+  'assert', 'assert/strict', 'test', 'timers', 'timers/promises', 'string_decoder', 'querystring'])
+export function moduloPermitido(mod) {
+  if (mod.startsWith('.') || mod.startsWith('@/')) return true
+  const embutido = mod.startsWith('node:') ? mod.slice(5) : mod
+  if (EMBUTIDOS_PERMITIDOS.has(embutido)) return true
+  return PACOTES_PERMITIDOS.some((p) => mod === p || mod.startsWith(`${p}/`))
+}
 /** Globais que fazem rede. */
 const GLOBAIS_DE_REDE = new Set(['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource'])
 /** Portas para montar código em tempo de execução, que escaparia de qualquer análise. */
 const EXECUCAO_DINAMICA = new Set(['eval', 'Function'])
+/** Nomes da global, que dão acesso a qualquer outra global por apelido ou chave calculada. */
+const NOMES_DA_GLOBAL = new Set(['globalThis', 'window', 'self', 'global'])
 
 /**
- * Exceções declaradas, cada uma com o motivo. Arquivo novo aqui exige revisão: é uma saída de
- * rede fora da allowlist do núcleo.
+ * Exceções declaradas, cada uma com o motivo e com o QUE ela permite (`permite`: o módulo ou a
+ * global). Vale só aquilo, não o arquivo inteiro (auditor_b1_d1_3, V6/XR15: um `fetch` para fora
+ * dentro de `lib/redis.ts` passava). Exceção nova aqui exige revisão e muda o teste que fixa a lista.
  */
 const STORE_DE_SESSAO = 'store de sessão (ADR-0002): endereço só do ambiente (`REDIS_URL`/`REDIS_URL_ZONA`), ' +
   'nunca da requisição; nas zonas, cliente só com `get` e usuário ACL só de leitura'
+const DEPLOY = 'registro do manifesto no deploy (AGENTS.md, invariante 4, primeira exceção): roda fora do Next, ' +
+  'origem fixa do ambiente, `redirect: manual` e timeout'
 export const EXCECOES = {
-  'erp-shell/lib/saude-zonas.ts':
-    'sonda de saúde das zonas: o alvo vem só de zonas.json (nunca da requisição), sem seguir ' +
-    'redirecionamento, timeout de 500 ms; não é chamada a domínio',
-  'erp-shell/lib/redis.ts': STORE_DE_SESSAO,
-  'erp-zona-1/lib/redis.ts': STORE_DE_SESSAO,
-  'erp-zona-2/lib/redis.ts': STORE_DE_SESSAO,
-  'erp-zona-acesso/lib/redis.ts': STORE_DE_SESSAO,
+  'erp-shell/lib/saude-zonas.ts': {
+    permite: ['fetch'],
+    motivo: 'sonda de saúde das zonas: o alvo vem só de zonas.json (nunca da requisição), sem seguir ' +
+      'redirecionamento, timeout de 500 ms; não é chamada a domínio',
+  },
+  'erp-shell/lib/redis.ts': { permite: ['redis'], motivo: STORE_DE_SESSAO },
+  'erp-zona-1/lib/redis.ts': { permite: ['redis'], motivo: STORE_DE_SESSAO },
+  'erp-zona-2/lib/redis.ts': { permite: ['redis'], motivo: STORE_DE_SESSAO },
+  'erp-zona-acesso/lib/redis.ts': { permite: ['redis'], motivo: STORE_DE_SESSAO },
+  'erp-zona-1/scripts/registrar-manifesto.ts': { permite: ['fetch'], motivo: DEPLOY },
+  'erp-zona-2/scripts/registrar-manifesto.ts': { permite: ['fetch'], motivo: DEPLOY },
 }
 
 /** Achados num fonte: `{ linha, motivo }`. Vazio = nenhuma saída de rede fora do registro. */
@@ -44,7 +68,8 @@ export function analisar(fonte, nome = 'arquivo.ts') {
   const sf = ts.createSourceFile(nome, fonte, ts.ScriptTarget.Latest, true,
     nome.endsWith('x') ? ts.ScriptKind.TSX : ts.ScriptKind.TS)
   const achados = []
-  const achar = (no, motivo) => achados.push({ linha: sf.getLineAndCharacterOfPosition(no.getStart(sf)).line + 1, motivo })
+  // `coisa`: o módulo ou a global envolvida; uma exceção só perdoa o achado cuja coisa ela permite
+  const achar = (no, motivo, coisa = null) => achados.push({ linha: sf.getLineAndCharacterOfPosition(no.getStart(sf)).line + 1, motivo, coisa })
   // nomes declarados localmente (import, variável, parâmetro, função) não são a global
   const declarados = new Set()
   const coletar = (no) => {
@@ -59,8 +84,15 @@ export function analisar(fonte, nome = 'arquivo.ts') {
 
   const visitar = (no) => {
     // import ... from 'node:http'  /  export ... from 'axios'
-    if ((ts.isImportDeclaration(no) || ts.isExportDeclaration(no)) && no.moduleSpecifier && MODULOS_DE_REDE.has(texto(no.moduleSpecifier))) {
-      achar(no, `importa modulo de rede '${texto(no.moduleSpecifier)}'`)
+    if ((ts.isImportDeclaration(no) || ts.isExportDeclaration(no)) && no.moduleSpecifier) {
+      const mod = texto(no.moduleSpecifier)
+      const soTipo = ts.isImportDeclaration(no) && no.importClause?.isTypeOnly
+      if (mod !== null && !soTipo && (MODULOS_DE_REDE.has(mod) || !moduloPermitido(mod))) achar(no, `importa modulo fora da lista permitida '${mod}'`, mod)
+    }
+    // import x = require('dns')
+    if (ts.isImportEqualsDeclaration(no) && ts.isExternalModuleReference(no.moduleReference)) {
+      const mod = texto(no.moduleReference.expression)
+      if (mod === null || MODULOS_DE_REDE.has(mod) || !moduloPermitido(mod)) achar(no, `carrega modulo por import = require '${mod}'`, mod)
     }
     if (ts.isCallExpression(no)) {
       // Reflect.get(globalThis, 'fe' + 'tch'), Object.getOwnPropertyDescriptor(window, x): a global
@@ -73,7 +105,7 @@ export function analisar(fonte, nome = 'arquivo.ts') {
       const [arg] = no.arguments
       // import('node:http') e require('http')
       if ((no.expression.kind === ts.SyntaxKind.ImportKeyword || (ts.isIdentifier(no.expression) && no.expression.text === 'require'))) {
-        if (arg && MODULOS_DE_REDE.has(texto(arg))) achar(no, `carrega modulo de rede '${texto(arg)}'`)
+        if (arg && texto(arg) !== null && (MODULOS_DE_REDE.has(texto(arg)) || !moduloPermitido(texto(arg)))) achar(no, `carrega modulo fora da lista permitida '${texto(arg)}'`, texto(arg))
         else if (arg && texto(arg) === null) achar(no, 'import/require com especificador dinamico (nao da para saber o que carrega)')
       }
     }
@@ -85,17 +117,28 @@ export function analisar(fonte, nome = 'arquivo.ts') {
         || (ts.isMethodDeclaration(pai) && pai.name === no) || (ts.isPropertyDeclaration(pai) && pai.name === no)
       const nome = no.text
       if (!ehNomeDePropriedade && !declarados.has(nome)) {
-        if (GLOBAIS_DE_REDE.has(nome) && !ts.isTypeQueryNode(pai) && !ts.isTypeReferenceNode(pai)) achar(no, `usa a global de rede '${nome}'`)
+        if (GLOBAIS_DE_REDE.has(nome) && !ts.isTypeQueryNode(pai) && !ts.isTypeReferenceNode(pai)) achar(no, `usa a global de rede '${nome}'`, nome)
+        // `const g = globalThis`, `f(globalThis)`, `[globalThis]`: só `globalThis.nome` literal é legível
+        // (auditor_b1_d1_3, XR08: apelido da global e chave calculada)
+        if (NOMES_DA_GLOBAL.has(nome) && !(ts.isPropertyAccessExpression(pai) && pai.expression === no)
+          && !(ts.isElementAccessExpression(pai) && pai.expression === no) && !ts.isTypeQueryNode(pai)) {
+          achar(no, `usa '${nome}' como valor (apelido da global)`)
+        }
         if (EXECUCAO_DINAMICA.has(nome)) achar(no, `usa '${nome}', que monta codigo em tempo de execucao`)
       }
     }
     // globalThis.fetch, window.fetch, self['fetch'], navigator.sendBeacon
     if (ts.isPropertyAccessExpression(no) && (GLOBAIS_DE_REDE.has(no.name.text) || no.name.text === 'sendBeacon')) {
-      achar(no, `acessa '${no.name.text}' por propriedade`)
+      achar(no, `acessa '${no.name.text}' por propriedade`, no.name.text)
+    }
+    // process.getBuiltinModule('node:http') (XR09) e `(() => {}).constructor('…')` (XR12)
+    if (ts.isPropertyAccessExpression(no) && ['getBuiltinModule', 'constructor', 'binding', 'dlopen'].includes(no.name.text)) {
+      achar(no, `acessa '${no.name.text}', que carrega modulo ou monta codigo fora da analise`)
     }
     if (ts.isElementAccessExpression(no)) {
       const chave = texto(no.argumentExpression)
-      if (chave !== null && (GLOBAIS_DE_REDE.has(chave) || chave === 'sendBeacon')) achar(no, `acessa '${chave}' por indice`)
+      if (chave !== null && (GLOBAIS_DE_REDE.has(chave) || chave === 'sendBeacon')) achar(no, `acessa '${chave}' por indice`, chave)
+      if (chave !== null && ['getBuiltinModule', 'constructor', 'binding', 'dlopen'].includes(chave)) achar(no, `acessa '${chave}' por indice`)
       if (chave === null && ['globalThis', 'window', 'self', 'global'].includes(no.expression.getText(sf))) {
         achar(no, 'acessa a global por chave calculada (nao da para saber qual)')
       }
@@ -103,7 +146,7 @@ export function analisar(fonte, nome = 'arquivo.ts') {
     // Reflect.get(globalThis, 'fetch') e parecidos: o nome aparece como texto
     if ((ts.isStringLiteral(no) || ts.isNoSubstitutionTemplateLiteral(no)) && GLOBAIS_DE_REDE.has(no.text)
       && !(ts.isElementAccessExpression(no.parent)) && !ts.isImportDeclaration(no.parent)) {
-      achar(no, `menciona '${no.text}' como texto (acesso indireto)`)
+      achar(no, `menciona '${no.text}' como texto (acesso indireto)`, no.text)
     }
     ts.forEachChild(no, visitar)
   }
@@ -111,19 +154,17 @@ export function analisar(fonte, nome = 'arquivo.ts') {
   return achados
 }
 
-/** Varre `app/` e `lib/` (e `proxy.ts`) das aplicações; devolve achados fora das exceções. */
-export function varrerAplicacoes(apps = ['erp-shell', 'erp-zona-1', 'erp-zona-2', 'erp-zona-acesso']) {
-  const fontes = (d) => readdirSync(d).flatMap((n) => {
-    const p = join(d, n)
-    return statSync(p).isDirectory() ? fontes(p) : /\.(ts|tsx|mts|js|mjs|jsx)$/.test(n) ? [p] : []
-  })
+/** Varre as aplicações inteiras (fora de dependências, build e testes); devolve achados fora das exceções. */
+export function varrerAplicacoes(apps = ['erp-shell', 'erp-zona-1', 'erp-zona-2', 'erp-zona-acesso'], raiz = RAIZ) {
   const resultado = []
   for (const app of apps) {
-    const arquivos = [...['app', 'lib'].flatMap((d) => fontes(join(RAIZ, app, d))), join(RAIZ, app, 'proxy.ts')]
-    for (const f of arquivos) {
-      const rel = relative(RAIZ, f)
-      if (rel in EXCECOES) continue
-      for (const a of analisar(readFileSync(f, 'utf8'), f)) resultado.push(`${rel}:${a.linha} ${a.motivo}`)
+    for (const f of fontesDaApp(join(raiz, app))) {
+      const rel = relative(raiz, f)
+      const permite = EXCECOES[rel]?.permite ?? []
+      for (const a of analisar(readFileSync(f, 'utf8'), f)) {
+        if (a.coisa !== null && permite.includes(a.coisa)) continue
+        resultado.push(`${rel}:${a.linha} ${a.motivo}`)
+      }
     }
   }
   return resultado
