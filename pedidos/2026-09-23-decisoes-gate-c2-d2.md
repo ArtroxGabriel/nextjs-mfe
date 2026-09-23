@@ -68,7 +68,7 @@ A pergunta que decide o critério é: **contra quem esses analisadores protegem?
 | Ameaça | Defesa certa | Os analisadores servem? |
 |---|---|---|
 | **Erro de quem escreve de boa-fé** (passar um objeto achando que é texto, esquecer um import) | analisador estático + teste ponta a ponta | **sim**, é exatamente para isso |
-| **Alguém burlando de propósito** (código malicioso dentro de uma zona) | revisão obrigatória de código no merge (CODEOWNERS) e barreiras no ambiente: a zona **não recebe** a credencial, a rede de produção **bloqueia** saída não autorizada | **não resolvem**: fechar um contorno só adia o próximo |
+| **Alguém burlando de propósito** (código malicioso dentro de uma zona) | barreiras no ambiente: a zona **não recebe** a credencial, a rede de produção **bloqueia** saída não autorizada | **não resolvem**: fechar um contorno só adia o próximo |
 
 ### 2.3 As opções
 
@@ -91,7 +91,7 @@ A pergunta que decide o critério é: **contra quem esses analisadores protegem?
      trazida de outro arquivo), e um teste procura endereços internos no JavaScript entregue ao navegador.
 2. **Fechar os contornos baratos de V2 e V4** (parâmetro `fetch`, pastas `test/` aninhadas, lista explícita
    dos pacotes do Next permitidos, regra de fronteira para as funções do shell). **Declarar o resto** como
-   limite do analisador, apontando a defesa real: CODEOWNERS no merge e bloqueio de saída de rede no deploy.
+   limite do analisador, apontando a defesa real: a zona sem a credencial e o bloqueio de saída de rede no deploy.
 3. **Fechar as lacunas** que custam pouco (N4 concluindo a tarefa com o `If-Match` que a página mandou,
    cache mínimo de zona "fora", `router.push` com variável, `rewrites`/`assetPrefix` com endereço interno).
 4. **Iteração 5** com o critério novo escrito no despacho do auditor.

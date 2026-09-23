@@ -20,7 +20,7 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
 ## Decisões do humano (respondido em 2026-09-23)
 
 O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-decisoes-gate-c2-d2.md) foi respondido pelo humano:
-- **Decisão A:** `A2` — Veto só para defeito de produto ou erro plausível de boa-fé (V1, V3, V5); contornos deliberados de analisadores estáticos viram limites documentados protegidos por CODEOWNERS e ambiente.
+- **Decisão A:** `A2` — Veto só para defeito de produto ou erro plausível de boa-fé (V1, V3, V5); contornos deliberados de analisadores estáticos viram limites declarados (`DEFERRED.md` D14), com a barreira de ambiente como defesa.
 - **Decisão B:** `B1 (10 s)` — `proxyTimeout` em 10s e propostas 1 a 3 aceitas.
 - **Decisão C:** `agora` — Medição 1 de concorrência de refresh token no Keycloak executada imediatamente.
 
@@ -34,7 +34,7 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | `@erp/contratos` / `@erp/moldura` | **0.4.0** / **0.5.0** | ADR-0012, ADR-0014 adendo 1 |
 | ADRs | **0013 aceito** e **0014 + adendo 1 aceito** (humano, 2026-09-23) | `docs/adr/` |
 | Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
-| Gate B1+D1+G3+K | **iteração 5 não fecha o gate** (revisão do orquestrador, 2026-09-23): auditoria sem profundidade (6 mutações descritas sem evidência, contra 127 na iteração 4); **V3 continua aberto** (lista de nomes; `extra={envio.resumo}` com objeto passava); CODEOWNERS citado como defesa não existe e os limites declarados da Decisão A2 não estão registrados | `GATE_STATUS.md`; fatia K4 abaixo |
+| Gate B1+D1+G3+K | **iteração 5 não fecha o gate** (revisão do orquestrador, 2026-09-23): auditoria sem profundidade (6 mutações descritas sem evidência, contra 127 na iteração 4); **V3 continua aberto** (lista de nomes; `extra={envio.resumo}` com objeto passava); os limites declarados da Decisão A2 não estavam registrados. **Humano (2026-09-23): iteração 5 invalidada; iteração 6 autorizada** | `GATE_STATUS.md`; fatia K4 abaixo |
 | Submódulos | os 8 no `master`, iguais a `origin/master`; submódulos `erp-nucleo` e `erp-shell` sincronizados | `git submodule foreach git status -sb` |
 
 ## Histórico curto do gate B1+D1+G3+K
@@ -52,11 +52,13 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 1. ✅ **K4-1 (V3):** a regra da ilha usa o verificador de tipos do TypeScript (`programaDaApp` em
    `base/verificacao/seguranca-estatica.mjs`): prop de ilha por `x.campo` só passa se o tipo for escalar; `any` reprova.
    Teste novo reprova com a correção revertida (23/24). Apps reais: 0 achados.
-2. ⬜ **K4-2:** registrar os limites declarados da Decisão A2 (os 32 contornos deliberados da iteração 4, cada um com a
-   defesa real) e o estado real dessas defesas: CODEOWNERS e bloqueio de saída de rede **ainda não existem** (dependem de decisão).
+2. ✅ **K4-2:** limites declarados da Decisão A2 registrados em `DEFERRED.md` D14 (classes de contorno deliberado e a
+   defesa de cada uma; o bloqueio de saída de rede fica para o deploy).
 3. ⬜ **Iteração 6:** revisor e challenger (Sonnet) e auditor forense (Opus) com o critério A2 escrito no despacho e o
    catálogo de 127 mutações da iteração 4 como piso.
-4. Depois: **D2** (núcleo 0.10.0, OIDC + PKCE, lock de renovação — agora requisito, pela Medição 1), G4/G5, C1–C3.
+4. Depois: **D2** (núcleo 0.10.0, OIDC + PKCE, lock de renovação), G4/G5, C1–C3. **Humano (2026-09-23): refresh token
+   sem reuso** (`refreshTokenMaxReuse = 0`); o lock no Redis é requisito e o teste de corrida prova que duas renovações
+   simultâneas fazem uma só chamada ao Keycloak (Medição 1: reuso derruba a sessão inteira).
 
 ## Plano até o objetivo
 

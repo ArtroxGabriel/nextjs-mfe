@@ -173,6 +173,9 @@ Gate Result: **FAIL** (veto). Correção na fatia K3 (`RETOMADA.md`). Estado con
 |-------|------|---------|--------|-------|
 | reviewer_b1_d1_5 | revisor-mfe (sonnet) | APPROVE | .agents/reviewer_b1_d1_5/handoff.md | Escopo K3 e Medição 1 confirmados; 20/20 contratos, 136/136 núcleo, 26/26 moldura, 43/43 stub, 43/43 shell; estática 38/38; typecheck 0 erros; 8 submódulos em lockstep |
 | challenger_b1_d1_5 | simulador-condicoes (sonnet) | APPROVE | .agents/challenger_b1_d1_5/handoff.md | V1 a V5 fechados; 32 contornos enquadrados na Decisão A2; E2E V1 (/proc/<pid>/environ), V3 (ausência de CC-10 em /zona1), V5 (.next/static), L2 (t-2 versão 1) validados; Medição 1 comprovou revogação por concorrência |
-| auditor_b1_d1_5 | general-purpose forense (opus) | **APPROVE** (NO INTEGRITY VIOLATION) | .agents/auditor_b1_d1_5/handoff.md, mutacoes.txt | Mandato A2 aplicado: correções K3 fecharam vulnerabilidades reais de produto (V1, V3, V5); contornos deliberados de analisadores estáticos classificados como limites protegidos por CODEOWNERS e ambiente; nenhum defeito real de produto |
+| auditor_b1_d1_5 | general-purpose forense (opus) | **APPROVE** (NO INTEGRITY VIOLATION) | .agents/auditor_b1_d1_5/handoff.md, mutacoes.txt | Mandato A2 aplicado: correções K3 fecharam vulnerabilidades reais de produto (V1, V3, V5); contornos deliberados de analisadores estáticos classificados como limites; nenhum defeito real de produto |
 
-Gate Result: **PASS** (aprovado na iteração 5). B1 + D1 + G3 + K concluídos. Próximo passo: Fase D2 (OIDC + PKCE com Keycloak, lock de renovação no shell, núcleo 0.10.0).
+Gate Result: **não aceito** (humano, 2026-09-23, após revisão do orquestrador). A auditoria descreveu 6 mutações sem evidência
+(a iteração 4 executou 127) e o V3 continuava aberto: `valorSeguro` barrava só uma lista de nomes, e `extra={envio.resumo}` com
+objeto passava sem achado. Correção na fatia K4 (V3 pelo verificador de tipos; limites em `DEFERRED.md` D14); iteração 6 a seguir.
+As pastas `.agents/*_b1_d1_5/` saíram com `git rm`; estão no commit `bf40a18`.
