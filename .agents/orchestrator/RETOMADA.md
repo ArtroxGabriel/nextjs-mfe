@@ -34,8 +34,8 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | `@erp/contratos` / `@erp/moldura` | **0.4.0** / **0.5.0** | ADR-0012, ADR-0014 adendo 1 |
 | ADRs | **0013 aceito** e **0014 + adendo 1 aceito** (humano, 2026-09-23) | `docs/adr/` |
 | Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
-| Gate B1+D1+G3+K | **iteração 4 reprovada** pelo auditor; **Fatia K3 concluída** (V1–V5, L1–L5 cobertos com testes unitários, estáticos e E2E). Pronto para despacho da **iteração 5** sob o critério da Decisão A2. | `GATE_STATUS.md`; `.agents/*_b1_d1_4/` |
-| Submódulos | os 8 no `master`, iguais a `origin/master`; submódulos `erp-nucleo` e `erp-shell` commitados com as correções da K3 | `git submodule foreach git status -sb` |
+| Gate B1+D1+G3+K | **APROVADO** na iteração 5 (revisor, challenger e auditor aprovaram sob a Decisão A2; Fatia K3 e Medição 1 validadas). | `GATE_STATUS.md`; `.agents/*_b1_d1_5/` |
+| Submódulos | os 8 no `master`, iguais a `origin/master`; submódulos `erp-nucleo` e `erp-shell` sincronizados | `git submodule foreach git status -sb` |
 
 ## Histórico curto do gate B1+D1+G3+K
 
@@ -45,22 +45,18 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | 2 | auditor vetou V1–V8 | fatia K |
 | 3 | revisor e challenger aprovaram; auditor vetou V1–V7 (127 mutações, 55 sobreviventes) | fatia **K2** (2026-09-23): cada veto com teste que reprova a mutação; P07 adiado (D13) |
 | 4 | revisor e challenger aprovaram; auditor vetou **V1–V5** novos (127, 55 sobreviventes; tudo da iteração 3 agora pego) | fatia **K3** implementada e testada (K3-1 a K3-6) |
+| 5 | **APROVADO**: revisor (APPROVE), challenger (APPROVE) e auditor (APPROVE / no integrity violation) sob a Decisão A2 | Gate concluído com sucesso |
 
-**Critério da decisão A (A2):** vetos só para defeito de produto ou erro plausível de boa-fé (V1, V3, V5); contornos deliberados de analisadores estáticos viram limites documentados protegidos por CODEOWNERS e barreiras no ambiente/rede.
+## Próximo passo: Fase D2 (OIDC + PKCE com Keycloak e Lock de Renovação)
 
-## Próximos passos
-
-1. **Fatia K3 (Concluída)**:
-   - K3-1 (V1 / E01f): `REDIS_URL` fora do ambiente das zonas em `ambiente.mjs`; teste verifica `/proc/<pid>/environ`.
-   - K3-2 (V2 / N38d–f): barreira de símbolos exclusivos do shell na fronteira do núcleo; raiz tratada como camada.
-   - K3-3 (V3 / E10d, XE26): bloqueio de campos complexos e `createElement`/`dynamic` em ilhas; teste E2E de `/zona1`.
-   - K3-4 (V4 / XR20p, XR23p, XR38p): pilha léxica de escopos no analisador de rede; bloqueio de `next/dist/*` e concatenação de propriedades calculadas.
-   - K3-5 (V5 / XN01p): bloqueio de `.env` em `next.config.ts` e `process.env` em `use client`; varredura E2E de `.next/static`.
-   - K3-6 (L1–L5): teste S17b de cache de indisponibilidade com duração não efêmera; teste L2 (P16b) com recurso versão 1 (t-2).
-2. **Medição 1 do D2 (Concluída)**:
-   - Executada contra Keycloak 26 (`base/showcase/medicao-refresh-concorrente.mjs`). Relatório em `base/showcase/medicao-refresh-concorrente.md` comprova que concorrência sem lock revoga a sessão do usuário (`invalid_grant: Maximum allowed refresh token reuse exceeded`).
-3. **Iteração 5**: Despachar verificadores com a Decisão A2 explícita no mandato do auditor.
-4. **D2** (núcleo 0.10.0, OIDC + PKCE, lock de renovação no shell); G4; G5; C1–C3; E4–E5.
+1. **D2**:
+   - Pacote `@erp/nucleo@0.10.0`;
+   - Login e renovação OIDC + PKCE via Keycloak (sessão unificada);
+   - Lock distribuído no Redis para renovação no shell (ADR-0013);
+   - Pessoa identificada por `sub` estável;
+   - Ator `eva` do D13.
+2. **G4 / G5**: Showcase com os atores da v2 e revogação ativa via `/v2/eventos`.
+3. **C1–C3**: Fragmentos entre zonas, SSE no shell (`/api/stream` + `SharedWorker`), mapa de zonas dos manifestos.
 
 ## Plano até o objetivo
 
@@ -71,16 +67,16 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | Fase | Item | Estado | Atividade | Depende de / bloqueio |
 |---|---|---|---|---|
 | **A. Fechar o aberto** | A1 gate do shell | ✅ aprovado na iteração 4 | #3, #18 | — |
-| **B. Base consistente** | B1 migrar as 4 apps para o kit | ✅ implementado; gate: iteração 4 reprovada → K3 | #20 | 🔒 decisão A |
+| **B. Base consistente** | B1 migrar as 4 apps para o kit | ✅ aprovado no gate (iteração 5) | #20 | — |
 | | B2 exportar spans (SDK OpenTelemetry) | ⬜ | #18 | — (instalação aprovada) |
-| | B3 `/{zona}/api/health` sem domínio; sonda do shell o usa | ✅ implementado e testado (K2); gate junto com B1 | #3 | — |
+| | B3 `/{zona}/api/health` sem domínio; sonda do shell o usa | ✅ implementado e testado (K2); gate aprovado | #3 | — |
 | | B5 parâmetros em configuração (B5a shell, B5b núcleo) | ✅; os de sessão entram com o D2 | #20 | — |
-| | B4/B6 verificações estáticas de segurança | ✅ endurecidas na K2 (33 testes); iteração 4 achou contornos → K3 | #20 | 🔒 decisão A |
+| | B4/B6 verificações estáticas de segurança | ✅ aprovadas no gate (iteração 5, 38 testes) | #20 | — |
 | **C. Funcionalidades** | C1 fragmentos entre zonas | ⬜ | #10 | B1 |
-| | C2 SSE no shell (`/api/stream` + `SharedWorker`); fechar D7 (`proxyTimeout`) | ⬜ | #11 | B1; 🔒 decisão B |
+| | C2 SSE no shell (`/api/stream` + `SharedWorker`); fechar D7 (`proxyTimeout`) | ⬜ | #11 | B1; decisão B ok |
 | | C3 mapa de zonas vindo dos manifestos | ⬜ | #14 | B1 |
-| **D. Sessão e identidade reais** | D1 sessão no Redis (shell grava, zonas leem com ACL só de leitura) | ✅ implementado; gate → K3-1 | #9 | 🔒 decisão A |
-| | D2 OIDC + PKCE e renovação proativa com lock (**ADR-0013 aceito**; pessoa por `sub`) | ⏳ só os campos da sessão; login e renovação não começaram; núcleo 0.10.0 | #9 | gate B1+D1; decisão C |
+| **D. Sessão e identidade reais** | D1 sessão no Redis (shell grava, zonas leem com ACL só de leitura) | ✅ aprovado no gate (iteração 5) | #9 | — |
+| | D2 OIDC + PKCE e renovação proativa com lock (**ADR-0013 aceito**; pessoa por `sub`) | ⏳ pronto para iniciar (gate B1+D1 aprovado, medição 1 concluída) | #9 | — |
 | **E. Showcase** | E1 domínios mock com dados em JSON | ✅ | #19 | — |
 | | E2 `docker-compose` com Redis e Keycloak | ✅ | #19 | — |
 | | E3 `task showcase` e `task showcase:conferir` | ✅ parcial: falta login pelo Keycloak | #19 | D2 |
@@ -88,7 +84,7 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | | E5 verificação ponta a ponta contra o showcase | ⬜ | #19 | E4 |
 | **G. Gestão de acesso v2** | G1 modelo e mock (porta 4020) | ✅ | #21 | — |
 | | G2 **ADR-0014 + adendo 1, aceito** | ✅ | #21 | — |
-| | G3 alinhar à v2 | ✅ implementado; gate → K3 | #21 | 🔒 decisão A |
+| | G3 alinhar à v2 | ✅ aprovado no gate (iteração 5) | #21 | — |
 | | G4 gate e showcase com os atores da v2 | ⬜ | #21, #19 | G3 |
 | | G5 revogação ativa por `/v2/eventos` | ⬜ **lacuna declarada e aceita** até lá | #21 | G3, D2 |
 

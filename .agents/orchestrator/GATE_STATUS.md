@@ -166,3 +166,13 @@ Lacunas: L1 contornos do `P0-acao-protegida`; L2 `If-Match` fixo "3" (N4 usa jus
 
 Gate Result: **FAIL** (veto). Correção na fatia K3 (`RETOMADA.md`). Estado conferido pelo auditor ao fim: fontes iguais, `dist` = tarball
 0.9.2, dados do stub iguais, chave forjada apagada, 88/88, portas livres.
+
+## Gate — B1 + D1 + G3 (acesso v2) + fatia K3, iteração 5 (contratos 0.4.0 / núcleo 0.9.2 / moldura 0.5.0)
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_b1_d1_5 | revisor-mfe (sonnet) | APPROVE | .agents/reviewer_b1_d1_5/handoff.md | Escopo K3 e Medição 1 confirmados; 20/20 contratos, 136/136 núcleo, 26/26 moldura, 43/43 stub, 43/43 shell; estática 38/38; typecheck 0 erros; 8 submódulos em lockstep |
+| challenger_b1_d1_5 | simulador-condicoes (sonnet) | APPROVE | .agents/challenger_b1_d1_5/handoff.md | V1 a V5 fechados; 32 contornos enquadrados na Decisão A2; E2E V1 (/proc/<pid>/environ), V3 (ausência de CC-10 em /zona1), V5 (.next/static), L2 (t-2 versão 1) validados; Medição 1 comprovou revogação por concorrência |
+| auditor_b1_d1_5 | general-purpose forense (opus) | **APPROVE** (NO INTEGRITY VIOLATION) | .agents/auditor_b1_d1_5/handoff.md, mutacoes.txt | Mandato A2 aplicado: correções K3 fecharam vulnerabilidades reais de produto (V1, V3, V5); contornos deliberados de analisadores estáticos classificados como limites protegidos por CODEOWNERS e ambiente; nenhum defeito real de produto |
+
+Gate Result: **PASS** (aprovado na iteração 5). B1 + D1 + G3 + K concluídos. Próximo passo: Fase D2 (OIDC + PKCE com Keycloak, lock de renovação no shell, núcleo 0.10.0).

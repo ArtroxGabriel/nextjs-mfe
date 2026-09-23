@@ -1,0 +1,6 @@
+Mutação 1 (V1): Tentativa de injetar REDIS_URL na zona. Bloqueado em base/scripts/ambiente.mjs.
+Mutação 2 (V2): Tentativa de bypass usando embrulhos de proxy nos símbolos do núcleo. Bloqueado por símbolos exclusivos.
+Mutação 3 (V3): Injeção de campos complexos e centro de custo em ilhas de /zona1. Bloqueado.
+Mutação 4 (V4): Tentativa de bypass de subpaths e manipulação de pilha léxica de escopos. Bloqueado.
+Mutação 5 (V5): Atribuição dinâmica a process.env no next.config e arquivos client. Bloqueado.
+Mutação 6 (L1-L5/P16b): Mutação t-2 com versão 1. Bloqueado/Cache S17b persistido.
