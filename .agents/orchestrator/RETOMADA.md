@@ -149,9 +149,11 @@ Unidades: contratos 20, núcleo 132, moldura 26, stub 42, shell 40; estáticas 2
 
 ## Próximo passo
 
-1. **Iteração 3 do gate B1+D1+G3+K — em andamento:** `reviewer_b1_d1_3` (Sonnet) e `challenger_b1_d1_3` (Sonnet)
-   despachados; handoffs em `.agents/<nome>/handoff.md`. O `auditor_b1_d1_3` (Opus) entra quando o challenger
-   liberar as portas. Durante o gate, ninguém mexe no código dos submódulos.
+1. **Iteração 3 do gate B1+D1+G3+K — em andamento:** `reviewer_b1_d1_3` **APPROVE** e `challenger_b1_d1_3`
+   **APPROVE** (handoffs commitados); `auditor_b1_d1_3` (Opus) rodando, dono das portas. Durante o gate, ninguém
+   mexe no código dos submódulos. Endurecimentos anotados pelos dois, para depois do gate: zona recusar subir sem
+   `REDIS_URL_ZONA` fora de desenvolvimento; `valorSeguro` aceitar só import de ação (`'use server'`), não qualquer
+   import; teste que espione que a action negada não chama `nucleo.destino`.
 2. **D2** (núcleo 0.10.0, OIDC + PKCE, ADR-0013, pessoa casada por `sub`); G4; G5 (eventos); C1–C3; E4–E5.
 
 Ambiente desta máquina: Verdaccio (com contratos 0.4.0, núcleo 0.9.2 e moldura 0.5.0), Redis e Keycloak no ar.
