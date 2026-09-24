@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-23 (revisão da iteração 5: aprovação não aceita; fatia K4 em andamento)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-23 (gate iteração 8 reprovado pelo auditor; fatia K5 planejada; cota semanal esgotada)**.
 
 ## Objetivo final
 
@@ -59,17 +59,22 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 4. ❌ **Iteração 7:** reprovada pelo challenger: o Redis do showcase aceitava escrita sem senha. ✅ **K4-4** corrige
    (`GATE_STATUS.md`); `task verificar:redis` 100/100, `task verificar` 96 + 4 pulados. **Outra máquina: recriar o Redis
    (`task showcase:subir`) para valer a senha nova.**
-5. ⏳ **Iteração 8** (retomada exata, 2026-09-23 ~20h40, cota semanal em 95%): revisor e challenger **aprovaram**
-   (handoffs commitados). **Auditor (Opus) rodando**, parcial em `.agents/auditor_b1_d1_8/` (commitado como estava):
-   lotes A1, A2 e B estático feitos (91 mutações); faltam o catálogo da iteração 4 no ponta a ponta, as mutações novas
-   da K3/K4 e a conferência do estado final. Achados parciais (ainda sem veredito): fronteira do núcleo por lista de nomes
-   (N38g–l), `fetch` declarado em `constructor`/`catch`/`for` esconde o global (XR20q/r), correção do XR38p sem teste (SR3).
-   **Se a sessão cair:** (1) `git status` e `git -C repos/<x> status`: reverter qualquer mutação que o auditor deixou
-   (ele mutava o `Taskfile.yml` ao parar); (2) conferir chaves forjadas no Redis; (3) despachar um auditor novo
-   (`auditor_b1_d1_8b`) que continue do `mutacoes.txt`, sem refazer o que já tem linha.
-   Antes, a iteração estava descrita assim: revisor e challenger (Sonnet) e auditor forense (Opus) com o critério A2 escrito no despacho e o
-   catálogo de 127 mutações da iteração 4 como piso.
-6. Depois: **D2** (núcleo 0.10.0, OIDC + PKCE, lock de renovação), G4/G5, C1–C3. **Humano (2026-09-23): refresh token
+5. ❌ **Iteração 8:** revisor e challenger aprovaram; **auditor vetou V1–V4** (`GATE_STATUS.md`).
+6. ⬜ **Fatia K5** (próximo passo; cota semanal esgotada em 2026-09-23, retomar quando renovar). Cada item com teste que
+   reprova com a correção revertida, e os **dois modos** rodados antes do commit (`AMBIENTE.md`):
+   - **K5-1 (V1):** ambiente de zona e de domínio por **lista de inclusão** (só o que cada um precisa) em `base/scripts/ambiente.mjs`,
+     valendo para `start`, `build`, `registrar` e apps avulsas; o mesmo em `base/showcase/subir.mjs`. Teste: com
+     `ERP_REDIS_SENHA_SHELL` definida, nenhum valor do ambiente de zona ou domínio contém a senha; chave-sentinela ausente após o build.
+     Fecha também L6 (AMB4/AMB6).
+   - **K5-2 (V2):** `saida-de-rede.mjs` abre escopo em `constructor`, acessor (`get`/`set`), `catch`, `for`/`for-of`/`for-in` e bloco
+     (fecha L2/SR1). Teste: um caso por forma, com `fetch` e `WebSocket`.
+   - **K5-3 (V3):** teste que reprova se `fontesDaApp` voltar a pular `test/` fora da raiz da app.
+   - **K5-4 (V4):** fronteira do núcleo deriva os símbolos exclusivos de `src/shell/index.ts` (nada de lista escrita à mão) e não isenta o
+     arquivo definidor; `sessaoRedis` fora de `shell/` sem opção de escrita. Teste: N38g, N38i, N38k, N38l. Exige núcleo novo (0.9.3,
+     lockstep nas 4 apps).
+   - Lacunas baratas junto: L1 (dentes em `ehTipoEscalar` e no `programa` da varredura), L3 (XN09 por shorthand/atribuição).
+   Depois: iteração 9 (revisor, challenger, auditor com o catálogo da iteração 8 como piso).
+7. Depois: **D2** (núcleo 0.10.0, OIDC + PKCE, lock de renovação), G4/G5, C1–C3. **Humano (2026-09-23): refresh token
    sem reuso** (`refreshTokenMaxReuse = 0`); o lock no Redis é requisito e o teste de corrida prova que duas renovações
    simultâneas fazem uma só chamada ao Keycloak (Medição 1: reuso derruba a sessão inteira).
 

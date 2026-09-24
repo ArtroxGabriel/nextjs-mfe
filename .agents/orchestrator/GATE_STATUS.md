@@ -204,3 +204,25 @@ Gate Result: **FAIL**. Correção **K4-4**: `--requirepass` no usuário de escri
 com a senha no Taskfile e no `subir.mjs`; teste novo prova que conexão sem senha recebe `NOAUTH` e que nenhum domínio falso recebe
 credencial do Redis; domínios e `pnpm registrar` sobem sem a credencial de escrita; XN09 vira regra estática (`assetPrefix`/`basePath` só
 literal) com teste, e sai do D14. Conferido: `task verificar:redis` 100/100, `task verificar` 96 + 4 pulados, estática 40/40. Iteração 8 a seguir.
+
+## Gate — B1 + D1 + G3 (acesso v2) + fatias K3/K4, iteração 8
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_b1_d1_8 | revisor-mfe (sonnet) | APPROVE | .agents/reviewer_b1_d1_8/handoff.md | K4-4 fecha o Redis anônimo; XN09 com regra; domínios sem credencial |
+| challenger_b1_d1_8 | simulador-condicoes (sonnet) | APPROVE | .agents/challenger_b1_d1_8/handoff.md | 100/100 e 96+4, 2x; forja sem senha → NOAUTH, com a senha da zona → NOPERM, 6 senhas fracas → WRONGPASS |
+| auditor_b1_d1_8 | general-purpose forense (opus) | **FAIL (4 vetos)** | .agents/auditor_b1_d1_8/handoff.md, mutacoes.txt, anexos/ | 127 do catálogo da it.4 reaplicadas (todos os vetos de então agora reprovam) + ~60 novas |
+
+Vetos: **V1** (inv. 15) a barreira de ambiente é lista de exclusão e só vale no `start`: com `ERP_REDIS_SENHA_SHELL` definida (como a
+documentação manda fora da máquina local) a senha de escrita chega às zonas e domínios, e a zona 1 gravou sessão forjada da carla
+(`anexos/prova-senha-shell.log`); o `pnpm build` das zonas (`ambiente.mjs:172`) roda com `REDIS_URL` (E01g: gravação no carregamento do
+módulo durante o build, 100/100). **V2** (inv. 4, N8) a pilha de escopos não abre escopo em `constructor`, acessor, `catch` e `for`: um
+`constructor(fetch)` esconde o `fetch` global (XR20q4: 38 chamadas ao alvo externo, 100/100). **V3** (inv. 4) a correção do XR38p não
+tem teste (SR3: voltar a pular `test/` em qualquer nível dá 40/40). **V4** (inv. 15) a fronteira do núcleo é lista fixa de nomes e isenta
+o arquivo definidor (N38g/h/i/k/l, 136/136).
+Lacunas sem veto: L1 `ehTipoEscalar`/`programaDaApp` sem dentes em TA1/TA4/TA5/TA9 (os erros de boa-fé T1–T8 são pegos); L2 SR1/SR6/SR7;
+L3 XN09 por shorthand ou atribuição; L4 FR2; L5 S17c; L6 AMB4/AMB6.
+D14 confirmados: XA09–XA13, XP01/XP03–06, XN02–04, XN09d, XR28c/d, XL01–04, XN08, XR30.
+
+Gate Result: **FAIL** (veto). Correção na fatia **K5** (`RETOMADA.md`). Estado conferido pelo auditor ao fim: fontes iguais ao HEAD, `dist`
+= tarball 0.9.2, dados do stub iguais, chaves forjadas apagadas, `CONSTRUIR=1 task verificar:redis` 100/100, portas livres.
