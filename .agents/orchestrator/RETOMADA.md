@@ -79,7 +79,8 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
      lockstep nas 4 apps).
    - Lacunas baratas junto: L1 (dentes em `ehTipoEscalar` e no `programa` da varredura), L3 (XN09 por shorthand/atribuição).
    Depois: iteração 9 (revisor, challenger, auditor com o catálogo da iteração 8 como piso).
-6b. ⬜ **Iteração 9** (próximo passo): despachar `reviewer_b1_d1_9` (revisor-mfe, Sonnet) e `challenger_b1_d1_9` (simulador-condicoes,
+6b. ⏳ **Iteração 9** (despachada em 2026-09-28: `reviewer_b1_d1_9` e `challenger_b1_d1_9` rodando; o challenger é dono das portas;
+   auditor ainda não despachado). Se a sessão cair: conferir os handoffs "(parcial)", `git status` dos submódulos e as portas antes de retomar. Plano: `reviewer_b1_d1_9` (revisor-mfe, Sonnet) e `challenger_b1_d1_9` (simulador-condicoes,
    Sonnet) em paralelo; o `auditor_b1_d1_9` (general-purpose, Opus) só quando o challenger liberar as portas. Piso do auditor: o catálogo
    da iteração 8 inteiro (`.agents/auditor_b1_d1_8/mutacoes.txt`) mais mutações novas na K5 (lista de inclusão, `executar`, resolução
    léxica do N8, `simbolosDoShell`, regra por tipo `temEscrita`). No despacho do challenger: rodar com `ERP_REDIS_SENHA_SHELL` definida
@@ -163,7 +164,7 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 
 - Conferido ao fim da K5 (2026-09-28): no ar Verdaccio (4873), Redis (6379, com senha) e Keycloak (8080); livres as portas da base
   3000–3003, 3012, 4001–4004, 4010, 4020.
-- Nenhum agente rodando. Pastas dos verificadores da iteração 8 (`.agents/*_b1_d1_8/`) commitadas; as das iterações 3, 4, 6 e 7
+- Rodando (2026-09-28): `reviewer_b1_d1_9` e `challenger_b1_d1_9`. Pastas dos verificadores da iteração 8 (`.agents/*_b1_d1_8/`) commitadas; as das iterações 3, 4, 6 e 7
   ficam enquanto a K5 e o D14 citarem os achados delas. As do gate do shell (fechado) e da iteração 1 ainda estão na raiz de
   `.agents/` e podem sair com `git rm` (regra do `LEIA-PRIMEIRO.md`).
 - Para retomar noutra sessão: `git fetch origin`, `git submodule update --init`, `task registry:subir`, `task showcase:descer` e
