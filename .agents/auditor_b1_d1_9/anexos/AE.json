@@ -1,0 +1,39 @@
+[
+ {
+  "id": "AE1",
+  "inv": "inv. 15",
+  "desc": "NOVA: ambientesEntregues registra um ambiente vazio (o registro deixa de refletir o que o processo recebeu)",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "    ambientesEntregues.push({ fase, dir, ambiente: { ...envProc }, extras: Object.keys(extra) })",
+    "para": "    ambientesEntregues.push({ fase, dir, ambiente: ambienteDoPapel(papelDe(dir), {}), extras: Object.keys(extra) })"
+   }
+  ]
+ },
+ {
+  "id": "AE1+AK8",
+  "inv": "inv. 15",
+  "desc": "NOVA: AE1 com o registrar recebendo o ambiente inteiro (processo curto: so o registro o ve)",
+  "cmd": "task verificar:redis 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "    ambientesEntregues.push({ fase, dir, ambiente: { ...envProc }, extras: Object.keys(extra) })",
+    "para": "    ambientesEntregues.push({ fase, dir, ambiente: ambienteDoPapel(papelDe(dir), {}), extras: Object.keys(extra) })"
+   },
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "    for (const [k, v] of Object.entries(extra)) {",
+    "para": "    if (fase === 'registrar') Object.assign(envProc, env)\n    for (const [k, v] of Object.entries(extra)) {"
+   }
+  ]
+ }
+]

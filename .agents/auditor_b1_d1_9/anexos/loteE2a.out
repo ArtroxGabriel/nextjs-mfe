@@ -6,3 +6,5 @@ AK10 | base/scripts/ambiente.mjs | NOVA: start da zona com a senha do shell por 
 AK11 | base/scripts/ambiente.mjs | NOVA: subirApp (zona que volta no meio da verificacao) com o ambiente inteiro por extra | inv. 15 | KILLED | 107/109; reprovou: V1 (E01f): REDIS_URL de escrita do shell nao esta presente no ambiente das zonas ; V1 (auditor_b1_d1_8): nenhum processo de zona ou dominio recebe a senha de escrita, em nenhuma fase
 AK6 | base/scripts/ambiente.mjs | NOVA: executar: o build ganha o ambiente inteiro numa linha a mais (sem build na rodada: CONSTRUIR=1 e fonte das apps intacto) | inv. 15 | SURVIVED | 109/109
 AK6t | base/scripts/ambiente.mjs | NOVA: o mesmo AK6 com CONSTRUIR=tudo (build de verdade na rodada) | inv. 15 | KILLED | 108/109; reprovou: V1 (auditor_b1_d1_8): nenhum processo de zona ou dominio recebe a senha de escrita, em nenhuma fase
+AK7 | base/scripts/ambiente.mjs | NOVA: o build passa o ambiente inteiro como extra (extras ficam fora da conferencia), CONSTRUIR=tudo | inv. 15 | SURVIVED | 109/109
+FIM

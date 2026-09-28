@@ -1,0 +1,44 @@
+[
+ {
+  "id": "SH1",
+  "inv": "inv. 15",
+  "desc": "NOVA: showcase: ping do Redis sem REDISCLI_AUTH (revert do c4b94e6: o showcase para de subir)",
+  "cmd": "node --test base/scripts/*.test.mjs base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1; echo \"--- referencias a subir.mjs nos testes:\"; grep -rln \"showcase/subir\" base --include=*.test.mjs || echo nenhuma",
+  "env": {},
+  "edicoes": [
+   {
+    "arquivo": "base/showcase/subir.mjs",
+    "de": "'exec', '-T', '-e', `REDISCLI_AUTH=${SENHA_SHELL}`, 'redis'",
+    "para": "'exec', '-T', 'redis'"
+   }
+  ]
+ },
+ {
+  "id": "SH2",
+  "inv": "inv. 15",
+  "desc": "NOVA: showcase: REDIS_URL_ZONA cai na REDIS_URL de escrita quando nao definida (zonas recebem a senha do shell por REDIS_URL_ZONA, nome permitido)",
+  "cmd": "node --test base/scripts/*.test.mjs base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1; echo \"--- referencias a subir.mjs nos testes:\"; grep -rln \"showcase/subir\" base --include=*.test.mjs || echo nenhuma",
+  "env": {},
+  "edicoes": [
+   {
+    "arquivo": "base/showcase/subir.mjs",
+    "de": "process.env.REDIS_URL_ZONA ??= `redis://zona:${process.env.ERP_REDIS_SENHA_ZONA ?? 'dev-zona-leitura'}@127.0.0.1:6379`",
+    "para": "process.env.REDIS_URL_ZONA ??= process.env.REDIS_URL"
+   }
+  ]
+ },
+ {
+  "id": "SH3",
+  "inv": "inv. 15",
+  "desc": "NOVA: showcase: DADOS_DIR aponta para a semente versionada (estado gravado na semente)",
+  "cmd": "node --test base/scripts/*.test.mjs base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs 2>&1; echo \"--- referencias a subir.mjs nos testes:\"; grep -rln \"showcase/subir\" base --include=*.test.mjs || echo nenhuma",
+  "env": {},
+  "edicoes": [
+   {
+    "arquivo": "base/showcase/subir.mjs",
+    "de": "join(RAIZ, 'erp-dominio-stub', 'dados', 'estado')",
+    "para": "join(RAIZ, 'erp-dominio-stub', 'dados', 'semente')"
+   }
+  ]
+ }
+]

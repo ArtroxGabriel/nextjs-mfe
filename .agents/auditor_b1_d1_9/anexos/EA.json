@@ -1,0 +1,241 @@
+[
+ {
+  "id": "E01b-arq",
+  "inv": "inv. 15",
+  "desc": "(modo arquivo) zona1 lib/redis.ts: process.env.REDIS_URL // REDIS_URL_ZONA (nome so no comentario)",
+  "cmd": "task verificar 2>&1",
+  "env": {
+   "CONSTRUIR": "0"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/lib/redis.ts",
+    "de": "  const url = process.env.REDIS_URL_ZONA\n",
+    "para": "  const url = process.env.REDIS_URL // REDIS_URL_ZONA\n"
+   }
+  ]
+ },
+ {
+  "id": "E05-arq",
+  "inv": "B3/inv. 10",
+  "desc": "(modo arquivo) zona1 api/health chama o dominio A e devolve os recursos",
+  "cmd": "task verificar 2>&1",
+  "env": {
+   "CONSTRUIR": "0"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/api/health/route.ts",
+    "de": "export function GET() {\n  return Response.json({ status: 'ok' })\n}",
+    "para": "import { listarRecursos } from '@/lib/dominio-a'\nexport async function GET() {\n  return Response.json({ status: 'ok', recursos: await listarRecursos().catch(() => null) })\n}"
+   }
+  ]
+ },
+ {
+  "id": "P12-arq",
+  "inv": "inv. 5",
+  "desc": "(modo arquivo) zona1 lib/pagina.ts: hostsPermitidos acrescenta evil.com",
+  "cmd": "task verificar 2>&1",
+  "env": {
+   "CONSTRUIR": "0"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/lib/pagina.ts",
+    "de": "hostsPermitidos: (process.env.SHELL_HOSTS ?? 'localhost:3000').split(','),",
+    "para": "hostsPermitidos: [...(process.env.SHELL_HOSTS ?? 'localhost:3000').split(','), 'evil.com'],"
+   }
+  ]
+ },
+ {
+  "id": "K2a-arq",
+  "inv": "inv. 15",
+  "desc": "(modo arquivo) zona2 lib/redis.ts: recusa desligada (REDIS_URL sem REDIS_URL_ZONA cai no store em arquivo)",
+  "cmd": "task verificar 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-2/lib/redis.ts",
+    "de": "  if (!url && process.env.REDIS_URL) {\n    throw new Error(",
+    "para": "  if (false && !url && process.env.REDIS_URL) {\n    throw new Error("
+   }
+  ]
+ },
+ {
+  "id": "P16b-arq",
+  "inv": "inv. 6",
+  "desc": "(modo arquivo) zona2 acoes.ts: If-Match fixo '\"3\"'",
+  "cmd": "task verificar 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-2/app/zona2/acoes.ts",
+    "de": "ifMatch: `\"${String(form.get('versao') ?? '')}\"`,",
+    "para": "ifMatch: '\"3\"',"
+   }
+  ]
+ },
+ {
+  "id": "P10-arq",
+  "inv": "inv. 8",
+  "desc": "(modo arquivo) zona1 page: link de Relatorios para todos",
+  "cmd": "task verificar 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/app/zona1/page.tsx",
+    "de": "{relatorios && <p><a href=\"/zona1/relatorios\">Relatórios</a></p>}",
+    "para": "{<p><a href=\"/zona1/relatorios\">Relatórios</a></p>}"
+   }
+  ]
+ },
+ {
+  "id": "P09b-arq",
+  "inv": "inv. 5",
+  "desc": "(modo arquivo) zona-acesso acoes.ts: nucleo as n e revogacao no 2o argumento do acaoProtegida (avaliado antes), erro engolido",
+  "cmd": "task verificar 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-acesso/app/acesso/acoes.ts",
+    "de": "import { nucleo } from '@/lib/nucleo'\n",
+    "para": "import { nucleo } from '@/lib/nucleo'\nimport { nucleo as n } from '@/lib/nucleo'\n"
+   },
+   {
+    "arquivo": "repos/erp-zona-acesso/app/acesso/acoes.ts",
+    "de": "  return acaoProtegida(PAPEL, '/acesso', async () => {\n    await nucleo.destino('gestao-acesso').post('/v2/acessos/:id/revogacao',",
+    "para": "  return acaoProtegida(PAPEL, (await n.destino('gestao-acesso').post('/v2/acessos/:id/revogacao', { params: { id: texto(f, 'acesso') } }).catch(() => null), '/acesso'), async () => {\n    await nucleo.destino('gestao-acesso').post('/v2/acessos/:id/revogacao',"
+   }
+  ]
+ },
+ {
+  "id": "P12c-arq",
+  "inv": "inv. 5",
+  "desc": "(modo arquivo) zona2 lib/pagina.ts: adaptador cabecalho mente origin = shell e sec-fetch-site = same-origin",
+  "cmd": "task verificar 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-2/lib/pagina.ts",
+    "de": "const cabecalho = async (nome: string) => (await headers()).get(nome)",
+    "para": "const cabecalho = async (nome: string) => nome === 'origin' ? 'http://localhost:3000' : nome === 'sec-fetch-site' ? 'same-origin' : (await headers()).get(nome)"
+   }
+  ]
+ },
+ {
+  "id": "SEM1-arq",
+  "inv": "inv. 6",
+  "desc": "(modo arquivo) stub dados/semente/dominio-c.json: t-1 de volta a versao 1",
+  "cmd": "task verificar 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-dominio-stub/dados/semente/dominio-c.json",
+    "de": "\"concluida\": false, \"versao\": 3 }",
+    "para": "\"concluida\": false, \"versao\": 1 }"
+   }
+  ]
+ },
+ {
+  "id": "XR20q4-arq",
+  "inv": "inv. 4 (N8)",
+  "desc": "(modo arquivo) NOVA: zona1 lib/dominio-a.ts: classe Transporte com constructor(fetch) (injecao de dependencia) no arquivo (build da zona 1 feito a mao com a mutacao; CONSTRUIR=0) + listarRecursos faz fetch direto ao alvo externo 127.0.0.1:4999",
+  "cmd": "task verificar 2>&1",
+  "env": {
+   "CONSTRUIR": "1"
+  },
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-zona-1/lib/dominio-a.ts",
+    "de": "export const listarRecursos = cache(async () =>\n  (await nucleo.destino('dominio-a').get<Recurso[]>('/v1/recursos')).body ?? [])",
+    "para": "export class Transporte {\n  enviar: (u: string) => Promise<unknown>\n  constructor(fetch: (u: string) => Promise<unknown>) { this.enviar = fetch }\n}\n\nexport const listarRecursos = cache(async () => {\n  await fetch('http://127.0.0.1:4999/xr20q').catch(() => null)\n  return (await nucleo.destino('dominio-a').get<Recurso[]>('/v1/recursos')).body ?? []\n})"
+   }
+  ]
+ },
+ {
+  "id": "AK8-arq",
+  "inv": "inv. 15",
+  "desc": "(modo arquivo) NOVA: registrar ganha o ambiente inteiro numa linha a mais",
+  "cmd": "task verificar 2>&1",
+  "env": {},
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "    for (const [k, v] of Object.entries(extra)) {",
+    "para": "    if (fase === 'registrar') Object.assign(envProc, env)\n    for (const [k, v] of Object.entries(extra)) {"
+   }
+  ]
+ },
+ {
+  "id": "AK9-arq",
+  "inv": "inv. 15",
+  "desc": "(modo arquivo) NOVA: start do dominio com o ambiente inteiro",
+  "cmd": "task verificar 2>&1",
+  "env": {},
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "    for (const [k, v] of Object.entries(extra)) {",
+    "para": "    if (dir === 'erp-dominio-stub') Object.assign(envProc, env)\n    for (const [k, v] of Object.entries(extra)) {"
+   }
+  ]
+ },
+ {
+  "id": "AK11-arq",
+  "inv": "inv. 15",
+  "desc": "(modo arquivo) NOVA: subirApp (zona que volta no meio da verificacao) com o ambiente inteiro por extra",
+  "cmd": "task verificar 2>&1",
+  "env": {},
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "    apps.set(dir, executar('start', dir, 'pnpm', ['start']))\n    const { porta, saude }",
+    "para": "    apps.set(dir, executar('start', dir, 'pnpm', ['start'], { extra: env }))\n    const { porta, saude }"
+   }
+  ]
+ },
+ {
+  "id": "AK6t-arq",
+  "inv": "inv. 15",
+  "desc": "(modo arquivo) NOVA: o mesmo AK6 com CONSTRUIR=tudo (build de verdade na rodada)",
+  "cmd": "task verificar 2>&1",
+  "env": {
+   "CONSTRUIR": "tudo"
+  },
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "    for (const [k, v] of Object.entries(extra)) {",
+    "para": "    if (fase === 'build') Object.assign(envProc, env)\n    for (const [k, v] of Object.entries(extra)) {"
+   }
+  ]
+ },
+ {
+  "id": "AK7-arq",
+  "inv": "inv. 15",
+  "desc": "(modo arquivo) NOVA: o build passa o ambiente inteiro como extra (extras ficam fora da conferencia), CONSTRUIR=tudo",
+  "cmd": "task verificar 2>&1",
+  "env": {
+   "CONSTRUIR": "tudo"
+  },
+  "edicoes": [
+   {
+    "arquivo": "base/scripts/ambiente.mjs",
+    "de": "executar('build', dir, 'pnpm', ['build'], { esperar: true })",
+    "para": "executar('build', dir, 'pnpm', ['build'], { esperar: true, extra: env })"
+   }
+  ]
+ }
+]
