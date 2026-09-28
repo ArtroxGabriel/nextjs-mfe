@@ -144,3 +144,52 @@ test('V4 (XR38p): chave calculada montada por concatenacao para acessar construc
   pega("const b = 'bind' + 'ing'; process[b]('tcp_wrap')")
 })
 
+
+// --- auditor_b1_d1_8: V2 (XR20q, XR20c-i; L2/SR1) ---
+test('V2: parametro ou variavel de constructor, get/set, catch, for e bloco nao mascara a global fora dali', () => {
+  const formas = {
+    constructor: (g) => `class T { constructor(${g}) {} }`,
+    'constructor com modificador': (g) => `class T { constructor(private ${g}: any) {} }`,
+    set: (g) => `class T { set x(${g}) {} }`,
+    get: (g) => `class T { get x() { const ${g} = 1; return ${g} } }`,
+    'metodo de objeto': (g) => `const o = { m(${g}) { return ${g} } }`,
+    catch: (g) => `try {} catch (${g}) {}`,
+    'for-of': (g) => `for (const ${g} of []) {}`,
+    'for-in': (g) => `for (const ${g} in {}) {}`,
+    for: (g) => `for (let ${g} = 0; ${g} < 1; ${g}++) {}`,
+    bloco: (g) => `{ const ${g} = 1 }`,
+    switch: (g) => `switch (1) { case 1: const ${g} = 1 }`,
+    'desestruturacao em parametro': (g) => `const h = ({ ${g} }) => ${g}`,
+  }
+  for (const [forma, declara] of Object.entries(formas)) {
+    for (const [g, uso] of [['fetch', "fetch('http://alvo/xr20q')"], ['WebSocket', "new WebSocket('ws://alvo')"]]) {
+      const fonte = `${declara(g)}\nexport async function listar() { return ${uso} }`
+      const achados = analisar(fonte)
+      assert.ok(achados.some((a) => a.coisa === g && a.linha === 2), `${forma}/${g} escondeu a global:\n${fonte}`)
+    }
+  }
+})
+
+test('V2: dentes: dentro do proprio escopo o nome e local e passa (constructor, set, catch, for-of)', () => {
+  passa('class T { constructor(fetch) { fetch(1) } }')
+  passa('class T { set x(fetch) { fetch(1) } }')
+  passa('try {} catch (fetch) { fetch(1) }')
+  passa('for (const fetch of []) { fetch(1) }')
+  passa("import { destino as fetch } from '@erp/nucleo'\nfetch('x')")
+})
+
+test('V2 (injecao de dependencia, XR20q4): classe com constructor(fetch) e fetch direto noutra funcao do arquivo', () => {
+  pega("class Transporte { constructor(fetch) { this.f = fetch } }\nexport async function listarRecursos() { return fetch('http://alvo/xr20q') }")
+})
+
+test('global por chave vinda de parametro ou de constante sombreada e chave calculada, e reprova', () => {
+  pega("export function f(k: string) { return globalThis[k]('http://x') }")
+  // o `k` de fora é 'fe'; o que vale dentro da função é o parâmetro
+  pega("const k = 'fe'\nexport function f(k: string) { return globalThis[k]('http://x') }")
+  pega("let k = 'toString'\nk = 'fetch'\nexport const f = () => globalThis[k]('http://x')")
+  // L2 (SR6): concatenação escrita direto no índice
+  pega("export const f = () => globalThis['fe' + 'tch']('http://x')")
+  pega("export const f = () => navigator['send' + 'Beacon']('http://x', '')")
+  // dentes: constante legível que não é rede passa
+  passa("const k = 'toString'\nexport const f = () => globalThis[k]()")
+})

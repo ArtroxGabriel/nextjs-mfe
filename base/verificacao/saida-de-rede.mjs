@@ -70,6 +70,51 @@ export const EXCECOES = {
   'erp-zona-2/scripts/registrar-manifesto.ts': { permite: ['fetch'], motivo: DEPLOY },
 }
 
+/** Nomes de um padrão de ligação (`x`, `{ a, b: [c] }`), cada um com o nó que o declara. */
+function nomesDoPadrao(nome, decl, mapa) {
+  if (ts.isIdentifier(nome)) mapa.set(nome.text, decl)
+  else if (ts.isObjectBindingPattern(nome) || ts.isArrayBindingPattern(nome)) {
+    for (const e of nome.elements) if (!ts.isOmittedExpression(e)) nomesDoPadrao(e.name, e, mapa)
+  }
+}
+function declaracoesDaLista(lista, mapa) {
+  if (lista && ts.isVariableDeclarationList(lista)) for (const d of lista.declarations) nomesDoPadrao(d.name, d, mapa)
+}
+function nomesDasInstrucoes(instrucoes, mapa) {
+  for (const s of instrucoes) {
+    if (ts.isVariableStatement(s)) declaracoesDaLista(s.declarationList, mapa)
+    else if ((ts.isFunctionDeclaration(s) || ts.isClassDeclaration(s) || ts.isEnumDeclaration(s)) && s.name) mapa.set(s.name.text, s)
+    else if (ts.isImportEqualsDeclaration(s)) mapa.set(s.name.text, s)
+    else if (ts.isImportDeclaration(s) && s.importClause && !s.importClause.isTypeOnly) {
+      const { name, namedBindings } = s.importClause
+      if (name) mapa.set(name.text, s.importClause)
+      if (namedBindings && ts.isNamespaceImport(namedBindings)) mapa.set(namedBindings.name.text, namedBindings)
+      if (namedBindings && ts.isNamedImports(namedBindings)) {
+        for (const e of namedBindings.elements) if (!e.isTypeOnly) mapa.set(e.name.text, e)
+      }
+    }
+  }
+}
+/**
+ * Os nomes que um nó liga para os descendentes: arquivo, bloco e `case` (declarações), toda forma de
+ * função (parâmetros e o nome da própria expressão de função: inclui constructor, get/set e método),
+ * `catch`, os três `for` e o nome de uma expressão de classe. `var` fica no bloco onde está escrito:
+ * mais estreito que o JavaScript, então um uso fora dele é tratado como global (reprova, nunca esconde).
+ */
+function nomesLigados(escopo) {
+  const mapa = new Map()
+  if (ts.isSourceFile(escopo) || ts.isBlock(escopo) || ts.isModuleBlock(escopo)) nomesDasInstrucoes(escopo.statements, mapa)
+  else if (ts.isCaseBlock(escopo)) nomesDasInstrucoes(escopo.clauses.flatMap((c) => c.statements), mapa)
+  else if (ts.isCatchClause(escopo)) { if (escopo.variableDeclaration) nomesDoPadrao(escopo.variableDeclaration.name, escopo.variableDeclaration, mapa) }
+  else if (ts.isForStatement(escopo) || ts.isForInStatement(escopo) || ts.isForOfStatement(escopo)) declaracoesDaLista(escopo.initializer, mapa)
+  else if (ts.isClassExpression(escopo) && escopo.name) mapa.set(escopo.name.text, escopo)
+  else if (ts.isFunctionLike(escopo)) {
+    for (const p of escopo.parameters) nomesDoPadrao(p.name, p, mapa)
+    if (ts.isFunctionExpression(escopo) && escopo.name) mapa.set(escopo.name.text, escopo)
+  }
+  return mapa
+}
+
 /** Achados num fonte: `{ linha, motivo }`. Vazio = nenhuma saída de rede fora do registro. */
 export function analisar(fonte, nome = 'arquivo.ts') {
   const sf = ts.createSourceFile(nome, fonte, ts.ScriptTarget.Latest, true,
@@ -77,21 +122,30 @@ export function analisar(fonte, nome = 'arquivo.ts') {
   const achados = []
   // `coisa`: o módulo ou a global envolvida; uma exceção só perdoa o achado cuja coisa ela permite
   const achar = (no, motivo, coisa = null) => achados.push({ linha: sf.getLineAndCharacterOfPosition(no.getStart(sf)).line + 1, motivo, coisa })
-  // nomes declarados por escopo lexico (funcao, bloco, arquivo)
-  const escopos = [new Set()]
-  const escopoAtual = () => escopos[escopos.length - 1]
-  const estaDeclarado = (nome) => escopos.some((e) => e.has(nome))
-
-  const valoresConstantes = new Map()
-  const declararNoEscopo = (no) => {
-    if ((ts.isVariableDeclaration(no) || ts.isParameter(no) || ts.isFunctionDeclaration(no)
-      || ts.isImportSpecifier(no) || ts.isImportClause(no) || ts.isNamespaceImport(no)) && no.name && ts.isIdentifier(no.name)) {
-      escopoAtual().add(no.name.text)
+  // Resolução léxica (auditor_b1_d1_8, V2): um nome só é local se um ANCESTRAL do uso o liga. A pilha
+  // de escopos da K3 só abria escopo em função, método e bloco; o parâmetro de `constructor(fetch)`,
+  // `set x(fetch)`, `catch (fetch)` e `for (const fetch of …)` caía no escopo de fora e escondia o
+  // `fetch` global do arquivo inteiro. Aqui cada nó que liga nomes diz quais, e o uso sobe até achar.
+  const ligadosPor = new Map()
+  const ligados = (escopo) => {
+    if (!ligadosPor.has(escopo)) ligadosPor.set(escopo, nomesLigados(escopo))
+    return ligadosPor.get(escopo)
+  }
+  /** A declaração que vale para `nome` no ponto `no`, ou `null` se é a global. */
+  const declaracaoDe = (no, nome) => {
+    for (let n = no.parent; n; n = n.parent) {
+      const d = ligados(n).get(nome)
+      if (d) return d
     }
-    if (ts.isVariableDeclaration(no) && no.name && ts.isIdentifier(no.name) && no.initializer) {
-      const v = avaliarStringConstante(no.initializer)
-      if (v !== null) valoresConstantes.set(no.name.text, v)
-    }
+    return null
+  }
+  const estaDeclarado = (no, nome) => declaracaoDe(no, nome) !== null
+  /** Valor de string constante de um identificador: só de um `const` com inicializador constante, na declaração que vale ali. */
+  const valorConstante = (id) => {
+    const d = declaracaoDe(id, id.text)
+    const ehConst = d && ts.isVariableDeclaration(d) && ts.isIdentifier(d.name) && ts.isVariableDeclarationList(d.parent)
+      && (d.parent.flags & ts.NodeFlags.Const) !== 0
+    return ehConst ? avaliarStringConstante(d.initializer) : null
   }
 
   const texto = (n) => (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n)) ? n.text : null
@@ -107,12 +161,6 @@ export function analisar(fonte, nome = 'arquivo.ts') {
   }
 
   const visitar = (no) => {
-    const criaEscopo = ts.isFunctionDeclaration(no) || ts.isFunctionExpression(no)
-      || ts.isArrowFunction(no) || ts.isMethodDeclaration(no) || ts.isBlock(no)
-    if (criaEscopo) escopos.push(new Set())
-
-    declararNoEscopo(no)
-
     // import ... from 'node:http'  /  export ... from 'axios'
     if ((ts.isImportDeclaration(no) || ts.isExportDeclaration(no)) && no.moduleSpecifier) {
       const mod = texto(no.moduleSpecifier)
@@ -128,7 +176,7 @@ export function analisar(fonte, nome = 'arquivo.ts') {
       // Reflect.get(globalThis, 'fe' + 'tch'), Object.getOwnPropertyDescriptor(window, x): a global
       // entregue a uma função sai do alcance de qualquer análise de nome
       for (const a of no.arguments) {
-        if (ts.isIdentifier(a) && ['globalThis', 'window', 'self', 'global'].includes(a.text) && !estaDeclarado(a.text)) {
+        if (ts.isIdentifier(a) && NOMES_DA_GLOBAL.has(a.text) && !estaDeclarado(a, a.text)) {
           achar(no, `passa '${a.text}' a uma funcao (acesso indireto a global)`)
         }
       }
@@ -146,7 +194,8 @@ export function analisar(fonte, nome = 'arquivo.ts') {
         || (ts.isPropertyAssignment(pai) && pai.name === no) || ts.isPropertySignature(pai)
         || (ts.isMethodDeclaration(pai) && pai.name === no) || (ts.isPropertyDeclaration(pai) && pai.name === no)
       const nome = no.text
-      if (!ehNomeDePropriedade && !estaDeclarado(nome)) {
+      const sensivel = GLOBAIS_DE_REDE.has(nome) || NOMES_DA_GLOBAL.has(nome) || EXECUCAO_DINAMICA.has(nome)
+      if (!ehNomeDePropriedade && sensivel && !estaDeclarado(no, nome)) {
         if (GLOBAIS_DE_REDE.has(nome) && !ts.isTypeQueryNode(pai) && !ts.isTypeReferenceNode(pai)) achar(no, `usa a global de rede '${nome}'`, nome)
         // `const g = globalThis`, `f(globalThis)`, `[globalThis]`: só `globalThis.nome` literal é legível
         // (auditor_b1_d1_3, XR08: apelido da global e chave calculada)
@@ -168,7 +217,9 @@ export function analisar(fonte, nome = 'arquivo.ts') {
     if (ts.isElementAccessExpression(no)) {
       const chaveLiteral = texto(no.argumentExpression)
       const chaveCalculada = avaliarStringConstante(no.argumentExpression)
-      const chaveIdentificador = ts.isIdentifier(no.argumentExpression) ? valoresConstantes.get(no.argumentExpression.text) : null
+      // `?? null`: um identificador sem valor constante é chave calculada (antes virava `undefined` e a regra
+      // da global por chave calculada nunca disparava: `globalThis[k]` com `k` parâmetro passava)
+      const chaveIdentificador = ts.isIdentifier(no.argumentExpression) ? valorConstante(no.argumentExpression) : null
       const chave = chaveLiteral ?? chaveCalculada ?? chaveIdentificador
       if (chave !== null && (GLOBAIS_DE_REDE.has(chave) || chave === 'sendBeacon')) achar(no, `acessa '${chave}' por indice`, chave)
       if (chave !== null && ['getBuiltinModule', 'constructor', 'binding', 'dlopen'].includes(chave)) achar(no, `acessa '${chave}' por indice`)
@@ -182,7 +233,6 @@ export function analisar(fonte, nome = 'arquivo.ts') {
       achar(no, `menciona '${no.text}' como texto (acesso indireto)`, no.text)
     }
     ts.forEachChild(no, visitar)
-    if (criaEscopo) escopos.pop()
   }
   visitar(sf)
   return achados

@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-28 (retomada: repositórios sincronizados, nada novo no remoto; próximo passo é a fatia K5)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-28 (fatia K5 feita e verificada nos dois modos; próximo passo é a iteração 9 do gate)**.
 
 ## Objetivo final
 
@@ -28,13 +28,13 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 
 | O quê | Estado | Evidência |
 |---|---|---|
-| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **100/100** com Redis e **96 + 4 pulados** com arquivo (conferido pelo auditor da iteração 8 ao fim) | `task verificar:redis`, `task verificar:construir` |
-| Unidades | contratos 20, núcleo 136, moldura 26, stub 43, shell 43; typecheck das 4 apps; estática 40/40 | `task test`, `task typecheck`, `task verificar:estatica`, `task scripts:test` |
+| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **109/109** com Redis e **105 + 4 pulados** com arquivo (K5, 2026-09-28) | `task verificar:redis`, `task verificar:construir` |
+| Unidades | contratos 20, núcleo 142, moldura 26, stub 43, shell 43; typecheck das 4 apps; estática 48/48; scripts 18 | `task test`, `task typecheck`, `task verificar:estatica`, `task scripts:test` |
 | `@erp/nucleo` | **0.9.2** nas 4 apps (acesso v2, `exigirModulo(modulo, funcionalidade)`, `exigirPapel`) | lockstep 4 apps |
 | `@erp/contratos` / `@erp/moldura` | **0.4.0** / **0.5.0** | ADR-0012, ADR-0014 adendo 1 |
 | ADRs | **0013 aceito** e **0014 + adendo 1 aceito** (humano, 2026-09-23) | `docs/adr/` |
 | Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
-| Gate B1+D1+G3+K | **aberto**: iteração 8 reprovada pelo auditor (vetos V1–V4); correção na fatia K5, depois iteração 9 | `GATE_STATUS.md`; fatia K5 abaixo |
+| Gate B1+D1+G3+K | **aberto**: iteração 8 reprovada pelo auditor (vetos V1–V4); fatia **K5 feita** (2026-09-28); **iteração 9 a despachar** | `GATE_STATUS.md` |
 | Repositórios | principal em `bff-multizone` e os 8 submódulos no `master`, iguais ao remoto (fetch em 2026-09-28, nada novo desde `401770c`). Só local, não commitar: hash do `@erp/contratos` 0.2.1 no `pnpm-lock.yaml` do `erp-dominio-stub` e do `erp-moldura` (`AMBIENTE.md` §1) | `git submodule foreach git status -sb` |
 
 ## Histórico curto do gate B1+D1+G3+K
@@ -48,9 +48,9 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | 5 | os três aprovaram, mas **invalidada pelo humano**: auditoria rasa (6 mutações sem evidência) e V3 ainda aberto | fatia **K4-1/K4-2** (V3 pelo verificador de tipos; limites em D14) |
 | 6 | revisor e challenger reprovaram: as zonas ainda recebiam `REDIS_URL` (a K3 nunca rodou no modo Redis) | **K4-3** |
 | 7 | challenger reprovou: o Redis do showcase aceitava escrita sem senha | **K4-4** |
-| 8 | revisor e challenger aprovaram; auditor vetou **V1–V4** (ambiente por exclusão, escopos do N8, `test/` sem teste, fronteira por lista fixa) | fatia **K5** (a fazer) |
+| 8 | revisor e challenger aprovaram; auditor vetou **V1–V4** (ambiente por exclusão, escopos do N8, `test/` sem teste, fronteira por lista fixa) | fatia **K5** (feita, 2026-09-28) |
 
-## Próximo passo: fatia K4 e iteração 6 do gate
+## Próximo passo: iteração 9 do gate
 
 1. ✅ **K4-1 (V3):** a regra da ilha usa o verificador de tipos do TypeScript (`programaDaApp` em
    `base/verificacao/seguranca-estatica.mjs`): prop de ilha por `x.campo` só passa se o tipo for escalar; `any` reprova.
@@ -63,7 +63,8 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
    (`GATE_STATUS.md`); `task verificar:redis` 100/100, `task verificar` 96 + 4 pulados. **Outra máquina: recriar o Redis
    (`task showcase:subir`) para valer a senha nova.**
 5. ❌ **Iteração 8:** revisor e challenger aprovaram; **auditor vetou V1–V4** (`GATE_STATUS.md`).
-6. ⬜ **Fatia K5** (próximo passo; parado em 2026-09-23 pela cota semanal, retomado em 2026-09-28). Antes de rodar testes nesta
+6. ✅ **Fatia K5** (2026-09-28; detalhe e números em `GATE_STATUS.md`). Núcleo **sem versão nova**: só `scripts/` e `test/` do
+   `erp-nucleo` mudaram (`08642ed`), o `dist` publicado é o mesmo. Plano original, para referência. Antes de rodar testes nesta
    máquina: `task showcase:descer` e `task showcase:subir` (Redis com a senha da K4-4). Cada item com teste que
    reprova com a correção revertida, e os **dois modos** rodados antes do commit (`AMBIENTE.md`):
    - **K5-1 (V1):** ambiente de zona e de domínio por **lista de inclusão** (só o que cada um precisa) em `base/scripts/ambiente.mjs`,
@@ -78,6 +79,11 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
      lockstep nas 4 apps).
    - Lacunas baratas junto: L1 (dentes em `ehTipoEscalar` e no `programa` da varredura), L3 (XN09 por shorthand/atribuição).
    Depois: iteração 9 (revisor, challenger, auditor com o catálogo da iteração 8 como piso).
+6b. ⬜ **Iteração 9** (próximo passo): despachar `reviewer_b1_d1_9` (revisor-mfe, Sonnet) e `challenger_b1_d1_9` (simulador-condicoes,
+   Sonnet) em paralelo; o `auditor_b1_d1_9` (general-purpose, Opus) só quando o challenger liberar as portas. Piso do auditor: o catálogo
+   da iteração 8 inteiro (`.agents/auditor_b1_d1_8/mutacoes.txt`) mais mutações novas na K5 (lista de inclusão, `executar`, resolução
+   léxica do N8, `simbolosDoShell`, regra por tipo `temEscrita`). No despacho do challenger: rodar com `ERP_REDIS_SENHA_SHELL` definida
+   e repetir a prova da iteração 8 (`anexos/prova-senha-shell.log`, E01g, XR20q4).
 7. Depois: **D2** (núcleo 0.10.0, OIDC + PKCE, lock de renovação), G4/G5, C1–C3. **Humano (2026-09-23): refresh token
    sem reuso** (`refreshTokenMaxReuse = 0`); o lock no Redis é requisito e o teste de corrida prova que duas renovações
    simultâneas fazem uma só chamada ao Keycloak (Medição 1: reuso derruba a sessão inteira).
@@ -155,8 +161,8 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 
 ## Ambiente (retomada de 2026-09-28)
 
-- Portas e containers **não conferidos** nesta retomada; ao encerrar em 2026-09-23 estavam no ar Verdaccio (4873), Redis (6379) e
-  Keycloak (8080), e livres as portas da base 3000–3003, 3012, 4001–4004, 4010, 4020.
+- Conferido ao fim da K5 (2026-09-28): no ar Verdaccio (4873), Redis (6379, com senha) e Keycloak (8080); livres as portas da base
+  3000–3003, 3012, 4001–4004, 4010, 4020.
 - Nenhum agente rodando. Pastas dos verificadores da iteração 8 (`.agents/*_b1_d1_8/`) commitadas; as das iterações 3, 4, 6 e 7
   ficam enquanto a K5 e o D14 citarem os achados delas. As do gate do shell (fechado) e da iteração 1 ainda estão na raiz de
   `.agents/` e podem sair com `git rm` (regra do `LEIA-PRIMEIRO.md`).

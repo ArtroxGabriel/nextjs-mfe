@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, writeFileSync, utimesSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, utimesSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { precisaConstruir } from './ambiente.mjs'
@@ -53,4 +53,67 @@ test('AM3: subir recusa porta ocupada antes de subir qualquer coisa', { timeout:
   } finally {
     s.close()
   }
+})
+
+// --- auditor_b1_d1_8 (V1, L6: AMB4/AMB6): ambiente de zona e domínio por lista de inclusão ---
+test('V1: zona e dominio nao recebem nenhum valor com a senha de escrita, venha no nome que vier', async () => {
+  const { ambienteDoPapel } = await import('./ambiente.mjs')
+  const senha = 'segredo-de-escrita-k5'
+  const base = {
+    PATH: '/usr/bin', HOME: '/home/x', SESSAO_DIR: '/tmp/s', DADOS_DIR: '/tmp/d', REDIS_URL_ZONA: 'redis://zona:leitura@h',
+    REDIS_URL: `redis://default:${senha}@h`, ERP_REDIS_SENHA_SHELL: senha, QUALQUER_NOVA: senha, ERP_OUTRA: senha,
+  }
+  for (const papel of ['zona', 'dominio']) {
+    const env = ambienteDoPapel(papel, base)
+    const vazou = Object.entries(env).filter(([, v]) => String(v).includes(senha))
+    assert.deepEqual(vazou, [], `${papel} recebeu a senha`)
+    assert.equal(env.PATH, '/usr/bin', `${papel} perdeu o PATH`)
+  }
+  assert.equal(ambienteDoPapel('zona', base).REDIS_URL_ZONA, base.REDIS_URL_ZONA)
+  assert.equal(ambienteDoPapel('zona', base).DADOS_DIR, undefined, 'zona nao le os dados do dominio')
+  assert.equal(ambienteDoPapel('dominio', base).DADOS_DIR, base.DADOS_DIR)
+  assert.equal(ambienteDoPapel('dominio', base).SESSAO_DIR, undefined, 'dominio nao le sessao')
+  // dentes: o shell, dono da escrita, recebe tudo
+  assert.equal(ambienteDoPapel('shell', base).REDIS_URL, base.REDIS_URL)
+  assert.throws(() => ambienteDoPapel('outro', base), /papel desconhecido/)
+})
+
+test('V1: o papel sai do diretorio; toda app que nao e o shell e zona', async () => {
+  const { papelDe, APPS } = await import('./ambiente.mjs')
+  assert.equal(papelDe('erp-shell'), 'shell')
+  assert.equal(papelDe('erp-dominio-stub'), 'dominio')
+  for (const { dir } of APPS.filter((a) => a.dir !== 'erp-shell')) assert.equal(papelDe(dir), 'zona', dir)
+  assert.equal(papelDe('erp-zona-nova'), 'zona', 'zona nova nasce sem a credencial de escrita')
+})
+
+test('V1: todo processo nasce por um unico ponto, com o ambiente do papel (build, start, registrar, avulsa)', () => {
+  const fonte = readFileSync(new URL('./ambiente.mjs', import.meta.url), 'utf8')
+  // spawn e execFileSync importados uma vez e chamados uma vez cada, dentro de `executar`
+  assert.equal((fonte.match(/\bspawn\s*\(/g) ?? []).length, 1, 'spawn fora de executar')
+  assert.equal((fonte.match(/\bexecFileSync\s*\(/g) ?? []).length, 1, 'execFileSync fora de executar')
+  assert.equal((fonte.match(/\benv\s*:/g) ?? []).length, 1, 'processo com ambiente escolhido fora de executar')
+  assert.match(fonte, /const envProc = ambienteDoPapel\(papelDe\(dir\), env\)/)
+  assert.doesNotMatch(fonte, /child_process['"]\s*\)?\s*\.\s*(spawn|exec)|require\(|import\(\s*['"]node:child_process/, 'child_process por outro caminho')
+})
+
+test('V1: a lista de inclusao cobre toda variavel que zona e dominio leem (variavel nova nao some calada)', async () => {
+  const { AMBIENTE_PERMITIDO, RAIZ } = await import('./ambiente.mjs')
+  const { readdirSync, statSync } = await import('node:fs')
+  const lidas = (dir) => {
+    const andar = (d) => readdirSync(d).flatMap((n) => {
+      if (['node_modules', '.next', 'dist', 'test'].includes(n)) return []
+      const p = join(d, n)
+      return statSync(p).isDirectory() ? andar(p) : /\.(ts|tsx|mjs|js)$/.test(n) ? [p] : []
+    })
+    return new Set(andar(dir).flatMap((f) => [...readFileSync(f, 'utf8').matchAll(/process\.env(?:\.([A-Z_0-9]+)|\[['"]([A-Z_0-9]+)['"]\])/g)].map((m) => m[1] ?? m[2])))
+  }
+  const zona = new Set([...lidas(join(RAIZ, 'erp-nucleo', 'src')), ...['erp-zona-1', 'erp-zona-2', 'erp-zona-acesso'].flatMap((z) => [...lidas(join(RAIZ, z))])])
+  // REDIS_URL a zona só lê para se recusar a subir com ela (lib/redis.ts); nunca a recebe
+  zona.delete('REDIS_URL')
+  assert.ok(zona.size >= 8, 'varredura vazia')
+  assert.deepEqual([...zona].filter((v) => !AMBIENTE_PERMITIDO.zona.includes(v)), [])
+  const dominio = lidas(join(RAIZ, 'erp-dominio-stub', 'src'))
+  assert.ok(dominio.has('DADOS_DIR'), 'varredura do dominio vazia')
+  assert.deepEqual([...dominio].filter((v) => !AMBIENTE_PERMITIDO.dominio.includes(v)), [])
+  assert.ok(!AMBIENTE_PERMITIDO.zona.some((v) => /^REDIS_URL$|SENHA_SHELL/.test(v)), 'credencial de escrita na lista da zona')
 })

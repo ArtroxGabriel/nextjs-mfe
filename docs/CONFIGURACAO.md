@@ -62,6 +62,11 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
   (`keycloak/realm-erp.json`) as lê por placeholder (`${ERP_SESSAO_INATIVIDADE_S}`) no import. Mudou o
   valor: recrie o contêiner (`docker compose ... up -d --force-recreate keycloak`).
 - **Apps Next:** leem no servidor (`process.env`), nunca com prefixo `NEXT_PUBLIC_` quando é credencial ou endpoint interno.
+- **Zonas e domínios falsos recebem o ambiente por lista de inclusão** (`AMBIENTE_PERMITIDO` em
+  `base/scripts/ambiente.mjs`), em todas as fases (build, start, registrar): só as variáveis que cada um lê.
+  O shell é o único que recebe o ambiente inteiro, porque só ele grava sessão; assim `REDIS_URL`,
+  `ERP_REDIS_SENHA_SHELL` ou qualquer variável nova com o segredo de escrita não chegam às zonas (invariante 15).
+  Variável nova lida por zona ou domínio entra na lista no mesmo commit; o teste da lista reprova se faltar.
 - **Padrão:** vale quando a variável falta; valor inválido (não numérico, fora da faixa) é erro na subida, não silêncio.
 
 Os itens "⬜ D2" entram com o login OIDC (item D2 em `.agents/orchestrator/RETOMADA.md`). B5a (shell) e B5b (núcleo 0.8.0) já tiraram do código os tempos e limites marcados "✅".

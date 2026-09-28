@@ -69,6 +69,10 @@
   aceita escrita anônima e o teste `so o endereco do Redis nao grava sessao` reprova: `task showcase:descer` e
   `task showcase:subir` para recriar (o volume fica).
 - Um teste estático que dá para contornar (`globalThis['fetch']` no lugar de `fetch(`) foi contornado. Checagem por regex tem de cobrir as formas indiretas, e todo contorno achado vira caso do teste.
+- **Não mute arquivo com `node --test` rodando.** O `task verificar` roda os arquivos de teste em processos paralelos; um arquivo
+  mutado no meio pode ser lido por um processo que ainda não o carregou. Mutações só com a base parada (2026-09-28).
+- **Teste que lê `/proc/<pid>/environ` só de processo vivo.** Testes anteriores derrubam domínios de propósito (a gestão de acesso
+  v1 sobe e desce); o `pid` deles some e a leitura dá `ENOENT` (K5, 2026-09-28).
 - **Mutação em código que grava arquivo pode sujar dados versionados.** Em 2026-09-22 a mutação
   "sem pasta, grave na semente" do `erp-dominio-stub` gravou em `dados/semente/*.json`; restaurar o
   `.mjs` não restaurou a semente e a mutação seguinte pareceu pegar por outro motivo. Antes de mutar,

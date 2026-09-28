@@ -458,6 +458,17 @@ const CAMPOS_COMPLEXOS = new Set(['lista', 'recursos', 'items', 'itens', 'dados'
         && !ts.isStringLiteral(no.initializer) && !ts.isNoSubstitutionTemplateLiteral(no.initializer)) {
         achar(no, `next.config com '${no.name.getText(sf)}' que nao e texto literal: vai ao HTML do navegador`, 'P2-next-public')
       }
+      // L3 (auditor_b1_d1_8, XN09a/b): `{ assetPrefix }` abreviado e `config.assetPrefix = …` nunca são texto literal
+      if (ts.isShorthandPropertyAssignment(no) && ['assetPrefix', 'basePath'].includes(no.name.text)) {
+        achar(no, `next.config com '${no.name.text}' abreviado (nao e texto literal): vai ao HTML do navegador`, 'P2-next-public')
+      }
+      if (ts.isBinaryExpression(no) && no.operatorToken.kind === ts.SyntaxKind.EqualsToken
+        && (ts.isPropertyAccessExpression(no.left) || ts.isElementAccessExpression(no.left))) {
+        const chave = ts.isPropertyAccessExpression(no.left) ? no.left.name.text : texto(no.left.argumentExpression)
+        if (['assetPrefix', 'basePath'].includes(chave) && !ts.isStringLiteral(no.right) && !ts.isNoSubstitutionTemplateLiteral(no.right)) {
+          achar(no, `next.config atribui '${chave}' sem texto literal: vai ao HTML do navegador`, 'P2-next-public')
+        }
+      }
       if (ts.isIdentifier(no) && no.text === 'DefinePlugin') {
         achar(no, 'next.config com DefinePlugin: embute valor do servidor no bundle do navegador', 'P2-next-public')
       }
@@ -480,10 +491,10 @@ export function fontesDaApp(raizDaApp) {
 }
 
 /** Varre as apps inteiras e devolve as violações. */
-export function varrerSeguranca(apps = ['erp-shell', 'erp-zona-1', 'erp-zona-2', 'erp-zona-acesso']) {
+export function varrerSeguranca(apps = ['erp-shell', 'erp-zona-1', 'erp-zona-2', 'erp-zona-acesso'], raiz = RAIZ) {
   const resultado = []
   for (const app of apps) {
-    const raizDaApp = join(RAIZ, app)
+    const raizDaApp = join(raiz, app)
     const idZona = { 'erp-zona-1': 'zona1', 'erp-zona-2': 'zona2', 'erp-zona-acesso': 'acesso' }[app] ?? null
     const fontes = fontesDaApp(raizDaApp)
     const programa = programaDaApp(raizDaApp, fontes)
@@ -492,7 +503,7 @@ export function varrerSeguranca(apps = ['erp-shell', 'erp-zona-1', 'erp-zona-2',
       // app/ é servidor por convenção do Next; scripts/ roda fora do Next (sem a condição react-server)
       const exigirServerOnly = !/^(app|scripts)\//.test(rel) && !/^(proxy|next\.config|next-env)\./.test(rel)
       for (const a of analisarSeguranca(readFileSync(f, 'utf8'), f, idZona, { raizDaApp, exigirServerOnly, programa })) {
-        resultado.push(`${relative(RAIZ, f)}:${a.linha} [${a.regra}] ${a.motivo}`)
+        resultado.push(`${relative(raiz, f)}:${a.linha} [${a.regra}] ${a.motivo}`)
       }
     }
   }

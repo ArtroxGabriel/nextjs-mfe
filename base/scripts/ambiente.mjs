@@ -42,6 +42,38 @@ export function precisaConstruir(dirDaApp) {
   return ENTRADAS_DO_BUILD.some((e) => maisRecente(join(dirDaApp, e)) > build)
 }
 
+/**
+ * Ambiente de cada processo por LISTA DE INCLUSÃO (auditor_b1_d1_8, V1): zona e domínio recebem só o que
+ * leem, nunca o ambiente inteiro menos uma lista de nomes. Assim a credencial de escrita do Redis
+ * (`REDIS_URL`, `ERP_REDIS_SENHA_SHELL` ou qualquer variável nova com o segredo) não chega a eles, em
+ * nenhuma fase (build, start, registrar). O shell é o único dono da escrita e recebe o ambiente inteiro.
+ * Variável nova que zona ou domínio precisam entra aqui e em docs/CONFIGURACAO.md.
+ */
+const DO_SISTEMA = [
+  'PATH', 'HOME', 'USER', 'LOGNAME', 'LANG', 'LANGUAGE', 'LC_ALL', 'LC_CTYPE', 'LC_MESSAGES', 'TZ', 'TMPDIR', 'TERM',
+  'PNPM_HOME', 'COREPACK_HOME', 'XDG_CONFIG_HOME', 'XDG_CACHE_HOME', 'XDG_DATA_HOME', 'XDG_STATE_HOME', 'XDG_RUNTIME_DIR',
+  'NODE_ENV', 'NODE_EXTRA_CA_CERTS', 'NEXT_TELEMETRY_DISABLED', 'CI',
+]
+export const AMBIENTE_PERMITIDO = {
+  zona: [
+    ...DO_SISTEMA,
+    'SESSAO_DIR', 'REDIS_URL_ZONA', 'ACESSO_URL', 'SHELL_HOSTS', 'DOMINIO_A_URL', 'DOMINIO_B_URL', 'DOMINIO_C_URL',
+    'ERP_TOKEN_SERVICO', 'ERP_DESTINO_TIMEOUT_MS', 'ERP_FRAGMENTO_TIMEOUT_MS', 'ERP_PERMITIR_IDENTIDADE_DEV', 'ERP_TOKEN_VIDA_S',
+  ],
+  dominio: [...DO_SISTEMA, 'DADOS_DIR'],
+}
+
+/** Papel de um diretório de `repos/`: só o shell grava sessão; o domínio falso não fala com o Redis. */
+export const papelDe = (dir) => (dir === 'erp-shell' ? 'shell' : dir === 'erp-dominio-stub' ? 'dominio' : 'zona')
+
+/** O ambiente que um processo do papel recebe, a partir do ambiente de quem sobe a base. */
+export function ambienteDoPapel(papel, base) {
+  if (papel === 'shell') return { ...base }
+  const permitidas = AMBIENTE_PERMITIDO[papel]
+  if (!permitidas) throw new Error(`papel desconhecido: ${papel}`)
+  return Object.fromEntries(Object.entries(base).filter(([k]) => permitidas.includes(k)))
+}
+
 const temScript = (dir, nome) => !!JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')).scripts?.[nome]
 
 async function esperar(url, ms = 60_000) {
@@ -76,14 +108,20 @@ export async function subir({ construir = false, log = false } = {}) {
     ERP_PERMITIR_IDENTIDADE_DEV: '1',
   }
   const processos = []
-  // domínio falso não fala com o Redis: sobe sem nenhuma credencial dele (reviewer_b1_d1_7)
-  const envDoDominio = { ...env }
-  delete envDoDominio.REDIS_URL
-  delete envDoDominio.REDIS_URL_ZONA
-  // `envProc` por processo: a zona sobe sem a credencial de escrita do Redis (`envDaApp`). Na K3 o
-  // quarto argumento era descartado e toda zona recebia `REDIS_URL` (challenger_b1_d1_6, V1)
-  const iniciar = (cmd, args, cwd, envProc = env) => {
-    const p = spawn(cmd, args, { cwd, env: envProc, stdio: log ? 'inherit' : 'ignore', detached: true })
+  /**
+   * Todo processo da base nasce aqui, e o ambiente sai do diretório (`papelDe`), nunca de quem chama:
+   * build, start, registrar, domínio e app avulsa recebem o mesmo filtro (auditor_b1_d1_8, V1; na K4 o
+   * build e o registrar das zonas escapavam da exclusão). `ambientesEntregues` guarda o que cada um
+   * recebeu, para a verificação conferir; `extras` são as variáveis que um teste pôs de propósito.
+   */
+  const ambientesEntregues = []
+  const executar = (fase, dir, cmd, args, { extra = {}, esperar: sincrono = false } = {}) => {
+    const envProc = ambienteDoPapel(papelDe(dir), env)
+    for (const [k, v] of Object.entries(extra)) { if (v === null) delete envProc[k]; else envProc[k] = v }
+    ambientesEntregues.push({ fase, dir, ambiente: { ...envProc }, extras: Object.keys(extra) })
+    const opcoes = { cwd: join(RAIZ, dir), env: envProc, stdio: log ? 'inherit' : 'ignore' }
+    if (sincrono) return execFileSync(cmd, args, opcoes)
+    const p = spawn(cmd, args, { ...opcoes, detached: true })
     processos.push(p)
     return p
   }
@@ -99,11 +137,11 @@ export async function subir({ construir = false, log = false } = {}) {
   const registrar = () => {
     // só as zonas que são módulo têm manifesto (shell e zona de acesso não: ADR-0014, adendo 1)
     for (const { dir } of APPS.filter(({ dir }) => temScript(join(RAIZ, dir), 'registrar'))) {
-      execFileSync('pnpm', ['registrar'], { cwd: join(RAIZ, dir), env: envDaApp(dir), stdio: log ? 'inherit' : 'ignore' })
+      executar('registrar', dir, 'pnpm', ['registrar'], { esperar: true })
     }
   }
   const subirDominio = async (nome) => {
-    dominios.set(nome, iniciar('node', ['src/servidor.mjs', nome], join(RAIZ, 'erp-dominio-stub'), envDoDominio))
+    dominios.set(nome, executar('start', 'erp-dominio-stub', 'node', ['src/servidor.mjs', nome]))
     await esperar(`http://127.0.0.1:${PORTA[nome]}/`)
     // o domínio falso de acesso guarda tudo em memória: ao voltar, os manifestos são reenviados
     if (nome === 'gestao-acesso-v2') registrar()
@@ -128,15 +166,8 @@ export async function subir({ construir = false, log = false } = {}) {
    */
   const congelarApp = (dir) => { const p = apps.get(dir); if (p) process.kill(-p.pid, 'SIGSTOP') }
   const descongelarApp = (dir) => { const p = apps.get(dir); if (p) process.kill(-p.pid, 'SIGCONT') }
-  const envDaApp = (dir) => {
-    if (dir === 'erp-shell') return env
-    const envZona = { ...env }
-    delete envZona.REDIS_URL
-    return envZona
-  }
-
   const subirApp = async (dir) => {
-    apps.set(dir, iniciar('pnpm', ['start'], join(RAIZ, dir), envDaApp(dir)))
+    apps.set(dir, executar('start', dir, 'pnpm', ['start']))
     const { porta, saude } = APPS.find((a) => a.dir === dir)
     await esperar(`http://localhost:${porta}${saude}`)
   }
@@ -147,10 +178,7 @@ export async function subir({ construir = false, log = false } = {}) {
    * sem mexer na instância que o resto da verificação usa. Devolve a função que a derruba.
    */
   const subirAppAvulsa = async (dir, { porta, envExtra = {}, caminho = '/' }) => {
-    const envAvulso = { ...envDaApp(dir) }
-    for (const [k, v] of Object.entries(envExtra)) { if (v === null) delete envAvulso[k]; else envAvulso[k] = v }
-    const p = spawn('pnpm', ['exec', 'next', 'start', '-p', String(porta)], { cwd: join(RAIZ, dir), env: envAvulso, stdio: log ? 'inherit' : 'ignore', detached: true })
-    processos.push(p)
+    const p = executar('avulsa', dir, 'pnpm', ['exec', 'next', 'start', '-p', String(porta)], { extra: envExtra })
     await esperar(`http://localhost:${porta}${caminho}`)
     return async () => {
       parar(p)
@@ -160,7 +188,7 @@ export async function subir({ construir = false, log = false } = {}) {
 
   try {
     for (const nome of Object.keys(PORTAS_DE_DOMINIO)) {
-      dominios.set(nome, iniciar('node', ['src/servidor.mjs', nome], join(RAIZ, 'erp-dominio-stub'), envDoDominio))
+      dominios.set(nome, executar('start', 'erp-dominio-stub', 'node', ['src/servidor.mjs', nome]))
     }
     for (const porta of Object.values(PORTAS_DE_DOMINIO)) await esperar(`http://127.0.0.1:${porta}/`)
     registrar()
@@ -169,14 +197,14 @@ export async function subir({ construir = false, log = false } = {}) {
       const cwd = join(RAIZ, dir)
       const precisa = construir === 'tudo' || (construir ? precisaConstruir(cwd) : !existsSync(join(cwd, '.next', 'BUILD_ID')))
       if (precisa) {
-        execFileSync('pnpm', ['build'], { cwd, env, stdio: log ? 'inherit' : 'ignore' })
+        executar('build', dir, 'pnpm', ['build'], { esperar: true })
       }
     }
-    for (const { dir } of APPS) apps.set(dir, iniciar('pnpm', ['start'], join(RAIZ, dir), envDaApp(dir)))
+    for (const { dir } of APPS) apps.set(dir, executar('start', dir, 'pnpm', ['start']))
     for (const { porta, saude } of APPS) await esperar(`http://localhost:${porta}${saude}`)
   } catch (e) {
     derrubar()
     throw e
   }
-  return { derrubar, derrubarDominio, subirDominio, derrubarApp, subirApp, subirAppAvulsa, congelarApp, descongelarApp, sessaoDir: env.SESSAO_DIR, apps, dominios }
+  return { derrubar, derrubarDominio, subirDominio, derrubarApp, subirApp, subirAppAvulsa, congelarApp, descongelarApp, sessaoDir: env.SESSAO_DIR, apps, dominios, ambientesEntregues }
 }

@@ -4,7 +4,7 @@
 > atualiza ao fim de todo gate, task ou decisão; o humano copia para o GitLab e marca a coluna
 > "No GitLab?". Regras de quando avisar: `MANUTENCAO-GITLAB.md`.
 >
-> Última revisão: **2026-09-28 (retomada)** (gate B1+D1+G3+K reprovado nas iterações 5 a 8; a última, pelo auditor, com vetos V1–V4; correção na fatia K5 e iteração 9 a seguir).
+> Última revisão: **2026-09-28 (K5)** (gate B1+D1+G3+K reprovado nas iterações 5 a 8; a última, pelo auditor, com vetos V1–V4; fatia K5 feita, 109/109 com Redis e 105 + 4 com arquivo; iteração 9 a seguir).
 
 ## 1. Como ler e manter
 
@@ -394,3 +394,4 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-09-23 (encerramento) | Gate B1+D1+G3+K iteração 4 **reprovado** (revisor e challenger aprovaram; auditor vetou V1–V5). #9, #136 e #137 seguem **em andamento**; comentário opcional no GitLab: "iteração 4 reprovada; correção K3 depende de decisão sobre o critério do gate". ADR-0013 e ADR-0014 aceitos |
 | 2026-09-23 (iterações 5–8) | Iteração 5 aprovada pelos três e **invalidada pelo humano** (auditoria rasa, V3 aberto); 6 e 7 reprovadas (zonas com `REDIS_URL`; Redis sem senha), corrigidas por K4-3 e K4-4; 8 reprovada pelo auditor (V1–V4) → fatia K5. #3, #9, #136 e #137 seguem **em andamento**; comentário opcional no GitLab: "gate reprovado na iteração 8; correção K5 em andamento" |
 | 2026-09-28 (retomada) | Repositórios sincronizados, nada novo no remoto; nenhuma atividade muda de estado |
+| 2026-09-28 (K5) | Fatia K5 feita (vetos V1–V4 e lacunas L1–L4, L6 da iteração 8); iteração 9 a seguir. Nada muda no GitLab até o gate; comentário opcional em #9/#136: "correção K5 feita; iteração 9 do gate em andamento" |

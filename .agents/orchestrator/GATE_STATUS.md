@@ -226,3 +226,24 @@ D14 confirmados: XA09–XA13, XP01/XP03–06, XN02–04, XN09d, XR28c/d, XL01–
 
 Gate Result: **FAIL** (veto). Correção na fatia **K5** (`RETOMADA.md`). Estado conferido pelo auditor ao fim: fontes iguais ao HEAD, `dist`
 = tarball 0.9.2, dados do stub iguais, chaves forjadas apagadas, `CONSTRUIR=1 task verificar:redis` 100/100, portas livres.
+
+Correção **K5** (2026-09-28), cada item com teste que reprova com a correção revertida (conferido por mutação):
+- **K5-1 (V1, L6):** `base/scripts/ambiente.mjs` monta o ambiente por **lista de inclusão** por papel (`AMBIENTE_PERMITIDO`,
+  `ambienteDoPapel`, `papelDe`); todo processo (build, start, registrar, domínio, app avulsa) nasce por um único `executar`, que
+  registra o que entregou (`ambientesEntregues`). Testes: unidade (senha em nome qualquer não passa; ponto único de lançamento;
+  a lista cobre toda variável lida por zona e domínio) e ponta a ponta com `ERP_REDIS_SENHA_SHELL` sempre definida (nenhum
+  ambiente entregue nem `/proc/<pid>/environ` de zona ou domínio contém a senha; o do shell contém). `showcase/subir.mjs` herda o filtro.
+- **K5-2 (V2, L2/SR1, SR6):** `saida-de-rede.mjs` troca a pilha de escopos por resolução léxica (um nome só é local se um ancestral
+  do uso o liga: função de qualquer forma, `catch`, os três `for`, bloco, `case`). Achado no caminho: `globalThis[k]` com `k`
+  parâmetro passava (o mapa de constantes devolvia `undefined` e a regra de chave calculada nunca disparava); a constante agora é a
+  da declaração que vale ali. Testes: 12 formas × `fetch`/`WebSocket`, XR20q4, chave de parâmetro e de constante sombreada, concatenação inline.
+- **K5-3 (V3):** teste de `fontesDaApp` com `test/` aninhado (varrido) e na raiz (fora).
+- **K5-4 (V4, L4):** `erp-nucleo` `08642ed`: símbolos exclusivos derivados de `src/shell/index.ts`; no definidor só a declaração
+  é isenta; regra por tipo (fora de `shell/` e `testing/`, nenhum export cujo tipo tenha `gravar`/`remover`/`autenticar`/`entrar`/
+  `encerrar`). Testes N38g, N38h, N38i (estático e no `dist`), N38k, N38l numa cópia do `src/` real. Só `scripts/` e `test/`
+  mudaram: o `dist` publicado é o mesmo, **sem núcleo 0.9.3**.
+- **L1:** união com objeto e objeto opcional (TA1); `varrerSeguranca` ganhou `raiz` e um teste da varredura inteira (TA4, TA5, TA9).
+  **L3:** `assetPrefix`/`basePath` abreviados ou atribuídos depois.
+- Conferido: núcleo 142/142, contratos 20, moldura 26, stub 43, shell 43, typecheck das 4 apps, scripts 18, estática **48/48**,
+  `CONSTRUIR=tudo task verificar:redis` (build das 4 apps com o ambiente novo) e depois `task verificar:redis` **109/109**,
+  `task verificar:construir` **105 + 4 pulados**. Iteração 9 a seguir, com o catálogo da iteração 8 como piso.

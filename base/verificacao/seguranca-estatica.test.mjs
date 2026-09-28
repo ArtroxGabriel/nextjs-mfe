@@ -223,6 +223,15 @@ test('V6/V7 (XR16, XE41): a varredura cobre a app inteira, nao so app/ e lib/', 
   assert.deepEqual(fontesDaApp(app), [join(app, 'componentes', 'x.ts')])
 })
 
+test('V3 (auditor_b1_d1_8, XR38p/SR3): so o test/ da raiz da app fica fora; test/ aninhado e varrido', () => {
+  const app = mkdtempSync(join(tmpdir(), 'app-'))
+  for (const d of ['test', join('lib', 'test'), join('app', 'x', 'test')]) mkdirSync(join(app, d), { recursive: true })
+  writeFileSync(join(app, 'test', 'unidade.test.mjs'), 'export {}\n')
+  writeFileSync(join(app, 'lib', 'test', 'x.ts'), "export const f = () => fetch('http://fora')\n")
+  writeFileSync(join(app, 'app', 'x', 'test', 'page.tsx'), 'export default function P() { return null }\n')
+  assert.deepEqual(fontesDaApp(app).sort(), [join(app, 'app', 'x', 'test', 'page.tsx'), join(app, 'lib', 'test', 'x.ts')].sort())
+})
+
 test('V5 (P09): Server Action comeca pela verificacao e so toca o nucleo dentro dela', () => {
   const imp = "'use server'\nimport { nucleo } from '@/lib/nucleo'\nimport { acaoProtegida } from '@/lib/pagina'\n"
   const ok = imp + "export async function a(f) {\n  return acaoProtegida({ administra: true }, '/x', async () => {\n    await nucleo.destino('d').post('/v', {})\n    return { destino: '/x' }\n  })\n}"
@@ -259,6 +268,14 @@ test('XN09 (K4-4): assetPrefix e basePath do next.config so com texto literal', 
   passa("export default { assetPrefix: '/zona1-static', basePath: '' }", 'next.config.ts')
 })
 
+test('L3 (auditor_b1_d1_8, XN09a/b): assetPrefix e basePath abreviados ou atribuidos depois tambem reprovam', () => {
+  pega('const assetPrefix = process.env.DOMINIO_A_URL\nexport default { assetPrefix }', 'next.config.ts')
+  pega('const basePath = process.env.X\nexport default { basePath }', 'next.config.ts')
+  pega("const config = { assetPrefix: '/z' }\nconfig.assetPrefix = process.env.DOMINIO_A_URL\nexport default config", 'next.config.ts')
+  pega("const config = {}\nconfig['basePath'] = process.env.X\nexport default config", 'next.config.ts')
+  passa("const config = { assetPrefix: '' }\nconfig.assetPrefix = '/zona1-static'\nexport default config", 'next.config.ts')
+})
+
 
 test('V3 (K4, auditor_b1_d1_4): com o programa da app, o tipo decide o que vai a ilha, nao o nome do campo', () => {
   const app = mkdtempSync(join(tmpdir(), 'app-'))
@@ -279,5 +296,45 @@ test('V3 (K4, auditor_b1_d1_4): com o programa da app, o tipo decide o que vai a
   for (const [k, [fonte, reprova]] of Object.entries(casos)) {
     const achados = analisarSeguranca(fonte, join(app, 'app', `${k}.tsx`), null, { raizDaApp: app, programa })
     assert.equal(achados.length > 0, reprova, `${k}: ${JSON.stringify(achados)}`)
+  }
+})
+
+// --- auditor_b1_d1_8: L1 (TA1, TA4, TA5, TA9): dentes no tipo escalar e no programa da varredura ---
+test('L1 (TA1): uniao com objeto e objeto opcional nao sao escalares', () => {
+  const app = mkdtempSync(join(tmpdir(), 'app-'))
+  mkdirSync(join(app, 'app'))
+  writeFileSync(join(app, 'tsconfig.json'), JSON.stringify({ compilerOptions: { jsx: 'react-jsx', strict: true, noEmit: true }, include: ['**/*.ts', '**/*.tsx'] }))
+  writeFileSync(join(app, 'app', 'Ilha.tsx'), "'use client'\nexport function Ilha(_: Record<string, unknown>) { return null }\n")
+  writeFileSync(join(app, 'app', 'tipos.ts'), 'export type Envio = { misto: string | { id: string }; anexo?: { id: string }; rotulo: string | number }\n')
+  const imp = "import { Ilha } from './Ilha'\nimport type { Envio } from './tipos'\n"
+  const casos = {
+    misto: [imp + 'export const P = ({ envio }: { envio: Envio }) => <Ilha x={envio.misto} />', true],
+    anexo: [imp + 'export const P = ({ envio }: { envio: Envio }) => <Ilha x={envio.anexo} />', true],
+    rotulo: [imp + 'export const P = ({ envio }: { envio: Envio }) => <Ilha x={envio.rotulo} />', false],
+  }
+  const arquivos = Object.keys(casos).map((k) => { const f = join(app, 'app', `${k}.tsx`); writeFileSync(f, casos[k][0]); return f })
+  const programa = programaDaApp(app, arquivos)
+  for (const [k, [fonte, reprova]] of Object.entries(casos)) {
+    const achados = analisarSeguranca(fonte, join(app, 'app', `${k}.tsx`), null, { raizDaApp: app, programa })
+    assert.equal(achados.length > 0, reprova, `${k}: ${JSON.stringify(achados)}`)
+  }
+})
+
+test('L1 (TA4, TA5, TA9): a varredura das apps usa o programa, com todo arquivo varrido e JavaScript incluso', () => {
+  const raiz = mkdtempSync(join(tmpdir(), 'raiz-'))
+  const app = join(raiz, 'erp-x')
+  mkdirSync(join(app, 'app', 'p'), { recursive: true })
+  mkdirSync(join(app, 'lib'))
+  // o tsconfig não inclui app/p: só a lista de arquivos da varredura (TA4) põe as páginas no programa
+  writeFileSync(join(app, 'tsconfig.json'), JSON.stringify({ compilerOptions: { jsx: 'react-jsx', strict: true, noEmit: true }, include: ['lib/**/*.ts'] }))
+  writeFileSync(join(app, 'app', 'Ilha.tsx'), "'use client'\nexport function Ilha(_: Record<string, unknown>) { return null }\n")
+  writeFileSync(join(app, 'lib', 'dados.ts'), "import 'server-only'\nexport type Envio = { detalhe: { id: string; dono: string } }\nexport const carregar = (): Envio => ({ detalhe: { id: '1', dono: 'x' } })\n")
+  // `detalhe` não tem nome sensível nem de campo complexo: só o tipo o denuncia
+  writeFileSync(join(app, 'app', 'p', 'page.tsx'), "import { Ilha } from '../Ilha'\nimport { carregar } from '../../lib/dados'\nexport default function P() { const envio = carregar(); return <Ilha x={envio.detalhe} /> }\n")
+  // em JavaScript o tipo vem da inferência do import (TA5: sem allowJs o arquivo fica fora do programa)
+  writeFileSync(join(app, 'app', 'p', 'outra.jsx'), "import { Ilha } from '../Ilha'\nimport { carregar } from '../../lib/dados'\nexport function Q() { const envio = carregar(); return <Ilha x={envio.detalhe} /> }\n")
+  const achados = varrerSeguranca(['erp-x'], raiz)
+  for (const f of ['page.tsx', 'outra.jsx']) {
+    assert.ok(achados.some((a) => a.startsWith(join('erp-x', 'app', 'p', f))), `${f}: objeto foi a ilha sem achado: ${JSON.stringify(achados)}`)
   }
 })

@@ -19,6 +19,9 @@ before(async () => {
   coletor = createServer((req, res) => { lotesNoColetor.push(req.url); req.resume(); req.on('end', () => res.end()) })
   await new Promise((ok) => coletor.listen(0, '127.0.0.1', ok))
   process.env.OTEL_EXPORTER_OTLP_ENDPOINT = `http://127.0.0.1:${coletor.address().port}`
+  // senha de escrita do shell sempre definida, como fora da máquina local (auditor_b1_d1_8, V1): o teste
+  // de ambiente abaixo procura o valor dela em tudo o que zona e domínio recebem
+  process.env.ERP_REDIS_SENHA_SHELL ??= 'sentinela-k5-senha-de-escrita'
   // CONSTRUIR=1 reconstrói só as apps com fonte mais novo que o build; CONSTRUIR=tudo, todas
   ambiente = await subir({ construir: process.env.CONSTRUIR === 'tudo' ? 'tudo' : process.env.CONSTRUIR === '1' })
 }, { timeout: 600_000 })
@@ -934,6 +937,33 @@ test('V1 (E01f): REDIS_URL de escrita do shell nao esta presente no ambiente das
   assert.ok(procShell?.pid, 'erp-shell: processo nao encontrado')
   const environShell = readFileSync(`/proc/${procShell.pid}/environ`, 'utf8')
   assert.ok(environShell.includes('REDIS_URL='), 'erp-shell: processo deve conter REDIS_URL')
+})
+
+test('V1 (auditor_b1_d1_8): nenhum processo de zona ou dominio recebe a senha de escrita, em nenhuma fase', () => {
+  const senhas = [process.env.ERP_REDIS_SENHA_SHELL, process.env.REDIS_URL && decodeURIComponent(new URL(process.env.REDIS_URL).password)].filter(Boolean)
+  assert.ok(senhas.length >= 1, 'sem senha para procurar')
+  const entregues = ambiente.ambientesEntregues.filter((e) => e.dir !== 'erp-shell')
+  // start de toda zona e domínio e registrar das zonas-módulo; build, se houve, também está aqui
+  for (const dir of ['erp-zona-1', 'erp-zona-2', 'erp-zona-acesso', 'erp-dominio-stub']) {
+    assert.ok(entregues.some((e) => e.dir === dir && e.fase === 'start'), `${dir}: start nao registrado`)
+  }
+  for (const dir of ['erp-zona-1', 'erp-zona-2']) assert.ok(entregues.some((e) => e.dir === dir && e.fase === 'registrar'), `${dir}: registrar nao registrado`)
+  for (const { fase, dir, ambiente: env, extras } of entregues) {
+    const vazou = Object.entries(env).filter(([k, v]) => !extras.includes(k) && senhas.some((s) => String(v).includes(s)))
+    assert.deepEqual(vazou.map(([k]) => k), [], `${dir} (${fase}) recebeu a senha de escrita`)
+    assert.ok(!('REDIS_URL' in env) || extras.includes('REDIS_URL'), `${dir} (${fase}) recebeu REDIS_URL`)
+  }
+  // no ar, pelo que o sistema operacional diz de cada processo (não só pelo registro)
+  // só os vivos: testes anteriores derrubam domínios de propósito (a gestão de acesso v1 sobe e desce)
+  const vivos = [...ambiente.apps, ...ambiente.dominios].filter(([n, p]) => n !== 'erp-shell' && p.exitCode === null && p.signalCode === null)
+  for (const z of ['erp-zona-1', 'erp-zona-2', 'erp-zona-acesso']) assert.ok(vivos.some(([n]) => n === z), `${z} nao esta no ar`)
+  for (const [nome, proc] of vivos) {
+    const environ = readFileSync(`/proc/${proc.pid}/environ`, 'utf8')
+    assert.ok(!senhas.some((s) => environ.includes(s)), `${nome}: a senha de escrita esta no ambiente do processo`)
+  }
+  // dentes: o shell recebe a senha, então a leitura de /proc enxerga o que procura
+  const shell = readFileSync(`/proc/${ambiente.apps.get('erp-shell').pid}/environ`, 'utf8')
+  assert.ok(shell.includes(process.env.ERP_REDIS_SENHA_SHELL), 'o shell deveria receber a senha de escrita')
 })
 
 test('V3 (E10d): centro de custo nao vaza no HTML nem no RSC da listagem /zona1 para o bruno', async () => {
