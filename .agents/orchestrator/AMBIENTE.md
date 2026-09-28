@@ -73,6 +73,13 @@
   mutado no meio pode ser lido por um processo que ainda não o carregou. Mutações só com a base parada (2026-09-28).
 - **Teste que lê `/proc/<pid>/environ` só de processo vivo.** Testes anteriores derrubam domínios de propósito (a gestão de acesso
   v1 sobe e desce); o `pid` deles some e a leitura dá `ENOENT` (K5, 2026-09-28).
+- **Mutação que cria arquivo no `src/` do núcleo deixa órfão no `dist` local:** o `tsc` não apaga o `.js` depois que o `.ts`
+  some. Confira o `dist` com `diff -r` contra o tarball e apague os órfãos (auditor_b1_d1_9).
+- **Rodada que estoura o timeout do executor de mutações deixa a base de pé**, e as seguintes falham por porta ocupada.
+  Confira as portas depois de toda rodada sem saída (auditor_b1_d1_8 e _9, TF1).
+- **`*.log` está no `.gitignore`:** logs de `anexos/` só entram com `git add -f`.
+- **`pgrep -f <padrão>` casa com o próprio shell que o roda**, e `kill $(pgrep …)` o mata junto. Use `pgrep -f '^node …'` ou o PID
+  guardado pelo processo (2026-09-28).
 - **Mutação em código que grava arquivo pode sujar dados versionados.** Em 2026-09-22 a mutação
   "sem pasta, grave na semente" do `erp-dominio-stub` gravou em `dados/semente/*.json`; restaurar o
   `.mjs` não restaurou a semente e a mutação seguinte pareceu pegar por outro motivo. Antes de mutar,

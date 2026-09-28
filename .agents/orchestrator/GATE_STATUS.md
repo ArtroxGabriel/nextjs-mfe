@@ -249,3 +249,17 @@ Correção **K5** (2026-09-28), cada item com teste que reprova com a correção
 - Conferido: núcleo 142/142, contratos 20, moldura 26, stub 43, shell 43, typecheck das 4 apps, scripts 18, estática **48/48**,
   `CONSTRUIR=tudo task verificar:redis` (build das 4 apps com o ambiente novo) e depois `task verificar:redis` **109/109**,
   `task verificar:construir` **105 + 4 pulados**. Iteração 9 a seguir, com o catálogo da iteração 8 como piso.
+
+## Gate — B1 + D1 + G3 (acesso v2) + fatias K3/K4/K5, iteração 9
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_b1_d1_9 | revisor-mfe (sonnet) | APPROVE | .agents/reviewer_b1_d1_9/handoff.md | V1–V4 fechados, cada reversão derruba o teste do veto; suspeita: núcleo gravando por cliente Redis sem tipo de escritor |
+| challenger_b1_d1_9 | simulador-condicoes (sonnet) | APPROVE | .agents/challenger_b1_d1_9/handoff.md | 109/109 e 105+4, 2x; senha só no shell no showcase ao vivo; NOPERM/NOAUTH; XR20q4 e E01g pegos. Divergências (showcase sem `ping` autenticado; completude sem desestruturação) corrigidas em `c4b94e6` |
+| auditor_b1_d1_9 | general-purpose forense (opus) | **PASS** | .agents/auditor_b1_d1_9/handoff.md, mutacoes.txt, anexos/ | catálogo da it.8 inteiro reaplicado: todo veto de então reprova; E01g com build real 109/109 e sem chave; lacunas LA–LG sem veto (`DEFERRED.md` D15) |
+
+Gate Result: **PASS**. Fecha B1 (kit nas 4 apps), B3 (`/{zona}/api/health`), B4/B6 (verificações estáticas), D1 (sessão no Redis com
+escrita só no shell) e G3 (acesso v2). Estado conferido ao fim: fontes nos HEADs, `dist` do núcleo nas 4 apps = tarball 0.9.2
+(`9ff2f87f…`), dados do stub iguais, chaves forjadas apagadas, `task verificar:redis` 109/109, modo arquivo 105 + 4, portas livres.
+Pastas dos verificadores das iterações 2–9 removidas depois do registro; última versão no commit `f010760`
+(`git show f010760:.agents/<nome>/handoff.md`). Tag `gate-b1-d1-g3-aprovado`.

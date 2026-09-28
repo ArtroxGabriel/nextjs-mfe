@@ -4,7 +4,7 @@
 > atualiza ao fim de todo gate, task ou decisão; o humano copia para o GitLab e marca a coluna
 > "No GitLab?". Regras de quando avisar: `MANUTENCAO-GITLAB.md`.
 >
-> Última revisão: **2026-09-28 (K5)** (gate B1+D1+G3+K reprovado nas iterações 5 a 8; a última, pelo auditor, com vetos V1–V4; fatia K5 feita, 109/109 com Redis e 105 + 4 com arquivo; iteração 9 a seguir).
+> Última revisão: **2026-09-28 (gate B1+D1+G3+K aprovado)** (iteração 9: revisor, challenger e auditor aprovaram; fecham #3 e #20; #9 e #21 seguem com D2, G4 e G5).
 
 ## 1. Como ler e manter
 
@@ -20,15 +20,15 @@
 
 | # | Título | Estado real | Ação | No GitLab? | Evidência |
 |---|---|---|---|---|---|
-| 3 | Isolar a falha de zona no shell da base *(era "Tratar zonas travadas")* | gate do shell **aprovado** na iteração 4; `/{zona}/api/health` **implementado** nas 3 zonas e a sonda do shell o usa (B3); fecha com o gate B1+D1+G3+K (iteração 8 reprovada, K5 e iteração 9 a seguir) | reescrever título; mover para **em andamento**; fechar depois do gate que cobre o B3 | feito (2026-09-23, #114; segue em #132) | `erp-zona-1` `677a79c`; `erp-shell` `d7a27a9`; `GATE_STATUS.md` |
-| 9 | Trocar login e store de desenvolvimento por OIDC e Redis *(era "Implementar sessão e autorização no servidor")* | cookie opaco, escritor único e autorização por módulo entregues; **Redis ligado** (100/100 com Redis; zonas leem a sessão com usuário ACL só de leitura; escrita exige senha desde a K4-4); gate B1+D1+G3+K **reprovado** nas iterações 2 a 8 (iteração 5 invalidada pelo humano; na 8 o auditor vetou V1: a senha de escrita ainda chega às zonas quando definida) → fatia K5 e iteração 9; sessão já tem os campos `refreshToken`/`idToken`/`tokenExpiraEm` (núcleo 0.8.0); **faltam** login OIDC + PKCE com o Keycloak e a renovação com lock (D2, ADR-0013) | reescrever título e critérios; mover para **em andamento** | pendente | ADR-0009 decisão 3; ADR-0013; `GATE_STATUS.md` |
+| 3 | Isolar a falha de zona no shell da base *(era "Tratar zonas travadas")* | gate do shell **aprovado** na iteração 4; `/{zona}/api/health` **implementado** nas 3 zonas e a sonda do shell o usa (B3); **gate B1+D1+G3+K aprovado** na iteração 9 (2026-09-28): B3 entregue | **fechar** (comentário em §3) | pendente (fechar #132) | `erp-zona-1` `677a79c`; `erp-shell` `d7a27a9`; `GATE_STATUS.md` |
+| 9 | Trocar login e store de desenvolvimento por OIDC e Redis *(era "Implementar sessão e autorização no servidor")* | cookie opaco, escritor único e autorização por módulo entregues; **Redis ligado** (100/100 com Redis; zonas leem a sessão com usuário ACL só de leitura; escrita exige senha desde a K4-4); **D1 aprovado** no gate B1+D1+G3+K (iteração 9, 2026-09-28; zonas e domínios recebem o ambiente por lista de inclusão); sessão já tem os campos `refreshToken`/`idToken`/`tokenExpiraEm` (núcleo 0.8.0); **faltam** login OIDC + PKCE com o Keycloak e a renovação com lock (D2, ADR-0013) | reescrever título e critérios; mover para **em andamento** | pendente | ADR-0009 decisão 3; ADR-0013; `GATE_STATUS.md` |
 | 10 | Implementar composição por fragmentos | núcleo pronto (`@erp/nucleo` 0.5.0, 18 testes, 16 mutações); falta ligar zona 1 ← zona 2 e bloquear no shell | mover para **em andamento** | feito (2026-09-23, #121) | ADR-0011; `erp-nucleo` `1841771` |
 | 11 | Centralizar o tempo real no shell | não iniciado | manter; tirar a dependência da #2 | feito (2026-09-23, #122) | `alvo.md` §6 (SSE) |
 | 12 | Publicar o pacote visual @erp/ui | não iniciado; depende de medir duplicação de bundle | manter | — | `alvo.md` §6 |
 | 14 | Definir estratégia de publicação e compatibilidade | submódulos **feitos**; hook `pre-push` que recusa submódulo não enviado **feito** (`base/scripts/checar-envio.mjs`, provado com commit só local); **gate de lockstep do núcleo feito** (`base/scripts/verificar-lockstep.mjs`, no `pre-push`, provado com divergência real); falta registro único ou publicação pelo CI — em 2026-09-22 as duas máquinas alternaram commits só de hash de lockfile, cada um quebrando a instalação da outra; paliativo: `task pacotes:alinhar-hashes` e não commitar hash local | acrescentar critérios: gate de lockstep no CI, registro único, nunca republicar a mesma versão,  checar submódulo não enviado antes do push, mapa de zonas vindo do domínio de acesso | feito (2026-09-23, #125; segue em #133) | ADR-0010; `AMBIENTE.md` §1–2; `4eb128b` |
 | 19 | Entregar o showcase da base com mocks, Keycloak e Redis *(nova)* | **`task showcase` sobe tudo** (Redis, Keycloak, domínios com dados em JSON gravados, shell e 3 zonas) e `task showcase:conferir` mostra ator × zona; sessão já no Redis; falta login pelo Keycloak (D2) e o roteiro completo (E4, E5) | **criar** (texto em §3) | feito (2026-09-23, #135) | `RETOMADA.md` |
-| 20 | Migrar as apps para o kit de app e fechar as verificações da spec *(nova)* | **migração feita** nas 4 apps (núcleo 0.8.2, moldura 0.4.0); **B4/B6 feitos** (`base/verificacao/seguranca-estatica.mjs`, 40/40; limites declarados em D14); **B5 feito** (B5a no shell, B5b no núcleo 0.8.0; os tempos de sessão entram com o D2); ponta a ponta 100/100; gate B1+D1+G3+K **reprovado** na iteração 8 (auditor, vetos V1–V4; revisor e challenger aprovaram) → fatia K5 e iteração 9 | **criar** (texto em §3, atualizado) | feito (2026-09-23, #136) | ADR-0012; `GATE_STATUS.md` |
-| 21 | Evoluir a gestão de acesso para o modelo de referência v2 *(nova)* | **modelo e mock prontos** (G1); **ADR-0014 + adendo 1** (G2); **alinhamento implementado** (G3: corte seco para a v2, acesso por funcionalidade, papel administrativo separado de módulo, zona de acesso com pessoas × módulos; ponta a ponta 62/62 nos dois modos); faltam o gate (iteração 8 reprovada pelo auditor → K5 e iteração 9), o showcase com os atores (G4) e a revogação ativa por eventos (G5, lacuna declarada) | **criar** em andamento (texto em §3) | feito (2026-09-23, #137) | ADR-0014 adendo 1; `GATE_STATUS.md` |
+| 20 | Migrar as apps para o kit de app e fechar as verificações da spec *(nova)* | **migração feita** nas 4 apps (núcleo 0.8.2, moldura 0.4.0); **B4/B6 feitos** (`base/verificacao/seguranca-estatica.mjs`, 40/40; limites declarados em D14); **B5 feito** (B5a no shell, B5b no núcleo 0.8.0; os tempos de sessão entram com o D2); estáticas 48/48; ponta a ponta 109/109 com Redis; **gate B1+D1+G3+K aprovado** na iteração 9 (2026-09-28) | **fechar** (comentário em §3) | pendente (fechar #136) | ADR-0012; `GATE_STATUS.md` |
+| 21 | Evoluir a gestão de acesso para o modelo de referência v2 *(nova)* | **modelo e mock prontos** (G1); **ADR-0014 + adendo 1** (G2); **alinhamento implementado** (G3: corte seco para a v2, acesso por funcionalidade, papel administrativo separado de módulo, zona de acesso com pessoas × módulos; ponta a ponta 62/62 nos dois modos); **G3 aprovado** no gate B1+D1+G3+K (iteração 9, 2026-09-28); faltam o showcase com os atores (G4) e a revogação ativa por eventos (G5, lacuna declarada) | **criar** em andamento (texto em §3) | feito (2026-09-23, #137) | ADR-0014 adendo 1; `GATE_STATUS.md` |
 | 18 | Centralizar a telemetria das zonas no shell *(nova)* — **ampliar para "Trace contínuo sem dado pessoal (núcleo 8)"**: o elemento 8 é núcleo e está ausente (`alvo.md` §6) | gateway e propagação de trace **aprovados no gate do shell** (iteração 4); falta exportar spans (SDK OpenTelemetry, instalação aprovada; B2) | **criar** em andamento (texto em §3) | feito (2026-09-23, #134) | `erp-shell` `6de4939`; `alvo.md` §6 (Operação) |
 
 ### Lista 2 — refinamento (separada das atuais; não começar agora)
@@ -67,6 +67,14 @@ As quatro atividades do anexo de `docs/historico/revisao/2026-09-15-revisao-base
 serão criadas: o trabalho delas está na #17.
 
 ## 3. Textos prontos para colar
+
+### #3 (#132), #20 (#136), #9 e #21 — comentário: gate B1+D1+G3+K aprovado (2026-09-28)
+
+> Gate B1+D1+G3+K aprovado na iteração 9 (revisor, challenger e auditor forense com veto). Entregues: kit de aplicação nas 4 apps
+> (B1), `/{zona}/api/health` com a sonda do shell (B3), verificações estáticas de segurança (B4/B6), sessão no Redis com escrita só
+> no shell e zonas só com leitura (D1) e alinhamento à gestão de acesso v2 (G3). Ponta a ponta 109/109 com Redis. Fecham #3 e #20;
+> #9 segue com o login OIDC + PKCE e a renovação com lock (D2); #21 segue com o showcase dos atores (G4) e a revogação por eventos (G5).
+
 
 ### #3 e #18 — comentário: gate aprovado
 
@@ -395,3 +403,4 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-09-23 (iterações 5–8) | Iteração 5 aprovada pelos três e **invalidada pelo humano** (auditoria rasa, V3 aberto); 6 e 7 reprovadas (zonas com `REDIS_URL`; Redis sem senha), corrigidas por K4-3 e K4-4; 8 reprovada pelo auditor (V1–V4) → fatia K5. #3, #9, #136 e #137 seguem **em andamento**; comentário opcional no GitLab: "gate reprovado na iteração 8; correção K5 em andamento" |
 | 2026-09-28 (retomada) | Repositórios sincronizados, nada novo no remoto; nenhuma atividade muda de estado |
 | 2026-09-28 (K5) | Fatia K5 feita (vetos V1–V4 e lacunas L1–L4, L6 da iteração 8); iteração 9 a seguir. Nada muda no GitLab até o gate; comentário opcional em #9/#136: "correção K5 feita; iteração 9 do gate em andamento" |
+| 2026-09-28 (gate) | Gate B1+D1+G3+K **aprovado** na iteração 9. **Fechar #3 (#132) e #20 (#136)**; comentar em #9 e #21 (texto em §3). Lacunas sem veto em `DEFERRED.md` D15, para a K6 junto do D2 |

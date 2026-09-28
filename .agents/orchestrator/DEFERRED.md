@@ -45,7 +45,27 @@
 | `acaoProtegida` falsa ou domínio chamado por helper no argumento | XP01, XP03–XP06 | ponta a ponta de `Origin` e `CAMPOS_VALIDOS` (P09b); o domínio recusa sem credencial |
 | navegação entre zonas escrita de forma indireta | XL01–XL04 | só experiência de uso: a zona de destino exige sessão e `exigirModulo` |
 | rota do domínio repassada por `rewrites`/`NextResponse.rewrite` | XN08, XR30 | o domínio responde 401 sem credencial; bloqueio de saída de rede no deploy |
+| `require` por apelido e `__non_webpack_require__` (auditor_b1_d1_9) | XR40–XR44 | mesma de chave calculada: a zona não tem credencial nem endereço de domínio fora do registro |
+| rede do navegador sem `fetch` (`WebTransport`, `Image`, `Worker`) (auditor_b1_d1_9) | XR45–XR48 | CSP `default-src 'self'` em shell e zonas (teste de CSP do ponta a ponta) |
 
-- **Barreira de ambiente em vigor desde a K4-3:** a zona não recebe `REDIS_URL` (credencial de escrita), conferido em
-  `/proc/<pid>/environ` por `base/verificacao/base.test.mjs` (na K3 o ambiente filtrado era descartado; challenger_b1_d1_6).
+- **Barreira de ambiente em vigor desde a K5:** zona e domínio recebem o ambiente por lista de inclusão, em toda fase
+  (`base/scripts/ambiente.mjs`); a senha de escrita não chega a eles, conferido em `/proc/<pid>/environ` por
+  `base/verificacao/base.test.mjs` com `ERP_REDIS_SENHA_SHELL` sempre definida.
 - **Fecha em:** bloqueio de saída de rede das zonas no deploy (P1, fim do plano). Até lá, risco aceito.
+
+## D15 — Lacunas sem veto do gate B1+D1+G3+K, iteração 9 (auditor_b1_d1_9)
+
+- **O que é:** o gate passou (Decisão A2); estas mutações sobrevivem por falta de dente, não por defeito do código atual.
+  Handoff e mutações no commit `f010760` (`.agents/auditor_b1_d1_9/`). Cada item: correção e teste sugeridos lá.
+  - **LA:** `precisaConstruir` não olha `base/scripts/ambiente.mjs`; mudar só o ambiente do build (AK6) passa com `CONSTRUIR=1`.
+  - **LB:** o teste de ambiente confia em `ambientesEntregues` e nos `extras` (AK7, AE1).
+  - **LC:** ramos de união e de `Promise` de `temEscrita` (`erp-nucleo/scripts/fronteira.mjs`) sem teste (N38q, N38r).
+  - **LD:** a fronteira não vê escrita por cliente Redis convertido ou por `fs` sem tipo com `gravar` (NR1, NR2; suspeita do revisor).
+    Defesa hoje: ACL do Redis (a zona só tem `GET`) e o núcleo não depende de `redis`.
+  - **LE:** `valorConstante` aceitar `let` (SK8) passa: o caso `let` do teste é pego pelo literal `'fetch'`.
+  - **LF:** `assetPrefix` por `??=`, `||=`, `+=` ou `defineProperty` passa (`seguranca-estatica.mjs`).
+  - **LG:** nenhum teste roda o showcase; o banner de `base/showcase/subir.mjs` imprime a senha de escrita e ela aparece na linha de
+    comando do `docker` no host.
+  - **Contorno barato de fechar:** `declare const/function/class fetch|WebSocket` esconde a global (XR20k2–k5, XR20l/m): ignorar
+    declaração com `declare` em `nomesLigados` (`saida-de-rede.mjs`).
+- **Fecha em:** fatia K6, junto do D2 (o próximo gate cobre as duas). Nenhuma bloqueia o D2.
