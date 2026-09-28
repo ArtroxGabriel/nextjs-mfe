@@ -102,3 +102,6 @@
   sobreviventes da rodada anterior como casos a exercitar com a base no ar.
 - O auto mode pode bloquear `pnpm install`, `git` em submódulos e `push`. Quando bloquear, salve o
   estado em `RETOMADA.md`, explique o que falta e peça a liberação.
+- **Classificador do auto mode fora do ar** (2026-09-28): nenhum Bash nem escrita passa, nem `ls`, e dez falhas seguidas
+  encerram o turno. Não insistir: sair do auto mode (`Shift+Tab`) ou usar as regras `allow` de `.claude/settings.local.json`
+  (fora do git), que dispensam o classificador. Comando com `|` ou `;` não casa com a regra; rode um comando por chamada.

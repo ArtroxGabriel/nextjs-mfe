@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-23 (gate iteração 8 reprovado pelo auditor; fatia K5 planejada; cota semanal esgotada)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-28 (retomada: repositórios sincronizados, nada novo no remoto; próximo passo é a fatia K5)**.
 
 ## Objetivo final
 
@@ -24,18 +24,18 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 - **Decisão B:** `B1 (10 s)` — `proxyTimeout` em 10s e propostas 1 a 3 aceitas.
 - **Decisão C:** `agora` — Medição 1 de concorrência de refresh token no Keycloak executada imediatamente.
 
-## Estado (conferido nesta máquina em 2026-09-23)
+## Estado (conferido em 2026-09-23; sincronização reconferida em 2026-09-28)
 
 | O quê | Estado | Evidência |
 |---|---|---|
-| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **88/88** com Redis e **85 + 3 pulados** com arquivo (conferido de novo pelo auditor da iteração 4 ao fim) | `task verificar:redis`, `task verificar:construir` |
-| Unidades | contratos 20, núcleo 135, moldura 26, stub 43, shell 42; typecheck das 4 apps; estática 33/33; scripts 14/14 | `task test`, `task typecheck`, `task verificar:estatica`, `task scripts:test` |
+| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **100/100** com Redis e **96 + 4 pulados** com arquivo (conferido pelo auditor da iteração 8 ao fim) | `task verificar:redis`, `task verificar:construir` |
+| Unidades | contratos 20, núcleo 136, moldura 26, stub 43, shell 43; typecheck das 4 apps; estática 40/40 | `task test`, `task typecheck`, `task verificar:estatica`, `task scripts:test` |
 | `@erp/nucleo` | **0.9.2** nas 4 apps (acesso v2, `exigirModulo(modulo, funcionalidade)`, `exigirPapel`) | lockstep 4 apps |
 | `@erp/contratos` / `@erp/moldura` | **0.4.0** / **0.5.0** | ADR-0012, ADR-0014 adendo 1 |
 | ADRs | **0013 aceito** e **0014 + adendo 1 aceito** (humano, 2026-09-23) | `docs/adr/` |
 | Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
-| Gate B1+D1+G3+K | **iteração 5 não fecha o gate** (revisão do orquestrador, 2026-09-23): auditoria sem profundidade (6 mutações descritas sem evidência, contra 127 na iteração 4); **V3 continua aberto** (lista de nomes; `extra={envio.resumo}` com objeto passava); os limites declarados da Decisão A2 não estavam registrados. **Humano (2026-09-23): iteração 5 invalidada; iteração 6 autorizada** | `GATE_STATUS.md`; fatia K4 abaixo |
-| Submódulos | os 8 no `master`, iguais a `origin/master`; submódulos `erp-nucleo` e `erp-shell` sincronizados | `git submodule foreach git status -sb` |
+| Gate B1+D1+G3+K | **aberto**: iteração 8 reprovada pelo auditor (vetos V1–V4); correção na fatia K5, depois iteração 9 | `GATE_STATUS.md`; fatia K5 abaixo |
+| Repositórios | principal em `bff-multizone` e os 8 submódulos no `master`, iguais ao remoto (fetch em 2026-09-28, nada novo desde `401770c`). Só local, não commitar: hash do `@erp/contratos` 0.2.1 no `pnpm-lock.yaml` do `erp-dominio-stub` e do `erp-moldura` (`AMBIENTE.md` §1) | `git submodule foreach git status -sb` |
 
 ## Histórico curto do gate B1+D1+G3+K
 
@@ -45,7 +45,10 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | 2 | auditor vetou V1–V8 | fatia K |
 | 3 | revisor e challenger aprovaram; auditor vetou V1–V7 (127 mutações, 55 sobreviventes) | fatia **K2** (2026-09-23): cada veto com teste que reprova a mutação; P07 adiado (D13) |
 | 4 | revisor e challenger aprovaram; auditor vetou **V1–V5** novos (127, 55 sobreviventes; tudo da iteração 3 agora pego) | fatia **K3** implementada e testada (K3-1 a K3-6) |
-| 5 | **APROVADO**: revisor (APPROVE), challenger (APPROVE) e auditor (APPROVE / no integrity violation) sob a Decisão A2 | Gate concluído com sucesso |
+| 5 | os três aprovaram, mas **invalidada pelo humano**: auditoria rasa (6 mutações sem evidência) e V3 ainda aberto | fatia **K4-1/K4-2** (V3 pelo verificador de tipos; limites em D14) |
+| 6 | revisor e challenger reprovaram: as zonas ainda recebiam `REDIS_URL` (a K3 nunca rodou no modo Redis) | **K4-3** |
+| 7 | challenger reprovou: o Redis do showcase aceitava escrita sem senha | **K4-4** |
+| 8 | revisor e challenger aprovaram; auditor vetou **V1–V4** (ambiente por exclusão, escopos do N8, `test/` sem teste, fronteira por lista fixa) | fatia **K5** (a fazer) |
 
 ## Próximo passo: fatia K4 e iteração 6 do gate
 
@@ -60,7 +63,8 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
    (`GATE_STATUS.md`); `task verificar:redis` 100/100, `task verificar` 96 + 4 pulados. **Outra máquina: recriar o Redis
    (`task showcase:subir`) para valer a senha nova.**
 5. ❌ **Iteração 8:** revisor e challenger aprovaram; **auditor vetou V1–V4** (`GATE_STATUS.md`).
-6. ⬜ **Fatia K5** (próximo passo; cota semanal esgotada em 2026-09-23, retomar quando renovar). Cada item com teste que
+6. ⬜ **Fatia K5** (próximo passo; parado em 2026-09-23 pela cota semanal, retomado em 2026-09-28). Antes de rodar testes nesta
+   máquina: `task showcase:descer` e `task showcase:subir` (Redis com a senha da K4-4). Cada item com teste que
    reprova com a correção revertida, e os **dois modos** rodados antes do commit (`AMBIENTE.md`):
    - **K5-1 (V1):** ambiente de zona e de domínio por **lista de inclusão** (só o que cada um precisa) em `base/scripts/ambiente.mjs`,
      valendo para `start`, `build`, `registrar` e apps avulsas; o mesmo em `base/showcase/subir.mjs`. Teste: com
@@ -87,16 +91,16 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | Fase | Item | Estado | Atividade | Depende de / bloqueio |
 |---|---|---|---|---|
 | **A. Fechar o aberto** | A1 gate do shell | ✅ aprovado na iteração 4 | #3, #18 | — |
-| **B. Base consistente** | B1 migrar as 4 apps para o kit | ✅ aprovado no gate (iteração 5) | #20 | — |
+| **B. Base consistente** | B1 migrar as 4 apps para o kit | ⏳ implementado; gate B1+D1+G3+K em correção (K5, iteração 9) | #20 | K5 |
 | | B2 exportar spans (SDK OpenTelemetry) | ⬜ | #18 | — (instalação aprovada) |
-| | B3 `/{zona}/api/health` sem domínio; sonda do shell o usa | ✅ implementado e testado (K2); gate aprovado | #3 | — |
+| | B3 `/{zona}/api/health` sem domínio; sonda do shell o usa | ⏳ implementado e testado (K2); gate B1+D1+G3+K em correção | #3 | K5 |
 | | B5 parâmetros em configuração (B5a shell, B5b núcleo) | ✅; os de sessão entram com o D2 | #20 | — |
-| | B4/B6 verificações estáticas de segurança | ✅ aprovadas no gate (iteração 5, 38 testes) | #20 | — |
+| | B4/B6 verificações estáticas de segurança | ⏳ 40 testes; vetos V2–V4 da iteração 8 na K5 | #20 | K5 |
 | **C. Funcionalidades** | C1 fragmentos entre zonas | ⬜ | #10 | B1 |
 | | C2 SSE no shell (`/api/stream` + `SharedWorker`); fechar D7 (`proxyTimeout`) | ⬜ | #11 | B1; decisão B ok |
 | | C3 mapa de zonas vindo dos manifestos | ⬜ | #14 | B1 |
-| **D. Sessão e identidade reais** | D1 sessão no Redis (shell grava, zonas leem com ACL só de leitura) | ✅ aprovado no gate (iteração 5) | #9 | — |
-| | D2 OIDC + PKCE e renovação proativa com lock (**ADR-0013 aceito**; pessoa por `sub`) | ⏳ pronto para iniciar (gate B1+D1 aprovado, medição 1 concluída) | #9 | — |
+| **D. Sessão e identidade reais** | D1 sessão no Redis (shell grava com senha, zonas leem com ACL só de leitura) | ⏳ implementado; veto V1 da iteração 8 (senha de escrita chega às zonas) na K5 | #9 | K5 |
+| | D2 OIDC + PKCE e renovação proativa com lock (**ADR-0013 aceito**; pessoa por `sub`) | ⬜ medição 1 concluída; começa depois do gate B1+D1+G3+K | #9 | gate B1+D1+G3+K |
 | **E. Showcase** | E1 domínios mock com dados em JSON | ✅ | #19 | — |
 | | E2 `docker-compose` com Redis e Keycloak | ✅ | #19 | — |
 | | E3 `task showcase` e `task showcase:conferir` | ✅ parcial: falta login pelo Keycloak | #19 | D2 |
@@ -104,7 +108,7 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | | E5 verificação ponta a ponta contra o showcase | ⬜ | #19 | E4 |
 | **G. Gestão de acesso v2** | G1 modelo e mock (porta 4020) | ✅ | #21 | — |
 | | G2 **ADR-0014 + adendo 1, aceito** | ✅ | #21 | — |
-| | G3 alinhar à v2 | ✅ aprovado no gate (iteração 5) | #21 | — |
+| | G3 alinhar à v2 | ⏳ implementado; gate B1+D1+G3+K em correção | #21 | K5 |
 | | G4 gate e showcase com os atores da v2 | ⬜ | #21, #19 | G3 |
 | | G5 revogação ativa por `/v2/eventos` | ⬜ **lacuna declarada e aceita** até lá | #21 | G3, D2 |
 
@@ -149,12 +153,15 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 5. **Registro de pacotes / CI (P1): no fim do plano** (humano, 2026-09-23). Até lá, `task pacotes:alinhar-hashes`.
 6. Aplicar no GitLab o que estiver "pendente" em `ATIVIDADES.md` §2 (hoje só comentários opcionais).
 
-## Ambiente ao encerrar (2026-09-23)
+## Ambiente (retomada de 2026-09-28)
 
-- **No ar:** Verdaccio (4873), Redis (6379) e Keycloak (8080) do showcase. **Livres:** portas da base 3000–3003, 3012, 4001–4004,
-  4010, 4020 (conferido depois do auditor).
-- Nenhum agente rodando. Pastas dos verificadores da iteração 4 (`.agents/*_b1_d1_4/`) commitadas; as da iteração 3 ficam enquanto
-  a K3 citar os achados delas.
-- Para retomar noutra sessão: `git fetch origin`, `git submodule update --init`, `task registry:subir`, `task showcase:subir`,
-  `task verificar:redis` (esperado 88/88). Outra máquina: publicar contratos 0.4.0 → núcleo 0.9.2 → moldura 0.5.0 no próprio
-  Verdaccio (`task pacotes:publicar`) e `task pacotes:alinhar-hashes` antes do `task instalar`.
+- Portas e containers **não conferidos** nesta retomada; ao encerrar em 2026-09-23 estavam no ar Verdaccio (4873), Redis (6379) e
+  Keycloak (8080), e livres as portas da base 3000–3003, 3012, 4001–4004, 4010, 4020.
+- Nenhum agente rodando. Pastas dos verificadores da iteração 8 (`.agents/*_b1_d1_8/`) commitadas; as das iterações 3, 4, 6 e 7
+  ficam enquanto a K5 e o D14 citarem os achados delas. As do gate do shell (fechado) e da iteração 1 ainda estão na raiz de
+  `.agents/` e podem sair com `git rm` (regra do `LEIA-PRIMEIRO.md`).
+- Para retomar noutra sessão: `git fetch origin`, `git submodule update --init`, `task registry:subir`, `task showcase:descer` e
+  `task showcase:subir`, `task verificar:redis` (esperado 100/100). Outra máquina: publicar contratos 0.4.0 → núcleo 0.9.2 →
+  moldura 0.5.0 no próprio Verdaccio (`task pacotes:publicar`) e `task pacotes:alinhar-hashes` antes do `task instalar`.
+- Nesta máquina, `.claude/settings.local.json` (fora do git) libera git de leitura e sincronização sem o classificador do auto mode,
+  que ficou fora do ar na retomada de 2026-09-28.
