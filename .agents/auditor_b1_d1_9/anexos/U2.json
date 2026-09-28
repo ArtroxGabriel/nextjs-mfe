@@ -1,0 +1,88 @@
+[
+ {
+  "id": "N38q",
+  "inv": "inv. 15",
+  "desc": "NOVA: raiz exporta fabrica assincrona de escritor: sessaoAssincrona(): Promise<StoreDeSessao>",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "env": {},
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/adaptadores/sessao-assincrona.ts",
+    "novo": true,
+    "para": "import 'server-only'\nimport type { StoreDeSessao, SessaoArmazenada } from '../portas/sessao.js'\nexport async function sessaoAssincrona(): Promise<StoreDeSessao> {\n  const m = new Map<string, SessaoArmazenada>()\n  return { async ler(id) { return m.get(id) ?? null }, async gravar(id, s) { m.set(id, s) }, async remover(id) { m.delete(id) } } as StoreDeSessao\n}\n"
+   },
+   {
+    "arquivo": "repos/erp-nucleo/src/index.ts",
+    "de": "export { acessoHttp } from './adaptadores/acesso-http.js'\n",
+    "para": "export { acessoHttp } from './adaptadores/acesso-http.js'\nexport { sessaoAssincrona } from './adaptadores/sessao-assincrona.js'\n"
+   }
+  ]
+ },
+ {
+  "id": "N38q+FK4",
+  "inv": "inv. 15",
+  "desc": "NOVA: N38q com temEscrita sem o ramo Promise (FK4)",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "env": {},
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/adaptadores/sessao-assincrona.ts",
+    "novo": true,
+    "para": "import 'server-only'\nimport type { StoreDeSessao, SessaoArmazenada } from '../portas/sessao.js'\nexport async function sessaoAssincrona(): Promise<StoreDeSessao> {\n  const m = new Map<string, SessaoArmazenada>()\n  return { async ler(id) { return m.get(id) ?? null }, async gravar(id, s) { m.set(id, s) }, async remover(id) { m.delete(id) } } as StoreDeSessao\n}\n"
+   },
+   {
+    "arquivo": "repos/erp-nucleo/src/index.ts",
+    "de": "export { acessoHttp } from './adaptadores/acesso-http.js'\n",
+    "para": "export { acessoHttp } from './adaptadores/acesso-http.js'\nexport { sessaoAssincrona } from './adaptadores/sessao-assincrona.js'\n"
+   },
+   {
+    "arquivo": "repos/erp-nucleo/scripts/fronteira.mjs",
+    "de": "  if (aguardado && aguardado !== tipo && temEscrita",
+    "para": "  if (false && aguardado && aguardado !== tipo && temEscrita"
+   }
+  ]
+ },
+ {
+  "id": "N38r",
+  "inv": "inv. 15",
+  "desc": "NOVA: raiz exporta sessaoFlexivel(escrita): LeitorDeSessao | StoreDeSessao (uniao)",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "env": {},
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/adaptadores/sessao-uniao.ts",
+    "novo": true,
+    "para": "import 'server-only'\nimport type { StoreDeSessao, LeitorDeSessao, SessaoArmazenada } from '../portas/sessao.js'\nexport function sessaoFlexivel(escrita: boolean): LeitorDeSessao | StoreDeSessao {\n  const m = new Map<string, SessaoArmazenada>()\n  const l: LeitorDeSessao = { async ler(id) { return m.get(id) ?? null } } as LeitorDeSessao\n  return escrita ? ({ ...l, async gravar(id: string, s: SessaoArmazenada) { m.set(id, s) }, async remover(id: string) { m.delete(id) } } as StoreDeSessao) : l\n}\n"
+   },
+   {
+    "arquivo": "repos/erp-nucleo/src/index.ts",
+    "de": "export { acessoHttp } from './adaptadores/acesso-http.js'\n",
+    "para": "export { acessoHttp } from './adaptadores/acesso-http.js'\nexport { sessaoFlexivel } from './adaptadores/sessao-uniao.js'\n"
+   }
+  ]
+ },
+ {
+  "id": "N38r+FK3",
+  "inv": "inv. 15",
+  "desc": "NOVA: N38r com temEscrita sem o ramo de uniao (FK3)",
+  "cmd": "cd repos/erp-nucleo && pnpm test 2>&1",
+  "env": {},
+  "edicoes": [
+   {
+    "arquivo": "repos/erp-nucleo/src/adaptadores/sessao-uniao.ts",
+    "novo": true,
+    "para": "import 'server-only'\nimport type { StoreDeSessao, LeitorDeSessao, SessaoArmazenada } from '../portas/sessao.js'\nexport function sessaoFlexivel(escrita: boolean): LeitorDeSessao | StoreDeSessao {\n  const m = new Map<string, SessaoArmazenada>()\n  const l: LeitorDeSessao = { async ler(id) { return m.get(id) ?? null } } as LeitorDeSessao\n  return escrita ? ({ ...l, async gravar(id: string, s: SessaoArmazenada) { m.set(id, s) }, async remover(id: string) { m.delete(id) } } as StoreDeSessao) : l\n}\n"
+   },
+   {
+    "arquivo": "repos/erp-nucleo/src/index.ts",
+    "de": "export { acessoHttp } from './adaptadores/acesso-http.js'\n",
+    "para": "export { acessoHttp } from './adaptadores/acesso-http.js'\nexport { sessaoFlexivel } from './adaptadores/sessao-uniao.js'\n"
+   },
+   {
+    "arquivo": "repos/erp-nucleo/scripts/fronteira.mjs",
+    "de": "  if (tipo.isUnionOrIntersection() && tipo.types.some",
+    "para": "  if (false && tipo.isUnionOrIntersection() && tipo.types.some"
+   }
+  ]
+ }
+]

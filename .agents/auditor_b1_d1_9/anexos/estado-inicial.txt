@@ -1,0 +1,19 @@
+# estado inicial 2026-09-28T16:00:09-03:00
+781256c9b0e0e7343c0bcee3310ba9a5ec5601c4
+ m repos/erp-dominio-stub
+ m repos/erp-moldura
+?? .agents/auditor_b1_d1_9/
+ b56320e60fb451364edbd7dd4b353d9244f18726 repos/erp-contratos (heads/master)
+ 81981455894e6d4bebf3dd3f046a9a5e0ec313bb repos/erp-dominio-stub (heads/master)
+ a875c212c134175c22693682430d0220d14e0531 repos/erp-moldura (heads/master)
+ 08642eda5b0faff45ada0bf904726d45c71b931c repos/erp-nucleo (heads/master)
+ c8a3683d85ed10321d8f4788eb73bb49d375762d repos/erp-shell (heads/master)
+ 5fbf4ebbc34cf351eae652a4a3b8bbee90b6d867 repos/erp-zona-1 (heads/master)
+ 07ec796c7b6240fa8ad675047a296a1b8805bafb repos/erp-zona-2 (heads/master)
+ a1cc854d454aea3563e889b1ef0e8660c180f883 repos/erp-zona-acesso (heads/master)
+erp-shell -> /home/wilson-castro/Documents/projects/mira/nextjs-mfe/repos/erp-shell/node_modules/.pnpm/@erp+nucleo@0.9.2_next@16.3.4_@types+node@24.13.6_react-dom@19.2.8_react@19.2.8__react@19.2.8__server-only@0.0.1/node_modules/@erp/nucleo "version":"0.9.2" 4f81c920a6c47a6d
+erp-zona-1 -> /home/wilson-castro/Documents/projects/mira/nextjs-mfe/repos/erp-zona-1/node_modules/.pnpm/@erp+nucleo@0.9.2_next@16.3.4_@types+node@24.13.6_react-dom@19.2.8_react@19.2.8__react@19.2.8__server-only@0.0.1/node_modules/@erp/nucleo "version":"0.9.2" 4f81c920a6c47a6d
+erp-zona-2 -> /home/wilson-castro/Documents/projects/mira/nextjs-mfe/repos/erp-zona-2/node_modules/.pnpm/@erp+nucleo@0.9.2_next@16.3.4_@types+node@24.13.6_react-dom@19.2.8_react@19.2.8__react@19.2.8__server-only@0.0.1/node_modules/@erp/nucleo "version":"0.9.2" 4f81c920a6c47a6d
+erp-zona-acesso -> /home/wilson-castro/Documents/projects/mira/nextjs-mfe/repos/erp-zona-acesso/node_modules/.pnpm/@erp+nucleo@0.9.2_next@16.3.4_@types+node@24.13.6_react-dom@19.2.8_react@19.2.8__react@19.2.8__server-only@0.0.1/node_modules/@erp/nucleo "version":"0.9.2" 4f81c920a6c47a6d
+tarball 0.9.2 do Verdaccio (find . em dist): 9ff2f87f441075e6; dist das 4 apps: 9ff2f87f441075e6 (diff -r vazio)
+9f8961a4df0714ac9f2f69df27f2f0d6f40bbc4f96afe5898ac1390269b8f071  -
