@@ -1,0 +1,15 @@
+diff --git a/lib/redis.ts b/lib/redis.ts
+index 74e803e..741d50f 100644
+--- a/lib/redis.ts
++++ b/lib/redis.ts
+@@ -31,5 +31,10 @@ function urlDaZona(): string | undefined {
+   return url
+ }
+ 
++// MUTACAO TEMPORARIA (challenger_b1_d1_9, item 4): variavel nova lida por desestruturacao, fora da
++// lista de inclusao — sonda se o teste de completude (V1, ambiente.test.mjs) pega essa forma.
++const { ERP_ZONA_VARIAVEL_NOVA_TESTE_CH9 } = process.env
++void ERP_ZONA_VARIAVEL_NOVA_TESTE_CH9
++
+ const url = urlDaZona()
+ export const clienteRedis: ClienteRedisDeLeitura | null = url ? clientePreguicoso(url) : null
