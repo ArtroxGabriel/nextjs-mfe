@@ -165,10 +165,10 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 - Conferido ao fim da K5 (2026-09-28): no ar Verdaccio (4873), Redis (6379, com senha) e Keycloak (8080); livres as portas da base
   3000–3003, 3012, 4001–4004, 4010, 4020.
 - Rodando (2026-09-28): `auditor_b1_d1_9` (Opus, dono das portas). Se cair: conferir fontes, `dist` do núcleo contra o tarball 0.9.2, dados do stub, portas; retomar o MESMO agente. Pastas dos verificadores da iteração 8 (`.agents/*_b1_d1_8/`) commitadas; as das iterações 3, 4, 6 e 7
-  ficam enquanto a K5 e o D14 citarem os achados delas. As do gate do shell (fechado) e da iteração 1 ainda estão na raiz de
-  `.agents/` e podem sair com `git rm` (regra do `LEIA-PRIMEIRO.md`).
+  ficam enquanto a K5 e o D14 citarem os achados delas. As da iteração 1 saíram com `git rm` em 2026-09-28 (última versão
+  no commit `7b10eae`); as do gate do shell já estavam fora do git (tag `historico-2026-09-22`), e no disco restam só logs ignorados.
 - Para retomar noutra sessão: `git fetch origin`, `git submodule update --init`, `task registry:subir`, `task showcase:descer` e
-  `task showcase:subir`, `task verificar:redis` (esperado 100/100). Outra máquina: publicar contratos 0.4.0 → núcleo 0.9.2 →
+  `task showcase:subir`, `task verificar:redis` (esperado 109/109). Outra máquina: publicar contratos 0.4.0 → núcleo 0.9.2 →
   moldura 0.5.0 no próprio Verdaccio (`task pacotes:publicar`) e `task pacotes:alinhar-hashes` antes do `task instalar`.
 - Nesta máquina, `.claude/settings.local.json` (fora do git) libera git de leitura e sincronização sem o classificador do auto mode,
   que ficou fora do ar na retomada de 2026-09-28.

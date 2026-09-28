@@ -84,6 +84,8 @@ Lacunas do auditor_shell_4 viram endurecimento imediato da verificação (fora d
 
 ## Gate — Kit de aplicação (B1) + Sessão no Redis (D1), iteração 1 (núcleo 0.8.2 / moldura 0.4.0)
 
+> Pastas dos verificadores removidas em 2026-09-28; a última versão delas está no commit `7b10eae` (`git show 7b10eae:.agents/<nome>/handoff.md`).
+
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
 | reviewer_b1_d1_1 | revisor-mfe (gemini) | APPROVE | .agents/reviewer_b1_d1_1/handoff.md | migração para o kit concluída nas 4 apps; cópias locais eliminadas; leitor/escritor estritamente segregados (invariante 15); hash SHA256 nas chaves Redis; conformidade estrita com os 17 invariantes |
