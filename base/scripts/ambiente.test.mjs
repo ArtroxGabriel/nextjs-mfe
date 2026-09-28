@@ -96,6 +96,14 @@ test('V1: todo processo nasce por um unico ponto, com o ambiente do papel (build
   assert.doesNotMatch(fonte, /child_process['"]\s*\)?\s*\.\s*(spawn|exec)|require\(|import\(\s*['"]node:child_process/, 'child_process por outro caminho')
 })
 
+/** Variáveis de ambiente que um fonte lê: `process.env.X`, `process.env['X']` e `const { X, Y: y } = process.env`. */
+function variaveisLidas(texto) {
+  const diretas = [...texto.matchAll(/process\.env(?:\.([A-Z_0-9]+)|\[['"]([A-Z_0-9]+)['"]\])/g)].map((m) => m[1] ?? m[2])
+  const desestruturadas = [...texto.matchAll(/\{([^{}]*)\}\s*=\s*process\.env\b/g)]
+    .flatMap((m) => m[1].split(',').map((p) => p.trim().match(/^([A-Z_0-9]+)\b/)?.[1]).filter(Boolean))
+  return [...diretas, ...desestruturadas]
+}
+
 test('V1: a lista de inclusao cobre toda variavel que zona e dominio leem (variavel nova nao some calada)', async () => {
   const { AMBIENTE_PERMITIDO, RAIZ } = await import('./ambiente.mjs')
   const { readdirSync, statSync } = await import('node:fs')
@@ -105,8 +113,10 @@ test('V1: a lista de inclusao cobre toda variavel que zona e dominio leem (varia
       const p = join(d, n)
       return statSync(p).isDirectory() ? andar(p) : /\.(ts|tsx|mjs|js)$/.test(n) ? [p] : []
     })
-    return new Set(andar(dir).flatMap((f) => [...readFileSync(f, 'utf8').matchAll(/process\.env(?:\.([A-Z_0-9]+)|\[['"]([A-Z_0-9]+)['"]\])/g)].map((m) => m[1] ?? m[2])))
+    return new Set(andar(dir).flatMap((f) => variaveisLidas(readFileSync(f, 'utf8'))))
   }
+  // dentes: as três formas de ler (challenger_b1_d1_9: desestruturação passava sem ser vista)
+  assert.deepEqual([...variaveisLidas("process.env.A; process.env['B']; const { C, D: d, E = '1' } = process.env")].sort(), ['A', 'B', 'C', 'D', 'E'])
   const zona = new Set([...lidas(join(RAIZ, 'erp-nucleo', 'src')), ...['erp-zona-1', 'erp-zona-2', 'erp-zona-acesso'].flatMap((z) => [...lidas(join(RAIZ, z))])])
   // REDIS_URL a zona só lê para se recusar a subir com ela (lib/redis.ts); nunca a recebe
   zona.delete('REDIS_URL')

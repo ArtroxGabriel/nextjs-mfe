@@ -21,16 +21,20 @@ async function esperar(nome, pronto, ms = 120_000) {
   throw new Error(`${nome} nao respondeu em ${ms / 1000} s`)
 }
 
+// senha do usuário de escrita (K4-4): o Redis recusa até o `ping` sem ela (challenger_b1_d1_9)
+const SENHA_SHELL = process.env.ERP_REDIS_SENHA_SHELL ?? 'dev-shell-escrita'
+
 console.log('1/3 infraestrutura (Redis, Keycloak)')
 execFileSync('docker', [...COMPOSE, 'up', '-d'], { stdio: 'ignore' })
+// `REDISCLI_AUTH` no lugar de `-a`: a senha não aparece na linha de comando do redis-cli
 await esperar('Redis', async () =>
-  execFileSync('docker', [...COMPOSE, 'exec', '-T', 'redis', 'redis-cli', 'ping']).toString().trim() === 'PONG')
+  execFileSync('docker', [...COMPOSE, 'exec', '-T', '-e', `REDISCLI_AUTH=${SENHA_SHELL}`, 'redis', 'redis-cli', 'ping']).toString().trim() === 'PONG')
 await esperar('Keycloak', async () => (await fetch(KEYCLOAK, { signal: AbortSignal.timeout(2000) })).ok)
 
 console.log('2/3 domínios falsos com estado gravado; 3/3 shell e zonas (pode levar alguns minutos no primeiro build)')
 process.env.DADOS_DIR ??= join(RAIZ, 'erp-dominio-stub', 'dados', 'estado')
 // sessão no Redis do compose (D1): shell grava, zonas leem; ver docs/CONFIGURACAO.md
-process.env.REDIS_URL ??= `redis://default:${process.env.ERP_REDIS_SENHA_SHELL ?? 'dev-shell-escrita'}@127.0.0.1:6379`
+process.env.REDIS_URL ??= `redis://default:${SENHA_SHELL}@127.0.0.1:6379`
 // zonas só leem a sessão: usuário ACL com GET e nada mais (invariante 15)
 process.env.REDIS_URL_ZONA ??= `redis://zona:${process.env.ERP_REDIS_SENHA_ZONA ?? 'dev-zona-leitura'}@127.0.0.1:6379`
 const { derrubar } = await subir({
