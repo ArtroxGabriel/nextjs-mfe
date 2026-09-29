@@ -26,9 +26,11 @@ const SENHA_SHELL = process.env.ERP_REDIS_SENHA_SHELL ?? 'dev-shell-escrita'
 
 console.log('1/3 infraestrutura (Redis, Keycloak)')
 execFileSync('docker', [...COMPOSE, 'up', '-d'], { stdio: 'ignore' })
-// `REDISCLI_AUTH` no lugar de `-a`: a senha não aparece na linha de comando do redis-cli
+// `REDISCLI_AUTH` no ambiente do exec: a senha não aparece na linha de comando no host
 await esperar('Redis', async () =>
-  execFileSync('docker', [...COMPOSE, 'exec', '-T', '-e', `REDISCLI_AUTH=${SENHA_SHELL}`, 'redis', 'redis-cli', 'ping']).toString().trim() === 'PONG')
+  execFileSync('docker', [...COMPOSE, 'exec', '-T', '-e', 'REDISCLI_AUTH', 'redis', 'redis-cli', 'ping'], {
+    env: { ...process.env, REDISCLI_AUTH: SENHA_SHELL },
+  }).toString().trim() === 'PONG')
 await esperar('Keycloak', async () => (await fetch(KEYCLOAK, { signal: AbortSignal.timeout(2000) })).ok)
 
 console.log('2/3 domínios falsos com estado gravado; 3/3 shell e zonas (pode levar alguns minutos no primeiro build)')
@@ -42,6 +44,16 @@ const { derrubar } = await subir({
   log: process.argv.includes('--log'),
 })
 
+function mascararUrl(url) {
+  try {
+    const u = new URL(url)
+    if (u.password) u.password = '***'
+    return u.toString()
+  } catch {
+    return url
+  }
+}
+
 console.log(`
 showcase no ar: ${SHELL}
 
@@ -50,11 +62,12 @@ showcase no ar: ${SHELL}
     bruno  analista     — zona 1 com relatórios e custos (grupo FINANCEIRO)
     carla  admin acesso — tela de gestão de acesso (/acesso)
     davi   sem perfil   — só o que não é restrito
+    eva    leitora      — zona 2 (tarefas, apenas leitura)
 
   conferir tudo de uma vez:  task showcase:conferir      (em outro terminal)
   roteiro no navegador:      docs/ROTEIRO-DE-VERIFICACAO.md
   dados dos domínios:        ${process.env.DADOS_DIR}  (task showcase:dados:resetar volta à semente)
-  sessão:                    Redis (${process.env.REDIS_URL}); cookie __Host-session só com o id opaco
+  sessão:                    Redis (${mascararUrl(process.env.REDIS_URL)}); cookie __Host-session só com o id opaco
   Keycloak (admin/admin):    http://localhost:8080  — conferido por task showcase:checar;
                              as apps ainda usam o login de desenvolvimento (D2, ADR-0013)
 

@@ -462,11 +462,31 @@ const CAMPOS_COMPLEXOS = new Set(['lista', 'recursos', 'items', 'itens', 'dados'
       if (ts.isShorthandPropertyAssignment(no) && ['assetPrefix', 'basePath'].includes(no.name.text)) {
         achar(no, `next.config com '${no.name.text}' abreviado (nao e texto literal): vai ao HTML do navegador`, 'P2-next-public')
       }
-      if (ts.isBinaryExpression(no) && no.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      const OPERADORES_DE_ATRIBUICAO = new Set([
+        ts.SyntaxKind.EqualsToken,
+        ts.SyntaxKind.QuestionQuestionEqualsToken,
+        ts.SyntaxKind.BarBarEqualsToken,
+        ts.SyntaxKind.PlusEqualsToken,
+        ts.SyntaxKind.AmpersandAmpersandEqualsToken,
+      ])
+      if (ts.isBinaryExpression(no) && OPERADORES_DE_ATRIBUICAO.has(no.operatorToken.kind)
         && (ts.isPropertyAccessExpression(no.left) || ts.isElementAccessExpression(no.left))) {
         const chave = ts.isPropertyAccessExpression(no.left) ? no.left.name.text : texto(no.left.argumentExpression)
-        if (['assetPrefix', 'basePath'].includes(chave) && !ts.isStringLiteral(no.right) && !ts.isNoSubstitutionTemplateLiteral(no.right)) {
-          achar(no, `next.config atribui '${chave}' sem texto literal: vai ao HTML do navegador`, 'P2-next-public')
+        if (['assetPrefix', 'basePath'].includes(chave)) {
+          if (no.operatorToken.kind !== ts.SyntaxKind.EqualsToken || (!ts.isStringLiteral(no.right) && !ts.isNoSubstitutionTemplateLiteral(no.right))) {
+            achar(no, `next.config atribui '${chave}' sem texto literal: vai ao HTML do navegador`, 'P2-next-public')
+          }
+        }
+      }
+      if (ts.isCallExpression(no) && (ts.isPropertyAccessExpression(no.expression) || ts.isElementAccessExpression(no.expression))) {
+        const expr = no.expression
+        const obj = ts.isPropertyAccessExpression(expr) ? expr.expression.getText(sf) : expr.expression.getText(sf)
+        const metodo = ts.isPropertyAccessExpression(expr) ? expr.name.text : texto(expr.argumentExpression)
+        if (['Object', 'Reflect'].includes(obj) && metodo === 'defineProperty' && no.arguments.length >= 2) {
+          const prop = texto(no.arguments[1])
+          if (['assetPrefix', 'basePath'].includes(prop)) {
+            achar(no, `next.config define '${prop}' via defineProperty: vai ao HTML do navegador`, 'P2-next-public')
+          }
         }
       }
       if (ts.isIdentifier(no) && no.text === 'DefinePlugin') {

@@ -82,6 +82,7 @@ function declaracoesDaLista(lista, mapa) {
 }
 function nomesDasInstrucoes(instrucoes, mapa) {
   for (const s of instrucoes) {
+    if (s.modifiers?.some((m) => m.kind === ts.SyntaxKind.DeclareKeyword)) continue
     if (ts.isVariableStatement(s)) declaracoesDaLista(s.declarationList, mapa)
     else if ((ts.isFunctionDeclaration(s) || ts.isClassDeclaration(s) || ts.isEnumDeclaration(s)) && s.name) mapa.set(s.name.text, s)
     else if (ts.isImportEqualsDeclaration(s)) mapa.set(s.name.text, s)

@@ -110,6 +110,21 @@
           "temporary": false
         }
       ]
+    },
+    {
+      "username": "eva",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Eva",
+      "lastName": "Apenas Leitora",
+      "email": "eva@erp.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "eva",
+          "temporary": false
+        }
+      ]
     }
   ]
 }

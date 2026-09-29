@@ -193,3 +193,14 @@ test('global por chave vinda de parametro ou de constante sombreada e chave calc
   // dentes: constante legível que não é rede passa
   passa("const k = 'toString'\nexport const f = () => globalThis[k]()")
 })
+
+// --- auditor_b1_d1_9: D15 (XR20k2-k5, XR20l/m, LE/SK8) ---
+test('D15 (XR20k2-k5, XR20l/m): declare const, function ou class nao mascara a global de rede', () => {
+  pega("declare const fetch: any\nexport async function f() { await fetch('http://alvo') }")
+  pega("declare function fetch(url: string): any\nexport async function f() { await fetch('http://alvo') }")
+  pega("declare class WebSocket {}\nexport function f() { new WebSocket('ws://alvo') }")
+})
+
+test('LE (auditor_b1_d1_9, SK8): let constante nao e aceito como chave segura na global (dentes contra aceitar let)', () => {
+  pega("let k = 'toString'\nexport const f = () => globalThis[k]()")
+})

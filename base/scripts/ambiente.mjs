@@ -34,11 +34,15 @@ function maisRecente(caminho) {
   return Math.max(0, ...readdirSync(caminho).map((n) => maisRecente(join(caminho, n))))
 }
 
-/** Constrói só se não há build ou se alguma entrada do build é mais nova que ele. */
-export function precisaConstruir(dirDaApp) {
+const SCRIPT_AMBIENTE = fileURLToPath(import.meta.url)
+
+/** Constrói só se não há build ou se alguma entrada do build (ou ambiente.mjs) é mais nova que ele. */
+export function precisaConstruir(dirDaApp, { scriptAmbiente } = {}) {
   const id = join(dirDaApp, '.next', 'BUILD_ID')
   if (!existsSync(id)) return true
   const build = statSync(id).mtimeMs
+  const candidato = scriptAmbiente ?? (dirDaApp.startsWith(RAIZ) ? SCRIPT_AMBIENTE : null)
+  if (candidato && existsSync(candidato) && statSync(candidato).mtimeMs > build) return true
   return ENTRADAS_DO_BUILD.some((e) => maisRecente(join(dirDaApp, e)) > build)
 }
 

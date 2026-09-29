@@ -39,6 +39,16 @@ test('AM1/AM2: cada entrada do build, mudada sozinha, pede reconstrucao', () => 
   }
 })
 
+test('LA (auditor_b1_d1_9, D15): mudanca em base/scripts/ambiente.mjs pede reconstrucao de app da base', () => {
+  const d = app({ build: 200, fonte: 100 })
+  const mockAmbiente = join(d, 'ambiente-fake.mjs')
+  writeFileSync(mockAmbiente, '// ambiente')
+  utimesSync(mockAmbiente, 100, 100)
+  assert.equal(precisaConstruir(d, { scriptAmbiente: mockAmbiente }), false, 'ambiente antigo nao deveria pedir build')
+  utimesSync(mockAmbiente, 300, 300)
+  assert.equal(precisaConstruir(d, { scriptAmbiente: mockAmbiente }), true, 'ambiente mais novo que o build deve pedir reconstrucao')
+})
+
 test('AM3: subir recusa porta ocupada antes de subir qualquer coisa', { timeout: 300_000 }, async () => {
   const { createServer } = await import('node:http')
   const { subir, APPS } = await import('./ambiente.mjs')

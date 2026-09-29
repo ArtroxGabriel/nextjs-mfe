@@ -276,6 +276,15 @@ test('L3 (auditor_b1_d1_8, XN09a/b): assetPrefix e basePath abreviados ou atribu
   passa("const config = { assetPrefix: '' }\nconfig.assetPrefix = '/zona1-static'\nexport default config", 'next.config.ts')
 })
 
+test('LF (auditor_b1_d1_9, XN09h/i/j/n): assetPrefix por ??=, ||=, += ou defineProperty no next.config reprovam', () => {
+  pega("const config = { assetPrefix: '' }\nconfig.assetPrefix ??= process.env.DOMINIO_A_URL\nexport default config", 'next.config.ts')
+  pega("const config = { assetPrefix: '' }\nconfig.assetPrefix ||= process.env.DOMINIO_A_URL\nexport default config", 'next.config.ts')
+  pega("const config = { assetPrefix: '' }\nconfig.assetPrefix += process.env.DOMINIO_A_URL\nexport default config", 'next.config.ts')
+  pega("const config = {}\nconfig['assetPrefix'] += '/extra'\nexport default config", 'next.config.ts')
+  pega("const config = {}\nObject.defineProperty(config, 'assetPrefix', { value: process.env.DOMINIO_A_URL })\nexport default config", 'next.config.ts')
+  pega("const config = {}\nReflect.defineProperty(config, 'basePath', { value: '/cdn' })\nexport default config", 'next.config.ts')
+})
+
 
 test('V3 (K4, auditor_b1_d1_4): com o programa da app, o tipo decide o que vai a ilha, nao o nome do campo', () => {
   const app = mkdtempSync(join(tmpdir(), 'app-'))

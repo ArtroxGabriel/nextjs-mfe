@@ -329,6 +329,18 @@ test('invariante 16: toda Server Action de toda app recusa quem nao tem o modulo
   assert.match((await pedir('/zona2', { cookie: ana })).html, /Conferir inventário(<!-- -->)? — (<!-- -->)?pendente/)
 })
 
+test('D13 (L2/P07): ator com apenas tarefas.ver (eva) e recusado em concluirTarefa antes do dominio', async () => {
+  const eva = (await entrar('eva')).cookie
+  const pagina = await pedir('/zona2', { cookie: eva })
+  assert.equal(pagina.status, 200, 'eva deveria conseguir ver /zona2')
+  assert.ok(!pagina.html.includes('Concluir'), 'botao concluir nao deveria aparecer para eva (invariante 8)')
+  const r = await acaoPeloCliente({ ...CONCLUIR, campos: { id: 't-2', versao: '1' }, cookie: eva })
+  assert.equal(r.status, 200)
+  assert.match(r.corpo, /"destino":"\/"/, 'eva sem tarefas.concluir deve ser recusada e redirecionada para /')
+  const ana = (await entrar('ana')).cookie
+  assert.match((await pedir('/zona2', { cookie: ana })).html, /Conferir inventário(<!-- -->)? — (<!-- -->)?pendente/)
+})
+
 test('invariante 12: sessao expirada numa action vira ida ao login, sem erro generico', async () => {
   const { cookie } = await entrar('ana')
   const campos = formularios((await pedir('/zona2', { cookie })).html).find((c) => c.id === 't-2')
