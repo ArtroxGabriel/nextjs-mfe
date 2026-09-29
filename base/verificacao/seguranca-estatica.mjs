@@ -480,7 +480,7 @@ const CAMPOS_COMPLEXOS = new Set(['lista', 'recursos', 'items', 'itens', 'dados'
       }
       if (ts.isCallExpression(no) && (ts.isPropertyAccessExpression(no.expression) || ts.isElementAccessExpression(no.expression))) {
         const expr = no.expression
-        const obj = ts.isPropertyAccessExpression(expr) ? expr.expression.getText(sf) : expr.expression.getText(sf)
+        const obj = expr.expression.getText(sf)
         const metodo = ts.isPropertyAccessExpression(expr) ? expr.name.text : texto(expr.argumentExpression)
         if (['Object', 'Reflect'].includes(obj) && metodo === 'defineProperty' && no.arguments.length >= 2) {
           const prop = texto(no.arguments[1])

@@ -27,7 +27,7 @@ before(async () => {
 }, { timeout: 600_000 })
 after(() => { ambiente?.derrubar(); coletor?.close() })
 
-const TOKEN = /dev\.(ana|bruno|carla|davi)\.[0-9a-f-]{36}/
+const TOKEN = /dev\.(ana|bruno|carla|davi|eva)\.[0-9a-f-]{36}/
 
 // Páginas de uma app, com a rota que o Next serve para cada uma. `page.(tsx|ts|jsx|js)`: o auditor_shell_4
 // mostrou que só `page.tsx` deixava passar uma página em `.ts` sem exigirModulo.
