@@ -21,16 +21,6 @@
 | `sanitizarSupportId` valida formato, não semântica | aceito | F4 (padronização de erro) |
 | teste de namespace passa com `caminhos` vazio | a conferir | F6 (camada de testes) |
 
-## D13 — Ator só com `tarefas.ver` (auditor_b1_d1_3, L2/P07)
-
-- **Evidência:** a mutação P07 (`concluirTarefa` exigindo `tarefas.ver` em vez de `tarefas.concluir`) sobrevive porque
-  nenhum ator da base tem a leitura sem a conclusão (`mutacoes.txt`).
-- **Por que não foi corrigido na K2:** um ator novo entra em `identidadeDev` do núcleo (versão nova, lockstep nas 4 apps)
-  e na semente da v2; o D2 já sobe o núcleo para 0.10.0 e traz os atores do Keycloak. A outra metade do L2 (P16, `If-Match`
-  fixo) foi fechada na K2: a tarefa t-1 nasce na versão 3.
-- **Fecha em:** D2 — ator "eva" com perfil `zona2.leitor` no realm e na semente; teste que a action dela é negada antes do
-  domínio (`"destino":"/"`).
-
 ## D14 — Limites declarados dos analisadores estáticos (Decisão A2, 2026-09-23)
 
 - **O que é:** os analisadores de `base/verificacao/` (`seguranca-estatica.mjs`, `saida-de-rede.mjs`) e a fronteira do núcleo
@@ -52,20 +42,3 @@
   (`base/scripts/ambiente.mjs`); a senha de escrita não chega a eles, conferido em `/proc/<pid>/environ` por
   `base/verificacao/base.test.mjs` com `ERP_REDIS_SENHA_SHELL` sempre definida.
 - **Fecha em:** bloqueio de saída de rede das zonas no deploy (P1, fim do plano). Até lá, risco aceito.
-
-## D15 — Lacunas sem veto do gate B1+D1+G3+K, iteração 9 (auditor_b1_d1_9)
-
-- **O que é:** o gate passou (Decisão A2); estas mutações sobrevivem por falta de dente, não por defeito do código atual.
-  Handoff e mutações no commit `f010760` (`.agents/auditor_b1_d1_9/`). Cada item: correção e teste sugeridos lá.
-  - **LA:** `precisaConstruir` não olha `base/scripts/ambiente.mjs`; mudar só o ambiente do build (AK6) passa com `CONSTRUIR=1`.
-  - **LB:** o teste de ambiente confia em `ambientesEntregues` e nos `extras` (AK7, AE1).
-  - **LC:** ramos de união e de `Promise` de `temEscrita` (`erp-nucleo/scripts/fronteira.mjs`) sem teste (N38q, N38r).
-  - **LD:** a fronteira não vê escrita por cliente Redis convertido ou por `fs` sem tipo com `gravar` (NR1, NR2; suspeita do revisor).
-    Defesa hoje: ACL do Redis (a zona só tem `GET`) e o núcleo não depende de `redis`.
-  - **LE:** `valorConstante` aceitar `let` (SK8) passa: o caso `let` do teste é pego pelo literal `'fetch'`.
-  - **LF:** `assetPrefix` por `??=`, `||=`, `+=` ou `defineProperty` passa (`seguranca-estatica.mjs`).
-  - **LG:** nenhum teste roda o showcase; o banner de `base/showcase/subir.mjs` imprime a senha de escrita e ela aparece na linha de
-    comando do `docker` no host.
-  - **Contorno barato de fechar:** `declare const/function/class fetch|WebSocket` esconde a global (XR20k2–k5, XR20l/m): ignorar
-    declaração com `declare` em `nomesLigados` (`saida-de-rede.mjs`).
-- **Fecha em:** fatia K6, junto do D2 (o próximo gate cobre as duas). Nenhuma bloqueia o D2.

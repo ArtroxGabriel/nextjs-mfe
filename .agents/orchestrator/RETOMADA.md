@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-28 (gate B1+D1+G3+K aprovado na iteração 9; próximo passo é o D2 com a K6)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-29 (K6 concluída; plano D2+K6 aprovado; próximo passo é Task 2 do D2: porta de identidade e lock)**.
 
 ## Objetivo final
 
@@ -24,48 +24,30 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 - **Decisão B:** `B1 (10 s)` — `proxyTimeout` em 10s e propostas 1 a 3 aceitas.
 - **Decisão C:** `agora` — Medição 1 de concorrência de refresh token no Keycloak executada imediatamente.
 
-## Estado (conferido em 2026-09-23; sincronização reconferida em 2026-09-28)
+## Estado (conferido em 2026-09-29)
 
 | O quê | Estado | Evidência |
 |---|---|---|
-| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **109/109** com Redis e **105 + 4 pulados** com arquivo (K5, 2026-09-28) | `task verificar:redis`, `task verificar:construir` |
-| Unidades | contratos 20, núcleo 142, moldura 26, stub 43, shell 43; typecheck das 4 apps; estática 48/48; scripts 18 | `task test`, `task typecheck`, `task verificar:estatica`, `task scripts:test` |
-| `@erp/nucleo` | **0.9.2** nas 4 apps (acesso v2, `exigirModulo(modulo, funcionalidade)`, `exigirPapel`) | lockstep 4 apps |
+| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **109/109** com Redis e **105 + 4 pulados** com arquivo; D13 E2E testado | `task verificar:redis`, `task verificar:construir` |
+| Unidades | contratos 20, núcleo 144 (+2 testes K6), moldura 26, stub 43, shell 43; estática 51/51 (+3 testes K6); scripts 19 (+1 teste LA) | `task test`, `task typecheck`, `task verificar:estatica`, `task scripts:test` |
+| `@erp/nucleo` | **0.9.2** nas 4 apps; lockstep ok; sobe para **0.10.0** na Task 2 do D2 | lockstep 4 apps |
 | `@erp/contratos` / `@erp/moldura` | **0.4.0** / **0.5.0** | ADR-0012, ADR-0014 adendo 1 |
 | ADRs | **0013 aceito** e **0014 + adendo 1 aceito** (humano, 2026-09-23) | `docs/adr/` |
-| Gate "Shell novo" (#3, #18) | **aprovado** na iteração 4 | `GATE_STATUS.md`; tag `gate-shell-aprovado` |
-| Gate B1+D1+G3+K | **aprovado** na iteração 9 (2026-09-28); lacunas sem veto em `DEFERRED.md` D15 | `GATE_STATUS.md`; tag `gate-b1-d1-g3-aprovado` |
-| Repositórios | principal em `bff-multizone` e os 8 submódulos no `master`, iguais ao remoto (fetch em 2026-09-28, nada novo desde `401770c`). Só local, não commitar: hash do `@erp/contratos` 0.2.1 no `pnpm-lock.yaml` do `erp-dominio-stub` e do `erp-moldura` (`AMBIENTE.md` §1) | `git submodule foreach git status -sb` |
+| Gate B1+D1+G3+K | **aprovado** na iteração 9 (2026-09-28); tag `gate-b1-d1-g3-aprovado` | `GATE_STATUS.md` |
+| Fatia K6 | **concluída e verificada** (2026-09-29): ator Eva (D13), LA–LG fechados (D15), invariante 8 na zona-2 | `progress.md`, commit `d1d6345` |
+| Plano D2 + K6 | **aprovado** pelo humano (modo Subagent-Driven) | `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` |
 
-## Histórico curto do gate B1+D1+G3+K
+## Próximo passo: D2 (Task 2 — Core Identity Port & Redis Renewal Lock)
 
-| Iteração | Resultado | Correção |
-|---|---|---|
-| 1 | considerada rasa | iteração 2 com auditor Opus |
-| 2 | auditor vetou V1–V8 | fatia K |
-| 3 | revisor e challenger aprovaram; auditor vetou V1–V7 (127 mutações, 55 sobreviventes) | fatia **K2** (2026-09-23): cada veto com teste que reprova a mutação; P07 adiado (D13) |
-| 4 | revisor e challenger aprovaram; auditor vetou **V1–V5** novos (127, 55 sobreviventes; tudo da iteração 3 agora pego) | fatia **K3** implementada e testada (K3-1 a K3-6) |
-| 5 | os três aprovaram, mas **invalidada pelo humano**: auditoria rasa (6 mutações sem evidência) e V3 ainda aberto | fatia **K4-1/K4-2** (V3 pelo verificador de tipos; limites em D14) |
-| 6 | revisor e challenger reprovaram: as zonas ainda recebiam `REDIS_URL` (a K3 nunca rodou no modo Redis) | **K4-3** |
-| 7 | challenger reprovou: o Redis do showcase aceitava escrita sem senha | **K4-4** |
-| 8 | revisor e challenger aprovaram; auditor vetou **V1–V4** (ambiente por exclusão, escopos do N8, `test/` sem teste, fronteira por lista fixa) | fatia **K5** (feita, 2026-09-28) |
-| 9 | **os três aprovaram** (auditor PASS, sem veto; lacunas LA–LG em D15) | — |
+O plano de implementação em `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` foi aprovado. A Task 1 (K6 + D13) foi concluída e aprovada pelo revisor.
 
-## Próximo passo: D2 (OIDC + PKCE e renovação com lock) com a K6
-
-O gate B1+D1+G3+K fechou; o detalhe das fatias K2–K5 e das iterações está em `GATE_STATUS.md` (pastas dos verificadores no
-commit `f010760`).
-
-1. ⬜ **Plano do D2** (antes de código): ler ADR-0013 e ADR-0009 (decisão 3), escrever o plano de implementação em fatias com
-   teste por invariante, e decidir a colocação com o `arquiteto-mfe` (núcleo 0.10.0: porta de identidade OIDC, renovação proativa,
-   lock `SET NX PX` no Redis). Requisitos já decididos pelo humano:
-   - **refresh token sem reuso** (`refreshTokenMaxReuse = 0`); o lock no Redis é requisito e um teste de corrida prova que duas
-     renovações simultâneas fazem uma só chamada ao Keycloak (Medição 1: reuso derruba a sessão inteira);
-   - pessoa por `sub` (ADR-0013); sessão de 30 min por inatividade; tempos em `docs/CONFIGURACAO.md` (os itens "⬜ D2");
-   - biblioteca OIDC já aprovada para instalar (2026-09-22), mas **mostrar ao humano o que entra antes de instalar**.
-2. ⬜ **K6:** as lacunas sem veto da iteração 9 (`DEFERRED.md` D15: LA–LG e o contorno `declare`), cada uma com teste que reprova
-   com a correção revertida. Entram no mesmo gate do D2.
-3. Depois: G4/G5, C1–C3, E4/E5 (tabela abaixo).
+1. ✅ **Plano do D2 + K6:** aprovado (2026-09-29). Dependências propostas para instalação documentadas (`openid-client` v6 no shell e peer no núcleo).
+2. ✅ **Task 1 (K6):** ator Eva (`zona2.leitor`, fecha D13) em identidadeDev, realm e semente; botão Concluir ocultado na zona 2 (invariante 8); analisador ignora `declare` e pega atribuições a `assetPrefix`; `precisaConstruir` monitora `ambiente.mjs`; banner e CLI do showcase higienizados. Commits: nucleo `cf56312`, stub `29bdc1c`, zona-2 `7d11a62`, principal `d1d6345`.
+3. ⬜ **Task 2:** Porta de identidade `@erp/nucleo` 0.10.0 (`iniciar`, `concluir`, `renovar`, `encerrar`), transações de login no store, e lock de renovação `SET NX PX` (`adquirirLockRenovacao`). Lockstep nas 4 apps.
+4. ⬜ **Task 3:** Adaptador `identidadeOidc` com `openid-client` v6.
+5. ⬜ **Task 4:** Renovação proativa e serializada no `proxy.ts` do shell e rotas `/api/auth/{entrar,retorno,sair}`.
+6. ⬜ **Task 5:** Verificação RS256 JWKS no stub de domínio e realm Keycloak.
+7. ⬜ **Task 6:** Verificação final e handoff.
 
 ## Plano até o objetivo
 
