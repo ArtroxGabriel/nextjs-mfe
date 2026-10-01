@@ -12,12 +12,12 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 
 | Variável | Padrão | Significado | Quem lê | Estado |
 |---|---|---|---|---|
-| `ERP_SESSAO_INATIVIDADE_S` | `1800` | **Sessão por inatividade (30 min).** Tempo sem uso depois do qual a sessão acaba. É a vida do refresh token, que recomeça a cada renovação; no BFF, o TTL da sessão no Redis acompanha o `refresh_expires_in` | Keycloak (`ssoSessionIdleTimeout`, por placeholder no realm); núcleo (D2) | Keycloak ✅; núcleo ⬜ D2 |
+| `ERP_SESSAO_INATIVIDADE_S` | `1800` | **Sessão por inatividade (30 min).** Tempo sem uso depois do qual a sessão acaba. É a vida do refresh token, que recomeça a cada renovação; no BFF, o TTL da sessão no Redis acompanha o `refresh_expires_in` | Keycloak (`ssoSessionIdleTimeout`, por placeholder no realm); núcleo (`identidadeDev`: vida do refresh token e fim da sessão de dev; teto 86400) | Keycloak ✅; dev ✅ (0.10.0); OIDC ⬜ D2 |
 | `ERP_SESSAO_MAXIMA_S` | `36000` | Teto absoluto da sessão (10 h), mesmo com uso contínuo | Keycloak (`ssoSessionMaxLifespan`) | ✅ |
 | `ERP_TOKEN_VIDA_S` | `300` | Vida do access token (teto 3600 no `identidadeDev`). O shell renova antes de vencer (ADR-0013) | Keycloak (`accessTokenLifespan`); `identidadeDev` (D2) | Keycloak ✅; dev ✅ (0.8.0) |
-| `ERP_RENOVACAO_JANELA_S` | `60` | Renovar quando faltar menos que isto para o token vencer; tem de ser menor que metade de `ERP_TOKEN_VIDA_S` | núcleo, proxy do shell (D2) | ⬜ D2 |
-| `ERP_RENOVACAO_LOCK_S` | `15` | Duração do lock de renovação (`SET NX PX`) | núcleo (D2) | ⬜ D2 |
-| `ERP_LOGIN_TRANSACAO_S` | `600` | Validade da transação de login (`state`, `code_verifier`) | núcleo (D2) | ⬜ D2 |
+| `ERP_RENOVACAO_JANELA_S` | `60` | Renovar quando faltar menos que isto para o token vencer; tem de ser menor que metade de `ERP_TOKEN_VIDA_S`; teto 3600 | núcleo (`criarNucleoDoShell`, na criação; usado por `renovarSessao`, que o proxy do shell chama) | núcleo ✅ (0.10.0); shell ⬜ D2 |
+| `ERP_RENOVACAO_LOCK_S` | `15` | Duração do lock de renovação (`SET NX PX`); não há liberação explícita, então é também o intervalo mínimo entre tentativas depois de erro transitório do IdP; teto 300 | núcleo (`criarNucleoDoShell`, na criação) | núcleo ✅ (0.10.0) |
+| `ERP_LOGIN_TRANSACAO_S` | `600` | Validade da transação de login (`state`, `code_verifier`, `nonce`); é também o TTL da chave no Redis; teto 3600 | núcleo (provedor de identidade, na criação: `identidadeDev`; OIDC no D2) | dev ✅ (0.10.0); OIDC ⬜ D2 |
 | `IDP_EMISSOR` | — | URL do emissor OIDC. Presente: OIDC; ausente: identidade de desenvolvimento | shell (D2); stub dos domínios | ⬜ D2 |
 | `IDP_CLIENTE_ID` | `erp-shell` | Cliente confidencial do shell no IdP | shell (D2) | ⬜ D2 |
 | `IDP_CLIENTE_SEGREDO` | `dev-erp-shell-segredo` (só showcase) | Segredo do cliente. Só no servidor, nunca `NEXT_PUBLIC_*` (invariante 11); fora da máquina local, obrigatório e sem padrão | Keycloak (placeholder no realm); shell (D2) | Keycloak ✅; shell ⬜ D2 |
