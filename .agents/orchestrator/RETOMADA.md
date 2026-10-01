@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-09-29 (K6 concluída; plano D2+K6 aprovado; próximo passo é Task 2 do D2: porta de identidade e lock)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-01 (Task 2 do D2 implementada e corrigida; parada a pedido do humano antes da re-revisão restrita da correção)**.
 
 ## Objetivo final
 
@@ -24,26 +24,32 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 - **Decisão B:** `B1 (10 s)` — `proxyTimeout` em 10s e propostas 1 a 3 aceitas.
 - **Decisão C:** `agora` — Medição 1 de concorrência de refresh token no Keycloak executada imediatamente.
 
-## Estado (conferido em 2026-09-29)
+## Estado (conferido em 2026-10-01)
 
 | O quê | Estado | Evidência |
 |---|---|---|
 | Base em `repos/` (Next 16) | funcionando; `base/verificacao` **109/109** com Redis e **105 + 4 pulados** com arquivo; D13 E2E testado | `task verificar:redis`, `task verificar:construir` |
 | Unidades | contratos 20, núcleo 144 (+2 testes K6), moldura 26, stub 43, shell 43; estática 51/51 (+3 testes K6); scripts 19 (+1 teste LA) | `task test`, `task typecheck`, `task verificar:estatica`, `task scripts:test` |
-| `@erp/nucleo` | **0.9.2** nas 4 apps; lockstep ok; sobe para **0.10.0** na Task 2 do D2 | lockstep 4 apps |
+| `@erp/nucleo` | **0.9.2** publicado e nas 4 apps (lockstep ok); fonte em **0.10.0** no `master` do erp-nucleo (184/184), **não publicado**: publicação e lockstep entram na Task 4 (decisão do humano, 2026-10-01) | lockstep 4 apps; `fd94ecc` |
 | `@erp/contratos` / `@erp/moldura` | **0.4.0** / **0.5.0** | ADR-0012, ADR-0014 adendo 1 |
 | ADRs | **0013 aceito** e **0014 + adendo 1 aceito** (humano, 2026-09-23) | `docs/adr/` |
 | Gate B1+D1+G3+K | **aprovado** na iteração 9 (2026-09-28); tag `gate-b1-d1-g3-aprovado` | `GATE_STATUS.md` |
 | Fatia K6 | **concluída e verificada** (2026-09-29): ator Eva (D13), LA–LG fechados (D15), invariante 8 na zona-2 | `progress.md`, commit `d1d6345` |
 | Plano D2 + K6 | **aprovado** pelo humano (modo Subagent-Driven) | `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` |
 
-## Próximo passo: D2 (Task 2 — Core Identity Port & Redis Renewal Lock)
+## Próximo passo: D2 (Task 2 — re-revisão restrita da correção da rodada 1)
 
 O plano de implementação em `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` foi aprovado. A Task 1 (K6 + D13) foi concluída e aprovada pelo revisor.
 
 1. ✅ **Plano do D2 + K6:** aprovado (2026-09-29). Dependências propostas para instalação documentadas (`openid-client` v6 no shell e peer no núcleo).
 2. ✅ **Task 1 (K6):** ator Eva (`zona2.leitor`, fecha D13) em identidadeDev, realm e semente; botão Concluir ocultado na zona 2 (invariante 8); analisador ignora `declare` e pega atribuições a `assetPrefix`; `precisaConstruir` monitora `ambiente.mjs`; banner e CLI do showcase higienizados. Commits: nucleo `cf56312`, stub `29bdc1c`, zona-2 `7d11a62`, principal `d1d6345`.
-3. ⬜ **Task 2:** Porta de identidade `@erp/nucleo` 0.10.0 (`iniciar`, `concluir`, `renovar`, `encerrar`), transações de login no store, e lock de renovação `SET NX PX` (`adquirirLockRenovacao`). Lockstep nas 4 apps.
+3. ⏳ **Task 2:** porta de identidade `@erp/nucleo` 0.10.0 (`iniciar`, `concluir`, `renovar`, `encerrar`), transações de login de uso único no store (`erp:login:*`, GETDEL; `rename` no arquivo) e lock de renovação `SET NX PX` (`erp:renovacao:*`). Renovação em `criarNucleoDoShell.renovarSessao(id)` (o proxy só chama; lança em erro transitório do IdP).
+   - Commits: erp-nucleo `d481d14` (implementação) e `fd94ecc` (correção da rodada 1); principal `dcecec5` (`docs/CONFIGURACAO.md`).
+   - Revisão da task (Opus): spec ✅; **1 Important** — logout durante a renovação ressuscitava a sessão. Corrigido em `fd94ecc` (`regravar` com `SET XX PX`; `renovarSessao` devolve `'ausente'`); teste de corrida em memória, arquivo e Redis falso; mutação conferida; 184/184.
+   - **Falta:** re-revisão restrita de `d481d14..fd94ecc` (só o achado acima e quebra nova no diff da correção). Aprovada, a Task 2 fecha e segue a Task 3.
+   - Decisão do humano (2026-10-01): a Task 2 só mexe no erp-nucleo; publicação no Verdaccio e lockstep 0.10.0 nas 4 apps vão para a Task 4. Até lá o shell não compila contra 0.10.0 (`nucleo.sessao.entrar(credencial)` saiu).
+   - Achados menores (para a revisão final decidir): tomada de lock velho no store de arquivo pode dar dois vencedores; teste de 20 renovações concorrentes na fábrica sem a variante Redis falso; transações expiradas nunca limpas em arquivo/memória; `sessaoMemoria().adquirirLockRenovacao` sem `validarTtlDoLock`; `ERP_RENOVACAO_JANELA_S < ERP_TOKEN_VIDA_S/2` documentado e não imposto; teste de tempo dos perdedores (<200 ms) pode oscilar; `fronteira.mjs` com nomes genéricos (`iniciar`, `concluir`, `renovar`) como marcadores de escrita; `identidade-dev` sem teto absoluto (`ERP_SESSAO_MAXIMA_S`).
+   - **Para a Task 4:** o wrapper `lib/redis.ts` do shell precisa repassar `getDel`, `NX` e `XX`; o ADR-0013 §2 (leitor das zonas descarta `refreshToken`/`idToken`) não foi feito — se for, o shell precisa de leitura completa própria.
 4. ⬜ **Task 3:** Adaptador `identidadeOidc` com `openid-client` v6.
 5. ⬜ **Task 4:** Renovação proativa e serializada no `proxy.ts` do shell e rotas `/api/auth/{entrar,retorno,sair}`.
 6. ⬜ **Task 5:** Verificação RS256 JWKS no stub de domínio e realm Keycloak.
@@ -119,6 +125,12 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 4. ✅ Sessão de 30 min por inatividade (2026-09-22); parâmetros em `docs/CONFIGURACAO.md`.
 5. **Registro de pacotes / CI (P1): no fim do plano** (humano, 2026-09-23). Até lá, `task pacotes:alinhar-hashes`.
 6. Aplicar no GitLab o que estiver "pendente" em `ATIVIDADES.md` §2 (hoje só comentários opcionais).
+
+## Ambiente (parada de 2026-10-01)
+
+- Nenhum agente rodando. Relatórios da Task 2 ficaram em `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/` (fora do git, só nesta máquina); o essencial está acima.
+- Em 2026-10-01 a `bff-multizone` e os `master` de erp-dominio-stub e erp-moldura foram **reescritos com push forçado** para tirar 3 commits com rodapé de atribuição e seus reverts (voltaram a `51fd1ab`, `29bdc1c`, `a875c21`). Quem baixou antes: `git fetch` e `git reset --hard origin/bff-multizone` (e o mesmo nos dois submódulos).
+- Nesta máquina, erp-dominio-stub e erp-moldura têm `pnpm-lock.yaml` modificado só com o hash local do `@erp/contratos` 0.2.1 (não commitar, `AMBIENTE.md` §1).
 
 ## Ambiente (retomada de 2026-09-28)
 

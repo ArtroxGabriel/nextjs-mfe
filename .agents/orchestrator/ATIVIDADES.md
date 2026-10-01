@@ -4,7 +4,7 @@
 > atualiza ao fim de todo gate, task ou decisão; o humano copia para o GitLab e marca a coluna
 > "No GitLab?". Regras de quando avisar: `MANUTENCAO-GITLAB.md`.
 >
-> Última revisão: **2026-09-29 (K6 feita; D2 iniciado)** (fatia K6 fechou D13 e D15; plano D2+K6 aprovado; #9 e #21 seguem em andamento com D2, G4 e G5).
+> Última revisão: **2026-10-01 (D2 Task 2 implementada)** (porta de identidade e lock de renovação no núcleo 0.10.0, ainda não publicado; #9 e #21 seguem em andamento com D2, G4 e G5).
 
 ## 1. Como ler e manter
 
@@ -405,3 +405,4 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-09-28 (K5) | Fatia K5 feita (vetos V1–V4 e lacunas L1–L4, L6 da iteração 8); iteração 9 a seguir. Nada muda no GitLab até o gate; comentário opcional em #9/#136: "correção K5 feita; iteração 9 do gate em andamento" |
 | 2026-09-28 (gate) | Gate B1+D1+G3+K **aprovado** na iteração 9. **Fechar #3 (#132) e #20 (#136)**; comentar em #9 e #21 (texto em §3). Lacunas sem veto em `DEFERRED.md` D15, para a K6 junto do D2 |
 | 2026-09-29 (K6) | Fatia K6 feita e verificada (D13 e D15 fechados; ator Eva, estáticas e build freshness); plano D2+K6 aprovado; D2 em andamento |
+| 2026-10-01 (D2 Task 2) | Porta de identidade e lock de renovação no núcleo 0.10.0 (não publicado), com correção da revisão; falta a re-revisão restrita. #9 segue **em andamento**; nada muda no GitLab |
