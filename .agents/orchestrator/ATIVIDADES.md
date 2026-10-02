@@ -4,7 +4,7 @@
 > atualiza ao fim de todo gate, task ou decisão; o humano copia para o GitLab e marca a coluna
 > "No GitLab?". Regras de quando avisar: `MANUTENCAO-GITLAB.md`.
 >
-> Última revisão: **2026-10-01 (D2 Task 2 implementada)** (porta de identidade e lock de renovação no núcleo 0.10.0, ainda não publicado; #9 e #21 seguem em andamento com D2, G4 e G5).
+> Última revisão: **2026-10-02 (sincronização com o GitLab)** (#132 e #136 fechadas; #9 com título, critérios e estado novos; comentário do gate em #9 e #137; #9 e #21 seguem em andamento com D2, G4 e G5).
 
 ## 1. Como ler e manter
 
@@ -20,15 +20,13 @@
 
 | # | Título | Estado real | Ação | No GitLab? | Evidência |
 |---|---|---|---|---|---|
-| 3 | Isolar a falha de zona no shell da base *(era "Tratar zonas travadas")* | gate do shell **aprovado** na iteração 4; `/{zona}/api/health` **implementado** nas 3 zonas e a sonda do shell o usa (B3); **gate B1+D1+G3+K aprovado** na iteração 9 (2026-09-28): B3 entregue | **fechar** (comentário em §3) | pendente (fechar #132) | `erp-zona-1` `677a79c`; `erp-shell` `d7a27a9`; `GATE_STATUS.md` |
-| 9 | Trocar login e store de desenvolvimento por OIDC e Redis *(era "Implementar sessão e autorização no servidor")* | cookie opaco, escritor único e autorização por módulo entregues; **Redis ligado** (100/100 com Redis; zonas leem a sessão com usuário ACL só de leitura; escrita exige senha desde a K4-4); **D1 aprovado** no gate B1+D1+G3+K (iteração 9, 2026-09-28; zonas e domínios recebem o ambiente por lista de inclusão); sessão já tem os campos `refreshToken`/`idToken`/`tokenExpiraEm` (núcleo 0.8.0); **faltam** login OIDC + PKCE com o Keycloak e a renovação com lock (D2, ADR-0013) | reescrever título e critérios; mover para **em andamento** | pendente | ADR-0009 decisão 3; ADR-0013; `GATE_STATUS.md` |
+| 9 | Trocar login e store de desenvolvimento por OIDC e Redis *(era "Implementar sessão e autorização no servidor")* | cookie opaco, escritor único e autorização por módulo entregues; **Redis ligado** (100/100 com Redis; zonas leem a sessão com usuário ACL só de leitura; escrita exige senha desde a K4-4); **D1 aprovado** no gate B1+D1+G3+K (iteração 9, 2026-09-28; zonas e domínios recebem o ambiente por lista de inclusão); sessão já tem os campos `refreshToken`/`idToken`/`tokenExpiraEm` (núcleo 0.8.0); **D2 em andamento**: porta de identidade, transações de login e lock de renovação no núcleo 0.10.0 (Task 2, não publicado); **faltam** o adaptador OIDC + PKCE com o Keycloak, a renovação no `proxy.ts` do shell e a publicação do núcleo (Tasks 3–5) | em andamento | feito (2026-10-02, #120: título, critérios e comentário) | ADR-0009 decisão 3; ADR-0013; `GATE_STATUS.md` |
 | 10 | Implementar composição por fragmentos | núcleo pronto (`@erp/nucleo` 0.5.0, 18 testes, 16 mutações); falta ligar zona 1 ← zona 2 e bloquear no shell | mover para **em andamento** | feito (2026-09-23, #121) | ADR-0011; `erp-nucleo` `1841771` |
 | 11 | Centralizar o tempo real no shell | não iniciado | manter; tirar a dependência da #2 | feito (2026-09-23, #122) | `alvo.md` §6 (SSE) |
 | 12 | Publicar o pacote visual @erp/ui | não iniciado; depende de medir duplicação de bundle | manter | — | `alvo.md` §6 |
 | 14 | Definir estratégia de publicação e compatibilidade | submódulos **feitos**; hook `pre-push` que recusa submódulo não enviado **feito** (`base/scripts/checar-envio.mjs`, provado com commit só local); **gate de lockstep do núcleo feito** (`base/scripts/verificar-lockstep.mjs`, no `pre-push`, provado com divergência real); falta registro único ou publicação pelo CI — em 2026-09-22 as duas máquinas alternaram commits só de hash de lockfile, cada um quebrando a instalação da outra; paliativo: `task pacotes:alinhar-hashes` e não commitar hash local | acrescentar critérios: gate de lockstep no CI, registro único, nunca republicar a mesma versão,  checar submódulo não enviado antes do push, mapa de zonas vindo do domínio de acesso | feito (2026-09-23, #125; segue em #133) | ADR-0010; `AMBIENTE.md` §1–2; `4eb128b` |
 | 19 | Entregar o showcase da base com mocks, Keycloak e Redis *(nova)* | **`task showcase` sobe tudo** (Redis, Keycloak, domínios com dados em JSON gravados, shell e 3 zonas) e `task showcase:conferir` mostra ator × zona; sessão já no Redis; falta login pelo Keycloak (D2) e o roteiro completo (E4, E5) | **criar** (texto em §3) | feito (2026-09-23, #135) | `RETOMADA.md` |
-| 20 | Migrar as apps para o kit de app e fechar as verificações da spec *(nova)* | **migração feita** nas 4 apps (núcleo 0.8.2, moldura 0.4.0); **B4/B6 feitos** (`base/verificacao/seguranca-estatica.mjs`, 40/40; limites declarados em D14); **B5 feito** (B5a no shell, B5b no núcleo 0.8.0; os tempos de sessão entram com o D2); estáticas 48/48; ponta a ponta 109/109 com Redis; **gate B1+D1+G3+K aprovado** na iteração 9 (2026-09-28) | **fechar** (comentário em §3) | pendente (fechar #136) | ADR-0012; `GATE_STATUS.md` |
-| 21 | Evoluir a gestão de acesso para o modelo de referência v2 *(nova)* | **modelo e mock prontos** (G1); **ADR-0014 + adendo 1** (G2); **alinhamento implementado** (G3: corte seco para a v2, acesso por funcionalidade, papel administrativo separado de módulo, zona de acesso com pessoas × módulos; ponta a ponta 62/62 nos dois modos); **G3 aprovado** no gate B1+D1+G3+K (iteração 9, 2026-09-28); faltam o showcase com os atores (G4) e a revogação ativa por eventos (G5, lacuna declarada) | **criar** em andamento (texto em §3) | feito (2026-09-23, #137) | ADR-0014 adendo 1; `GATE_STATUS.md` |
+| 21 | Evoluir a gestão de acesso para o modelo de referência v2 *(nova)* | **modelo e mock prontos** (G1); **ADR-0014 + adendo 1** (G2); **alinhamento implementado** (G3: corte seco para a v2, acesso por funcionalidade, papel administrativo separado de módulo, zona de acesso com pessoas × módulos; ponta a ponta 62/62 nos dois modos); **G3 aprovado** no gate B1+D1+G3+K (iteração 9, 2026-09-28); faltam o showcase com os atores (G4) e a revogação ativa por eventos (G5, lacuna declarada) | em andamento | feito (2026-09-23, #137; comentário do gate em 2026-10-02) | ADR-0014 adendo 1; `GATE_STATUS.md` |
 | 18 | Centralizar a telemetria das zonas no shell *(nova)* — **ampliar para "Trace contínuo sem dado pessoal (núcleo 8)"**: o elemento 8 é núcleo e está ausente (`alvo.md` §6) | gateway e propagação de trace **aprovados no gate do shell** (iteração 4); falta exportar spans (SDK OpenTelemetry, instalação aprovada; B2) | **criar** em andamento (texto em §3) | feito (2026-09-23, #134) | `erp-shell` `6de4939`; `alvo.md` §6 (Operação) |
 
 ### Lista 2 — refinamento (separada das atuais; não começar agora)
@@ -61,6 +59,8 @@ Sugestão para o GitLab: criar agora com a etiqueta "refinamento" e o estado "bl
 | 13 | Criar o mapa central de zonas | entregue (`zonas.json`); resíduo foi para a #14 | feito (2026-09-23, #124) | `repos/erp-shell/zonas.json` |
 | 15 | Migrar para Next.js 16 e App Router | entregue | feito (2026-09-23, #126) | Next 16.3.4 + `proxy.ts` |
 | 16 | Documentar riscos e decisões em aberto | entregue | feito (2026-09-23, #127) | ADR-0009, ADR-0010, `alvo.md` §6 |
+| 3 | Isolar a falha de zona no shell da base | entregue: gate do shell (iteração 4) e gate B1+D1+G3+K (iteração 9, 2026-09-28) com B3 | feito (2026-10-02, #132) | `erp-zona-1` `677a79c`; `erp-shell` `d7a27a9`; `GATE_STATUS.md` |
+| 20 | Migrar as apps para o kit de app e fechar as verificações da spec | entregue: gate B1+D1+G3+K (iteração 9, 2026-09-28); 109/109 com Redis | feito (2026-10-02, #136) | ADR-0012; `GATE_STATUS.md` |
 | 17 | Validar a base genérica BFF + Multi-Zones *(nova)* | **criar já fechada**, para registro (texto em §3) | feito (2026-09-23, #138) | ADR-0009; `base/verificacao` 26/26; `GATE_STATUS.md` |
 
 As quatro atividades do anexo de `docs/historico/revisao/2026-09-15-revisao-base-generica.md` não
@@ -76,6 +76,13 @@ serão criadas: o trabalho delas está na #17.
 > #9 segue com o login OIDC + PKCE e a renovação com lock (D2); #21 segue com o showcase dos atores (G4) e a revogação por eventos (G5).
 
 
+### #9 (#120) — comentário de andamento (2026-10-02)
+
+```
+D2 em andamento (login OIDC + PKCE e renovação com lock). Feito: porta de identidade no núcleo (iniciar, concluir, renovar, encerrar), transações de login de uso único no store e lock de renovação (SET NX PX no Redis), em @erp/nucleo 0.10.0, ainda não publicado. Corrigido na revisão: sair durante uma renovação ressuscitava a sessão; agora a regravação só acontece se a sessão ainda existe, com teste de corrida. Núcleo 184/184.
+Falta: adaptador OIDC com openid-client, renovação proativa no proxy do shell com as rotas de entrar/retorno/sair, verificação RS256 no domínio e publicação do núcleo nas 4 apps.
+```
+
 ### #3 e #18 — comentário: gate aprovado
 
 ```
@@ -86,7 +93,7 @@ Falta na #3: /{zona}/api/health sem tocar domínio. Falta na #18: exportar spans
 Evidência: .agents/orchestrator/GATE_STATUS.md; tag gate-shell-aprovado.
 ```
 
-### #9 — novo título e critérios
+### #9 (#120) — novo título e critérios
 
 ```
 Título:
@@ -99,15 +106,19 @@ Substituir o login sem senha e o store de sessão em arquivo pelos adaptadores d
 
 ✅ Critérios de Aceitação
 
-Adaptador sessaoRedis no núcleo: leitor na raiz, escritor só em @erp/nucleo/shell (feito: @erp/nucleo 0.4.0)
+[feito] Adaptador sessaoRedis no núcleo: leitor na raiz, escritor só em @erp/nucleo/shell (@erp/nucleo 0.4.0)
 
-Shell e zonas usam o Redis em vez do arquivo; a verificação ponta a ponta continua verde
+[feito] Shell e zonas usam o Redis em vez do arquivo; zonas leem com usuário ACL só de leitura e a escrita exige senha; ponta a ponta 109/109 com Redis (gate B1+D1+G3+K, iteração 9, 2026-09-28)
 
-Login por OIDC + PKCE no shell; identidadeDev só em desenvolvimento
+[em andamento] Porta de identidade no núcleo (iniciar, concluir, renovar, encerrar), transações de login de uso único e lock de renovação (@erp/nucleo 0.10.0, ainda não publicado)
 
-Renovação de token no shell, proativa e com lock (ADR-0013)
+Login por OIDC + PKCE no shell com o Keycloak; identidadeDev só em desenvolvimento
+
+Renovação de token no shell, proativa e com lock (ADR-0013); sair durante a renovação não ressuscita a sessão
 
 Sessão de 30 min por inatividade, capturada pelos refresh tokens; tempos em variáveis de ambiente (docs/CONFIGURACAO.md)
+
+Domínio verifica o token RS256 pelas chaves públicas (JWKS) do Keycloak
 
 🧪 Casos de Teste
 
@@ -115,13 +126,15 @@ Cenário 1: Redis fora do ar → erro normalizado, nunca "deslogado" silencioso
 
 Cenário 2: sair no shell encerra a sessão em todas as zonas na próxima requisição
 
+Cenário 3: várias requisições com o token perto de expirar → uma só renovação no Keycloak; as outras usam o token novo
+
 🎨 Referência de Design
 
 Link: N/A
 
 📋 Caso de Uso
 
-Link: docs/adr/0002-redis-como-store-de-sessao.md
+Link: docs/adr/0002-redis-como-store-de-sessao.md; docs/adr/0013-login-oidc-e-renovacao-proativa.md
 ```
 
 ### #10 — comentário de andamento
@@ -406,3 +419,4 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-09-28 (gate) | Gate B1+D1+G3+K **aprovado** na iteração 9. **Fechar #3 (#132) e #20 (#136)**; comentar em #9 e #21 (texto em §3). Lacunas sem veto em `DEFERRED.md` D15, para a K6 junto do D2 |
 | 2026-09-29 (K6) | Fatia K6 feita e verificada (D13 e D15 fechados; ator Eva, estáticas e build freshness); plano D2+K6 aprovado; D2 em andamento |
 | 2026-10-01 (D2 Task 2) | Porta de identidade e lock de renovação no núcleo 0.10.0 (não publicado), com correção da revisão; falta a re-revisão restrita. #9 segue **em andamento**; nada muda no GitLab |
+| 2026-10-02 (GitLab) | Humano aplicou: #132 (#3) e #136 (#20) fechadas com o comentário do gate; #120 (#9) com título, critérios e comentário de andamento do D2; comentário do gate em #120 e #137. Textos da #9 em §3 atualizados com o estado do D2 |
