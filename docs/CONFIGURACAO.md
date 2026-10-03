@@ -69,6 +69,9 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
   O shell é o único que recebe o ambiente inteiro, porque só ele grava sessão; assim `REDIS_URL`,
   `ERP_REDIS_SENHA_SHELL` ou qualquer variável nova com o segredo de escrita não chegam às zonas (invariante 15).
   Variável nova lida por zona ou domínio entra na lista no mesmo commit; o teste da lista reprova se faltar.
+  O teste conta, no núcleo, só o que a zona carrega (os subpaths menos `/shell`); leitura dentro de função que só o
+  shell chama (`ERP_RENOVACAO_JANELA_S`, `ERP_RENOVACAO_LOCK_S`, `ERP_LOGIN_TRANSACAO_S`) fica em `LIDAS_SO_NO_SHELL`
+  (`base/scripts/ambiente.test.mjs`), com o motivo, e o teste prova que a função não é usada pelo que a zona carrega.
 - **Padrão:** vale quando a variável falta; valor inválido (não numérico, fora da faixa) é erro na subida, não silêncio.
 
 Os itens "⬜ D2" entram com o login OIDC (item D2 em `.agents/orchestrator/RETOMADA.md`). B5a (shell) e B5b (núcleo 0.8.0) já tiraram do código os tempos e limites marcados "✅".

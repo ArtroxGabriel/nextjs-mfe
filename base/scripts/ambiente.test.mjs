@@ -2,8 +2,9 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, utimesSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-import { precisaConstruir } from './ambiente.mjs'
+import { createRequire } from 'node:module'
+import { dirname, join } from 'node:path'
+import { precisaConstruir, RAIZ as RAIZ_DOS_REPOS } from './ambiente.mjs'
 
 function app({ build, fonte }) {
   const d = mkdtempSync(join(tmpdir(), 'app-'))
@@ -106,6 +107,115 @@ test('V1: todo processo nasce por um unico ponto, com o ambiente do papel (build
   assert.doesNotMatch(fonte, /child_process['"]\s*\)?\s*\.\s*(spawn|exec)|require\(|import\(\s*['"]node:child_process/, 'child_process por outro caminho')
 })
 
+// --- V1 no núcleo: o que a ZONA carrega, não o pacote inteiro --------------------------------------
+// O núcleo é um pacote só, mas a zona nunca importa `@erp/nucleo/shell` (invariante 15, checado na
+// verificação estática). O que só o caminho do shell lê não chega à zona e não entra na lista dela.
+// Duas regras, nesta ordem:
+//  1. módulo: só contam os arquivos alcançáveis pelos imports relativos a partir de cada subpath
+//     publicado, menos `./shell` (provedores de identidade e escritores ficam de fora sozinhos);
+//  2. função: leitura num módulo compartilhado, mas dentro de uma função que só o shell chama, entra
+//     em LIDAS_SO_NO_SHELL com o motivo. O teste prova cada entrada: toda leitura da variável no arquivo
+//     está dentro da função, e nenhum arquivo alcançável pela zona (fora o que a define) usa a função.
+//     Variável nova lida pela zona, no mesmo arquivo ou fora da função, continua reprovando.
+
+const ts = createRequire(join(RAIZ_DOS_REPOS, 'erp-shell', 'package.json'))('typescript')
+
+const LIDAS_SO_NO_SHELL = [
+  { arquivo: 'fabricas/criarNucleo.ts', variavel: 'ERP_RENOVACAO_JANELA_S', funcao: 'criarNucleoDoShell',
+    motivo: 'janela da renovação proativa; só a fábrica do shell renova (ADR-0013, decisão 4), exportada só por /shell' },
+  { arquivo: 'fabricas/criarNucleo.ts', variavel: 'ERP_RENOVACAO_LOCK_S', funcao: 'criarNucleoDoShell',
+    motivo: 'lock da renovação; mesma fábrica, só o shell a cria' },
+  { arquivo: 'interno/login.ts', variavel: 'ERP_LOGIN_TRANSACAO_S', funcao: 'lerVidaDaTransacaoMs',
+    motivo: 'vida da transação de login; chamada só por identidadeDev e identidadeOidc, que só /shell exporta' },
+]
+
+const fonteTs = (arquivo) => ts.createSourceFile(arquivo, readFileSync(arquivo, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
+
+/** Arquivos de `erp-nucleo/src` alcançáveis pela zona: fecho dos imports relativos a partir dos subpaths, menos `./shell`. */
+function alcancaveisPelaZona(raiz) {
+  const nucleo = join(raiz, 'erp-nucleo')
+  const pkg = JSON.parse(readFileSync(join(nucleo, 'package.json'), 'utf8'))
+  const fila = Object.entries(pkg.exports).filter(([k]) => k !== './shell')
+    .map(([, v]) => join(nucleo, v.default.replace(/^\.\/dist\//, 'src/').replace(/\.js$/, '.ts')))
+  const vistos = new Set()
+  while (fila.length) {
+    const arquivo = fila.pop()
+    if (vistos.has(arquivo)) continue
+    vistos.add(arquivo)
+    for (const st of fonteTs(arquivo).statements) {
+      const mod = (ts.isImportDeclaration(st) || ts.isExportDeclaration(st)) && st.moduleSpecifier && ts.isStringLiteral(st.moduleSpecifier) ? st.moduleSpecifier.text : null
+      if (mod?.startsWith('.')) fila.push(join(dirname(arquivo), mod.replace(/\.js$/, '.ts')))
+    }
+  }
+  return vistos
+}
+
+/** Leituras de `process.env.<variavel>` em `fonte`, com a função nomeada que as contém (ou null). */
+function leiturasDe(sf, variavel) {
+  const achadas = []
+  const nomeDe = (n) => (ts.isFunctionDeclaration(n) && n.name) ? n.name.text
+    : (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && n.initializer && (ts.isArrowFunction(n.initializer) || ts.isFunctionExpression(n.initializer))) ? n.name.text : null
+  const andar = (n, funcoes) => {
+    const nome = nomeDe(n)
+    const dentro = nome ? [...funcoes, nome] : funcoes
+    const ehEnv = (e) => ts.isPropertyAccessExpression(e) && e.name.text === 'env' && ts.isIdentifier(e.expression) && e.expression.text === 'process'
+    if ((ts.isPropertyAccessExpression(n) && ehEnv(n.expression) && n.name.text === variavel)
+      || (ts.isElementAccessExpression(n) && ehEnv(n.expression) && ts.isStringLiteral(n.argumentExpression) && n.argumentExpression.text === variavel)) {
+      achadas.push(dentro)
+    }
+    ts.forEachChild(n, (f) => andar(f, dentro))
+  }
+  andar(sf, [])
+  return achadas
+}
+
+/** Identificadores `nome` usados em `sf` (não em comentário), fora a própria declaração. */
+function usa(sf, nome) {
+  let achou = false
+  const andar = (n) => {
+    if (ts.isIdentifier(n) && n.text === nome && !((ts.isFunctionDeclaration(n.parent) || ts.isVariableDeclaration(n.parent)) && n.parent.name === n)) achou = true
+    ts.forEachChild(n, andar)
+  }
+  andar(sf)
+  return achou
+}
+
+/** Variáveis que o núcleo, como a zona o carrega, lê. Lança se uma entrada de LIDAS_SO_NO_SHELL não se sustenta. */
+function lidasPeloNucleoDaZona(raiz) {
+  const src = join(raiz, 'erp-nucleo', 'src')
+  const alcancaveis = alcancaveisPelaZona(raiz)
+  const lidas = new Set()
+  for (const arquivo of alcancaveis) {
+    const isentas = LIDAS_SO_NO_SHELL.filter((e) => join(src, e.arquivo) === arquivo)
+    for (const v of variaveisLidas(readFileSync(arquivo, 'utf8'))) {
+      const e = isentas.find((x) => x.variavel === v)
+      if (!e) { lidas.add(v); continue }
+      const leituras = leiturasDe(fonteTs(arquivo), v)
+      assert.ok(leituras.length > 0 && leituras.every((fs) => fs.includes(e.funcao)), `${e.arquivo}: ${v} lida fora de ${e.funcao}`)
+      for (const outro of alcancaveis) {
+        assert.ok(outro === arquivo || !usa(fonteTs(outro), e.funcao), `${e.funcao} usada por ${outro}, que a zona carrega`)
+      }
+    }
+  }
+  for (const e of LIDAS_SO_NO_SHELL) {
+    assert.ok(alcancaveis.has(join(src, e.arquivo)), `${e.arquivo}: excecao sem motivo, a zona nem carrega o arquivo`)
+    assert.ok(variaveisLidas(readFileSync(join(src, e.arquivo), 'utf8')).includes(e.variavel), `${e.arquivo}: excecao velha, ${e.variavel} nao e mais lida`)
+    assert.ok(e.motivo.length > 20, `${e.variavel}: excecao sem motivo`)
+  }
+  return lidas
+}
+
+test('V1 no nucleo: so conta o que a zona carrega, e a excecao por funcao tem dentes', () => {
+  const alcancaveis = [...alcancaveisPelaZona(RAIZ_DOS_REPOS)].map((a) => a.split('/src/')[1])
+  for (const deve of ['index.ts', 'fabricas/criarNucleo.ts', 'fabricas/criarProxy.ts', 'adaptadores/sessao-redis.ts', 'interno/login.ts']) assert.ok(alcancaveis.includes(deve), deve)
+  for (const nao of ['shell/index.ts', 'adaptadores/identidade-dev.ts', 'adaptadores/identidade-oidc.ts']) assert.ok(!alcancaveis.includes(nao), nao)
+  const sf = (texto) => ts.createSourceFile('x.ts', texto, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
+  assert.deepEqual(leiturasDe(sf('export function soShell() { return process.env.A }'), 'A'), [['soShell']])
+  assert.deepEqual(leiturasDe(sf("export const f = () => process.env['A']\nconst g = process.env.A"), 'A'), [['f'], []])
+  assert.ok(usa(sf('import { f } from "./x.js"; f()'), 'f'))
+  assert.ok(!usa(sf('// f aparece so em comentario\nexport function f() {}'), 'f'))
+})
+
 /** Variáveis de ambiente que um fonte lê: `process.env.X`, `process.env['X']` e `const { X, Y: y } = process.env`. */
 function variaveisLidas(texto) {
   const diretas = [...texto.matchAll(/process\.env(?:\.([A-Z_0-9]+)|\[['"]([A-Z_0-9]+)['"]\])/g)].map((m) => m[1] ?? m[2])
@@ -127,7 +237,7 @@ test('V1: a lista de inclusao cobre toda variavel que zona e dominio leem (varia
   }
   // dentes: as três formas de ler (challenger_b1_d1_9: desestruturação passava sem ser vista)
   assert.deepEqual([...variaveisLidas("process.env.A; process.env['B']; const { C, D: d, E = '1' } = process.env")].sort(), ['A', 'B', 'C', 'D', 'E'])
-  const zona = new Set([...lidas(join(RAIZ, 'erp-nucleo', 'src')), ...['erp-zona-1', 'erp-zona-2', 'erp-zona-acesso'].flatMap((z) => [...lidas(join(RAIZ, z))])])
+  const zona = new Set([...lidasPeloNucleoDaZona(RAIZ), ...['erp-zona-1', 'erp-zona-2', 'erp-zona-acesso'].flatMap((z) => [...lidas(join(RAIZ, z))])])
   // REDIS_URL a zona só lê para se recusar a subir com ela (lib/redis.ts); nunca a recebe
   zona.delete('REDIS_URL')
   assert.ok(zona.size >= 8, 'varredura vazia')
