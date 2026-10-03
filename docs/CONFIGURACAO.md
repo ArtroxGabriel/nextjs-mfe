@@ -12,15 +12,15 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 
 | Variável | Padrão | Significado | Quem lê | Estado |
 |---|---|---|---|---|
-| `ERP_SESSAO_INATIVIDADE_S` | `1800` | **Sessão por inatividade (30 min).** Tempo sem uso depois do qual a sessão acaba. É a vida do refresh token, que recomeça a cada renovação; no BFF, o TTL da sessão no Redis acompanha o `refresh_expires_in` | Keycloak (`ssoSessionIdleTimeout`, por placeholder no realm); núcleo (`identidadeDev`: vida do refresh token e fim da sessão de dev; teto 86400) | Keycloak ✅; dev ✅ (0.10.0); OIDC ⬜ D2 |
+| `ERP_SESSAO_INATIVIDADE_S` | `1800` | **Sessão por inatividade (30 min).** Tempo sem uso depois do qual a sessão acaba. É a vida do refresh token, que recomeça a cada renovação; no BFF, o TTL da sessão no Redis acompanha o `refresh_expires_in` | Keycloak (`ssoSessionIdleTimeout`, por placeholder no realm); núcleo (`identidadeDev`: vida do refresh token e fim da sessão de dev; `identidadeOidc`: fim da sessão quando o IdP não manda `refresh_expires_in`; teto 86400) | Keycloak ✅; dev ✅ (0.10.0); OIDC ✅ (0.10.0) |
 | `ERP_SESSAO_MAXIMA_S` | `36000` | Teto absoluto da sessão (10 h), mesmo com uso contínuo | Keycloak (`ssoSessionMaxLifespan`) | ✅ |
 | `ERP_TOKEN_VIDA_S` | `300` | Vida do access token (teto 3600 no `identidadeDev`). O shell renova antes de vencer (ADR-0013) | Keycloak (`accessTokenLifespan`); `identidadeDev` (D2) | Keycloak ✅; dev ✅ (0.8.0) |
 | `ERP_RENOVACAO_JANELA_S` | `60` | Renovar quando faltar menos que isto para o token vencer; tem de ser menor que metade de `ERP_TOKEN_VIDA_S`; teto 3600 | núcleo (`criarNucleoDoShell`, na criação; usado por `renovarSessao`, que o proxy do shell chama) | núcleo ✅ (0.10.0); shell ⬜ D2 |
 | `ERP_RENOVACAO_LOCK_S` | `15` | Duração do lock de renovação (`SET NX PX`); não há liberação explícita, então é também o intervalo mínimo entre tentativas depois de erro transitório do IdP; teto 300 | núcleo (`criarNucleoDoShell`, na criação) | núcleo ✅ (0.10.0) |
-| `ERP_LOGIN_TRANSACAO_S` | `600` | Validade da transação de login (`state`, `code_verifier`, `nonce`); é também o TTL da chave no Redis; teto 3600 | núcleo (provedor de identidade, na criação: `identidadeDev`; OIDC no D2) | dev ✅ (0.10.0); OIDC ⬜ D2 |
-| `IDP_EMISSOR` | — | URL do emissor OIDC. Presente: OIDC; ausente: identidade de desenvolvimento | shell (D2); stub dos domínios | ⬜ D2 |
-| `IDP_CLIENTE_ID` | `erp-shell` | Cliente confidencial do shell no IdP | shell (D2) | ⬜ D2 |
-| `IDP_CLIENTE_SEGREDO` | `dev-erp-shell-segredo` (só showcase) | Segredo do cliente. Só no servidor, nunca `NEXT_PUBLIC_*` (invariante 11); fora da máquina local, obrigatório e sem padrão | Keycloak (placeholder no realm); shell (D2) | Keycloak ✅; shell ⬜ D2 |
+| `ERP_LOGIN_TRANSACAO_S` | `600` | Validade da transação de login (`state`, `code_verifier`, `nonce`); é também o TTL da chave no Redis; teto 3600 | núcleo (provedor de identidade, na criação: `identidadeDev` e `identidadeOidc`) | dev ✅ (0.10.0); OIDC ✅ (0.10.0) |
+| `IDP_EMISSOR` | — | URL do emissor OIDC. Presente: OIDC; ausente: identidade de desenvolvimento. `https://` obrigatório em produção | shell (D2), que passa a `identidadeOidc({ emissor })`; stub dos domínios | núcleo ✅ (0.10.0); shell ⬜ D2 |
+| `IDP_CLIENTE_ID` | `erp-shell` | Cliente confidencial do shell no IdP | shell (D2), que passa a `identidadeOidc({ clienteId })` | núcleo ✅ (0.10.0); shell ⬜ D2 |
+| `IDP_CLIENTE_SEGREDO` | `dev-erp-shell-segredo` (só showcase) | Segredo do cliente. Só no servidor, nunca `NEXT_PUBLIC_*` (invariante 11); fora da máquina local, obrigatório e sem padrão | Keycloak (placeholder no realm); shell (D2), que passa a `identidadeOidc({ clienteSegredo })` | Keycloak ✅; núcleo ✅ (0.10.0); shell ⬜ D2 |
 | `KEYCLOAK_ADMIN_USUARIO`, `KEYCLOAK_ADMIN_SENHA` | `admin` / `admin` (só showcase) | Administrador inicial do Keycloak | compose; `checar-keycloak.mjs` | ✅ |
 | `ERP_PERMITIR_IDENTIDADE_DEV` | — | `1` permite `identidadeDev` com `NODE_ENV=production` (só verificação local) | núcleo | ✅ |
 | `SESSAO_DIR` | temporário | Pasta do store de sessão em arquivo (desenvolvimento; some com o Redis) | núcleo, apps | ✅ |
@@ -37,7 +37,7 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 | `ACESSO_URL` | `http://127.0.0.1:4020` | Gestão de acesso v2 (`GET /v2/eu`; manifesto em `/v2/modulos/manifesto`). Sem volta para a v1 (ADR-0014, adendo 1) | apps, `registrar-manifesto` das zonas 1 e 2 | ✅ (núcleo 0.9.0) |
 | `ERP_TOKEN_SERVICO` | dev | Token de serviço para registrar o manifesto | `registrar-manifesto` | ✅ |
 | `SHELL_HOSTS` | — | Hosts aceitos como origem do shell | apps | ✅ |
-| `ERP_DESTINO_TIMEOUT_MS` | `5000` | Timeout de uma chamada a domínio; teto 60000 | núcleo (`interno/destinos.ts`) | ✅ (teto na 0.9.0) |
+| `ERP_DESTINO_TIMEOUT_MS` | `5000` | Timeout de uma chamada a domínio e de cada requisição ao IdP (discovery, token); teto 60000 | núcleo (`interno/destinos.ts`; `identidadeOidc`, na criação) | ✅ (teto na 0.9.0; IdP na 0.10.0) |
 | `ERP_FRAGMENTO_TIMEOUT_MS` | `2000` | Timeout de um fragmento entre zonas; teto 30000 | núcleo (`fabricas/fragmento.ts`) | ✅ (teto na 0.9.0) |
 | `ERP_SONDA_TTL_MS` | `1000` | Por quanto tempo o shell confia no resultado da sonda de saúde de uma zona; teto 10000 | shell (`lib/saude-zonas.ts`) | ✅ (B5a) |
 | `ERP_SONDA_TIMEOUT_MS` | `500` | Timeout da sonda de saúde; teto 2000 (zona travada vira 503 em menos de 2 s). Só 2xx de `/{zona}/api/health` conta como no ar | shell | ✅ (B5a) |
