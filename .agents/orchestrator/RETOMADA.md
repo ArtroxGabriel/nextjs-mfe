@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Task 4 do D2 implementada; revisão da task em andamento)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Task 4 do D2 corrigida; re-revisão restrita em andamento)**.
 
 ## Objetivo final
 
@@ -56,7 +56,9 @@ O plano de implementação em `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce
 5. ⏳ **Task 4:** Renovação proativa e serializada no `proxy.ts` do shell e rotas `/api/auth/{entrar,retorno,sair}`.
    - Commits: shell `03ba9b0`, zona-1 `6791943`, zona-2 `4965236`, zona-acesso `d396627`, principal `4604f08`. **`@erp/nucleo` 0.10.0 publicado no Verdaccio desta máquina** (de `9a593a4`) e em lockstep nas 4 apps; `openid-client` 6.8.8 no shell. Outra máquina: publicar 0.10.0 no próprio Verdaccio e `task pacotes:alinhar-hashes` antes de instalar.
    - Shell 70/70, núcleo 211/211, estática 51/51, `verificar:construir` com arquivo 109 + 4 pulados. Login de dev agora é GET `entrar` → `/login/dev` → GET `retorno` (o POST saiu; `base/verificacao/apoio.mjs` ajustado).
-   - **Em andamento:** revisão da task (Opus). Ponto aberto do implementador: o logout OIDC é barrado pela CSP (`form-action 'self'`), porque o `formularioPara` do ADR-0013 decisão 6 não está no núcleo 0.10.0.
+   - Revisão (Opus): 1 Important — logout OIDC barrado pela CSP (`form-action 'self'`; ADR-0013 decisão 6). Corrigido: **núcleo 0.10.1** (`formularioPara`, publicado no Verdaccio desta máquina, lockstep nas 4 apps; zonas recebem `IDP_EMISSOR`, só a origem). Commits: núcleo `2fa8c06`, shell `d333932`, zona-1 `c7f52cf`, zona-2 `a8b1753`, zona-acesso `5b02a2b`, principal `78b019b`.
+   - Lacuna achada pelo orquestrador: `task scripts:test` V1 vermelho desde o núcleo 0.10 (4 variáveis de sessão). Corrigido em `117236f`: V1 conta só o código do núcleo que a zona alcança, com exceções por função e motivo; 20/20.
+   - **Em andamento:** re-revisão restrita (Sonnet) dos dois achados. Outra máquina: publicar 0.10.1 no próprio Verdaccio.
 6. ⬜ **Task 5:** Verificação RS256 JWKS no stub de domínio e realm Keycloak.
 7. ⬜ **Task 6:** Verificação final e handoff.
 

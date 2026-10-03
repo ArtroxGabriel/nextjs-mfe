@@ -60,6 +60,8 @@
 - `node --test` precisa de **glob explícito** (`node --test test/*.test.mjs`). No Node 24.7,
   `node --test <pasta>` roda zero testes e sai com 0.
 - Núcleo: `node --conditions react-server --test test/*.test.mjs`, depois de `tsc -p tsconfig.json`.
+- Shell: também com `--conditions react-server` desde o D2 (2026-10-03): `lib/decisao-proxy.ts` importa
+  `server-only`, e `node --test test/proxy-renovacao.test.mjs` sem a flag falha na carga. `pnpm test` já passa a flag.
 - Ponta a ponta: `pnpm verificar` (usa os builds existentes) ou `pnpm verificar:construir` (refaz).
   Esperado hoje (2026-09-23): Redis 100/100; arquivo 96 + 4 pulados (os 4 só valem com Redis).
 - **Teste que só roda num modo esconde defeito.** A K3 passou por revisor e challenger sem nunca ter rodado com
