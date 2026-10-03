@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Tasks 2 e 3 do D2 aprovadas; Task 4 é a próxima)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Task 4 do D2 implementada; revisão da task em andamento)**.
 
 ## Objetivo final
 
@@ -53,7 +53,10 @@ O plano de implementação em `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce
 4. ✅ **Task 3** (aprovada 2026-10-03): Adaptador `identidadeOidc` com `openid-client` v6.
    - Commits: erp-nucleo `c172bc8` e `9a593a4` (correção: URL de logout sem `id_token_hint`, só `client_id` + `post_logout_redirect_uri`; nenhum token na URL) (211/211; `openid-client` 6.8.8 + `jose` 6.2.12 + `oauth4webapi` 3.8.8 como dev e peer opcional); principal `635f2f5` (`docs/CONFIGURACAO.md`). Sem variável nova; `lerTimeoutDeDestinoMs` compartilhado com `destinos.ts`.
    - Revisão (Opus) + re-revisão restrita (Sonnet): aprovada. **Para a Task 4 e o ponta a ponta:** `erp-shell` precisa de `openid-client` ao subir para 0.10 (o `/shell` reexporta o adaptador); sem o hint o Keycloak mostra confirmação de logout e pode não redirecionar (conferir); `encerrar` lança se o discovery falhar depois de a sessão já ter sido apagada (try/catch na rota `sair`); `concluir`/`iniciar`/`encerrar` lançam erro normalizado em falha de rede/discovery (a rota de retorno precisa de try/catch); access token decodificado sem verificar assinatura (o domínio verifica); exigências estritas a confirmar no Keycloak (access token JWT, `sub` igual ao do id_token, `preferred_username` no id_token com `scope=openid profile`).
-5. ⬜ **Task 4:** Renovação proativa e serializada no `proxy.ts` do shell e rotas `/api/auth/{entrar,retorno,sair}`.
+5. ⏳ **Task 4:** Renovação proativa e serializada no `proxy.ts` do shell e rotas `/api/auth/{entrar,retorno,sair}`.
+   - Commits: shell `03ba9b0`, zona-1 `6791943`, zona-2 `4965236`, zona-acesso `d396627`, principal `4604f08`. **`@erp/nucleo` 0.10.0 publicado no Verdaccio desta máquina** (de `9a593a4`) e em lockstep nas 4 apps; `openid-client` 6.8.8 no shell. Outra máquina: publicar 0.10.0 no próprio Verdaccio e `task pacotes:alinhar-hashes` antes de instalar.
+   - Shell 70/70, núcleo 211/211, estática 51/51, `verificar:construir` com arquivo 109 + 4 pulados. Login de dev agora é GET `entrar` → `/login/dev` → GET `retorno` (o POST saiu; `base/verificacao/apoio.mjs` ajustado).
+   - **Em andamento:** revisão da task (Opus). Ponto aberto do implementador: o logout OIDC é barrado pela CSP (`form-action 'self'`), porque o `formularioPara` do ADR-0013 decisão 6 não está no núcleo 0.10.0.
 6. ⬜ **Task 5:** Verificação RS256 JWKS no stub de domínio e realm Keycloak.
 7. ⬜ **Task 6:** Verificação final e handoff.
 
