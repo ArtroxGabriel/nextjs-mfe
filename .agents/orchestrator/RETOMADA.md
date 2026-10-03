@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Tasks 2–4 do D2 aprovadas; Task 5 em andamento)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Task 5 do D2 implementada; revisão da task em andamento)**.
 
 ## Objetivo final
 
@@ -60,6 +60,9 @@ O plano de implementação em `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce
    - Lacuna achada pelo orquestrador: `task scripts:test` V1 vermelho desde o núcleo 0.10 (4 variáveis de sessão). Corrigido em `117236f`: V1 conta só o código do núcleo que a zona alcança, com exceções por função e motivo; 20/20.
    - Re-revisão restrita (Sonnet): os dois achados resolvidos, sem quebra nova. Outra máquina: publicar 0.10.1 no próprio Verdaccio.
 6. ⏳ **Task 5:** Verificação RS256 JWKS no stub de domínio e realm Keycloak.
+   - Commits: stub `4712d4e`, principal `2c058cb`. Stub 69/69; `verificar:construir` 111 + 4 pulados; `verificar:redis` 115/115; `showcase:checar` ok. Realm já tinha mapper, `revokeRefreshToken` e `refreshTokenMaxReuse: 0`. Variáveis novas: `ERP_JWKS_TTL_S`, `ERP_JWKS_INTERVALO_MIN_S`, `ERP_JWT_TOLERANCIA_S`.
+   - **Em andamento:** revisão da task (Opus). **Decisão provável do humano:** o token de serviço `Bearer svc.<app>` segue aceito no modo JWT (senão `registrar-manifesto` quebra com OIDC); o ADR-0013 decisão 7 diz "só JWT".
+   - Containers no ar: Verdaccio, Redis e Keycloak do showcase.
 7. ⬜ **Task 6:** Verificação final e handoff.
 
 ## Plano até o objetivo
