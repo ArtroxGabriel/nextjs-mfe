@@ -6,8 +6,10 @@ import assert from 'node:assert/strict'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { createServer } from 'node:http'
-import { subir, RAIZ, SHELL as SHELL_URL } from '../scripts/ambiente.mjs'
-import { pedir, entrar, iniciarLogin, menu, formularios, valorDoCookie, acaoPeloCliente } from './apoio.mjs'
+import { spawn } from 'node:child_process'
+import { generateKeyPairSync, sign, createHmac } from 'node:crypto'
+import { subir, RAIZ, SHELL as SHELL_URL, ambienteDoPapel } from '../scripts/ambiente.mjs'
+import { pedir, entrar, iniciarLogin, menu, formularios, valorDoCookie, acaoPeloCliente, keycloakNoAr, tokenDoKeycloak, KEYCLOAK_EMISSOR } from './apoio.mjs'
 import { abrirNavegador, acharChrome, COMO_CONSEGUIR_UM_NAVEGADOR } from './navegador.mjs'
 import { varrerAplicacoes } from './saida-de-rede.mjs'
 
@@ -1021,4 +1023,61 @@ test('L2 (P16b): mutacao envia a versao real do recurso (versao 1 em t-2), prova
   // restaura dominio-c para nao alterar o estado das outras assercoes
   await ambiente.derrubarDominio('dominio-c')
   await ambiente.subirDominio('dominio-c')
+})
+
+// --- D2, Task 5: um modo de identificação por processo nos domínios (ADR-0013, decisão 7) ------------
+const b64u = (v) => Buffer.from(JSON.stringify(v)).toString('base64url')
+const comToken = (token) => ({ headers: { authorization: `Bearer ${token}` } })
+
+test('D2: dominio sem IDP_EMISSOR (a base) recusa todo JWT, mesmo bem assinado; o token dev do mesmo ator passa', async () => {
+  const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 })
+  const agora = Math.floor(Date.now() / 1000)
+  const p = b64u({ iss: KEYCLOAK_EMISSOR, aud: 'erp-dominios', exp: agora + 300, preferred_username: 'bruno' })
+  const rs = b64u({ alg: 'RS256', typ: 'JWT', kid: 'k1' })
+  const hs = b64u({ alg: 'HS256', typ: 'JWT', kid: 'k1' })
+  const tokens = {
+    RS256: `${rs}.${p}.${sign('sha256', Buffer.from(`${rs}.${p}`), privateKey).toString('base64url')}`,
+    'alg none': `${b64u({ alg: 'none' })}.${p}.`,
+    'HS256 com a chave publica': `${hs}.${p}.${createHmac('sha256', publicKey.export({ type: 'spki', format: 'pem' })).update(`${hs}.${p}`).digest('base64url')}`,
+  }
+  for (const [caso, token] of Object.entries(tokens)) {
+    const r = await fetch('http://127.0.0.1:4001/v1/recursos/r-1', comToken(token))
+    assert.equal(r.status, 401, caso)
+    assert.deepEqual(await r.json(), { codigo: 'SESSAO_EXPIRADA' }, caso)
+  }
+  assert.equal((await fetch('http://127.0.0.1:4001/v1/recursos/r-1', comToken('dev.bruno.00000000-0000-4000-8000-000000000000'))).status, 200, 'dentes: o token dev passa')
+})
+
+test('D2: dominio com IDP_EMISSOR (pela lista de inclusao) aceita o access token do Keycloak, com o ator certo, e recusa o token dev', {
+  skip: !(await keycloakNoAr()) && 'Keycloak do showcase fora do ar (task showcase:subir)', timeout: 60_000,
+}, async () => {
+  // um domínio A avulso, noutra porta, com o ambiente que a base daria a um domínio com IDP_EMISSOR
+  const PORTA = 4101
+  const env = ambienteDoPapel('dominio', { ...process.env, IDP_EMISSOR: KEYCLOAK_EMISSOR })
+  assert.equal(env.IDP_EMISSOR, KEYCLOAK_EMISSOR, 'IDP_EMISSOR fora da lista de inclusao do dominio')
+  const codigo = `import { criarDominioA } from './src/dominio-a.mjs'
+    import { verificadorDoProcesso } from './src/base.mjs'
+    verificadorDoProcesso()
+    criarDominioA().listen(${PORTA}, '127.0.0.1', () => console.log('pronto'))`
+  const p = spawn('node', ['--input-type=module', '-e', codigo], { cwd: join(RAIZ, 'erp-dominio-stub'), env, stdio: ['ignore', 'pipe', 'inherit'] })
+  try {
+    await new Promise((ok, falha) => { p.stdout.once('data', ok); p.once('exit', (c) => falha(new Error(`dominio avulso saiu com ${c}`))) })
+    const a = `http://127.0.0.1:${PORTA}/v1/recursos/r-1`
+    const bruno = await tokenDoKeycloak('bruno')
+    const r = await fetch(a, comToken(bruno))
+    assert.equal(r.status, 200)
+    assert.equal(typeof (await r.json()).custo?.valor, 'number', 'o ator nao e o preferred_username (bruno e do financeiro)')
+    const ana = await (await fetch(a, comToken(await tokenDoKeycloak('ana')))).json()
+    assert.ok(!('custo' in ana), 'ana recebeu custo')
+    const dev = await fetch(a, comToken('dev.bruno.00000000-0000-4000-8000-000000000000'))
+    assert.equal(dev.status, 401, 'token dev aceito com IDP_EMISSOR')
+    assert.deepEqual(await dev.json(), { codigo: 'SESSAO_EXPIRADA' })
+    const [h, , s] = bruno.split('.')
+    const adulterado = `${h}.${b64u({ ...JSON.parse(Buffer.from(bruno.split('.')[1], 'base64url')), aud: 'account' })}.${s}`
+    assert.equal((await fetch(a, comToken(adulterado))).status, 401, 'token adulterado aceito')
+    // o domínio da base (sem IDP_EMISSOR) recusa o mesmo token do Keycloak
+    assert.equal((await fetch('http://127.0.0.1:4001/v1/recursos/r-1', comToken(bruno))).status, 401, 'dominio em modo dev aceitou JWT')
+  } finally {
+    p.kill('SIGTERM')
+  }
 })

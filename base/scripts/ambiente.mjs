@@ -66,7 +66,11 @@ export const AMBIENTE_PERMITIDO = {
     // não é segredo: a zona só tira dele a origem do IdP para o form-action da CSP (ADR-0013, decisão 6)
     'IDP_EMISSOR',
   ],
-  dominio: [...DO_SISTEMA, 'DADOS_DIR'],
+  dominio: [
+    ...DO_SISTEMA, 'DADOS_DIR',
+    // com IDP_EMISSOR o domínio só aceita o access token do IdP, verificado pelo JWKS (ADR-0013, decisão 7)
+    'IDP_EMISSOR', 'ERP_DESTINO_TIMEOUT_MS', 'ERP_JWKS_TTL_S', 'ERP_JWKS_INTERVALO_MIN_S', 'ERP_JWT_TOLERANCIA_S',
+  ],
 }
 
 /** Papel de um diretório de `repos/`: só o shell grava sessão; o domínio falso não fala com o Redis. */

@@ -88,3 +88,42 @@ export async function acaoPeloCliente({ app, arquivo, nome, caminho, campos, coo
     corpo: await r.text(),
   }
 }
+
+/** Keycloak do showcase (`task showcase:subir`); os testes que precisam dele pulam quando está fora. */
+export const KEYCLOAK_EMISSOR = 'http://127.0.0.1:8080/realms/erp'
+export const keycloakNoAr = () =>
+  fetch(`${KEYCLOAK_EMISSOR}/.well-known/openid-configuration`, { signal: AbortSignal.timeout(1_000) }).then((r) => r.ok, () => false)
+
+/**
+ * Access token de um ator no Keycloak do showcase: formulário de login, código com PKCE e troca no token
+ * endpoint com o cliente do shell, como o shell faz. O retorno ao shell não é seguido (o código fica aqui).
+ */
+export async function tokenDoKeycloak(usuario, { segredo = process.env.IDP_CLIENTE_SEGREDO ?? 'dev-erp-shell-segredo' } = {}) {
+  const { createHash, randomBytes } = await import('node:crypto')
+  const oidc = `${KEYCLOAK_EMISSOR}/protocol/openid-connect`
+  const retorno = 'http://localhost:3000/api/auth/retorno'
+  const verifier = randomBytes(32).toString('base64url')
+  const desafio = createHash('sha256').update(verifier).digest('base64url')
+  const jar = new Map()
+  const guardar = (r) => { for (const c of r.headers.getSetCookie()) { const [kv] = c.split(';'); const i = kv.indexOf('='); jar.set(kv.slice(0, i), kv.slice(i + 1)) } }
+  const busca = new URLSearchParams({ client_id: 'erp-shell', response_type: 'code', scope: 'openid profile', redirect_uri: retorno, state: 's', code_challenge: desafio, code_challenge_method: 'S256' })
+  let r = await fetch(`${oidc}/auth?${busca}`, { redirect: 'manual' })
+  guardar(r)
+  const acao = (await r.text()).match(/action="([^"]+)"/)?.[1]?.replaceAll('&amp;', '&')
+  if (!acao) throw new Error('Keycloak sem formulario de login')
+  r = await fetch(acao, {
+    method: 'POST', redirect: 'manual',
+    headers: { cookie: [...jar].map(([k, v]) => `${k}=${v}`).join('; '), 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ username: usuario, password: usuario }),
+  })
+  const code = new URL(r.headers.get('location') ?? '', retorno).searchParams.get('code')
+  if (!code) throw new Error(`login de ${usuario} no Keycloak sem codigo (HTTP ${r.status})`)
+  r = await fetch(`${oidc}/token`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded', authorization: 'Basic ' + Buffer.from(`erp-shell:${segredo}`).toString('base64') },
+    body: new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: retorno, code_verifier: verifier }),
+  })
+  const j = await r.json()
+  if (!j.access_token) throw new Error(`troca de codigo recusada: ${j.error}`)
+  return j.access_token
+}

@@ -2,9 +2,12 @@
 // do token e a inatividade configuradas (ERP_TOKEN_VIDA_S, ERP_SESSAO_INATIVIDADE_S; docs/CONFIGURACAO.md).
 // Depois, o endurecimento: implícito e senha direta recusados, redirect exato, audiência erp-dominios,
 // rotação de refresh token, TLS fora de loopback, RS256, sem escopo total nem CORS, força bruta.
+// Por fim, o verificador dos domínios falsos (erp-dominio-stub/src/jwt.mjs) contra o JWKS real: aceita o
+// access token (inclusive o renovado) e recusa o id_token e o token adulterado (ADR-0013, decisão 7).
 // Uso: node base/showcase/checar-keycloak.mjs (com o compose no ar). Sai com 1 se algo falhar.
 import { createHash, randomBytes } from 'node:crypto'
 import assert from 'node:assert/strict'
+import { configuracaoJwt, criarVerificadorJwt } from '../../repos/erp-dominio-stub/src/jwt.mjs'
 
 const VIDA_TOKEN_S = Number(process.env.ERP_TOKEN_VIDA_S ?? 300)
 const INATIVIDADE_S = Number(process.env.ERP_SESSAO_INATIVIDADE_S ?? 1800)
@@ -103,6 +106,24 @@ const r4 = await renovar(j.refresh_token)
 assert.equal(r4.status, 400, 'refresh token reusado foi aceito (sem rotação)')
 console.log('refresh token reusado: recusado (rotação ligada)')
 
+// --- o verificador dos domínios contra o Keycloak de verdade --------------------------------------
+const EMISSOR = `${RAIZ_KC}/realms/erp`
+const cabecalho = JSON.parse(Buffer.from(j.access_token.split('.')[0], 'base64url'))
+const jwks = await (await fetch(`${KC}/certs`)).json()
+assert.equal(cabecalho.alg, 'RS256')
+assert.ok(jwks.keys.some((k) => k.kid === cabecalho.kid && k.use === 'sig' && k.kty === 'RSA'), 'kid do token fora do JWKS de assinatura')
+assert.equal(claims.iss, EMISSOR)
+const verificador = criarVerificadorJwt(configuracaoJwt({ emissor: EMISSOR }))
+assert.equal((await verificador.verificar(j.access_token))?.preferred_username, 'ana', 'stub recusou o access token do Keycloak')
+const renovado = await r3.json()
+const claimsRenovado = await verificador.verificar(renovado.access_token)
+assert.equal(claimsRenovado?.preferred_username, 'ana', 'access token renovado sem preferred_username ou sem erp-dominios')
+assert.equal(await verificador.verificar(j.id_token), null, 'id_token aceito como credencial de domínio')
+const [h, , s] = j.access_token.split('.')
+const adulterado = Buffer.from(JSON.stringify({ ...claims, preferred_username: 'bruno' })).toString('base64url')
+assert.equal(await verificador.verificar(`${h}.${adulterado}.${s}`), null, 'token adulterado aceito')
+console.log('domínios: access token do Keycloak aceito (ator ana, também depois de renovar); id_token e adulterado recusados')
+
 // configuração do realm pela API de administração
 const adm = await (await fetch(`${RAIZ_KC}/realms/master/protocol/openid-connect/token`, {
   method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
@@ -117,7 +138,11 @@ assert.equal(realm.defaultSignatureAlgorithm, 'RS256')
 const [cliente] = await (await fetch(`${RAIZ_KC}/admin/realms/erp/clients?clientId=erp-shell`, { headers: { authorization: `Bearer ${adm.access_token}` } })).json()
 assert.equal(cliente.fullScopeAllowed, false)
 assert.deepEqual(cliente.webOrigins, [])
-console.log('realm: TLS fora de loopback, força bruta, rotação, RS256; cliente sem escopo total e sem CORS')
+const audiencia = (cliente.protocolMappers ?? []).find((m) => m.protocolMapper === 'oidc-audience-mapper')
+assert.equal(audiencia?.config['included.custom.audience'], 'erp-dominios')
+assert.equal(audiencia?.config['access.token.claim'], 'true')
+assert.equal(audiencia?.config['id.token.claim'], 'false')
+console.log('realm: TLS fora de loopback, força bruta, rotação, RS256; cliente sem escopo total e sem CORS; mapper de audiência erp-dominios só no access token')
 
 // força bruta: 5 senhas erradas travam o usuário; destrava no fim para não afetar a próxima conferência
 const davi = (await (await fetch(`${RAIZ_KC}/admin/realms/erp/users?username=davi&exact=true`, { headers: { authorization: `Bearer ${adm.access_token}` } })).json())[0]
