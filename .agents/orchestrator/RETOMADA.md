@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Task 3 do D2 implementada; revisão da task em andamento)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Tasks 2 e 3 do D2 aprovadas; Task 4 é a próxima)**.
 
 ## Objetivo final
 
@@ -37,7 +37,7 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | Fatia K6 | **concluída e verificada** (2026-09-29): ator Eva (D13), LA–LG fechados (D15), invariante 8 na zona-2 | `progress.md`, commit `d1d6345` |
 | Plano D2 + K6 | **aprovado** pelo humano (modo Subagent-Driven) | `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` |
 
-## Próximo passo: D2 (Task 3 — adaptador `identidadeOidc`)
+## Próximo passo: D2 (Task 4 — renovação no `proxy.ts` do shell, rotas de auth e lockstep 0.10.0)
 
 O plano de implementação em `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` foi aprovado. A Task 1 (K6 + D13) foi concluída e aprovada pelo revisor.
 
@@ -50,9 +50,9 @@ O plano de implementação em `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce
    - Decisão do humano (2026-10-01): a Task 2 só mexe no erp-nucleo; publicação no Verdaccio e lockstep 0.10.0 nas 4 apps vão para a Task 4. Até lá o shell não compila contra 0.10.0 (`nucleo.sessao.entrar(credencial)` saiu).
    - Achados menores (para a revisão final decidir): tomada de lock velho no store de arquivo pode dar dois vencedores; teste de 20 renovações concorrentes na fábrica sem a variante Redis falso; transações expiradas nunca limpas em arquivo/memória; `sessaoMemoria().adquirirLockRenovacao` sem `validarTtlDoLock`; `ERP_RENOVACAO_JANELA_S < ERP_TOKEN_VIDA_S/2` documentado e não imposto; teste de tempo dos perdedores (<200 ms) pode oscilar; `fronteira.mjs` com nomes genéricos (`iniciar`, `concluir`, `renovar`) como marcadores de escrita; `identidade-dev` sem teto absoluto (`ERP_SESSAO_MAXIMA_S`).
    - **Para a Task 4:** o wrapper `lib/redis.ts` do shell precisa repassar `getDel`, `NX` e `XX`; o ADR-0013 §2 (leitor das zonas descarta `refreshToken`/`idToken`) não foi feito — se for, o shell precisa de leitura completa própria.
-4. ⏳ **Task 3:** Adaptador `identidadeOidc` com `openid-client` v6.
-   - Commits: erp-nucleo `c172bc8` (211/211; `openid-client` 6.8.8 + `jose` 6.2.12 + `oauth4webapi` 3.8.8 como dev e peer opcional); principal `635f2f5` (`docs/CONFIGURACAO.md`). Sem variável nova; `lerTimeoutDeDestinoMs` compartilhado com `destinos.ts`.
-   - **Em andamento:** revisão da task (Opus). Pontos do implementador para o showcase/Task 4: `concluir`/`iniciar`/`encerrar` lançam erro normalizado em falha de rede/discovery (a rota de retorno precisa de try/catch); access token decodificado sem verificar assinatura (o domínio verifica); exigências estritas a confirmar no Keycloak (access token JWT, `sub` igual ao do id_token, `preferred_username` no id_token com `scope=openid profile`).
+4. ✅ **Task 3** (aprovada 2026-10-03): Adaptador `identidadeOidc` com `openid-client` v6.
+   - Commits: erp-nucleo `c172bc8` e `9a593a4` (correção: URL de logout sem `id_token_hint`, só `client_id` + `post_logout_redirect_uri`; nenhum token na URL) (211/211; `openid-client` 6.8.8 + `jose` 6.2.12 + `oauth4webapi` 3.8.8 como dev e peer opcional); principal `635f2f5` (`docs/CONFIGURACAO.md`). Sem variável nova; `lerTimeoutDeDestinoMs` compartilhado com `destinos.ts`.
+   - Revisão (Opus) + re-revisão restrita (Sonnet): aprovada. **Para a Task 4 e o ponta a ponta:** `erp-shell` precisa de `openid-client` ao subir para 0.10 (o `/shell` reexporta o adaptador); sem o hint o Keycloak mostra confirmação de logout e pode não redirecionar (conferir); `encerrar` lança se o discovery falhar depois de a sessão já ter sido apagada (try/catch na rota `sair`); `concluir`/`iniciar`/`encerrar` lançam erro normalizado em falha de rede/discovery (a rota de retorno precisa de try/catch); access token decodificado sem verificar assinatura (o domínio verifica); exigências estritas a confirmar no Keycloak (access token JWT, `sub` igual ao do id_token, `preferred_username` no id_token com `scope=openid profile`).
 5. ⬜ **Task 4:** Renovação proativa e serializada no `proxy.ts` do shell e rotas `/api/auth/{entrar,retorno,sair}`.
 6. ⬜ **Task 5:** Verificação RS256 JWKS no stub de domínio e realm Keycloak.
 7. ⬜ **Task 6:** Verificação final e handoff.
