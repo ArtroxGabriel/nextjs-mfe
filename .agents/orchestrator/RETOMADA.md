@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Task 2 do D2 aprovada; Task 3 em andamento)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Task 3 do D2 implementada; revisão da task em andamento)**.
 
 ## Objetivo final
 
@@ -51,6 +51,8 @@ O plano de implementação em `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce
    - Achados menores (para a revisão final decidir): tomada de lock velho no store de arquivo pode dar dois vencedores; teste de 20 renovações concorrentes na fábrica sem a variante Redis falso; transações expiradas nunca limpas em arquivo/memória; `sessaoMemoria().adquirirLockRenovacao` sem `validarTtlDoLock`; `ERP_RENOVACAO_JANELA_S < ERP_TOKEN_VIDA_S/2` documentado e não imposto; teste de tempo dos perdedores (<200 ms) pode oscilar; `fronteira.mjs` com nomes genéricos (`iniciar`, `concluir`, `renovar`) como marcadores de escrita; `identidade-dev` sem teto absoluto (`ERP_SESSAO_MAXIMA_S`).
    - **Para a Task 4:** o wrapper `lib/redis.ts` do shell precisa repassar `getDel`, `NX` e `XX`; o ADR-0013 §2 (leitor das zonas descarta `refreshToken`/`idToken`) não foi feito — se for, o shell precisa de leitura completa própria.
 4. ⏳ **Task 3:** Adaptador `identidadeOidc` com `openid-client` v6.
+   - Commits: erp-nucleo `c172bc8` (211/211; `openid-client` 6.8.8 + `jose` 6.2.12 + `oauth4webapi` 3.8.8 como dev e peer opcional); principal `635f2f5` (`docs/CONFIGURACAO.md`). Sem variável nova; `lerTimeoutDeDestinoMs` compartilhado com `destinos.ts`.
+   - **Em andamento:** revisão da task (Opus). Pontos do implementador para o showcase/Task 4: `concluir`/`iniciar`/`encerrar` lançam erro normalizado em falha de rede/discovery (a rota de retorno precisa de try/catch); access token decodificado sem verificar assinatura (o domínio verifica); exigências estritas a confirmar no Keycloak (access token JWT, `sub` igual ao do id_token, `preferred_username` no id_token com `scope=openid profile`).
 5. ⬜ **Task 4:** Renovação proativa e serializada no `proxy.ts` do shell e rotas `/api/auth/{entrar,retorno,sair}`.
 6. ⬜ **Task 5:** Verificação RS256 JWKS no stub de domínio e realm Keycloak.
 7. ⬜ **Task 6:** Verificação final e handoff.
