@@ -63,6 +63,8 @@ export const AMBIENTE_PERMITIDO = {
     ...DO_SISTEMA,
     'SESSAO_DIR', 'REDIS_URL_ZONA', 'ACESSO_URL', 'SHELL_HOSTS', 'DOMINIO_A_URL', 'DOMINIO_B_URL', 'DOMINIO_C_URL',
     'ERP_TOKEN_SERVICO', 'ERP_DESTINO_TIMEOUT_MS', 'ERP_FRAGMENTO_TIMEOUT_MS', 'ERP_PERMITIR_IDENTIDADE_DEV', 'ERP_TOKEN_VIDA_S',
+    // não é segredo: a zona só tira dele a origem do IdP para o form-action da CSP (ADR-0013, decisão 6)
+    'IDP_EMISSOR',
   ],
   dominio: [...DO_SISTEMA, 'DADOS_DIR'],
 }
