@@ -4,7 +4,7 @@
 > atualiza ao fim de todo gate, task ou decisão; o humano copia para o GitLab e marca a coluna
 > "No GitLab?". Regras de quando avisar: `MANUTENCAO-GITLAB.md`.
 >
-> Última revisão: **2026-10-02 (sincronização com o GitLab)** (#132 e #136 fechadas; #9 com título, critérios e estado novos; comentário do gate em #9 e #137; #9 e #21 seguem em andamento com D2, G4 e G5).
+> Última revisão: **2026-10-03 (Task 2 do D2 fechada)** (#132 e #136 fechadas; #9 com título, critérios e estado novos; comentário do gate em #9 e #137; #9 e #21 seguem em andamento com D2, G4 e G5).
 
 ## 1. Como ler e manter
 
@@ -420,3 +420,4 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-09-29 (K6) | Fatia K6 feita e verificada (D13 e D15 fechados; ator Eva, estáticas e build freshness); plano D2+K6 aprovado; D2 em andamento |
 | 2026-10-01 (D2 Task 2) | Porta de identidade e lock de renovação no núcleo 0.10.0 (não publicado), com correção da revisão; falta a re-revisão restrita. #9 segue **em andamento**; nada muda no GitLab |
 | 2026-10-02 (GitLab) | Humano aplicou: #132 (#3) e #136 (#20) fechadas com o comentário do gate; #120 (#9) com título, critérios e comentário de andamento do D2; comentário do gate em #120 e #137. Textos da #9 em §3 atualizados com o estado do D2 |
+| 2026-10-03 (D2 Task 2) | Re-revisão restrita aprovou a correção; Task 2 fechada, Task 3 (adaptador OIDC) começa. #9 segue **em andamento**; nada muda no GitLab |

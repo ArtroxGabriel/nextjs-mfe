@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-01 (Task 2 do D2 implementada e corrigida; parada a pedido do humano antes da re-revisão restrita da correção)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Task 2 do D2 aprovada; Task 3 em andamento)**.
 
 ## Objetivo final
 
@@ -37,20 +37,20 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | Fatia K6 | **concluída e verificada** (2026-09-29): ator Eva (D13), LA–LG fechados (D15), invariante 8 na zona-2 | `progress.md`, commit `d1d6345` |
 | Plano D2 + K6 | **aprovado** pelo humano (modo Subagent-Driven) | `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` |
 
-## Próximo passo: D2 (Task 2 — re-revisão restrita da correção da rodada 1)
+## Próximo passo: D2 (Task 3 — adaptador `identidadeOidc`)
 
 O plano de implementação em `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` foi aprovado. A Task 1 (K6 + D13) foi concluída e aprovada pelo revisor.
 
 1. ✅ **Plano do D2 + K6:** aprovado (2026-09-29). Dependências propostas para instalação documentadas (`openid-client` v6 no shell e peer no núcleo).
 2. ✅ **Task 1 (K6):** ator Eva (`zona2.leitor`, fecha D13) em identidadeDev, realm e semente; botão Concluir ocultado na zona 2 (invariante 8); analisador ignora `declare` e pega atribuições a `assetPrefix`; `precisaConstruir` monitora `ambiente.mjs`; banner e CLI do showcase higienizados. Commits: nucleo `cf56312`, stub `29bdc1c`, zona-2 `7d11a62`, principal `d1d6345`.
-3. ⏳ **Task 2:** porta de identidade `@erp/nucleo` 0.10.0 (`iniciar`, `concluir`, `renovar`, `encerrar`), transações de login de uso único no store (`erp:login:*`, GETDEL; `rename` no arquivo) e lock de renovação `SET NX PX` (`erp:renovacao:*`). Renovação em `criarNucleoDoShell.renovarSessao(id)` (o proxy só chama; lança em erro transitório do IdP).
+3. ✅ **Task 2** (aprovada 2026-10-03): porta de identidade `@erp/nucleo` 0.10.0 (`iniciar`, `concluir`, `renovar`, `encerrar`), transações de login de uso único no store (`erp:login:*`, GETDEL; `rename` no arquivo) e lock de renovação `SET NX PX` (`erp:renovacao:*`). Renovação em `criarNucleoDoShell.renovarSessao(id)` (o proxy só chama; lança em erro transitório do IdP).
    - Commits: erp-nucleo `d481d14` (implementação) e `fd94ecc` (correção da rodada 1); principal `dcecec5` (`docs/CONFIGURACAO.md`).
    - Revisão da task (Opus): spec ✅; **1 Important** — logout durante a renovação ressuscitava a sessão. Corrigido em `fd94ecc` (`regravar` com `SET XX PX`; `renovarSessao` devolve `'ausente'`); teste de corrida em memória, arquivo e Redis falso; mutação conferida; 184/184.
-   - **Falta:** re-revisão restrita de `d481d14..fd94ecc` (só o achado acima e quebra nova no diff da correção). Aprovada, a Task 2 fecha e segue a Task 3.
+   - Re-revisão restrita (Sonnet, 2026-10-03) de `d481d14..fd94ecc`: achado resolvido nos três stores, sem quebra nova. **Task 2 fechada.**
    - Decisão do humano (2026-10-01): a Task 2 só mexe no erp-nucleo; publicação no Verdaccio e lockstep 0.10.0 nas 4 apps vão para a Task 4. Até lá o shell não compila contra 0.10.0 (`nucleo.sessao.entrar(credencial)` saiu).
    - Achados menores (para a revisão final decidir): tomada de lock velho no store de arquivo pode dar dois vencedores; teste de 20 renovações concorrentes na fábrica sem a variante Redis falso; transações expiradas nunca limpas em arquivo/memória; `sessaoMemoria().adquirirLockRenovacao` sem `validarTtlDoLock`; `ERP_RENOVACAO_JANELA_S < ERP_TOKEN_VIDA_S/2` documentado e não imposto; teste de tempo dos perdedores (<200 ms) pode oscilar; `fronteira.mjs` com nomes genéricos (`iniciar`, `concluir`, `renovar`) como marcadores de escrita; `identidade-dev` sem teto absoluto (`ERP_SESSAO_MAXIMA_S`).
    - **Para a Task 4:** o wrapper `lib/redis.ts` do shell precisa repassar `getDel`, `NX` e `XX`; o ADR-0013 §2 (leitor das zonas descarta `refreshToken`/`idToken`) não foi feito — se for, o shell precisa de leitura completa própria.
-4. ⬜ **Task 3:** Adaptador `identidadeOidc` com `openid-client` v6.
+4. ⏳ **Task 3:** Adaptador `identidadeOidc` com `openid-client` v6.
 5. ⬜ **Task 4:** Renovação proativa e serializada no `proxy.ts` do shell e rotas `/api/auth/{entrar,retorno,sair}`.
 6. ⬜ **Task 5:** Verificação RS256 JWKS no stub de domínio e realm Keycloak.
 7. ⬜ **Task 6:** Verificação final e handoff.
