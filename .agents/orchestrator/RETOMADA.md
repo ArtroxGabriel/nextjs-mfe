@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Task 4 do D2 corrigida; re-revisão restrita em andamento)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Tasks 2–4 do D2 aprovadas; Task 5 em andamento)**.
 
 ## Objetivo final
 
@@ -37,7 +37,7 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | Fatia K6 | **concluída e verificada** (2026-09-29): ator Eva (D13), LA–LG fechados (D15), invariante 8 na zona-2 | `progress.md`, commit `d1d6345` |
 | Plano D2 + K6 | **aprovado** pelo humano (modo Subagent-Driven) | `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` |
 
-## Próximo passo: D2 (Task 4 — renovação no `proxy.ts` do shell, rotas de auth e lockstep 0.10.0)
+## Próximo passo: D2 (Task 5 — verificação RS256/JWKS no stub de domínio e realm Keycloak)
 
 O plano de implementação em `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` foi aprovado. A Task 1 (K6 + D13) foi concluída e aprovada pelo revisor.
 
@@ -53,13 +53,13 @@ O plano de implementação em `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce
 4. ✅ **Task 3** (aprovada 2026-10-03): Adaptador `identidadeOidc` com `openid-client` v6.
    - Commits: erp-nucleo `c172bc8` e `9a593a4` (correção: URL de logout sem `id_token_hint`, só `client_id` + `post_logout_redirect_uri`; nenhum token na URL) (211/211; `openid-client` 6.8.8 + `jose` 6.2.12 + `oauth4webapi` 3.8.8 como dev e peer opcional); principal `635f2f5` (`docs/CONFIGURACAO.md`). Sem variável nova; `lerTimeoutDeDestinoMs` compartilhado com `destinos.ts`.
    - Revisão (Opus) + re-revisão restrita (Sonnet): aprovada. **Para a Task 4 e o ponta a ponta:** `erp-shell` precisa de `openid-client` ao subir para 0.10 (o `/shell` reexporta o adaptador); sem o hint o Keycloak mostra confirmação de logout e pode não redirecionar (conferir); `encerrar` lança se o discovery falhar depois de a sessão já ter sido apagada (try/catch na rota `sair`); `concluir`/`iniciar`/`encerrar` lançam erro normalizado em falha de rede/discovery (a rota de retorno precisa de try/catch); access token decodificado sem verificar assinatura (o domínio verifica); exigências estritas a confirmar no Keycloak (access token JWT, `sub` igual ao do id_token, `preferred_username` no id_token com `scope=openid profile`).
-5. ⏳ **Task 4:** Renovação proativa e serializada no `proxy.ts` do shell e rotas `/api/auth/{entrar,retorno,sair}`.
+5. ✅ **Task 4** (aprovada 2026-10-03): Renovação proativa e serializada no `proxy.ts` do shell e rotas `/api/auth/{entrar,retorno,sair}`.
    - Commits: shell `03ba9b0`, zona-1 `6791943`, zona-2 `4965236`, zona-acesso `d396627`, principal `4604f08`. **`@erp/nucleo` 0.10.0 publicado no Verdaccio desta máquina** (de `9a593a4`) e em lockstep nas 4 apps; `openid-client` 6.8.8 no shell. Outra máquina: publicar 0.10.0 no próprio Verdaccio e `task pacotes:alinhar-hashes` antes de instalar.
    - Shell 70/70, núcleo 211/211, estática 51/51, `verificar:construir` com arquivo 109 + 4 pulados. Login de dev agora é GET `entrar` → `/login/dev` → GET `retorno` (o POST saiu; `base/verificacao/apoio.mjs` ajustado).
    - Revisão (Opus): 1 Important — logout OIDC barrado pela CSP (`form-action 'self'`; ADR-0013 decisão 6). Corrigido: **núcleo 0.10.1** (`formularioPara`, publicado no Verdaccio desta máquina, lockstep nas 4 apps; zonas recebem `IDP_EMISSOR`, só a origem). Commits: núcleo `2fa8c06`, shell `d333932`, zona-1 `c7f52cf`, zona-2 `a8b1753`, zona-acesso `5b02a2b`, principal `78b019b`.
    - Lacuna achada pelo orquestrador: `task scripts:test` V1 vermelho desde o núcleo 0.10 (4 variáveis de sessão). Corrigido em `117236f`: V1 conta só o código do núcleo que a zona alcança, com exceções por função e motivo; 20/20.
-   - **Em andamento:** re-revisão restrita (Sonnet) dos dois achados. Outra máquina: publicar 0.10.1 no próprio Verdaccio.
-6. ⬜ **Task 5:** Verificação RS256 JWKS no stub de domínio e realm Keycloak.
+   - Re-revisão restrita (Sonnet): os dois achados resolvidos, sem quebra nova. Outra máquina: publicar 0.10.1 no próprio Verdaccio.
+6. ⏳ **Task 5:** Verificação RS256 JWKS no stub de domínio e realm Keycloak.
 7. ⬜ **Task 6:** Verificação final e handoff.
 
 ## Plano até o objetivo
