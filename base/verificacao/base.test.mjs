@@ -7,7 +7,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { createServer } from 'node:http'
 import { subir, RAIZ, SHELL as SHELL_URL } from '../scripts/ambiente.mjs'
-import { pedir, entrar, menu, formularios, valorDoCookie, acaoPeloCliente } from './apoio.mjs'
+import { pedir, entrar, iniciarLogin, menu, formularios, valorDoCookie, acaoPeloCliente } from './apoio.mjs'
 import { abrirNavegador, acharChrome, COMO_CONSEGUIR_UM_NAVEGADOR } from './navegador.mjs'
 import { varrerAplicacoes } from './saida-de-rede.mjs'
 
@@ -75,7 +75,7 @@ test('login nao vira redirecionamento aberto', async () => {
     assert.equal((await entrar('ana', de)).resposta.local, '/', de)
   }
   assert.equal((await entrar('ana', '/zona2')).resposta.local, '/zona2')
-  const r = await pedir('/api/auth/entrar', { metodo: 'POST', corpo: new URLSearchParams({ usuario: 'intruso' }) })
+  const r = await iniciarLogin('intruso')
   assert.equal(r.local, '/login')
   assert.equal(valorDoCookie(r.cookies, '__Host-session'), undefined)
 })

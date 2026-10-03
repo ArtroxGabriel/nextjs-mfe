@@ -21,8 +21,22 @@ export async function pedir(caminho, { cookie, metodo = 'GET', corpo, origem = S
 export const valorDoCookie = (setCookies, nome) =>
   setCookies.find((c) => c.startsWith(`${nome}=`))?.split(';')[0].slice(nome.length + 1)
 
+/**
+ * O login de desenvolvimento como o navegador o faz (ADR-0013): `GET /api/auth/entrar` grava a
+ * transação e manda a `/login/dev?state&nonce`; a página devolve ao retorno com o ator escolhido.
+ * `resposta` é a do retorno, que grava `__Host-session`.
+ */
+export async function iniciarLogin(usuario, de = '/') {
+  const ini = await pedir(`/api/auth/entrar?${new URLSearchParams({ de })}`)
+  const login = valorDoCookie(ini.cookies, '__Host-erp-login')
+  if (!login || !ini.local) throw new Error(`entrar nao devolveu transacao (HTTP ${ini.status})`)
+  const dev = new URL(ini.local, SHELL)
+  const busca = new URLSearchParams({ state: dev.searchParams.get('state') ?? '', nonce: dev.searchParams.get('nonce') ?? '', usuario })
+  return pedir(`/api/auth/retorno?${busca}`, { cookie: `__Host-erp-login=${login}` })
+}
+
 export async function entrar(usuario, de = '/') {
-  const r = await pedir('/api/auth/entrar', { metodo: 'POST', corpo: new URLSearchParams({ usuario, de }) })
+  const r = await iniciarLogin(usuario, de)
   const id = valorDoCookie(r.cookies, '__Host-session')
   if (!id) throw new Error(`login de ${usuario} nao devolveu cookie (HTTP ${r.status})`)
   return { cookie: `__Host-session=${id}`, id, resposta: r }
