@@ -24,6 +24,10 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 - **Decisão B:** `B1 (10 s)` — `proxyTimeout` em 10s e propostas 1 a 3 aceitas.
 - **Decisão C:** `agora` — Medição 1 de concorrência de refresh token no Keycloak executada imediatamente.
 
+## Decisão do humano (2026-10-03)
+
+- **Token de serviço no modo JWT (Task 5 do D2):** opção (a) — adendo ao ADR-0013; com `IDP_EMISSOR`, `svc.<app>` só registra o manifesto do próprio módulo; `svc.idp`, `primeiro-acesso`, `decisoes` e `eventos` recusados nesse modo; README e `CONFIGURACAO.md` com o alcance real.
+
 ## Estado (conferido em 2026-10-01)
 
 | O quê | Estado | Evidência |
@@ -61,7 +65,7 @@ O plano de implementação em `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce
    - Re-revisão restrita (Sonnet): os dois achados resolvidos, sem quebra nova. Outra máquina: publicar 0.10.1 no próprio Verdaccio.
 6. ⏳ **Task 5:** Verificação RS256 JWKS no stub de domínio e realm Keycloak.
    - Commits: stub `4712d4e`, principal `2c058cb`. Stub 69/69; `verificar:construir` 111 + 4 pulados; `verificar:redis` 115/115; `showcase:checar` ok. Realm já tinha mapper, `revokeRefreshToken` e `refreshTokenMaxReuse: 0`. Variáveis novas: `ERP_JWKS_TTL_S`, `ERP_JWKS_INTERVALO_MIN_S`, `ERP_JWT_TOLERANCIA_S`.
-   - **Em andamento:** revisão da task (Opus). **Decisão provável do humano:** o token de serviço `Bearer svc.<app>` segue aceito no modo JWT (senão `registrar-manifesto` quebra com OIDC); o ADR-0013 decisão 7 diz "só JWT".
+   - Revisão (Opus): 1 Important (token de serviço sem autenticação aceito no modo JWT, contra o ADR-0013 decisão 7). Humano decidiu (a) em 2026-10-03; **em andamento:** correção pelo implementador.
    - Containers no ar: Verdaccio, Redis e Keycloak do showcase.
 7. ⬜ **Task 6:** Verificação final e handoff.
 
