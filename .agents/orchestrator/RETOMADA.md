@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Task 6 do D2 feita, com o modo OIDC; falta a revisão final e o gate)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Task 6 do D2 feita, com o modo OIDC; revisão da Task 6 em andamento; depois revisão final e gate)**.
 
 ## Objetivo final
 
@@ -56,7 +56,14 @@ Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Su
 5. ✅ **Task 5:** domínios falsos verificam RS256/JWKS; adendo 1 do ADR-0013 (token de serviço só registra o próprio manifesto em modo JWT). Stub `783242b`, principal `1f4414c`.
 6. ✅ **Task 6:** verificação final verde; documentos da lista do ADR-0013 atualizados; p95 do proxy medido (`task medir:proxy`); DEFERRED D17–D18 (D16 abriu e fechou). Relatório: `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/task-6-report.md`.
 7. ✅ **Modo OIDC** (decisão (a) do humano): núcleo **0.10.2** (`ERP_PERMITIR_HTTP_LOCAL`, só loopback; adendo 2 do ADR-0013), stub com a mesma regra, `task showcase:oidc` e `task verificar:oidc` (`base/verificacao/oidc/`).
-8. ⬜ **Revisão final do D2** (branch inteira; triagem dos menores do ledger) e depois o **gate** (`LEIA-PRIMEIRO.md`, "Como um gate funciona").
+8. ⏳ **Revisão da Task 6** (Opus) em andamento em 2026-10-03, sobre `1f4414c..0d391d0` e os submódulos (núcleo 0.10.2, stub, shell, zonas). Se a sessão cair antes do veredito: refazer o pacote de revisão desse intervalo e despachar de novo.
+9. ⬜ **Revisão final do D2** (branch inteira; triagem dos menores do ledger) e depois o **gate** (`LEIA-PRIMEIRO.md`, "Como um gate funciona").
+   Achados menores adiados pelas revisões das tasks (cópia do ledger local, para a triagem):
+   - **T2:** tomada de lock velho no store de arquivo pode dar dois vencedores; teste de 20 renovações na fábrica sem Redis falso com NX; transações expiradas nunca limpas em arquivo/memória; `sessaoMemoria().adquirirLockRenovacao` sem `validarTtlDoLock`; `ERP_RENOVACAO_JANELA_S < ERP_TOKEN_VIDA_S/2` só documentado; teste de tempo dos perdedores (<200 ms) pode oscilar; `fronteira.mjs` com nomes genéricos como marcadores de escrita; `identidade-dev` sem `ERP_SESSAO_MAXIMA_S`.
+   - **T3:** `urlRetorno` aceita query/fragmento (o `redirect_uri` da troca diverge); `concluir` trata `invalid_client` como recusa; porta não documenta que `concluir`/`iniciar` lançam; `ehTransitorio` trata todo `TypeError` como transitório; causa do erro descartada sem rastro no servidor; sem `id_token_hint` o Keycloak pode não redirecionar no logout (conferir).
+   - **T4:** `vidaTransacaoS` do shell repete padrão/teto do núcleo; cola de `proxy.ts` (`Set-Cookie` em redirect/next) sem teste unitário; GET `/api/auth/entrar` grava no store sem autenticação (limitar taxa na borda); resposta atrasada com cookie morto pode apagar sessão nova de outra aba; V1 não vê chamador no próprio arquivo nem `import()` dinâmico; **D18** (`/login/dev` aberto em produção sem `IDP_EMISSOR`).
+   - **T5:** base64url sem forma canônica (só a assinatura); JWKS falha fechado ≥ `ERP_JWKS_INTERVALO_MIN_S` com IdP fora (documentar); intervalo mínimo medido início a início; `r.json()` do JWKS sem limite; `azp` não conferido; varredura de rotas do teste por regex.
+   - **Abertos de arquitetura:** **D17** (zonas leem `refreshToken`/`idToken`, ADR-0013 decisão 2).
 
 
 ## Plano até o objetivo
@@ -134,6 +141,7 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 ## Ambiente (2026-10-03, fim da Task 6 do D2)
 
 - No ar: Verdaccio (4873), Redis (6379) e Keycloak (8080) do showcase; portas da base 3000–3003 e 4001–4020 livres.
+- Agente rodando: revisor da Task 6 (só leitura). Tudo commitado e enviado em 2026-10-03; núcleo **0.10.2** publicado só no Verdaccio desta máquina (outra máquina: `task pacotes:publicar` e `task pacotes:alinhar-hashes`).
 - Relatórios das tasks do D2 em `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/` (fora do git, só nesta máquina); o essencial está acima.
 
 ## Ambiente (parada de 2026-10-01)
