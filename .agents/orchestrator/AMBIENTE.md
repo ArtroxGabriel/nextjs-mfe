@@ -59,8 +59,11 @@
 
 - **A base sobe em modo produção** (`next start`, `NODE_ENV=production`), e o núcleo recusa `http://` do IdP em
   produção. Com `IDP_EMISSOR=http://127.0.0.1:8080/realms/erp` (Keycloak do showcase) o shell responde 500 em toda
-  rota (`origem de form-action precisa de https em producao`).
-  Estado e opções: `RETOMADA.md`, pendência 7; `DEFERRED.md` D16 (Task 6 do D2, 2026-10-03).
+  rota (`origem de form-action precisa de https em producao`). Saída (ADR-0013, adendo 2): `ERP_PERMITIR_HTTP_LOCAL=1`,
+  só para loopback, ligada por `task showcase:oidc` e `task verificar:oidc`; nunca nos scripts das apps.
+- **`task verificar:oidc` muda a vida do access token do cliente `erp-shell` no Keycloak** (20 s) e a devolve no fim.
+  Se a verificação morrer no meio, `task showcase:checar` reprova (`exp - iat` ≠ 300): `task showcase:recriar-keycloak`.
+  O token de administração do `admin-cli` vale 60 s: peça um novo a cada chamada (a primeira versão falhou no `after`).
 - `node --test` precisa de **glob explícito** (`node --test test/*.test.mjs`). No Node 24.7,
   `node --test <pasta>` roda zero testes e sai com 0.
 - Núcleo: `node --conditions react-server --test test/*.test.mjs`, depois de `tsc -p tsconfig.json`.

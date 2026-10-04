@@ -3,7 +3,8 @@
 > Só o que está **aberto**. Cada item diz o que é, a evidência e em que atividade do plano fecha.
 > Os itens da PoC (D1–D11) fecharam por substituição em 2026-09-21; estão na tag `historico-2026-09-22`.
 > D13 (ator só com `tarefas.ver`) e D15 (lacunas sem veto da iteração 9) fecharam na K6 (2026-09-29, `d1d6345`;
-> saíram daqui em `51fd1ab`); conferido de novo na Task 6 do D2 (2026-10-03).
+> saíram daqui em `51fd1ab`); conferido de novo na Task 6 do D2 (2026-10-03). D16 (verificação OIDC contra o Keycloak)
+> abriu e fechou na mesma task: adendo 2 do ADR-0013 e `task verificar:oidc`.
 
 ## D7 — Zona travada segura a requisição até o `proxyTimeout` do Next
 
@@ -44,19 +45,6 @@
   (`base/scripts/ambiente.mjs`); a senha de escrita não chega a eles, conferido em `/proc/<pid>/environ` por
   `base/verificacao/base.test.mjs` com `ERP_REDIS_SENHA_SHELL` sempre definida.
 - **Fecha em:** bloqueio de saída de rede das zonas no deploy (P1, fim do plano). Até lá, risco aceito.
-
-## D16 — Verificação do ADR-0013 contra o Keycloak real (base em modo OIDC)
-
-- **O que é:** o login OIDC, a renovação e o logout nunca rodaram pelo shell de verdade contra o Keycloak. Faltam o
-  showcase em modo OIDC (E3) e, no ponta a ponta, "página de zona ainda 200 depois do vencimento do primeiro token" e a
-  varredura de `refresh_token`, `id_token` e `eyJ` no HTML e no JS (ADR-0013, Consequências).
-- **Evidência (Task 6 do D2, 2026-10-03):** `next start -p 3190` do shell com `IDP_EMISSOR=http://127.0.0.1:8080/realms/erp`
-  responde 500 em `/login` e em `/api/auth/entrar`: `TypeError: origem de form-action precisa de https em producao`
-  (`@erp/nucleo` `borda/csp.ts`, avaliado na carga do proxy). `identidadeOidc` recusa `http://` em produção para o
-  emissor e para `IDP_URL_RETORNO`/`IDP_URL_POS_LOGOUT`; `next start` roda com `NODE_ENV=production`.
-- **Por que não foi feito:** contornar exige decidir entre exceção explícita para loopback no núcleo, TLS local ou
-  apps em `next dev` (ADR-0013, Em aberto, item 2; opções em `RETOMADA.md`).
-- **Fecha em:** D2, depois da decisão do humano (antes do gate do D2).
 
 ## D17 — Zonas leem `refreshToken` e `idToken` (ADR-0013, decisão 2, não cumprida)
 

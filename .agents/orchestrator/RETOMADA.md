@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Task 6 do D2 feita; modo OIDC aguarda decisão do humano)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Task 6 do D2 feita, com o modo OIDC; falta a revisão final e o gate)**.
 
 ## Objetivo final
 
@@ -24,24 +24,26 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 - **Decisão B:** `B1 (10 s)` — `proxyTimeout` em 10s e propostas 1 a 3 aceitas.
 - **Decisão C:** `agora` — Medição 1 de concorrência de refresh token no Keycloak executada imediatamente.
 
-## Decisão do humano (2026-10-03)
+## Decisões do humano (2026-10-03)
 
+- **`http://` local em produção (Task 6 do D2):** opção (a) — `ERP_PERMITIR_HTTP_LOCAL=1`, só loopback, núcleo 0.10.2,
+  adendo 2 ao ADR-0013; só as tarefas do showcase e da verificação ligam.
 - **Token de serviço no modo JWT (Task 5 do D2):** opção (a) — adendo ao ADR-0013; com `IDP_EMISSOR`, `svc.<app>` só registra o manifesto do próprio módulo; `svc.idp`, `primeiro-acesso`, `decisoes` e `eventos` recusados nesse modo; README e `CONFIGURACAO.md` com o alcance real.
 
 ## Estado (conferido em 2026-10-03, Task 6 do D2)
 
 | O quê | Estado | Evidência |
 |---|---|---|
-| Base em `repos/` (Next 16) | funcionando no login de dev; `base/verificacao` **116/116** com Redis e **112 + 4 pulados** com arquivo | `task verificar:redis`, `task verificar:construir` |
-| Unidades | contratos 20, núcleo 219, moldura 26, stub 71, shell 73; estática 51/51; scripts 20/20; typecheck das 4 apps ok | `task test`, `task typecheck`, `task verificar:estatica`, `task scripts:test` |
-| `@erp/nucleo` | **0.10.1** publicado no Verdaccio **desta máquina** e nas 4 apps (lockstep ok). Outra máquina: publicar 0.10.1 no próprio Verdaccio e `task pacotes:alinhar-hashes` | `task lockstep` |
+| Base em `repos/` (Next 16) | `base/verificacao` **116/116** com Redis e **112 + 4 pulados** com arquivo (login de dev); **modo OIDC 5/5** contra o Keycloak | `task verificar:redis`, `task verificar:construir`, `task verificar:oidc` |
+| Unidades | contratos 20, núcleo 225, moldura 26, stub 75, shell 73; estática 51/51; scripts 20/20; typecheck das 4 apps ok | `task test`, `task typecheck`, `task verificar:estatica`, `task scripts:test` |
+| `@erp/nucleo` | **0.10.2** publicado no Verdaccio **desta máquina** e nas 4 apps (lockstep ok). Outra máquina: publicar 0.10.2 no próprio Verdaccio e `task pacotes:alinhar-hashes` | `task lockstep` |
 | `@erp/contratos` / `@erp/moldura` | **0.4.0** / **0.5.0** | ADR-0012, ADR-0014 adendo 1 |
-| ADRs | **0013 aceito, adendo 1 (2026-10-03), implementado menos o modo OIDC na base**; 0014 + adendo 1 aceito | `docs/adr/` |
+| ADRs | **0013 aceito com adendos 1 e 2 (2026-10-03), implementado e verificado contra o Keycloak**; 0014 + adendo 1 aceito | `docs/adr/` |
 | Keycloak do showcase | `task showcase:checar` ok; reuso de refresh token revoga a sessão inteira (medição 1 repetida em 2026-10-03) | `base/showcase/medicao-refresh-concorrente.md` |
 | Custo do proxy do shell | +0,3–0,4 ms no p95 com a leitura da sessão (página de zona: ~19 ms de p95) | `task medir:proxy`; ADR-0013, Consequências |
 | Gate B1+D1+G3+K | **aprovado** na iteração 9 (2026-09-28); tag `gate-b1-d1-g3-aprovado` | `GATE_STATUS.md` |
 
-## Próximo passo: decisão do humano sobre o modo OIDC local; depois revisão final do D2 e gate
+## Próximo passo: revisão final do D2 (branch inteira) e depois o gate
 
 Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Subagent-Driven). Detalhe de cada task
 (revisões, achados menores) no ledger local `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/progress.md`
@@ -52,8 +54,8 @@ Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Su
 3. ✅ **Task 3:** adaptador `identidadeOidc` (`openid-client` 6.8.8, PKCE S256, logout sem token). Núcleo `c172bc8`..`9a593a4`.
 4. ✅ **Task 4:** renovação no `proxy.ts` do shell, rotas `entrar`/`retorno`/`sair`, CSP `formularioPara`; núcleo **0.10.1** no Verdaccio desta máquina e nas 4 apps. Shell `d333932`, principal `117236f`.
 5. ✅ **Task 5:** domínios falsos verificam RS256/JWKS; adendo 1 do ADR-0013 (token de serviço só registra o próprio manifesto em modo JWT). Stub `783242b`, principal `1f4414c`.
-6. ✅ **Task 6:** verificação final verde; documentos da lista do ADR-0013 atualizados; p95 do proxy medido (`task medir:proxy`); DEFERRED D16–D18. **Achado bloqueante:** a base não sobe em modo OIDC contra o Keycloak local (abaixo). Relatório: `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/task-6-report.md`.
-7. ⬜ **Decisão do humano** (pendência 7 abaixo) → implementar o modo OIDC no showcase e no ponta a ponta (`DEFERRED.md` D16).
+6. ✅ **Task 6:** verificação final verde; documentos da lista do ADR-0013 atualizados; p95 do proxy medido (`task medir:proxy`); DEFERRED D17–D18 (D16 abriu e fechou). Relatório: `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/task-6-report.md`.
+7. ✅ **Modo OIDC** (decisão (a) do humano): núcleo **0.10.2** (`ERP_PERMITIR_HTTP_LOCAL`, só loopback; adendo 2 do ADR-0013), stub com a mesma regra, `task showcase:oidc` e `task verificar:oidc` (`base/verificacao/oidc/`).
 8. ⬜ **Revisão final do D2** (branch inteira; triagem dos menores do ledger) e depois o **gate** (`LEIA-PRIMEIRO.md`, "Como um gate funciona").
 
 
@@ -75,10 +77,10 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | | C2 SSE no shell (`/api/stream` + `SharedWorker`); fechar D7 (`proxyTimeout`) | ⬜ | #11 | B1; decisão B ok |
 | | C3 mapa de zonas vindo dos manifestos | ⬜ | #14 | B1 |
 | **D. Sessão e identidade reais** | D1 sessão no Redis (shell grava com senha, zonas leem com ACL só de leitura) | ✅ gate B1+D1+G3+K aprovado (ambiente por lista de inclusão) | #9 | — |
-| | D2 OIDC + PKCE e renovação proativa com lock (**ADR-0013 aceito**; pessoa por `sub`) | ⏳ Tasks 1–6 feitas; falta o modo OIDC na base (decisão do humano), a revisão final e o gate | #9 | pendência 7 |
+| | D2 OIDC + PKCE e renovação proativa com lock (**ADR-0013 aceito**; pessoa por `sub`) | ⏳ Tasks 1–6 feitas, modo OIDC verificado contra o Keycloak; falta a revisão final e o gate | #9 | — |
 | **E. Showcase** | E1 domínios mock com dados em JSON | ✅ | #19 | — |
 | | E2 `docker-compose` com Redis e Keycloak | ✅ | #19 | — |
-| | E3 `task showcase` e `task showcase:conferir` | ✅ parcial: falta login pelo Keycloak | #19 | D2; pendência 7 |
+| | E3 `task showcase` e `task showcase:conferir` | ✅ login pelo Keycloak com `task showcase:oidc`; `showcase:conferir` ainda só no login de dev | #19 | — |
 | | E4 roteiro do showcase | ⬜ | #19 | C1–C3, E3 |
 | | E5 verificação ponta a ponta contra o showcase | ⬜ | #19 | E4 |
 | **G. Gestão de acesso v2** | G1 modelo e mock (porta 4020) | ✅ | #21 | — |
@@ -127,17 +129,7 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 4. ✅ Sessão de 30 min por inatividade (2026-09-22); parâmetros em `docs/CONFIGURACAO.md`.
 5. **Registro de pacotes / CI (P1): no fim do plano** (humano, 2026-09-23). Até lá, `task pacotes:alinhar-hashes`.
 6. Aplicar no GitLab o que estiver "pendente" em `ATIVIDADES.md` §2 (hoje só comentários opcionais).
-7. **Modo OIDC na máquina local (achado da Task 6 do D2, 2026-10-03).** A regra "`http://` só fora de produção"
-   (ADR-0013, decisão 5) barra o Keycloak do showcase (`http://127.0.0.1:8080`) e o retorno `http://localhost:3000`,
-   e a base sobe com `next start` (`NODE_ENV=production`): com `IDP_EMISSOR`, o shell dá 500 em toda rota. Opções:
-   - **(a) exceção explícita só para loopback** no núcleo (ex.: `ERP_PERMITIR_HTTP_LOCAL=1`, aceita só `localhost`,
-     `127.0.0.1` e `::1`), como já existe `ERP_PERMITIR_IDENTIDADE_DEV`; núcleo 0.10.2 + lockstep; adendo 2 ao
-     ADR-0013. Mantém o build de produção sob teste. Recomendada.
-   - **(b) TLS local:** Keycloak em `https` e o shell atrás de um proxy TLS, com certificado local confiado por
-     `NODE_EXTRA_CA_CERTS`. Sem mudar a regra; mais peças e um certificado a gerar por máquina.
-   - **(c) apps em `next dev` no modo OIDC:** sem mudar código do núcleo; mas o que se verifica deixa de ser o build
-     de produção, e a subida fica mais lenta.
-   Até a decisão: showcase e verificação seguem no login de dev (`DEFERRED.md` D16).
+7. ✅ **Modo OIDC na máquina local** (2026-10-03): opção (a), ver "Decisões do humano" acima.
 
 ## Ambiente (2026-10-03, fim da Task 6 do D2)
 
