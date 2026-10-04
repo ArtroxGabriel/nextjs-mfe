@@ -96,10 +96,10 @@ hoje, porque as decisões correspondentes estão abertas em [PENDENCIAS.md](PEND
 > **P0-d na base (2026-10-03, [ADR-0013](../../adr/0013-login-oidc-e-renovacao-proativa.md)).** Existe a metade
 > sem failover: 20 renovações concorrentes da mesma sessão chamam o IdP uma vez só, e um teste reprova se a
 > releitura com o lock sair (`erp-nucleo/test/identidade.test.mjs`, stores em memória e em arquivo); o
-> Keycloak do showcase com rotação e detecção de reuso é conferido por `task showcase:checar`. **Falta:** a
-> variante com Redis falso (`NX`), o failover do Redis e, no ponta a ponta com o Keycloak, "página de zona
-> ainda 200 depois do vencimento do primeiro token" e a varredura de `refresh_token`, `id_token` e `eyJ` no
-> HTML e no JS (ADR-0013, Consequências). Os dois últimos esperam a base subir em modo OIDC (`RETOMADA.md`).
+> Keycloak do showcase com rotação e detecção de reuso é conferido por `task showcase:checar`. Pelo shell, contra
+> o Keycloak (`task verificar:oidc`): página de zona ainda 200 depois do vencimento do primeiro token, 20
+> requisições concorrentes na janela sem derrubar a sessão, e nenhum `refresh_token`, `id_token` ou `eyJ` no
+> HTML, no RSC e no JS. **Falta:** a variante com Redis falso (`NX`) e o failover do Redis.
 
 O P0-c é o mais revelador: ele testa exatamente a cadeia
 `evento perdido → cache stale → refresh que lê o cache`.

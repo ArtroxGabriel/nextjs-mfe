@@ -26,7 +26,9 @@ continua depois de reiniciar, e `task showcase:dados:resetar` volta tudo à seme
 | A11 | Clique **Sair** e use o botão Voltar do navegador | qualquer página volta ao login: a sessão acabou em todas as zonas | N3 |
 | A12 | Derrube só a zona 2 (Ctrl-C no processo dela ou `kill` na porta 3002) e abra `/zona2` | 503 com `Retry-After: 5` e a página "zona indisponível"; `/` e `/zona1` seguem funcionando. Suba a zona de volta: em até ~1,5 s `/zona2` volta (medido 0,8–1,2 s) | falha isolada de zona (gate aprovado) |
 
-Limites conhecidos: login de desenvolvimento sem senha, store de sessão em arquivo e sem
-renovação de token (ver `alvo.md` §6); ligar Keycloak e Redis é o D1/D2 do plano.
+Com `task showcase:oidc` o mesmo roteiro vale com login pelo Keycloak: em A2, "Entrar" leva ao formulário
+do Keycloak (usuário e senha = nome do ator) e volta ao shell; em A11, "Sair" passa pelo logout do Keycloak.
+A renovação do token é invisível: a página continua abrindo depois dos 5 min de vida do primeiro token
+(`task verificar:oidc` prova isso com um token de 20 s).
 
 A PoC anterior tinha um roteiro próprio (Parte B deste arquivo), preservado na tag `poc-final`.

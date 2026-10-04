@@ -83,7 +83,7 @@ a armadilha R1 da PoC não se repete aqui.
 | Pacote | Versão | O que tem | Quem usa |
 |---|---|---|---|
 | `@erp/contratos` | 0.2.1 | códigos de erro e mensagens; `ManifestoDeZona`, `ModuloPermitido`, `validarManifesto` | todos |
-| `@erp/nucleo` | 0.10.1 (as 4 apps) | kit de página e de Server Action `criarPaginas` em `@erp/nucleo/app` (ADR-0012); `criarNucleo`, registro de destinos, leitores de sessão (`sessaoArquivo`, `sessaoRedis`), fragmentos (`criarFragmento`, `responderFragmento`), `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell` (login, renovação com lock, logout), escritores de sessão, `identidadeDev`, `identidadeOidc` (`openid-client`, PKCE; ADR-0013) | shell e zonas (`/shell` só o shell) |
+| `@erp/nucleo` | 0.10.2 (as 4 apps) | kit de página e de Server Action `criarPaginas` em `@erp/nucleo/app` (ADR-0012); `criarNucleo`, registro de destinos, leitores de sessão (`sessaoArquivo`, `sessaoRedis`), fragmentos (`criarFragmento`, `responderFragmento`), `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell` (login, renovação com lock, logout), escritores de sessão, `identidadeDev`, `identidadeOidc` (`openid-client`, PKCE; ADR-0013) | shell e zonas (`/shell` só o shell) |
 | `@erp/moldura` | 0.4.0 | `<Moldura>` (topo, menu com `aria-current`, host de toast), `emitirToast`, flash, `FormularioDeAcao`, `ServicoIndisponivel`, `ErroGlobal`; em `@erp/moldura/servidor`: `criarMolduraDoServidor` (menu, toast e envelope visual da Server Action) | shell e zonas |
 
 Publicados no Verdaccio local (`:4873`). Cada aplicação é um repositório com lockfile próprio.
@@ -195,6 +195,7 @@ sequenceDiagram
 | `erp-dominio-stub` | `pnpm test` (24) | projeção e escopo do domínio A, If-Match no C, regras da gestão de acesso, sementes JSON e persistência com `DADOS_DIR` |
 | `erp-shell` | `pnpm test` (36) | decisão do proxy (rotas públicas, telemetria, zona fora, login), prefixo de zona sem diferenciar maiúsculas, sonda de saúde com cache de 1 s, mapa de zonas e rotas reservadas, limite de tamanho em streaming e expiração do limitador |
 | ponta a ponta | `node --test base/verificacao/*.test.mjs` (50, com navegador real e análise de saída de rede) | N3–N8 pelo shell, com os quatro atores; toda Server Action pelo caminho do navegador (`Next-Action`), sem `Origin`, com sessão expirada e por quem não tem o módulo; toast uma vez só; domínios derrubados um a um; gestão de acesso fora sem vazar módulo no payload; zona 2 derrubada (503 em qualquer caixa, volta) e travada (503 em < 2 s); nonce da CSP novo a cada requisição; telemetria anônima não repassada |
+| ponta a ponta OIDC | `task verificar:oidc` (5, contra o Keycloak do showcase) | login OIDC + PKCE pelo shell, transação de uso único, página de zona 200 depois do vencimento do primeiro token, 20 renovações concorrentes sem derrubar a sessão, nenhum token no HTML/RSC/JS, logout sem token na URL (ADR-0013) |
 
 ## 8. Quando uma peça cai (medido em 2026-09-21; verificado em `base/verificacao`)
 

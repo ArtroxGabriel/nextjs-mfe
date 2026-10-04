@@ -111,6 +111,23 @@ tasks:
       REDIS_URL: redis://default:dev-shell-escrita@127.0.0.1:6379
       REDIS_URL_ZONA: redis://zona:dev-zona-leitura@127.0.0.1:6379
 
+  verificar:oidc:
+    desc: "Ponta a ponta em modo OIDC contra o Keycloak do showcase (task showcase:subir antes; pula sem ele)"
+    cmd: node --test base/verificacao/oidc/*.test.mjs
+    env:
+      REDIS_URL: redis://default:dev-shell-escrita@127.0.0.1:6379
+      REDIS_URL_ZONA: redis://zona:dev-zona-leitura@127.0.0.1:6379
+      IDP_EMISSOR: http://127.0.0.1:8080/realms/erp
+      IDP_CLIENTE_SEGREDO: dev-erp-shell-segredo
+      # o Keycloak local é http://; a base sobe em produção (ADR-0013, adendo 2: só loopback)
+      ERP_PERMITIR_HTTP_LOCAL: '1'
+      # o teste encurta a vida do access token do cliente no Keycloak (e a devolve no fim); janela e lock
+      # cabem nela (docs/CONFIGURACAO.md §6)
+      VERIFICAR_OIDC_TOKEN_VIDA_S: '{{.VERIFICAR_OIDC_TOKEN_VIDA_S | default "20"}}'
+      ERP_RENOVACAO_JANELA_S: '5'
+      ERP_RENOVACAO_LOCK_S: '5'
+      CONSTRUIR: '{{.CONSTRUIR | default "1"}}'
+
   scripts:test:
     desc: Testes dos scripts da base (ambiente, lockstep, hashes)
     cmd: node --test base/scripts/*.test.mjs
@@ -136,6 +153,10 @@ tasks:
   showcase:
     desc: "Sobe TUDO: Redis, Keycloak, domínios com dados gravados, shell e zonas em http://localhost:3000 (Ctrl-C derruba)"
     cmd: node base/showcase/subir.mjs {{.CLI_ARGS}}
+
+  showcase:oidc:
+    desc: "Igual a `showcase`, com login pelo Keycloak do showcase (OIDC + PKCE) e domínios em modo JWT (ADR-0013)"
+    cmd: node base/showcase/subir.mjs --oidc {{.CLI_ARGS}}
 
   showcase:conferir:
     desc: Com o showcase no ar, mostra o que cada ator vê em cada zona e confere infraestrutura e segurança visível

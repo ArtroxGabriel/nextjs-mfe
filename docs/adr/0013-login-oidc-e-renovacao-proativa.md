@@ -1,6 +1,6 @@
 # ADR-0013 — Login OIDC e renovação proativa no shell
 
-**Status:** aceito (humano, 2026-09-23), com o **adendo 1** no fim (humano, 2026-10-03); proposto em 2026-09-22 pelo `arquiteto-mfe`; **implementado no D2** (núcleo 0.10.1, 2026-10-03), menos a verificação ponta a ponta em modo OIDC (Em aberto, item 2).
+**Status:** aceito (humano, 2026-09-23), com os **adendos 1 e 2** no fim (humano, 2026-10-03); proposto em 2026-09-22 pelo `arquiteto-mfe`; **implementado no D2** (núcleo 0.10.2, 2026-10-03), verificado ponta a ponta contra o Keycloak do showcase (`task verificar:oidc`).
 **Substitui:** ADR-0009, decisão 3 (endpoint interno do shell que a zona chamaria para renovar).
 
 ## Contexto
@@ -77,16 +77,12 @@ um fluxo com redirecionamento.
    ("Maximum allowed refresh token reuse exceeded"), e depois disso o access token novo dá `401` no
    `userinfo` e o refresh token novo dá `invalid_grant` ("Session doesn't have required client")
    ([medição 1](../../base/showcase/medicao-refresh-concorrente.md), 2026-09-23; repetida com o mesmo
-   resultado em 2026-10-03). O lock com releitura (decisão 4) é o que impede isso; o mesmo comportamento
-   pelo shell de verdade depende do item 2.
-2. **Base em modo OIDC na máquina local** (achado da Task 6 do D2, 2026-10-03). A decisão 5 recusa `http://`
-   em produção, e a base sobe em modo produção (`next start`, `NODE_ENV=production`). O Keycloak do showcase
-   é `http://127.0.0.1:8080` e o shell é `http://localhost:3000`: com `IDP_EMISSOR` definido, o shell responde
-   500 em toda rota (`origem de form-action precisa de https em producao`, na CSP do proxy) e as zonas recusam
-   o mesmo valor; `IDP_URL_RETORNO` e `IDP_URL_POS_LOGOUT` cairiam na mesma regra. Por isso o showcase e o
-   ponta a ponta ainda não sobem em modo OIDC, e os testes "página de zona 200 depois do vencimento do
-   primeiro token" e a varredura de `refresh_token`/`id_token`/`eyJ` não rodam contra o Keycloak.
-   Decisão do humano pendente (opções em `.agents/orchestrator/RETOMADA.md`).
+   resultado em 2026-10-03). O lock com releitura (decisão 4) é o que impede isso. Pelo shell de verdade
+   (`base/verificacao/oidc/oidc.test.mjs`): 20 requisições concorrentes com o token na janela, todas `200`, e a
+   renovação seguinte com o refresh token que sobrou funciona: a sessão não caiu.
+2. ~~**Base em modo OIDC na máquina local**~~ (achado da Task 6 do D2, 2026-10-03): a decisão 5 recusava o
+   Keycloak `http://` do showcase com a base em `next start` (o shell dava 500 em toda rota). **Resolvido pelo
+   adendo 2.**
 
 ## Decidido depois (humano, 2026-09-22)
 
@@ -130,3 +126,37 @@ internet e recusam requisição com cabeçalho de navegador (invariante 10); o a
 **Verificação.** `erp-dominio-stub/test/jwt-verificacao.test.mjs`: varre toda rota declarada em todo domínio e
 exige `401` para `svc.idp`, `svc.zona1` e `svc.acesso`, menos nas rotas de registro; registro com o próprio id
 aceito (`200` na v2, `204` na v1) e com outro id `403`.
+
+## Adendo 2 (2026-10-03) — `http://` de loopback em produção, só com flag
+
+Decisão do humano na Task 6 do D2 (opção a). Emenda a decisão 5.
+
+**Achado que motivou o adendo.** A base verifica o **build de produção** (`next start`, `NODE_ENV=production`), e a
+decisão 5 recusa `http://` em produção. O Keycloak do showcase é `http://127.0.0.1:8080` e o shell local é
+`http://localhost:3000`: com `IDP_EMISSOR` definido, a CSP do proxy lançava na carga e o shell respondia 500 em toda
+rota; as zonas recusavam o mesmo valor e o `identidadeOidc` recusaria o emissor e as URLs de retorno. O caminho OIDC
+nunca tinha rodado pelo shell construído.
+
+1. **`ERP_PERMITIR_HTTP_LOCAL=1`** (valor exato, como `ERP_PERMITIR_IDENTIDADE_DEV`) aceita `http://` em produção
+   **só para host de loopback**: `localhost`, `127.0.0.1` e `[::1]`, comparados por igualdade com o host já
+   normalizado pelo `URL`. Vale para o emissor, `IDP_URL_RETORNO` e `IDP_URL_POS_LOGOUT` (`identidadeOidc`) e para a
+   origem do IdP no `form-action` da CSP. `127.0.0.1.evil.example`, `localhost.example`, `localhost.`,
+   `http://localhost@evil.example` (host `evil.example`) e qualquer outro host continuam recusados, com ou sem a flag.
+2. **Uma regra só:** `@erp/nucleo` `borda/http-local.ts` (`httpPermitido`), usada pelo adaptador e pela CSP; o stub
+   dos domínios, que não depende do núcleo, espelha a mesma regra para o emissor do JWKS (`src/jwt.mjs`), com teste
+   próprio. Núcleo **0.10.2**, lockstep nas 4 apps.
+3. **Sem a flag, nada muda.** Ela entra na lista de inclusão de zonas e domínios, e **só as tarefas do showcase e da
+   verificação a ligam** (`task showcase:oidc`, `task verificar:oidc`); os scripts `build`/`start` das apps, não.
+
+**Por quê.** A base verifica localmente o que vai para produção; trocar para `next dev` deixaria de verificar o build,
+e TLS local exigiria certificado e proxy por máquina. A exceção fica estreita: só loopback, desligada por padrão.
+
+**Risco residual.** Um deploy que defina a flag por engano aceita IdP `http://` em loopback, onde o tráfego não sai da
+máquina; um IdP de verdade nunca está em loopback, então a configuração errada falha do mesmo jeito que antes. Não há
+recusa ativa da flag fora da máquina local (não há como o núcleo saber onde roda); a defesa é a documentação
+(`docs/CONFIGURACAO.md` §1) e a flag nunca estar nos scripts das apps.
+
+**Verificação.** `erp-nucleo/test/http-local.test.mjs` (regra, CSP e adaptador: flag + loopback aceito, flag + outro
+host recusado, sem flag nem loopback passa em produção, hosts enganosos e formas IPv6; 9 mutações pegas);
+`erp-dominio-stub/test/http-local.test.mjs` (4 mutações pegas); `base/verificacao/oidc/oidc.test.mjs` (a base em modo
+OIDC contra o Keycloak).

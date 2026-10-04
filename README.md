@@ -52,6 +52,8 @@ task base          # sobe tudo em http://localhost:3000 (Ctrl-C derruba)
 ```bash
 task showcase            # Redis + Keycloak + domínios com dados gravados + shell e 3 zonas; Ctrl-C derruba
 task showcase:conferir   # noutro terminal: o que cada ator vê em cada zona, infraestrutura e segurança visível
+task showcase:oidc       # o mesmo com login pelo Keycloak (OIDC + PKCE; senha = nome do ator) e domínios em modo JWT;
+                         # showcase:conferir ainda usa o login de dev, só com `task showcase`
 ```
 
 Depois abra http://localhost:3000 e siga [`docs/ROTEIRO-DE-VERIFICACAO.md`](docs/ROTEIRO-DE-VERIFICACAO.md).
@@ -104,16 +106,14 @@ A verificação manual, item a item, está em
 
 ## 4. Limitações conhecidas
 
-- Login de desenvolvimento sem senha (`identidadeDev`) e store de sessão em arquivo. OIDC e Redis
-  ficam para depois (`alvo.md` §6).
-- Sem renovação de token: a sessão de desenvolvimento dura 30 minutos. O alvo é sessão de 30 min
-  **por inatividade**, com renovação no shell (ADR-0013); os tempos são configuração
-  ([`docs/CONFIGURACAO.md`](docs/CONFIGURACAO.md)).
+- `task base` e `task verificar` usam o login de desenvolvimento sem senha (`identidadeDev`) e o store de
+  sessão em arquivo; com `IDP_EMISSOR` o shell usa OIDC + PKCE e renova o token no proxy (ADR-0013), e
+  `task verificar:oidc` verifica esse modo contra o Keycloak do showcase. Sessão de 30 min **por
+  inatividade**; os tempos são configuração ([`docs/CONFIGURACAO.md`](docs/CONFIGURACAO.md)).
 - O 503 de zona fora e o gateway de telemetria do shell **ainda não passaram por gate** (iteração 4
   em andamento; ver `.agents/orchestrator/RETOMADA.md`).
 - O showcase (`task showcase`) sobe tudo: Redis, Keycloak, domínios com dados gravados, shell e zonas.
-  As apps ainda usam o login de desenvolvimento e a sessão em arquivo; ligá-las ao Keycloak e ao Redis
-  é o próximo passo (D1, D2 em `.agents/orchestrator/RETOMADA.md`).
+  A sessão fica no Redis; o login é o de desenvolvimento, ou o do Keycloak com `task showcase:oidc`.
 - Os domínios falsos leem os dados de `repos/erp-dominio-stub/dados/semente/*.json`. Na verificação
   e em `task base` rodam em memória: a gestão de acesso reiniciada perde manifestos e concessões, e
   `pnpm registrar` em cada app os recria. Com `DADOS_DIR` (showcase) o estado é gravado em arquivo.

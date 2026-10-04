@@ -25,6 +25,7 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 | `IDP_URL_POS_LOGOUT` | `http://localhost:3000/login` | Para onde o IdP manda o navegador depois do logout (`post_logout_redirect_uri`, registrada no IdP). Mesma regra de `http://` do item acima | shell (`lib/nucleo.ts`, só com `IDP_EMISSOR`), que passa a `identidadeOidc({ urlPosLogout })` | ✅ (D2) |
 | `KEYCLOAK_ADMIN_USUARIO`, `KEYCLOAK_ADMIN_SENHA` | `admin` / `admin` (só showcase) | Administrador inicial do Keycloak | compose; `checar-keycloak.mjs` | ✅ |
 | `ERP_PERMITIR_IDENTIDADE_DEV` | — | `1` permite `identidadeDev` com `NODE_ENV=production` (só verificação local) | núcleo | ✅ |
+| `ERP_PERMITIR_HTTP_LOCAL` | — (desligado) | `1` (valor exato) aceita `http://` com `NODE_ENV=production` **só para host de loopback** (`localhost`, `127.0.0.1`, `[::1]`): emissor, `IDP_URL_RETORNO` e `IDP_URL_POS_LOGOUT` do OIDC e a origem do IdP no `form-action` da CSP. Qualquer outro host `http://` continua recusado em produção, com ou sem ela. Existe para a base verificar o build de produção contra o Keycloak local (ADR-0013, adendo 2). **Só o showcase e a verificação ligam** (`task showcase:oidc`, `task verificar:oidc`); os scripts `build`/`start` das apps nunca. Fora da máquina local, não defina | núcleo (`borda/http-local.ts`: `identidadeOidc` e CSP do shell e das zonas, na criação); stub dos domínios (§4); entra na lista de inclusão de zonas e domínios | ✅ (núcleo 0.10.2) |
 | `SESSAO_DIR` | temporário | Pasta do store de sessão em arquivo (desenvolvimento; some com o Redis) | núcleo, apps | ✅ |
 | `REDIS_URL` | — | Store de sessão (ADR-0002). Definido: shell grava e zonas leem no Redis; ausente: arquivo em `SESSAO_DIR`. Leva a senha do usuário de escrita, que só o shell conhece. O showcase usa `redis://default:dev-shell-escrita@127.0.0.1:6379` | apps (`lib/redis.ts`) | ✅ D1 |
 | `REDIS_URL_ZONA` | — (obrigatório com `REDIS_URL`) | Conexão das **zonas** ao Redis, com um usuário ACL que só tem `GET` em `erp:sessao:*` (invariante 15). Sem fallback: com `REDIS_URL` e sem ele, a zona recusa ler sessão (erro na carga de `lib/redis.ts`) em vez de conectar com o usuário de escrita do shell | zonas (`lib/redis.ts`) | ✅ |
@@ -62,6 +63,7 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 | `ERP_JWKS_TTL_S` | `300` | Por quanto tempo as chaves do JWKS valem no cache; vencido, a próxima requisição busca de novo; teto 86400 | ✅ (D2) |
 | `ERP_JWKS_INTERVALO_MIN_S` | `30` | Intervalo mínimo entre duas buscas ao JWKS, inclusive por `kid` desconhecido ou depois de falha: um `kid` escolhido pelo atacante não multiplica as buscas ao IdP. Não pode passar de `ERP_JWKS_TTL_S`; teto 3600 | ✅ (D2) |
 | `ERP_JWT_TOLERANCIA_S` | `5` | Tolerância de relógio para `exp` e `nbf`, em segundos; `0` desliga; teto 60 | ✅ (D2) |
+| `ERP_PERMITIR_HTTP_LOCAL` | — | Mesma variável do §1: com `1`, o emissor `http://` de loopback vale com `NODE_ENV=production` (regra espelhada em `src/jwt.mjs`, o stub não depende do núcleo) | ✅ (D2) |
 
 ## 5. Como um valor chega a cada peça
 
@@ -84,14 +86,14 @@ Valor inválido (não inteiro, zero, negativo ou acima do teto) é erro na subid
 Todas as variáveis do D2 (login OIDC e renovação, ADR-0013) estão em uso desde o núcleo 0.10.1 (2026-10-03).
 B5a (shell) e B5b (núcleo 0.8.0) já tinham tirado do código os tempos e limites marcados "✅".
 
-**Limite conhecido (2026-10-03):** `http://` em `IDP_EMISSOR`, `IDP_URL_RETORNO` e `IDP_URL_POS_LOGOUT` só vale fora
-de produção, e `next start` roda em produção. O Keycloak do showcase é `http://`: com `IDP_EMISSOR` apontando para
-ele, a base em modo produção não sobe (ADR-0013, Em aberto, item 2). Até a decisão, `task showcase` e
-`task verificar` usam o login de desenvolvimento.
+**Modo OIDC na máquina local:** `next start` roda em produção, e o Keycloak do showcase é `http://`. As tarefas
+`task showcase:oidc` e `task verificar:oidc` definem `IDP_EMISSOR`, `IDP_CLIENTE_SEGREDO` (o padrão do compose) e
+`ERP_PERMITIR_HTTP_LOCAL=1` (ADR-0013, adendo 2). `task showcase` e `task verificar` seguem no login de desenvolvimento.
 
-## 6. Ferramentas de medição
+## 6. Ferramentas de medição e de verificação
 
 | Variável | Padrão | Significado | Quem lê |
 |---|---|---|---|
 | `MEDIR_N` | `1000` | Requisições por cenário em `task medir:proxy` (mínimo 10), depois de até 100 de aquecimento | `base/scripts/medir-proxy.mjs` |
+| `VERIFICAR_OIDC_TOKEN_VIDA_S` | `20` | Vida do access token do cliente `erp-shell` durante `task verificar:oidc`: o teste a grava no Keycloak pela API de administração (atributo `access.token.lifespan`) e a tira no fim, voltando à do realm (`ERP_TOKEN_VIDA_S`); se a verificação morrer no meio, `task showcase:recriar-keycloak` reimporta o realm. A tarefa usa `ERP_RENOVACAO_JANELA_S=5` e `ERP_RENOVACAO_LOCK_S=5`, que cabem nela; mínimo 10 e mais que o dobro da janela | `base/verificacao/oidc/oidc.test.mjs` |
 

@@ -1,5 +1,6 @@
 // Showcase: sobe tudo e deixa no ar para usar no navegador.
 //   task showcase            (ou: node base/showcase/subir.mjs [--construir] [--log])
+//   task showcase:oidc       (o mesmo com --oidc: login pelo Keycloak do showcase, domínios em modo JWT)
 // 1. Redis e Keycloak (docker compose), esperando os dois responderem;
 // 2. domínios falsos com o estado gravado em repos/erp-dominio-stub/dados/estado (DADOS_DIR) e a
 //    sessão no Redis (REDIS_URL);
@@ -39,6 +40,15 @@ process.env.DADOS_DIR ??= join(RAIZ, 'erp-dominio-stub', 'dados', 'estado')
 process.env.REDIS_URL ??= `redis://default:${SENHA_SHELL}@127.0.0.1:6379`
 // zonas só leem a sessão: usuário ACL com GET e nada mais (invariante 15)
 process.env.REDIS_URL_ZONA ??= `redis://zona:${process.env.ERP_REDIS_SENHA_ZONA ?? 'dev-zona-leitura'}@127.0.0.1:6379`
+// Modo OIDC (ADR-0013): o shell entra pelo Keycloak do showcase, as zonas tiram dele a origem do logout (CSP) e
+// os domínios só aceitam o access token dele. O Keycloak local é `http://`; ERP_PERMITIR_HTTP_LOCAL=1 aceita isso
+// em produção só para loopback (adendo 2). O segredo é o padrão público do compose (docs/CONFIGURACAO.md §1).
+const OIDC = process.argv.includes('--oidc')
+if (OIDC) {
+  process.env.IDP_EMISSOR ??= 'http://127.0.0.1:8080/realms/erp'
+  process.env.IDP_CLIENTE_SEGREDO ??= 'dev-erp-shell-segredo'
+  process.env.ERP_PERMITIR_HTTP_LOCAL ??= '1'
+}
 const { derrubar } = await subir({
   construir: process.argv.includes('--construir'),
   log: process.argv.includes('--log'),
@@ -57,7 +67,7 @@ function mascararUrl(url) {
 console.log(`
 showcase no ar: ${SHELL}
 
-  atores (login de desenvolvimento, sem senha):
+  atores (${OIDC ? 'login pelo Keycloak; a senha é o próprio nome' : 'login de desenvolvimento, sem senha'}):
     ana    operadora    — zona 1 (painel) e zona 2 (tarefas, pode concluir)
     bruno  analista     — zona 1 com relatórios e custos (grupo FINANCEIRO)
     carla  admin acesso — tela de gestão de acesso (/acesso)
@@ -69,7 +79,7 @@ showcase no ar: ${SHELL}
   dados dos domínios:        ${process.env.DADOS_DIR}  (task showcase:dados:resetar volta à semente)
   sessão:                    Redis (${mascararUrl(process.env.REDIS_URL)}); cookie __Host-session só com o id opaco
   Keycloak (admin/admin):    http://localhost:8080  — conferido por task showcase:checar;
-                             as apps ainda usam o login de desenvolvimento (modo OIDC: ADR-0013, Em aberto, item 2)
+                             ${OIDC ? `login OIDC (${process.env.IDP_EMISSOR}); domínios só aceitam o token dele` : 'login de desenvolvimento; com o Keycloak: task showcase:oidc'}
 
 Ctrl-C derruba domínios, shell e zonas.`)
 for (const sinal of ['SIGINT', 'SIGTERM']) process.on(sinal, () => { derrubar(); process.exit(0) })

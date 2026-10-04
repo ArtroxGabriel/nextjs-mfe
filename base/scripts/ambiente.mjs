@@ -65,11 +65,14 @@ export const AMBIENTE_PERMITIDO = {
     'ERP_TOKEN_SERVICO', 'ERP_DESTINO_TIMEOUT_MS', 'ERP_FRAGMENTO_TIMEOUT_MS', 'ERP_PERMITIR_IDENTIDADE_DEV', 'ERP_TOKEN_VIDA_S',
     // não é segredo: a zona só tira dele a origem do IdP para o form-action da CSP (ADR-0013, decisão 6)
     'IDP_EMISSOR',
+    // `1` aceita IdP `http://` de loopback em produção, só no showcase e na verificação (ADR-0013, adendo 2)
+    'ERP_PERMITIR_HTTP_LOCAL',
   ],
   dominio: [
     ...DO_SISTEMA, 'DADOS_DIR',
     // com IDP_EMISSOR o domínio só aceita o access token do IdP, verificado pelo JWKS (ADR-0013, decisão 7)
     'IDP_EMISSOR', 'ERP_DESTINO_TIMEOUT_MS', 'ERP_JWKS_TTL_S', 'ERP_JWKS_INTERVALO_MIN_S', 'ERP_JWT_TOLERANCIA_S',
+    'ERP_PERMITIR_HTTP_LOCAL',
   ],
 }
 

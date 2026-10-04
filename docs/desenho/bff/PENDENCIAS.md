@@ -244,7 +244,8 @@ A RFC 9110 define o ETag como validador da *representação selecionada* — a p
 > ([ADR-0013](../../adr/0013-login-oidc-e-renovacao-proativa.md), núcleo 0.10): o proxy do shell renova
 > dentro da janela, só quem ganha `SET NX PX` relê a sessão e chama o IdP, quem perde segue sem esperar.
 > Teste: 20 renovações concorrentes → uma chamada ao IdP (núcleo, stores em memória e em arquivo; a variante
-> com Redis falso, pedida pelo ADR-0013, ainda não existe).
+> com Redis falso, pedida pelo ADR-0013, ainda não existe); pelo shell contra o Keycloak, 20 requisições
+> concorrentes na janela não derrubam a sessão (`task verificar:oidc`).
 > **Continua aberto:** exclusão mútua sob failover do Redis (P0-d, sem teste). O aviso "não implemente o
 > lock antes desta resposta" deixou de valer.
 

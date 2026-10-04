@@ -160,7 +160,7 @@ flowchart LR
 |---|---|---|---|
 | Framework | Next 16, App Router, `proxy.ts` | igual | — |
 | Zonas | shell + 3 zonas; rewrites, sonda e 503 gerados de `zonas.json` | mapa de zonas gerado dos manifestos registrados | ler prefixos e origens do domínio de gestão de acesso no boot do shell |
-| Login | `identidadeOidc` (OIDC + PKCE, `openid-client`) com `IDP_EMISSOR`; sem ele, `identidadeDev` (5 atores, sem senha) — ADR-0013 | igual | subir a base em modo OIDC na verificação e no showcase |
+| Login | `identidadeOidc` (OIDC + PKCE, `openid-client`) com `IDP_EMISSOR`; sem ele, `identidadeDev` (5 atores, sem senha) — ADR-0013 | igual | — (`task showcase:oidc`, `task verificar:oidc`) |
 | Store de sessão | arquivo em disco compartilhado; adaptador `sessaoRedis` **pronto** no núcleo 0.4.0 (leitor na raiz, escritor em `/shell`), ainda não ligado | Redis compartilhado (`noeviction`, AOF) | ligar nas apps: instalar `redis` (node-redis), subir um Redis local no `docker-compose` e trocar o adaptador em `lib/nucleo.ts` — depois do gate do shell |
 | Renovação de token | proativa e serializada no `proxy.ts` do shell, lock `SET NX PX` com releitura (ADR-0013, que substitui a decisão 3 do ADR-0009); sessão de 30 min por inatividade | igual | teste P0-d: failover do Redis durante a renovação (PENDENCIAS §4) |
 | Acesso a módulo | gestão de acesso federada, 404 para módulo negado | igual, com cache por versão de política se a medição pedir | medir a consulta por renderização |
