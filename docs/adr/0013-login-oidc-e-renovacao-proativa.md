@@ -1,6 +1,6 @@
 # ADR-0013 — Login OIDC e renovação proativa no shell
 
-**Status:** aceito (humano, 2026-09-23); proposto em 2026-09-22 pelo `arquiteto-mfe`; implementação no item D2 do plano, depois de B1 e D1.
+**Status:** aceito (humano, 2026-09-23), com o **adendo 1** no fim (humano, 2026-10-03); proposto em 2026-09-22 pelo `arquiteto-mfe`; implementação no item D2 do plano, depois de B1 e D1.
 **Substitui:** ADR-0009, decisão 3 (endpoint interno do shell que a zona chamaria para renovar).
 
 ## Contexto
@@ -68,3 +68,36 @@ um fluxo com redirecionamento.
 - **Nenhum tempo desta decisão fica fixo no código:** janela de renovação, lock, transação de login, vida do
   token e inatividade são variáveis de ambiente documentadas em `docs/CONFIGURACAO.md` §1; os números da
   seção "Decisão" acima são os padrões.
+
+## Adendo 1 (2026-10-03) — token de serviço no stub em modo JWT
+
+Decisão do humano na revisão da Task 5 do D2 (opção a). Emenda a decisão 7.
+
+**Achado que motivou o adendo.** Em modo JWT (`IDP_EMISSOR` definido), o stub seguia aceitando `Bearer svc.<app>`
+em qualquer rota, e esse token não tem segredo nenhum: basta escrever `svc.idp` para chamar
+`POST /v2/primeiro-acesso` (liga um `sub` qualquer a uma pessoa pelo CPF e a ativa), `svc.<qualquer>` para
+`POST /v2/decisoes` e `GET /v2/eventos`, e qualquer rota de domínio passava da checagem de credencial. A decisão 7
+dizia "com `IDP_EMISSOR`, só JWT", e a primeira implementação leu isso como "só JWT para usuário".
+
+1. **Em modo JWT, o token de serviço vale só para registrar o manifesto do próprio módulo.** As rotas de registro
+   (`POST /v2/modulos/manifesto`; na v1, `POST /v1/manifestos`) admitem `svc.<app>`, e o domínio continua
+   exigindo que o id do manifesto seja o nome do serviço (id do módulo = id da zona = nome do serviço, ADR-0014,
+   adendo 1): `svc.zona1` só registra `zona1`; outro id é `403`.
+2. **Todo outro uso de token de serviço é recusado nesse modo**, com o mesmo `401` normalizado de credencial
+   ausente: inclusive `svc.idp` e as rotas `primeiro-acesso`, `decisoes` e `eventos`, e toda rota dos domínios
+   de negócio.
+3. **Sem `IDP_EMISSOR` (modo de desenvolvimento), nada muda:** o token de serviço segue valendo onde valia, como
+   simulação dos serviços da API proposta de gestão de acesso.
+
+**Por quê.** O script de deploy `registrar-manifesto.ts` (zonas 1 e 2) não tem identidade no IdP: ainda não há
+fluxo de *client credentials*. Recusar o `svc.` também no registro quebraria a subida do showcase em modo OIDC.
+O substituto previsto é um cliente de serviço por zona no IdP, com *client credentials*, e o domínio verificando
+esse token como verifica o do usuário; aí o `svc.` sai do modo JWT.
+
+**Risco residual.** O token continua sem autenticação: em modo JWT, quem alcança o domínio pelo loopback ainda pode
+registrar de novo o manifesto de um módulo sob o id daquele módulo (e só dele). Os domínios nunca ficam expostos à
+internet e recusam requisição com cabeçalho de navegador (invariante 10); o alcance é o da própria máquina.
+
+**Verificação.** `erp-dominio-stub/test/jwt-verificacao.test.mjs`: varre toda rota declarada em todo domínio e
+exige `401` para `svc.idp`, `svc.zona1` e `svc.acesso`, menos nas rotas de registro; registro com o próprio id
+aceito (`200` na v2, `204` na v1) e com outro id `403`.

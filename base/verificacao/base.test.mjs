@@ -1081,3 +1081,36 @@ test('D2: dominio com IDP_EMISSOR (pela lista de inclusao) aceita o access token
     p.kill('SIGTERM')
   }
 })
+
+test('D2 (ADR-0013, adendo 1): com IDP_EMISSOR, o registrar-manifesto das zonas segue funcionando e o token de servico so registra o proprio modulo', { timeout: 60_000 }, async () => {
+  // gestão de acesso v2 avulsa em modo JWT; o IdP nem precisa estar no ar: o token de serviço não passa por ele
+  const PORTA = 4120
+  const env = ambienteDoPapel('dominio', { ...process.env, IDP_EMISSOR: 'http://127.0.0.1:1/realms/erp' })
+  const codigo = `import { criarGestaoDeAcessoV2 } from './src/gestao-acesso-v2/servidor.mjs'
+    import { verificadorDoProcesso } from './src/base.mjs'
+    if (!verificadorDoProcesso()) process.exit(2)
+    criarGestaoDeAcessoV2().listen(${PORTA}, '127.0.0.1', () => console.log('pronto'))`
+  const p = spawn('node', ['--input-type=module', '-e', codigo], { cwd: join(RAIZ, 'erp-dominio-stub'), env, stdio: ['ignore', 'pipe', 'inherit'] })
+  const registrar = (zona, extra = {}) => new Promise((ok) => {
+    const r = spawn('pnpm', ['registrar'], {
+      cwd: join(RAIZ, zona), stdio: 'ignore',
+      env: { ...ambienteDoPapel('zona', process.env), ACESSO_URL: `http://127.0.0.1:${PORTA}`, ...extra },
+    })
+    r.once('exit', ok)
+  })
+  try {
+    await new Promise((ok, falha) => { p.stdout.once('data', ok); p.once('exit', (c) => falha(new Error(`gestao de acesso avulsa saiu com ${c}`))) })
+    assert.equal(await registrar('erp-zona-1'), 0, 'zona 1 nao registrou o proprio manifesto em modo JWT')
+    assert.equal(await registrar('erp-zona-2'), 0, 'zona 2 nao registrou o proprio manifesto em modo JWT')
+    assert.notEqual(await registrar('erp-zona-1', { ERP_TOKEN_SERVICO: 'svc.zona2' }), 0, 'svc.zona2 registrou o manifesto da zona 1')
+    const v2 = `http://127.0.0.1:${PORTA}`
+    const servico = (svc, caminho, corpo) => fetch(`${v2}${caminho}`, {
+      method: corpo ? 'POST' : 'GET', headers: { authorization: `Bearer ${svc}`, 'content-type': 'application/json' }, body: corpo && JSON.stringify(corpo),
+    })
+    assert.equal((await servico('svc.idp', '/v2/primeiro-acesso', { cpf: '34236671255', sub: 'forjado' })).status, 401)
+    assert.equal((await servico('svc.zona1', '/v2/decisoes', { pessoa: 'p-1', modulo: 'zona1', funcionalidade: 'painel.ver' })).status, 401)
+    assert.equal((await servico('svc.shell', '/v2/eventos')).status, 401)
+  } finally {
+    p.kill('SIGTERM')
+  }
+})
