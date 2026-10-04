@@ -28,6 +28,9 @@ pacotes ou em `base/verificacao/`.
    Segunda exceção: a sonda de saúde do shell (`erp-shell/lib/saude-zonas.ts`), que só chama
    as origens do `zonas.json`. A checagem N8 (`base/verificacao/saida-de-rede.mjs`) lê a estrutura
    do código e só aceita as exceções listadas lá, cada uma com o motivo.
+   O IdP não é destino do registro: discovery, token e logout só passam pelo adaptador
+   `identidadeOidc` de `@erp/nucleo/shell` (ADR-0013, decisão 5); app nenhuma importa
+   `openid-client` (a N8 recusa todo pacote fora da lista dela).
 5. **SEMPRE** revalide sessão no primeiro bloco de toda Server Action. Ela é endpoint público.
 6. **SEMPRE** use `If-Match` em mutação de recurso versionado, com a versão que o cliente
    conhece. O núcleo recusa PUT/PATCH/DELETE sem ela; POST que só define um valor
@@ -45,6 +48,8 @@ pacotes ou em `base/verificacao/`.
 14. **NUNCA** deixe uma extensão alterar semântica de campo já usado pelo núcleo.
 15. **NUNCA** grave, renove ou encerre sessão fora do shell. Escrita de sessão e
     autenticação só existem em `@erp/nucleo/shell`; zona nenhuma importa esse subpath.
+    A renovação do token é proativa, no `proxy.ts` do shell (`nucleo.sessao.renovarSessao`, com
+    lock `SET NX PX`; ADR-0013, decisão 4); zona nenhuma renova nem pede ao shell que renove.
 16. **SEMPRE** verifique o acesso na camada 2 em toda página de zona
     (`exigirModulo(modulo, funcionalidade)`, os dois argumentos) e em toda Server Action
     (`acaoProtegida(requisito, …)`). A zona de acesso usa `exigirPapel()`; a página inicial do shell

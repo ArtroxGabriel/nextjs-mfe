@@ -1,6 +1,6 @@
 # ADR-0013 — Login OIDC e renovação proativa no shell
 
-**Status:** aceito (humano, 2026-09-23), com o **adendo 1** no fim (humano, 2026-10-03); proposto em 2026-09-22 pelo `arquiteto-mfe`; implementação no item D2 do plano, depois de B1 e D1.
+**Status:** aceito (humano, 2026-09-23), com o **adendo 1** no fim (humano, 2026-10-03); proposto em 2026-09-22 pelo `arquiteto-mfe`; **implementado no D2** (núcleo 0.10.1, 2026-10-03), menos a verificação ponta a ponta em modo OIDC (Em aberto, item 2).
 **Substitui:** ADR-0009, decisão 3 (endpoint interno do shell que a zona chamaria para renovar).
 
 ## Contexto
@@ -50,14 +50,43 @@ um fluxo com redirecionamento.
   stub recusa `alg: none`, HS256 com a chave pública, `aud`/`iss`/`exp` errados; varredura de `refresh_token`,
   `id_token` e `eyJ` no HTML/JS; na verificação, página de zona ainda 200 depois do vencimento do primeiro token.
 - Custo: um `GET` no Redis por requisição dinâmica do shell — medir o p95 do proxy antes e depois.
+  **Medido em 2026-10-03** (`task medir:proxy`, `base/scripts/medir-proxy.mjs`): base em modo produção com a
+  sessão no Redis do showcase, rota `/zona1`, 1000 requisições em série por cenário depois de 100 de aquecimento,
+  duas rodadas. "Antes" é o proxy sem leitura (sem cookie → 307); "depois", o mesmo 307 com uma leitura
+  (cookie de sessão inexistente: `renovarSessao` lê o store e devolve `ausente`).
+
+  | Cenário | p50 | p95 | p99 |
+  |---|---|---|---|
+  | sem cookie, 0 leituras (307) | 1,54–1,60 ms | 2,56–2,61 ms | 3,66–3,94 ms |
+  | cookie, 1 leitura do Redis (307) | 2,34–2,36 ms | 2,87–3,00 ms | 3,43–4,27 ms |
+  | sessão válida: 1 leitura + página da zona (200) | 14,9 ms | 19,4–19,8 ms | 25,4–25,7 ms |
+
+  A leitura soma ~0,8 ms no p50 e 0,3–0,4 ms no p95, menos de 2 % do p95 de uma página. Ressalvas: uma
+  máquina de desenvolvimento (i7-13620H, 16 núcleos, Redis em Docker no loopback), uma requisição por vez,
+  sem renovação no meio (o token não entrou na janela); com Redis em outra máquina, soma-se o RTT da rede.
+  O "antes" de verdade (núcleo 0.9.2, sem leitura nenhuma no proxy) não foi medido: o cenário sem cookie
+  isola o mesmo custo.
 - Documentos a atualizar na implementação: `AGENTS.md` (invariantes 4 e 15), `02-nucleo.md` §2.1/§2.2/§6,
   `03-extensoes.md` §3.1, ADR-0002 (nota do lock), ADR-0009 (decisão 3 substituída), `PENDENCIAS.md` §4,
   `06-seguranca.md`, `11-testes.md`, `mfe/01-operacao.md` §3, `mfe/00-arquitetura.md` §12.2, `atual.md`/`alvo.md`.
 
 ## Em aberto
 
-1. Reuso de refresh token no Keycloak 26 com rotação: a segunda renovação concorrente só falha ou derruba a
-   sessão? Medir no showcase.
+1. ~~Reuso de refresh token no Keycloak 26 com rotação: a segunda renovação concorrente só falha ou derruba a
+   sessão? Medir no showcase.~~ **Respondido:** derruba. Uma renovação `200`, a outra `400 invalid_grant`
+   ("Maximum allowed refresh token reuse exceeded"), e depois disso o access token novo dá `401` no
+   `userinfo` e o refresh token novo dá `invalid_grant` ("Session doesn't have required client")
+   ([medição 1](../../base/showcase/medicao-refresh-concorrente.md), 2026-09-23; repetida com o mesmo
+   resultado em 2026-10-03). O lock com releitura (decisão 4) é o que impede isso; o mesmo comportamento
+   pelo shell de verdade depende do item 2.
+2. **Base em modo OIDC na máquina local** (achado da Task 6 do D2, 2026-10-03). A decisão 5 recusa `http://`
+   em produção, e a base sobe em modo produção (`next start`, `NODE_ENV=production`). O Keycloak do showcase
+   é `http://127.0.0.1:8080` e o shell é `http://localhost:3000`: com `IDP_EMISSOR` definido, o shell responde
+   500 em toda rota (`origem de form-action precisa de https em producao`, na CSP do proxy) e as zonas recusam
+   o mesmo valor; `IDP_URL_RETORNO` e `IDP_URL_POS_LOGOUT` cairiam na mesma regra. Por isso o showcase e o
+   ponta a ponta ainda não sobem em modo OIDC, e os testes "página de zona 200 depois do vencimento do
+   primeiro token" e a varredura de `refresh_token`/`id_token`/`eyJ` não rodam contra o Keycloak.
+   Decisão do humano pendente (opções em `.agents/orchestrator/RETOMADA.md`).
 
 ## Decidido depois (humano, 2026-09-22)
 

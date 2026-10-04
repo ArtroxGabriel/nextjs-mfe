@@ -106,6 +106,13 @@ outra roupa.
 
 ### 3.1 Entrada
 
+> **Na base (ADR-0013, 2026-10-03):** `GET /api/auth/entrar` grava a transação de login (`state`,
+> `code_verifier`, `nonce`, destino) no store, uso único, e manda ao IdP com PKCE S256; o navegador leva só o id
+> da transação em `__Host-erp-login`. O IdP devolve a `GET /api/auth/retorno`, que consome a transação, conclui
+> no IdP, grava `{ sub, nome, accessToken, tokenExpiraEm, refreshToken, idToken, expiraEm }` com um id novo e
+> devolve `__Host-session`. Sem `IDP_EMISSOR`, o mesmo caminho passa por `/login/dev` em vez do IdP. Não há
+> `roles` na sessão: o menu vem da gestão de acesso (ADR-0014).
+
 ```
 /login (shell) → provedor OIDC → /api/auth/callback (shell)
   → grava { sub, roles, accessToken, expiraEm } no store compartilhado
@@ -141,6 +148,10 @@ isso seria impossível; aqui é fácil, e a razão é arquitetural:
   → encerra a sessão no provedor OIDC (back-channel, se suportado)
 ```
 
+Na base, `POST /api/auth/sair` remove do store, apaga o cookie e responde 303 para o logout do IdP
+(*RP-initiated logout*, só `client_id` e `post_logout_redirect_uri`, nenhum token na URL); não há
+back-channel. A CSP abre `form-action` para a origem do IdP só para isso (ADR-0013, decisão 6).
+
 A ordem importa: remover do store **primeiro**. Se o cookie expirasse antes e a remoção
 falhasse, restaria uma sessão órfã válida no store, alcançável por quem tivesse copiado o
 cookie.
@@ -149,12 +160,15 @@ Uma zona **nunca** implementa saída. Ela redireciona para a do shell.
 
 ### 3.4 Renovação
 
-`getAccessToken` renova quando falta menos de 30 s para expirar. Com várias zonas, três
-processos podem tentar renovar a mesma sessão ao mesmo tempo.
+Proativa e serializada no `proxy.ts` do shell ([ADR-0013](../../adr/0013-login-oidc-e-renovacao-proativa.md)):
+toda requisição a zona passa por ele. Quando falta menos de `ERP_RENOVACAO_JANELA_S` (60 s) para o token
+vencer, só quem ganha o lock `SET NX PX` (`ERP_RENOVACAO_LOCK_S`, 15 s) relê a sessão, chama o IdP e
+regrava; quem perde segue sem esperar, com o token que ainda vale. `invalid_grant` remove a sessão (login);
+erro transitório do IdP mantém a sessão e o lock segura novas tentativas. Zona nenhuma renova.
 
-> **Aberto.** [PENDENCIAS §4](../bff/PENDENCIAS.md) — o desenho do lock depende de
-> a política do IdP permitir ou não uso concorrente do mesmo `refresh_token`. Pergunta não
-> feita; bloqueia produção. Ver §8.
+O lock é requisito, não otimização: o Keycloak do showcase, com rotação e detecção de reuso, revoga a
+sessão inteira quando o mesmo refresh token é usado duas vezes ([PENDENCIAS §4](../bff/PENDENCIAS.md)).
+Continua aberto só o failover do Redis durante a renovação (§8.2).
 
 ---
 
@@ -307,7 +321,8 @@ rebaixados numa travessia Pedidos → Estoque → Comercial, cache quente e frio
 haver medição — §6 diz quem a produz.
 
 ### 8.2 Lock de renovação × política do IdP
-[PENDENCIAS §4](../bff/PENDENCIAS.md). Bloqueia produção. §3.4.
+[PENDENCIAS §4](../bff/PENDENCIAS.md), parcial: a política do IdP foi respondida e a renovação serializada
+está implementada (§3.4); falta o teste P0-d (failover do Redis). Bloqueia produção.
 
 ### 8.3 Limite de taxa e admission control
 [PENDENCIAS §7](../bff/PENDENCIAS.md). O modelo de ameaça marca enumeração por

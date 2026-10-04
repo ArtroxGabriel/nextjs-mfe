@@ -1,6 +1,6 @@
 # ADR-0009 — Base genérica: BFF + Multi-Zones sem domínio no núcleo
 
-**Status:** aceita · **Data:** 2026-09-21 · **Substitui:** decisões 5, 9 e 10 do [ADR-0008](0008-multi-zones-como-base-mfe.md) · **Afeta:** [AGENTS.md](../../AGENTS.md), [02](../desenho/bff/02-nucleo.md), [06](../desenho/bff/06-seguranca.md), [11](../desenho/bff/11-testes.md)
+**Status:** aceita; decisão 3 substituída pelo [ADR-0013](0013-login-oidc-e-renovacao-proativa.md) · **Data:** 2026-09-21 · **Substitui:** decisões 5, 9 e 10 do [ADR-0008](0008-multi-zones-como-base-mfe.md) · **Afeta:** [AGENTS.md](../../AGENTS.md), [02](../desenho/bff/02-nucleo.md), [06](../desenho/bff/06-seguranca.md), [11](../desenho/bff/11-testes.md)
 
 ## Contexto
 
@@ -32,7 +32,7 @@ As nove decisões da §7 da revisão foram tomadas em 2026-09-21, todas na recom
 |---|---|---|
 | 1 | Validação em `repos/` com **App Router**; a PoC `apps/` fica congelada como evidência | a PoC quebra o invariante 2 por construção (Pages Router serializa props) |
 | 2 | Contratos de domínio: pacote do time dono quando mais de uma zona consome; senão **tipos locais na zona** | `@erp/contratos` fica só com contratos de plataforma (erros, manifesto, módulo permitido) |
-| 3 | Renovação de token: **endpoint interno do shell** sob pedido da zona | shell continua escritor único; depende das respostas do IdP (PENDENCIAS §4) — **não implementado** |
+| 3 | ~~Renovação de token: **endpoint interno do shell** sob pedido da zona~~ | **substituída pelo [ADR-0013](0013-login-oidc-e-renovacao-proativa.md)**: renovação proativa e serializada no `proxy.ts` do shell; zona nenhuma pede renovação |
 | 4 | Moldura e toast: pacote **`@erp/moldura`** renderizado por toda aplicação | sem Module Federation; duplicação medida antes de otimizar |
 | 5 | Acesso federado: cada zona publica um **manifesto** (módulos, perfis, concessões padrão); a atribuição é central, na zona de gestão de acesso | um lugar de atribuição, catálogos por zona |
 | 6 | Módulo não permitido responde **404** | módulo restrito não revela existência; mantém o invariante 8 |

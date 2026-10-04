@@ -104,6 +104,13 @@ tasks:
       REDIS_URL_ZONA: redis://zona:dev-zona-leitura@127.0.0.1:6379
       CONSTRUIR: '{{.CONSTRUIR | default "1"}}'
 
+  medir:proxy:
+    desc: "Mede p50/p95/p99 do proxy do shell sem e com a leitura de sessão no Redis (task showcase:subir antes; MEDIR_N=1000)"
+    cmd: node base/scripts/medir-proxy.mjs
+    env:
+      REDIS_URL: redis://default:dev-shell-escrita@127.0.0.1:6379
+      REDIS_URL_ZONA: redis://zona:dev-zona-leitura@127.0.0.1:6379
+
   scripts:test:
     desc: Testes dos scripts da base (ambiente, lockstep, hashes)
     cmd: node --test base/scripts/*.test.mjs

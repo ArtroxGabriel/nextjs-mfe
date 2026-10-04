@@ -69,7 +69,7 @@ showcase no ar: ${SHELL}
   dados dos domínios:        ${process.env.DADOS_DIR}  (task showcase:dados:resetar volta à semente)
   sessão:                    Redis (${mascararUrl(process.env.REDIS_URL)}); cookie __Host-session só com o id opaco
   Keycloak (admin/admin):    http://localhost:8080  — conferido por task showcase:checar;
-                             as apps ainda usam o login de desenvolvimento (D2, ADR-0013)
+                             as apps ainda usam o login de desenvolvimento (modo OIDC: ADR-0013, Em aberto, item 2)
 
 Ctrl-C derruba domínios, shell e zonas.`)
 for (const sinal of ['SIGINT', 'SIGTERM']) process.on(sinal, () => { derrubar(); process.exit(0) })

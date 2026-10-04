@@ -79,6 +79,19 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
   (`base/scripts/ambiente.test.mjs`), com o motivo, e o teste prova que a função não é usada pelo que a zona carrega.
 - **Padrão:** vale quando a variável falta; valor inválido (não numérico, fora da faixa) é erro na subida, não silêncio.
 
-Os itens "⬜ D2" entram com o login OIDC (item D2 em `.agents/orchestrator/RETOMADA.md`). B5a (shell) e B5b (núcleo 0.8.0) já tiraram do código os tempos e limites marcados "✅".
-
 Valor inválido (não inteiro, zero, negativo ou acima do teto) é erro na subida, com o nome da variável; nunca vira outro valor em silêncio.
+
+Todas as variáveis do D2 (login OIDC e renovação, ADR-0013) estão em uso desde o núcleo 0.10.1 (2026-10-03).
+B5a (shell) e B5b (núcleo 0.8.0) já tinham tirado do código os tempos e limites marcados "✅".
+
+**Limite conhecido (2026-10-03):** `http://` em `IDP_EMISSOR`, `IDP_URL_RETORNO` e `IDP_URL_POS_LOGOUT` só vale fora
+de produção, e `next start` roda em produção. O Keycloak do showcase é `http://`: com `IDP_EMISSOR` apontando para
+ele, a base em modo produção não sobe (ADR-0013, Em aberto, item 2). Até a decisão, `task showcase` e
+`task verificar` usam o login de desenvolvimento.
+
+## 6. Ferramentas de medição
+
+| Variável | Padrão | Significado | Quem lê |
+|---|---|---|---|
+| `MEDIR_N` | `1000` | Requisições por cenário em `task medir:proxy` (mínimo 10), depois de até 100 de aquecimento | `base/scripts/medir-proxy.mjs` |
+

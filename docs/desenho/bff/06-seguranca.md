@@ -31,7 +31,7 @@ Quatro verificações para a mesma ação. **Só a última é segurança.**
 
 | Camada | Onde | Verifica | Custo | Se falhar |
 |---|---|---|---|---|
-| 1 | `proxy.ts` | presença de cookie | zero I/O | redirect para login |
+| 1 | `proxy.ts` | presença de cookie | zero I/O nas zonas; no shell, 1 leitura do store por requisição com cookie (renovação, ADR-0013) | redirect para login |
 | 2 | layout / DAL | sessão válida, role | 1 leitura Redis + 1 ao domínio | `notFound()` |
 | 3 | condicional de UI | `_permissoes` | zero | elemento não renderiza |
 | 4 | Spring Boot | tudo | query | `404` ou `403` |
@@ -44,6 +44,12 @@ resiste a um `curl`.
 O `proxy.ts` roda em **toda** requisição, incluindo prefetch do `<Link>`. Fazer I/O
 ali multiplica carga por um fator que depende de quanto o usuário passa o mouse sobre
 links. Um cookie forjado passa por essa camada — e tudo bem, a camada 2 pega.
+
+> **Atualização 2026-10-03 — [ADR-0013](../../adr/0013-login-oidc-e-renovacao-proativa.md).** O proxy do shell
+> passou a ler a sessão (um `GET` no store) em toda requisição com cookie, para a renovação proativa do token.
+> Continua sem validar o token: só decide se renova. Custo medido em 2026-10-03 (`task medir:proxy`): +0,3 a 0,4 ms
+> no p95 e +0,8 ms no p50 do proxy, contra uma página de zona de ~19 ms de p95 (números e método no
+> ADR-0013, Consequências). O proxy das zonas segue sem I/O.
 
 ### `401`, `403` ou `404` — o critério
 
@@ -60,8 +66,9 @@ nada — só piora a mensagem de erro.
 | Estado do recurso impede a ação (pedido faturado) | **409/422** | não é autorização, é conflito de estado |
 
 **Por que `401` nunca pode virar `404`.** O loop de reconexão do SSE trata `401` como
-retry e relê o token; o `lib/session.ts` renova sob lock em resposta a `401`. Sem esse
-sinal, a reconexão vira erro permanente e não há gatilho de renovação.
+retry e relê o token. Sem esse sinal, a reconexão vira erro permanente.
+(Até o ADR-0013 o `401` era também o gatilho de renovação; hoje a renovação é proativa, no proxy do shell,
+e o `401` do domínio leva ao login.)
 
 **Onde o "sempre 404" cobrava o preço.** Um operador do grupo certo, com o pedido
 renderizado à frente dele, sem permissão de `excluir`: um `404` no `DELETE` seria mapeado
@@ -414,7 +421,7 @@ Sem produção, para não transformar divergência de contrato em erro de runtim
 
 | Melhoria | Ganho | Esforço |
 |---|---|---|
-| Rotação de refresh token com detecção de reuso | revoga família inteira ao detectar roubo | baixo (configuração no IdP) |
+| ~~Rotação de refresh token com detecção de reuso~~ ✅ ligada no realm do showcase (`revokeRefreshToken`, `refreshTokenMaxReuse: 0`); segura porque a renovação é serializada (ADR-0013) | revoga família inteira ao detectar roubo | baixo (configuração no IdP) |
 | CSP por hash na zona pública | elimina a única concessão de `unsafe-inline` | médio (passo de build) |
 | `SameSite=Strict` com callback dedicado | reduz superfície de CSRF | médio |
 | Sender-constrained tokens (DPoP) | token roubado deixa de funcionar isolado | alto |

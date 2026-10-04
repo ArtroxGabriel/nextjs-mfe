@@ -119,13 +119,15 @@ sequenceDiagram
     participant R as Redis
     participant Z as Qualquer zona
 
-    N->>S: /login
-    S->>I: redireciona para autenticar
-    I-->>S: /api/auth/callback
-    S->>R: grava { sub, roles, accessToken, expiraEm }
+    N->>S: /api/auth/entrar
+    S->>R: grava a transação de login (state, verifier, nonce; uso único)
+    S->>I: redireciona para autenticar (PKCE S256)
+    I-->>S: /api/auth/retorno
+    S->>R: grava { sub, nome, accessToken, tokenExpiraEm, refreshToken, idToken, expiraEm }
     S-->>N: cookie __Host-session = id opaco
     N->>Z: GET /estoque/… (mesmo cookie)
     Z->>R: lê a sessão pelo id
+    Note over N,S: renovação: o proxy do shell renova antes de o token vencer,<br/>serializada por lock no Redis (ADR-0013); zona nenhuma renova
     Note over N,Z: sair: /api/auth/sair remove do Redis PRIMEIRO,<br/>depois expira o cookie → vale em todas as zonas
 ```
 
@@ -158,9 +160,9 @@ flowchart LR
 |---|---|---|---|
 | Framework | Next 16, App Router, `proxy.ts` | igual | — |
 | Zonas | shell + 3 zonas; rewrites, sonda e 503 gerados de `zonas.json` | mapa de zonas gerado dos manifestos registrados | ler prefixos e origens do domínio de gestão de acesso no boot do shell |
-| Login | `identidadeDev` (4 atores, sem senha) | OIDC + PKCE | adaptador OIDC da porta de identidade |
+| Login | `identidadeOidc` (OIDC + PKCE, `openid-client`) com `IDP_EMISSOR`; sem ele, `identidadeDev` (5 atores, sem senha) — ADR-0013 | igual | subir a base em modo OIDC na verificação e no showcase |
 | Store de sessão | arquivo em disco compartilhado; adaptador `sessaoRedis` **pronto** no núcleo 0.4.0 (leitor na raiz, escritor em `/shell`), ainda não ligado | Redis compartilhado (`noeviction`, AOF) | ligar nas apps: instalar `redis` (node-redis), subir um Redis local no `docker-compose` e trocar o adaptador em `lib/nucleo.ts` — depois do gate do shell |
-| Renovação de token | não existe; sessão de dev dura 30 min | endpoint interno do shell (ADR-0009, decisão 3) | depende das respostas do IdP (PENDENCIAS §4) |
+| Renovação de token | proativa e serializada no `proxy.ts` do shell, lock `SET NX PX` com releitura (ADR-0013, que substitui a decisão 3 do ADR-0009); sessão de 30 min por inatividade | igual | teste P0-d: failover do Redis durante a renovação (PENDENCIAS §4) |
 | Acesso a módulo | gestão de acesso federada, 404 para módulo negado | igual, com cache por versão de política se a medição pedir | medir a consulta por renderização |
 | Falha isolada de zona | 503 com `Retry-After` e página própria, sonda de saúde por zona com cache de 1 s — **implementado, gate reprovou** (C1: caminho com maiúsculas escapa da sonda). A sonda bate na página da zona; **não existe `/{zona}/api/health`** | igual, com zona travada limitada pelo timeout da sonda e sem janela de 500 cru | gate do shell: caminho normalizado × cru (R1 da PoC), zona travada, janela logo após a queda |
 | Composição | núcleo 0.5.0 tem `criarFragmento` (consumidor) e `responderFragmento` (dono), ADR-0011; nenhuma zona usa ainda | `FragmentoRemoto` com timeout e circuit breaker | rota `_fragmento` na zona 2, bloco na zona 1, recusa de `/{zona}/_fragmento/` no shell |
@@ -202,7 +204,7 @@ no alvo (§6) por ser parte da arquitetura final, não da prova de viabilidade.
 
 | Parâmetro | Valor do desenho | Base hoje | Origem |
 |---|---|---|---|
-| renovação do token | quando faltar < 30 s | não há renovação | `mfe/01-operacao` §3.4 |
+| renovação do token | quando faltar < 30 s | quando faltar < `ERP_RENOVACAO_JANELA_S` (60 s), no proxy do shell (ADR-0013) | `mfe/01-operacao` §3.4 |
 | timeout padrão ao domínio | 10 s | 5 s por destino (configurável) | `02-nucleo` §2.2 |
 | co-localização BFF ↔ domínio | `RTT_lan ≈ 1 ms`; **alarme acima de 5 ms**, p50 e p99 | não medido | `08-desempenho` §8 — "a premissa assassina": com 120 ms a tela vai de ~115 ms para ~675 ms |
 | entrega de evento SSE | ≤ 2 s | não há SSE | `08-desempenho` §7 |

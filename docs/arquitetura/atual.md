@@ -19,7 +19,7 @@ flowchart TB
     subgraph SHELL["erp-shell :3000"]
         GW["proxy.ts + rewrites gerados de zonas.json<br/>/zona1 · /zona2 · /acesso (+ /&lt;id&gt;-static)<br/>sonda de saúde por zona → 503"]
         OT["/api/otel/v1/traces<br/>gateway de telemetria"]
-        AUTH["/login · /api/auth/entrar · /api/auth/sair<br/>ÚNICO escritor da sessão"]
+        AUTH["/login · /api/auth/entrar · /api/auth/retorno · /api/auth/sair<br/>ÚNICO escritor da sessão; renova no proxy (ADR-0013)"]
         SH["/ (shell.inicio)"]
     end
     Z1["erp-zona-1 :3001<br/>/zona1 · /zona1/relatorios · /zona1/recursos/[id]"]
@@ -67,7 +67,9 @@ flowchart TD
     ST -- não --> C{"cookie __Host-session?"}
     Z -- não --> C
     C -- não --> L["307 /login?de=…"]
-    C -- sim --> OK["segue com CSP, x-erp-caminho<br/>e flash consumido"]
+    C -- sim --> RN{"renovação proativa (ADR-0013)<br/>1 leitura do store; IdP só na janela e com o lock"}
+    RN -- "revogada ou ausente (GET)" --> L2["307 /login?de=… e apaga o cookie"]
+    RN -- "em dia, renovada, em andamento ou erro" --> OK["segue com CSP, x-erp-caminho<br/>e flash consumido"]
 ```
 
 Escrita pelo Gabriel em 2026-09-21. O primeiro gate reprovou e a correção entrou em `erp-shell`
@@ -81,7 +83,7 @@ a armadilha R1 da PoC não se repete aqui.
 | Pacote | Versão | O que tem | Quem usa |
 |---|---|---|---|
 | `@erp/contratos` | 0.2.1 | códigos de erro e mensagens; `ManifestoDeZona`, `ModuloPermitido`, `validarManifesto` | todos |
-| `@erp/nucleo` | 0.7.0 (as 4 apps) | kit de página e de Server Action `criarPaginas` em `@erp/nucleo/app` (ADR-0012); `criarNucleo`, registro de destinos, leitores de sessão (`sessaoArquivo`, `sessaoRedis`), fragmentos (`criarFragmento`, `responderFragmento`), `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell`, escritores de sessão, `identidadeDev` | shell e zonas (`/shell` só o shell) |
+| `@erp/nucleo` | 0.10.1 (as 4 apps) | kit de página e de Server Action `criarPaginas` em `@erp/nucleo/app` (ADR-0012); `criarNucleo`, registro de destinos, leitores de sessão (`sessaoArquivo`, `sessaoRedis`), fragmentos (`criarFragmento`, `responderFragmento`), `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell` (login, renovação com lock, logout), escritores de sessão, `identidadeDev`, `identidadeOidc` (`openid-client`, PKCE; ADR-0013) | shell e zonas (`/shell` só o shell) |
 | `@erp/moldura` | 0.4.0 | `<Moldura>` (topo, menu com `aria-current`, host de toast), `emitirToast`, flash, `FormularioDeAcao`, `ServicoIndisponivel`, `ErroGlobal`; em `@erp/moldura/servidor`: `criarMolduraDoServidor` (menu, toast e envelope visual da Server Action) | shell e zonas |
 
 Publicados no Verdaccio local (`:4873`). Cada aplicação é um repositório com lockfile próprio.
@@ -97,8 +99,11 @@ sequenceDiagram
     participant GA as Gestão de acesso
     participant A as Domínio A
 
-    N->>S: POST /api/auth/entrar (usuario)
-    S->>ST: grava { sub, nome, token, expira } — só o shell
+    N->>S: GET /api/auth/entrar
+    S->>ST: grava a transação de login (uso único)
+    S-->>N: 303 para o IdP (com IDP_EMISSOR) ou /login/dev · Set-Cookie __Host-erp-login
+    N->>S: GET /api/auth/retorno?state&code (ou &usuario no dev)
+    S->>ST: consome a transação; grava { sub, nome, tokens, expira } — só o shell
     S-->>N: 303 · Set-Cookie __Host-session=<uuid> HttpOnly Secure
     N->>S: GET /zona1/relatorios
     S->>Z: rewrite (cookie repassado)

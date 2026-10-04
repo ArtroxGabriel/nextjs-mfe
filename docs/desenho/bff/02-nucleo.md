@@ -69,6 +69,14 @@ Oito elementos. Cada um deriva de um requisito, não de conveniência.
 
 ### 2.1 Sessão
 
+> **Atualização 2026-10-03 — [ADR-0013](../../adr/0013-login-oidc-e-renovacao-proativa.md).** Na base, a
+> renovação não acontece aqui, sob demanda, quando o token está para vencer: é proativa e serializada no
+> `proxy.ts` do shell (`nucleo.sessao.renovarSessao`): dentro da janela (`ERP_RENOVACAO_JANELA_S`, 60 s), só
+> quem ganha o lock `SET NX PX` relê a sessão, chama o IdP e regrava; quem perde segue sem esperar. As zonas
+> só leem a sessão (`criarNucleo`) e nunca renovam (invariante 15). Login por
+> `GET /api/auth/entrar` → IdP → `GET /api/auth/retorno`, com a transação (`state`, `code_verifier`, `nonce`)
+> no store de sessão, uso único. Tempos em [`CONFIGURACAO.md`](../../CONFIGURACAO.md) §1.
+
 ```ts
 // lib/session.ts
 import 'server-only'
@@ -103,6 +111,10 @@ e era um conceito que exigia uma premissa nunca demonstrada.
 não ficam** porque são insumo de autorização, e autorização é do domínio.
 
 ### 2.2 Transporte
+
+> **Atualização 2026-10-03 — ADR-0013.** O `401` do domínio não dispara renovação: vira `SessaoInvalida`
+> e a página manda ao login. A renovação já aconteceu antes, no proxy do shell (§2.1). O transporte da
+> base é o registro de destinos (ADR-0009), não o `upstream` abaixo.
 
 ```ts
 // lib/upstream/client.ts
@@ -377,7 +389,7 @@ Registrado para não passar por completo:
 
 | Lacuna | Onde tratar |
 |---|---|
-| Lock de renovação depende da política do IdP | [PENDENCIAS.md](PENDENCIAS.md) §4 |
+| Lock de renovação sob failover do Redis (a política do IdP já foi respondida: rotação com detecção de reuso; renovação serializada no ADR-0013) | [PENDENCIAS.md](PENDENCIAS.md) §4 |
 | Limite de taxa contra enumeração sequencial | [PENDENCIAS.md](PENDENCIAS.md) §7 |
 | Admission control sob saturação | idem |
 | Disponibilidade acoplada à do domínio | consequência aceita do ADR-0007 |

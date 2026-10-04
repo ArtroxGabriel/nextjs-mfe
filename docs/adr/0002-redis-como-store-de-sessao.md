@@ -57,6 +57,16 @@ Com `noeviction`, o cache lotando derruba as escritas de sessão.
 
 ## Nota de implementação: lock de renovação
 
+> **Atualização 2026-10-03 — [ADR-0013](0013-login-oidc-e-renovacao-proativa.md), implementado no núcleo 0.10.**
+> A premissa abaixo foi respondida e **é falsa** para o IdP do showcase: o Keycloak 26 com rotação
+> (`revokeRefreshToken`, `refreshTokenMaxReuse: 0`) revoga a sessão inteira quando o mesmo refresh token é
+> usado duas vezes ([medição 1](../../base/showcase/medicao-refresh-concorrente.md), repetida em 2026-10-03).
+> Renovação duplicada derruba a sessão; o lock virou requisito. O que a base faz: `SET NX PX` com a duração
+> de `ERP_RENOVACAO_LOCK_S` (15 s), sem liberação explícita; a renovação é proativa e serializada no proxy do
+> shell, e quem ganha o lock **relê** a sessão antes de chamar o IdP; quem perde não espera. A gravação usa
+> `SET XX` (logout durante a renovação não ressuscita a sessão). Continua valendo: o lock simples não é
+> seguro sob failover do Redis ([PENDENCIAS](../desenho/bff/PENDENCIAS.md) §4, teste P0-d).
+
 O refresh de token usa `SET chave valor NX EX 15`:
 
 - **NX** — *if Not eXists*: a escrita só acontece se a chave ainda não existir.

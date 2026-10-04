@@ -25,7 +25,7 @@ são fundamentos sólidos. Vem de **consistência, recuperação e premissas nã
 | 1 | Semântica do canal de eventos | ✅ **fechada** — notificação efêmera; durabilidade no domínio |
 | 2 | Corrida de cache-aside (stale set) | ✅ **eliminada** pelo [ADR-0007](../../adr/0007-remover-cache-de-payload.md) |
 | 3 | `scopeKey` representa a projeção? | ✅ **eliminada** pelo ADR-0007 |
-| 4 | Lock de refresh × política do IdP | ⏳ **aberta** — falta confirmar rotação e detecção de reuso |
+| 4 | Lock de refresh × política do IdP | ⏳ **parcial** — política respondida (rotação com detecção de reuso) e renovação serializada implementada ([ADR-0013](../../adr/0013-login-oidc-e-renovacao-proativa.md)); falta P0-d (failover do Redis) |
 | 5 | O cache permanece no baseline? | ✅ **fechada** — removido, ADR-0007 |
 | 6 | Modelo de taxa de acerto sem derivação | ✅ **sem objeto** — não há cache a modelar |
 | 7 | Limite de taxa e admission control | ⏳ **aberta** |
@@ -234,7 +234,19 @@ A RFC 9110 define o ETag como validador da *representação selecionada* — a p
 
 ---
 
-## 4. Lock de refresh × política do IdP — ⏳ ABERTA
+## 4. Lock de refresh × política do IdP — ⏳ PARCIAL
+
+> **Atualização 2026-10-03.** A sub-pergunta abaixo foi respondida no IdP do showcase: **com rotação e
+> detecção** (Keycloak 26, `revokeRefreshToken`, `refreshTokenMaxReuse: 0`). Duas renovações com o mesmo
+> refresh token: uma `200`, a outra `400 invalid_grant` e a **sessão inteira revogada**, inclusive os
+> tokens da vencedora ([medição 1](../../../base/showcase/medicao-refresh-concorrente.md), 2026-09-23, repetida
+> em 2026-10-03). É o terceiro caso da tabela. A saída escolhida foi a renovação proativa e serializada
+> ([ADR-0013](../../adr/0013-login-oidc-e-renovacao-proativa.md), núcleo 0.10): o proxy do shell renova
+> dentro da janela, só quem ganha `SET NX PX` relê a sessão e chama o IdP, quem perde segue sem esperar.
+> Teste: 20 renovações concorrentes → uma chamada ao IdP (núcleo, stores em memória e em arquivo; a variante
+> com Redis falso, pedida pelo ADR-0013, ainda não existe).
+> **Continua aberto:** exclusão mútua sob failover do Redis (P0-d, sem teste). O aviso "não implemente o
+> lock antes desta resposta" deixou de valer.
 
 **Confirmado: o IdP emite `refresh_token`.** O lock permanece necessário. Falta uma
 sub-pergunta, e ela muda o desenho:

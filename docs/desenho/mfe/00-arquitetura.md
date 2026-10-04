@@ -467,9 +467,11 @@ irrelevante na rede real dos usuários, a complexidade de MF não se paga. Decis
 
 ### 12.2 Lock de refresh × política do IdP
 
-[PENDENCIAS §4](../bff/PENDENCIAS.md), **aberta, bloqueia produção**. Com várias
-zonas o problema piora: três processos podem tentar renovar a mesma sessão ao mesmo tempo.
-Depende de perguntas ao IdP que ainda não foram feitas.
+[PENDENCIAS §4](../bff/PENDENCIAS.md), **parcial, bloqueia produção**. As perguntas ao IdP foram
+respondidas no showcase (Keycloak 26: rotação com detecção de reuso; reuso revoga a sessão inteira), e o
+[ADR-0013](../../adr/0013-login-oidc-e-renovacao-proativa.md) tirou a renovação das zonas: só o proxy do
+shell renova, serializado por lock `SET NX PX` com releitura (`01-operacao.md` §3.4). Falta o teste P0-d:
+failover do Redis durante a renovação.
 
 ### 12.3 Correlação de trace entre zonas
 
