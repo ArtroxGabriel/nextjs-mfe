@@ -2,6 +2,8 @@
 
 > Só o que está **aberto**. Cada item diz o que é, a evidência e em que atividade do plano fecha.
 > Os itens da PoC (D1–D11) fecharam por substituição em 2026-09-21; estão na tag `historico-2026-09-22`.
+> D13 (ator só com `tarefas.ver`) e D15 (lacunas sem veto da iteração 9) fecharam na K6 (2026-09-29, `d1d6345`;
+> saíram daqui em `51fd1ab`); conferido de novo na Task 6 do D2 (2026-10-03).
 
 ## D7 — Zona travada segura a requisição até o `proxyTimeout` do Next
 
@@ -42,3 +44,38 @@
   (`base/scripts/ambiente.mjs`); a senha de escrita não chega a eles, conferido em `/proc/<pid>/environ` por
   `base/verificacao/base.test.mjs` com `ERP_REDIS_SENHA_SHELL` sempre definida.
 - **Fecha em:** bloqueio de saída de rede das zonas no deploy (P1, fim do plano). Até lá, risco aceito.
+
+## D16 — Verificação do ADR-0013 contra o Keycloak real (base em modo OIDC)
+
+- **O que é:** o login OIDC, a renovação e o logout nunca rodaram pelo shell de verdade contra o Keycloak. Faltam o
+  showcase em modo OIDC (E3) e, no ponta a ponta, "página de zona ainda 200 depois do vencimento do primeiro token" e a
+  varredura de `refresh_token`, `id_token` e `eyJ` no HTML e no JS (ADR-0013, Consequências).
+- **Evidência (Task 6 do D2, 2026-10-03):** `next start -p 3190` do shell com `IDP_EMISSOR=http://127.0.0.1:8080/realms/erp`
+  responde 500 em `/login` e em `/api/auth/entrar`: `TypeError: origem de form-action precisa de https em producao`
+  (`@erp/nucleo` `borda/csp.ts`, avaliado na carga do proxy). `identidadeOidc` recusa `http://` em produção para o
+  emissor e para `IDP_URL_RETORNO`/`IDP_URL_POS_LOGOUT`; `next start` roda com `NODE_ENV=production`.
+- **Por que não foi feito:** contornar exige decidir entre exceção explícita para loopback no núcleo, TLS local ou
+  apps em `next dev` (ADR-0013, Em aberto, item 2; opções em `RETOMADA.md`).
+- **Fecha em:** D2, depois da decisão do humano (antes do gate do D2).
+
+## D17 — Zonas leem `refreshToken` e `idToken` (ADR-0013, decisão 2, não cumprida)
+
+- **O que é:** a decisão 2 diz que o leitor das zonas descarta `refreshToken` e `idToken`. O leitor (`sessaoRedis`,
+  `sessaoArquivo`) devolve a `SessaoArmazenada` inteira, e o usuário ACL das zonas no Redis tem `GET` em
+  `erp:sessao:*`, que traz o JSON com os dois. Nada chega ao navegador (`nucleo.sessao.atual` projeta `{ sub, nome }`,
+  invariante 1), mas uma zona comprometida teria o refresh token de toda sessão que lê.
+- **Evidência:** `erp-nucleo/src/adaptadores/sessao-redis.ts` e `sessao-arquivo.ts` sem descarte; registrado na
+  Task 2 do D2 (`RETOMADA.md`, "Para a Task 4") e não feito na Task 4.
+- **Por que não foi corrigido:** descartar no leitor obriga o shell a ter leitura completa própria (a renovação relê o
+  refresh token); separar o que a zona alcança no Redis exige outra chave ou outro formato. Decisão de desenho.
+- **Fecha em:** revisão final do D2 decide se entra antes do gate ou vira fatia própria.
+
+## D18 — `/login/dev` aberto quando o shell sobe em produção sem `IDP_EMISSOR`
+
+- **O que é:** os scripts `build` e `start` do `erp-shell` fixam `ERP_PERMITIR_IDENTIDADE_DEV=1`. Sem `IDP_EMISSOR`,
+  um deploy que use `pnpm start` sobe com `identidadeDev`: qualquer um entra como qualquer ator, sem senha.
+- **Evidência:** `erp-shell/package.json` (`"start": "ERP_PERMITIR_IDENTIDADE_DEV=1 next start -p 3000"`); a guarda
+  em `erp-nucleo/src/adaptadores/identidade-dev.ts` só vale sem a variável. Achado menor da revisão da Task 4 do D2,
+  anterior ao D2.
+- **Por que não foi corrigido:** fora do escopo do D2; a verificação e o showcase dependem desse script.
+- **Fecha em:** P1 (deploy, fim do plano): script de produção sem a variável, ou recusa explícita sem `IDP_EMISSOR`.

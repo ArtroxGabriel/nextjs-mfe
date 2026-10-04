@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Task 5 do D2 implementada; revisão da task em andamento)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Task 6 do D2 feita; modo OIDC aguarda decisão do humano)**.
 
 ## Objetivo final
 
@@ -28,46 +28,34 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 
 - **Token de serviço no modo JWT (Task 5 do D2):** opção (a) — adendo ao ADR-0013; com `IDP_EMISSOR`, `svc.<app>` só registra o manifesto do próprio módulo; `svc.idp`, `primeiro-acesso`, `decisoes` e `eventos` recusados nesse modo; README e `CONFIGURACAO.md` com o alcance real.
 
-## Estado (conferido em 2026-10-01)
+## Estado (conferido em 2026-10-03, Task 6 do D2)
 
 | O quê | Estado | Evidência |
 |---|---|---|
-| Base em `repos/` (Next 16) | funcionando; `base/verificacao` **109/109** com Redis e **105 + 4 pulados** com arquivo; D13 E2E testado | `task verificar:redis`, `task verificar:construir` |
-| Unidades | contratos 20, núcleo 144 (+2 testes K6), moldura 26, stub 43, shell 43; estática 51/51 (+3 testes K6); scripts 19 (+1 teste LA) | `task test`, `task typecheck`, `task verificar:estatica`, `task scripts:test` |
-| `@erp/nucleo` | **0.9.2** publicado e nas 4 apps (lockstep ok); fonte em **0.10.0** no `master` do erp-nucleo (184/184), **não publicado**: publicação e lockstep entram na Task 4 (decisão do humano, 2026-10-01) | lockstep 4 apps; `fd94ecc` |
+| Base em `repos/` (Next 16) | funcionando no login de dev; `base/verificacao` **116/116** com Redis e **112 + 4 pulados** com arquivo | `task verificar:redis`, `task verificar:construir` |
+| Unidades | contratos 20, núcleo 219, moldura 26, stub 71, shell 73; estática 51/51; scripts 20/20; typecheck das 4 apps ok | `task test`, `task typecheck`, `task verificar:estatica`, `task scripts:test` |
+| `@erp/nucleo` | **0.10.1** publicado no Verdaccio **desta máquina** e nas 4 apps (lockstep ok). Outra máquina: publicar 0.10.1 no próprio Verdaccio e `task pacotes:alinhar-hashes` | `task lockstep` |
 | `@erp/contratos` / `@erp/moldura` | **0.4.0** / **0.5.0** | ADR-0012, ADR-0014 adendo 1 |
-| ADRs | **0013 aceito** e **0014 + adendo 1 aceito** (humano, 2026-09-23) | `docs/adr/` |
+| ADRs | **0013 aceito, adendo 1 (2026-10-03), implementado menos o modo OIDC na base**; 0014 + adendo 1 aceito | `docs/adr/` |
+| Keycloak do showcase | `task showcase:checar` ok; reuso de refresh token revoga a sessão inteira (medição 1 repetida em 2026-10-03) | `base/showcase/medicao-refresh-concorrente.md` |
+| Custo do proxy do shell | +0,3–0,4 ms no p95 com a leitura da sessão (página de zona: ~19 ms de p95) | `task medir:proxy`; ADR-0013, Consequências |
 | Gate B1+D1+G3+K | **aprovado** na iteração 9 (2026-09-28); tag `gate-b1-d1-g3-aprovado` | `GATE_STATUS.md` |
-| Fatia K6 | **concluída e verificada** (2026-09-29): ator Eva (D13), LA–LG fechados (D15), invariante 8 na zona-2 | `progress.md`, commit `d1d6345` |
-| Plano D2 + K6 | **aprovado** pelo humano (modo Subagent-Driven) | `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` |
 
-## Próximo passo: D2 (Task 5 — verificação RS256/JWKS no stub de domínio e realm Keycloak)
+## Próximo passo: decisão do humano sobre o modo OIDC local; depois revisão final do D2 e gate
 
-O plano de implementação em `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` foi aprovado. A Task 1 (K6 + D13) foi concluída e aprovada pelo revisor.
+Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Subagent-Driven). Detalhe de cada task
+(revisões, achados menores) no ledger local `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/progress.md`
+(fora do git) e em `ATIVIDADES.md` §4.
 
-1. ✅ **Plano do D2 + K6:** aprovado (2026-09-29). Dependências propostas para instalação documentadas (`openid-client` v6 no shell e peer no núcleo).
-2. ✅ **Task 1 (K6):** ator Eva (`zona2.leitor`, fecha D13) em identidadeDev, realm e semente; botão Concluir ocultado na zona 2 (invariante 8); analisador ignora `declare` e pega atribuições a `assetPrefix`; `precisaConstruir` monitora `ambiente.mjs`; banner e CLI do showcase higienizados. Commits: nucleo `cf56312`, stub `29bdc1c`, zona-2 `7d11a62`, principal `d1d6345`.
-3. ✅ **Task 2** (aprovada 2026-10-03): porta de identidade `@erp/nucleo` 0.10.0 (`iniciar`, `concluir`, `renovar`, `encerrar`), transações de login de uso único no store (`erp:login:*`, GETDEL; `rename` no arquivo) e lock de renovação `SET NX PX` (`erp:renovacao:*`). Renovação em `criarNucleoDoShell.renovarSessao(id)` (o proxy só chama; lança em erro transitório do IdP).
-   - Commits: erp-nucleo `d481d14` (implementação) e `fd94ecc` (correção da rodada 1); principal `dcecec5` (`docs/CONFIGURACAO.md`).
-   - Revisão da task (Opus): spec ✅; **1 Important** — logout durante a renovação ressuscitava a sessão. Corrigido em `fd94ecc` (`regravar` com `SET XX PX`; `renovarSessao` devolve `'ausente'`); teste de corrida em memória, arquivo e Redis falso; mutação conferida; 184/184.
-   - Re-revisão restrita (Sonnet, 2026-10-03) de `d481d14..fd94ecc`: achado resolvido nos três stores, sem quebra nova. **Task 2 fechada.**
-   - Decisão do humano (2026-10-01): a Task 2 só mexe no erp-nucleo; publicação no Verdaccio e lockstep 0.10.0 nas 4 apps vão para a Task 4. Até lá o shell não compila contra 0.10.0 (`nucleo.sessao.entrar(credencial)` saiu).
-   - Achados menores (para a revisão final decidir): tomada de lock velho no store de arquivo pode dar dois vencedores; teste de 20 renovações concorrentes na fábrica sem a variante Redis falso; transações expiradas nunca limpas em arquivo/memória; `sessaoMemoria().adquirirLockRenovacao` sem `validarTtlDoLock`; `ERP_RENOVACAO_JANELA_S < ERP_TOKEN_VIDA_S/2` documentado e não imposto; teste de tempo dos perdedores (<200 ms) pode oscilar; `fronteira.mjs` com nomes genéricos (`iniciar`, `concluir`, `renovar`) como marcadores de escrita; `identidade-dev` sem teto absoluto (`ERP_SESSAO_MAXIMA_S`).
-   - **Para a Task 4:** o wrapper `lib/redis.ts` do shell precisa repassar `getDel`, `NX` e `XX`; o ADR-0013 §2 (leitor das zonas descarta `refreshToken`/`idToken`) não foi feito — se for, o shell precisa de leitura completa própria.
-4. ✅ **Task 3** (aprovada 2026-10-03): Adaptador `identidadeOidc` com `openid-client` v6.
-   - Commits: erp-nucleo `c172bc8` e `9a593a4` (correção: URL de logout sem `id_token_hint`, só `client_id` + `post_logout_redirect_uri`; nenhum token na URL) (211/211; `openid-client` 6.8.8 + `jose` 6.2.12 + `oauth4webapi` 3.8.8 como dev e peer opcional); principal `635f2f5` (`docs/CONFIGURACAO.md`). Sem variável nova; `lerTimeoutDeDestinoMs` compartilhado com `destinos.ts`.
-   - Revisão (Opus) + re-revisão restrita (Sonnet): aprovada. **Para a Task 4 e o ponta a ponta:** `erp-shell` precisa de `openid-client` ao subir para 0.10 (o `/shell` reexporta o adaptador); sem o hint o Keycloak mostra confirmação de logout e pode não redirecionar (conferir); `encerrar` lança se o discovery falhar depois de a sessão já ter sido apagada (try/catch na rota `sair`); `concluir`/`iniciar`/`encerrar` lançam erro normalizado em falha de rede/discovery (a rota de retorno precisa de try/catch); access token decodificado sem verificar assinatura (o domínio verifica); exigências estritas a confirmar no Keycloak (access token JWT, `sub` igual ao do id_token, `preferred_username` no id_token com `scope=openid profile`).
-5. ✅ **Task 4** (aprovada 2026-10-03): Renovação proativa e serializada no `proxy.ts` do shell e rotas `/api/auth/{entrar,retorno,sair}`.
-   - Commits: shell `03ba9b0`, zona-1 `6791943`, zona-2 `4965236`, zona-acesso `d396627`, principal `4604f08`. **`@erp/nucleo` 0.10.0 publicado no Verdaccio desta máquina** (de `9a593a4`) e em lockstep nas 4 apps; `openid-client` 6.8.8 no shell. Outra máquina: publicar 0.10.0 no próprio Verdaccio e `task pacotes:alinhar-hashes` antes de instalar.
-   - Shell 70/70, núcleo 211/211, estática 51/51, `verificar:construir` com arquivo 109 + 4 pulados. Login de dev agora é GET `entrar` → `/login/dev` → GET `retorno` (o POST saiu; `base/verificacao/apoio.mjs` ajustado).
-   - Revisão (Opus): 1 Important — logout OIDC barrado pela CSP (`form-action 'self'`; ADR-0013 decisão 6). Corrigido: **núcleo 0.10.1** (`formularioPara`, publicado no Verdaccio desta máquina, lockstep nas 4 apps; zonas recebem `IDP_EMISSOR`, só a origem). Commits: núcleo `2fa8c06`, shell `d333932`, zona-1 `c7f52cf`, zona-2 `a8b1753`, zona-acesso `5b02a2b`, principal `78b019b`.
-   - Lacuna achada pelo orquestrador: `task scripts:test` V1 vermelho desde o núcleo 0.10 (4 variáveis de sessão). Corrigido em `117236f`: V1 conta só o código do núcleo que a zona alcança, com exceções por função e motivo; 20/20.
-   - Re-revisão restrita (Sonnet): os dois achados resolvidos, sem quebra nova. Outra máquina: publicar 0.10.1 no próprio Verdaccio.
-6. ⏳ **Task 5:** Verificação RS256 JWKS no stub de domínio e realm Keycloak.
-   - Commits: stub `4712d4e`, principal `2c058cb`. Stub 69/69; `verificar:construir` 111 + 4 pulados; `verificar:redis` 115/115; `showcase:checar` ok. Realm já tinha mapper, `revokeRefreshToken` e `refreshTokenMaxReuse: 0`. Variáveis novas: `ERP_JWKS_TTL_S`, `ERP_JWKS_INTERVALO_MIN_S`, `ERP_JWT_TOLERANCIA_S`.
-   - Revisão (Opus): 1 Important (token de serviço sem autenticação aceito no modo JWT, contra o ADR-0013 decisão 7). Humano decidiu (a) em 2026-10-03; **em andamento:** correção pelo implementador.
-   - Containers no ar: Verdaccio, Redis e Keycloak do showcase.
-7. ⬜ **Task 6:** Verificação final e handoff.
+1. ✅ **Task 1 (K6):** ator Eva (D13), lacunas LA–LG (D15), invariante 8 na zona 2. Principal `d1d6345`.
+2. ✅ **Task 2:** porta de identidade v2, transações de login de uso único, lock `SET NX PX`, `regravar` com `SET XX`. Núcleo `d481d14`..`fd94ecc`.
+3. ✅ **Task 3:** adaptador `identidadeOidc` (`openid-client` 6.8.8, PKCE S256, logout sem token). Núcleo `c172bc8`..`9a593a4`.
+4. ✅ **Task 4:** renovação no `proxy.ts` do shell, rotas `entrar`/`retorno`/`sair`, CSP `formularioPara`; núcleo **0.10.1** no Verdaccio desta máquina e nas 4 apps. Shell `d333932`, principal `117236f`.
+5. ✅ **Task 5:** domínios falsos verificam RS256/JWKS; adendo 1 do ADR-0013 (token de serviço só registra o próprio manifesto em modo JWT). Stub `783242b`, principal `1f4414c`.
+6. ✅ **Task 6:** verificação final verde; documentos da lista do ADR-0013 atualizados; p95 do proxy medido (`task medir:proxy`); DEFERRED D16–D18. **Achado bloqueante:** a base não sobe em modo OIDC contra o Keycloak local (abaixo). Relatório: `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/task-6-report.md`.
+7. ⬜ **Decisão do humano** (pendência 7 abaixo) → implementar o modo OIDC no showcase e no ponta a ponta (`DEFERRED.md` D16).
+8. ⬜ **Revisão final do D2** (branch inteira; triagem dos menores do ledger) e depois o **gate** (`LEIA-PRIMEIRO.md`, "Como um gate funciona").
+
 
 ## Plano até o objetivo
 
@@ -87,10 +75,10 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | | C2 SSE no shell (`/api/stream` + `SharedWorker`); fechar D7 (`proxyTimeout`) | ⬜ | #11 | B1; decisão B ok |
 | | C3 mapa de zonas vindo dos manifestos | ⬜ | #14 | B1 |
 | **D. Sessão e identidade reais** | D1 sessão no Redis (shell grava com senha, zonas leem com ACL só de leitura) | ✅ gate B1+D1+G3+K aprovado (ambiente por lista de inclusão) | #9 | — |
-| | D2 OIDC + PKCE e renovação proativa com lock (**ADR-0013 aceito**; pessoa por `sub`) | ⬜ **próximo passo**; medição 1 concluída | #9 | — |
+| | D2 OIDC + PKCE e renovação proativa com lock (**ADR-0013 aceito**; pessoa por `sub`) | ⏳ Tasks 1–6 feitas; falta o modo OIDC na base (decisão do humano), a revisão final e o gate | #9 | pendência 7 |
 | **E. Showcase** | E1 domínios mock com dados em JSON | ✅ | #19 | — |
 | | E2 `docker-compose` com Redis e Keycloak | ✅ | #19 | — |
-| | E3 `task showcase` e `task showcase:conferir` | ✅ parcial: falta login pelo Keycloak | #19 | D2 |
+| | E3 `task showcase` e `task showcase:conferir` | ✅ parcial: falta login pelo Keycloak | #19 | D2; pendência 7 |
 | | E4 roteiro do showcase | ⬜ | #19 | C1–C3, E3 |
 | | E5 verificação ponta a ponta contra o showcase | ⬜ | #19 | E4 |
 | **G. Gestão de acesso v2** | G1 modelo e mock (porta 4020) | ✅ | #21 | — |
@@ -139,10 +127,25 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 4. ✅ Sessão de 30 min por inatividade (2026-09-22); parâmetros em `docs/CONFIGURACAO.md`.
 5. **Registro de pacotes / CI (P1): no fim do plano** (humano, 2026-09-23). Até lá, `task pacotes:alinhar-hashes`.
 6. Aplicar no GitLab o que estiver "pendente" em `ATIVIDADES.md` §2 (hoje só comentários opcionais).
+7. **Modo OIDC na máquina local (achado da Task 6 do D2, 2026-10-03).** A regra "`http://` só fora de produção"
+   (ADR-0013, decisão 5) barra o Keycloak do showcase (`http://127.0.0.1:8080`) e o retorno `http://localhost:3000`,
+   e a base sobe com `next start` (`NODE_ENV=production`): com `IDP_EMISSOR`, o shell dá 500 em toda rota. Opções:
+   - **(a) exceção explícita só para loopback** no núcleo (ex.: `ERP_PERMITIR_HTTP_LOCAL=1`, aceita só `localhost`,
+     `127.0.0.1` e `::1`), como já existe `ERP_PERMITIR_IDENTIDADE_DEV`; núcleo 0.10.2 + lockstep; adendo 2 ao
+     ADR-0013. Mantém o build de produção sob teste. Recomendada.
+   - **(b) TLS local:** Keycloak em `https` e o shell atrás de um proxy TLS, com certificado local confiado por
+     `NODE_EXTRA_CA_CERTS`. Sem mudar a regra; mais peças e um certificado a gerar por máquina.
+   - **(c) apps em `next dev` no modo OIDC:** sem mudar código do núcleo; mas o que se verifica deixa de ser o build
+     de produção, e a subida fica mais lenta.
+   Até a decisão: showcase e verificação seguem no login de dev (`DEFERRED.md` D16).
+
+## Ambiente (2026-10-03, fim da Task 6 do D2)
+
+- No ar: Verdaccio (4873), Redis (6379) e Keycloak (8080) do showcase; portas da base 3000–3003 e 4001–4020 livres.
+- Relatórios das tasks do D2 em `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/` (fora do git, só nesta máquina); o essencial está acima.
 
 ## Ambiente (parada de 2026-10-01)
 
-- Nenhum agente rodando. Relatórios da Task 2 ficaram em `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/` (fora do git, só nesta máquina); o essencial está acima.
 - Em 2026-10-01 a `bff-multizone` e os `master` de erp-dominio-stub e erp-moldura foram **reescritos com push forçado** para tirar 3 commits com rodapé de atribuição e seus reverts (voltaram a `51fd1ab`, `29bdc1c`, `a875c21`). Quem baixou antes: `git fetch` e `git reset --hard origin/bff-multizone` (e o mesmo nos dois submódulos).
 - Nesta máquina, erp-dominio-stub e erp-moldura têm `pnpm-lock.yaml` modificado só com o hash local do `@erp/contratos` 0.2.1 (não commitar, `AMBIENTE.md` §1).
 

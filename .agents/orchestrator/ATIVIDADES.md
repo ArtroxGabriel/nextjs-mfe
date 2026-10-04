@@ -4,7 +4,7 @@
 > atualiza ao fim de todo gate, task ou decisão; o humano copia para o GitLab e marca a coluna
 > "No GitLab?". Regras de quando avisar: `MANUTENCAO-GITLAB.md`.
 >
-> Última revisão: **2026-10-03 (Task 4 do D2 fechada)** (#132 e #136 fechadas; #9 com título, critérios e estado novos; comentário do gate em #9 e #137; #9 e #21 seguem em andamento com D2, G4 e G5).
+> Última revisão: **2026-10-03 (Task 6 do D2: verificação final; modo OIDC aguarda decisão do humano)** (#132 e #136 fechadas; #9 com estado e comentário de andamento novos em §3; #9 e #21 seguem em andamento com D2, G4 e G5).
 
 ## 1. Como ler e manter
 
@@ -20,12 +20,12 @@
 
 | # | Título | Estado real | Ação | No GitLab? | Evidência |
 |---|---|---|---|---|---|
-| 9 | Trocar login e store de desenvolvimento por OIDC e Redis *(era "Implementar sessão e autorização no servidor")* | cookie opaco, escritor único e autorização por módulo entregues; **Redis ligado** (100/100 com Redis; zonas leem a sessão com usuário ACL só de leitura; escrita exige senha desde a K4-4); **D1 aprovado** no gate B1+D1+G3+K (iteração 9, 2026-09-28; zonas e domínios recebem o ambiente por lista de inclusão); sessão já tem os campos `refreshToken`/`idToken`/`tokenExpiraEm` (núcleo 0.8.0); **D2 em andamento**: porta de identidade, transações de login e lock de renovação no núcleo 0.10.0 (Task 2, não publicado); **faltam** o adaptador OIDC + PKCE com o Keycloak, a renovação no `proxy.ts` do shell e a publicação do núcleo (Tasks 3–5) | em andamento | feito (2026-10-02, #120: título, critérios e comentário) | ADR-0009 decisão 3; ADR-0013; `GATE_STATUS.md` |
+| 9 | Trocar login e store de desenvolvimento por OIDC e Redis *(era "Implementar sessão e autorização no servidor")* | cookie opaco, escritor único e autorização por módulo entregues; **Redis ligado** (100/100 com Redis; zonas leem a sessão com usuário ACL só de leitura; escrita exige senha desde a K4-4); **D1 aprovado** no gate B1+D1+G3+K (iteração 9, 2026-09-28; zonas e domínios recebem o ambiente por lista de inclusão); **D2 implementado** (Tasks 1–6, 2026-10-03): núcleo 0.10.1 nas 4 apps com porta de identidade, adaptador OIDC + PKCE, transações de login de uso único e renovação proativa no `proxy.ts` do shell com lock `SET NX PX`; domínios verificam RS256 pelo JWKS do Keycloak; p95 do proxy medido (+0,3–0,4 ms). **Falta:** subir a base em modo OIDC contra o Keycloak (bloqueado: `http://` recusado em produção, decisão do humano pendente; ADR-0013, Em aberto 2), a revisão final do D2 e o gate | em andamento | feito (2026-10-02, #120: título, critérios e comentário) | ADR-0009 decisão 3; ADR-0013; `GATE_STATUS.md` |
 | 10 | Implementar composição por fragmentos | núcleo pronto (`@erp/nucleo` 0.5.0, 18 testes, 16 mutações); falta ligar zona 1 ← zona 2 e bloquear no shell | mover para **em andamento** | feito (2026-09-23, #121) | ADR-0011; `erp-nucleo` `1841771` |
 | 11 | Centralizar o tempo real no shell | não iniciado | manter; tirar a dependência da #2 | feito (2026-09-23, #122) | `alvo.md` §6 (SSE) |
 | 12 | Publicar o pacote visual @erp/ui | não iniciado; depende de medir duplicação de bundle | manter | — | `alvo.md` §6 |
 | 14 | Definir estratégia de publicação e compatibilidade | submódulos **feitos**; hook `pre-push` que recusa submódulo não enviado **feito** (`base/scripts/checar-envio.mjs`, provado com commit só local); **gate de lockstep do núcleo feito** (`base/scripts/verificar-lockstep.mjs`, no `pre-push`, provado com divergência real); falta registro único ou publicação pelo CI — em 2026-09-22 as duas máquinas alternaram commits só de hash de lockfile, cada um quebrando a instalação da outra; paliativo: `task pacotes:alinhar-hashes` e não commitar hash local | acrescentar critérios: gate de lockstep no CI, registro único, nunca republicar a mesma versão,  checar submódulo não enviado antes do push, mapa de zonas vindo do domínio de acesso | feito (2026-09-23, #125; segue em #133) | ADR-0010; `AMBIENTE.md` §1–2; `4eb128b` |
-| 19 | Entregar o showcase da base com mocks, Keycloak e Redis *(nova)* | **`task showcase` sobe tudo** (Redis, Keycloak, domínios com dados em JSON gravados, shell e 3 zonas) e `task showcase:conferir` mostra ator × zona; sessão já no Redis; falta login pelo Keycloak (D2) e o roteiro completo (E4, E5) | **criar** (texto em §3) | feito (2026-09-23, #135) | `RETOMADA.md` |
+| 19 | Entregar o showcase da base com mocks, Keycloak e Redis *(nova)* | **`task showcase` sobe tudo** (Redis, Keycloak, domínios com dados em JSON gravados, shell e 3 zonas) e `task showcase:conferir` mostra ator × zona; sessão já no Redis; falta login pelo Keycloak (D2 implementado; modo OIDC na base aguarda decisão do humano sobre `http://` local em produção) e o roteiro completo (E4, E5) | **criar** (texto em §3) | feito (2026-09-23, #135) | `RETOMADA.md` |
 | 21 | Evoluir a gestão de acesso para o modelo de referência v2 *(nova)* | **modelo e mock prontos** (G1); **ADR-0014 + adendo 1** (G2); **alinhamento implementado** (G3: corte seco para a v2, acesso por funcionalidade, papel administrativo separado de módulo, zona de acesso com pessoas × módulos; ponta a ponta 62/62 nos dois modos); **G3 aprovado** no gate B1+D1+G3+K (iteração 9, 2026-09-28); faltam o showcase com os atores (G4) e a revogação ativa por eventos (G5, lacuna declarada) | em andamento | feito (2026-09-23, #137; comentário do gate em 2026-10-02) | ADR-0014 adendo 1; `GATE_STATUS.md` |
 | 18 | Centralizar a telemetria das zonas no shell *(nova)* — **ampliar para "Trace contínuo sem dado pessoal (núcleo 8)"**: o elemento 8 é núcleo e está ausente (`alvo.md` §6) | gateway e propagação de trace **aprovados no gate do shell** (iteração 4); falta exportar spans (SDK OpenTelemetry, instalação aprovada; B2) | **criar** em andamento (texto em §3) | feito (2026-09-23, #134) | `erp-shell` `6de4939`; `alvo.md` §6 (Operação) |
 
@@ -76,11 +76,12 @@ serão criadas: o trabalho delas está na #17.
 > #9 segue com o login OIDC + PKCE e a renovação com lock (D2); #21 segue com o showcase dos atores (G4) e a revogação por eventos (G5).
 
 
-### #9 (#120) — comentário de andamento (2026-10-02)
+### #9 (#120) — comentário de andamento (2026-10-03)
 
 ```
-D2 em andamento (login OIDC + PKCE e renovação com lock). Feito: porta de identidade no núcleo (iniciar, concluir, renovar, encerrar), transações de login de uso único no store e lock de renovação (SET NX PX no Redis), em @erp/nucleo 0.10.0, ainda não publicado. Corrigido na revisão: sair durante uma renovação ressuscitava a sessão; agora a regravação só acontece se a sessão ainda existe, com teste de corrida. Núcleo 184/184.
-Falta: adaptador OIDC com openid-client, renovação proativa no proxy do shell com as rotas de entrar/retorno/sair, verificação RS256 no domínio e publicação do núcleo nas 4 apps.
+D2 implementado (login OIDC + PKCE e renovação com lock), @erp/nucleo 0.10.1 nas 4 apps. Feito: porta de identidade (iniciar, concluir, renovar, encerrar); adaptador OIDC com openid-client e PKCE S256 (URL de logout sem token); transações de login de uso único no store; renovação proativa no proxy do shell com lock SET NX PX e releitura (só uma chamada ao IdP por sessão); rotas entrar/retorno/sair; CSP com a origem do IdP para o logout; domínios verificam o access token RS256 pelo JWKS do Keycloak; token de serviço restrito ao registro do próprio manifesto em modo JWT (ADR-0013, adendo 1). Custo medido: a leitura da sessão no proxy soma 0,3–0,4 ms ao p95.
+Verificação: unidades 409/409, estática 51/51, ponta a ponta 116/116 com Redis e 112 + 4 pulados com arquivo, Keycloak conferido.
+Falta: subir a base em modo OIDC contra o Keycloak local (a regra "https em produção" barra o http do showcase; decisão em andamento), a revisão final e o gate.
 ```
 
 ### #3 e #18 — comentário: gate aprovado
@@ -110,15 +111,15 @@ Substituir o login sem senha e o store de sessão em arquivo pelos adaptadores d
 
 [feito] Shell e zonas usam o Redis em vez do arquivo; zonas leem com usuário ACL só de leitura e a escrita exige senha; ponta a ponta 109/109 com Redis (gate B1+D1+G3+K, iteração 9, 2026-09-28)
 
-[em andamento] Porta de identidade no núcleo (iniciar, concluir, renovar, encerrar), transações de login de uso único e lock de renovação (@erp/nucleo 0.10.0, ainda não publicado)
+[feito] Porta de identidade no núcleo (iniciar, concluir, renovar, encerrar), transações de login de uso único e lock de renovação (@erp/nucleo 0.10.1)
 
-Login por OIDC + PKCE no shell com o Keycloak; identidadeDev só em desenvolvimento
+[implementado; falta o ponta a ponta com o Keycloak] Login por OIDC + PKCE no shell com o Keycloak; identidadeDev só em desenvolvimento
 
-Renovação de token no shell, proativa e com lock (ADR-0013); sair durante a renovação não ressuscita a sessão
+[feito] Renovação de token no shell, proativa e com lock (ADR-0013); sair durante a renovação não ressuscita a sessão
 
-Sessão de 30 min por inatividade, capturada pelos refresh tokens; tempos em variáveis de ambiente (docs/CONFIGURACAO.md)
+[feito] Sessão de 30 min por inatividade, capturada pelos refresh tokens; tempos em variáveis de ambiente (docs/CONFIGURACAO.md)
 
-Domínio verifica o token RS256 pelas chaves públicas (JWKS) do Keycloak
+[feito] Domínio verifica o token RS256 pelas chaves públicas (JWKS) do Keycloak
 
 🧪 Casos de Teste
 
@@ -423,3 +424,5 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-10-03 (D2 Task 2) | Re-revisão restrita aprovou a correção; Task 2 fechada, Task 3 (adaptador OIDC) começa. #9 segue **em andamento**; nada muda no GitLab |
 | 2026-10-03 (D2 Task 3) | Adaptador OIDC + PKCE no núcleo 0.10.0 (não publicado), aprovado após correção (URL de logout sem token). #9 segue **em andamento**; nada muda no GitLab |
 | 2026-10-03 (D2 Task 4) | Shell no núcleo 0.10.1 (lockstep nas 4 apps): login OIDC + PKCE, renovação proativa no proxy, logout com `formularioPara` na CSP; aprovado. Falta a Task 5 (stub com RS256) e a verificação final. #9 segue **em andamento**; nada muda no GitLab |
+| 2026-10-03 (D2 Task 5) | Domínios falsos verificam o access token RS256 pelo JWKS do Keycloak; decisão do humano: token de serviço só registra o próprio manifesto em modo JWT (ADR-0013, adendo 1); aprovado. #9 segue **em andamento**; nada muda no GitLab |
+| 2026-10-03 (D2 Task 6) | Verificação final verde nos dois modos; documentos do ADR-0013 atualizados; p95 do proxy medido. Modo OIDC na base **bloqueado** (`http://` local recusado em produção) até decisão do humano. #9 segue **em andamento** até o gate; comentário opcional em #120 (texto em §3) |
