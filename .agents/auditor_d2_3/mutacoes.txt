@@ -1,0 +1,709 @@
+# Catálogo de mutações auditor_d2_3 (gate D2, iteração 3)
+# formato: ID | descrição | arquivo | comando | resultado ; depois ANTES/DEPOIS com o trecho exato
+L04h | id da transacao = sha256(state) em base64url | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=226 fail=4, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        const state = aleatorio()
+        return {
+          id: createHash('sha256').update(state).digest('base64url'), state, codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    ✖ iniciar: id da transacao (cookie __Host-erp-login) independente de state, nonce e code_verifier, e fora da URL (10.754584ms)
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (9.23492ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (4.629534ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (2.155013ms)
+L04k | id = state + sufixo fixo | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=226 fail=4, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        const state = aleatorio()
+        return {
+          id: state + '.login', state, codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    ✖ iniciar: id da transacao (cookie __Host-erp-login) independente de state, nonce e code_verifier, e fora da URL (9.738062ms)
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (11.96882ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (6.490338ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (2.332375ms)
+L04j | code_verifier = sha256(state) | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=226 fail=4, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        const state = aleatorio()
+        return {
+          id: aleatorio(), state, codeVerifier: createHash('sha256').update(state).digest('base64url'), nonce: aleatorio(),
+      
+    ✖ iniciar: id da transacao (cookie __Host-erp-login) independente de state, nonce e code_verifier, e fora da URL (13.225369ms)
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (11.882343ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (5.743602ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (2.548422ms)
+L04i | state = sha256(id) | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=227 fail=3, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        const id = aleatorio()
+        return {
+          id, state: createHash('sha256').update(id).digest('base64url'), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (8.434199ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (5.377009ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (2.154107ms)
+T3o | valores constantes, so o teste do identidadeOidc | repos/erp-nucleo/src/interno/login.ts | pnpm exec tsc -p tsconfig.json && node --conditions react-server --test test/identidade-oidc.test.mjs | PEGA (rc=1, tests=30 pass=28 fail=2, 2s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        return {
+          id: aleatorio().replace(/./g, 'i'), state: aleatorio().replace(/./g, 's'), codeVerifier: aleatorio().replace(/./g, 'v'), nonce: aleatorio().replace(/./g, 'n'),
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (7.758081ms)
+    ✖ iniciar: id, state, code_verifier, nonce e a URL mudam a cada chamada (7.085918ms)
+P04b | renova so em / (outras paginas do shell nao) | repos/erp-shell/lib/decisao-proxy.ts | pnpm test | PEGA (rc=1, tests=90 pass=86 fail=4, 1s)
+    ARQUIVO: repos/erp-shell/lib/decisao-proxy.ts
+    ANTES:
+        // 4. Rotas da própria aplicação shell (ex.: '/')
+        if (!temCookieSessao) {
+          return { acao: 'redirecionar-login', destino: paraLogin(caminho) }
+        }
+      
+        return prosseguirComRenovacao(contexto, renovar, nonce)
+      }
+    DEPOIS:
+        // 4. Rotas da própria aplicação shell (ex.: '/')
+        if (!temCookieSessao) {
+          return { acao: 'redirecionar-login', destino: paraLogin(caminho) }
+        }
+      
+        return caminho === '/' ? prosseguirComRenovacao(contexto, renovar, nonce) : { acao: 'prosseguir', nonce }
+      }
+    ✖ paginas do shell (memoria): so requisicoes a /preferencias com o token na janela renovam uma vez e gravam o token novo (3.129685ms)
+    ✖ pagina do shell com sessao revogada (memoria): navegacao a /preferencias vai ao login com o cookie apagado (2.01412ms)
+    ✖ paginas do shell (redis falso): so requisicoes a /preferencias com o token na janela renovam uma vez e gravam o token novo (0.555283ms)
+    ✖ pagina do shell com sessao revogada (redis falso): navegacao a /preferencias vai ao login com o cookie apagado (0.728261ms)
+V01 | id = randomUUID() (36 caracteres) | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=225 fail=5, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+      import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
+    DEPOIS:
+      import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto'
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        return {
+          id: randomUUID(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    ✖ iniciar: id da transacao (cookie __Host-erp-login) independente de state, nonce e code_verifier, e fora da URL (9.915258ms)
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (9.285468ms)
+    ✖ iniciar devolve url e transacao com segredos aleatorios e unicos a cada chamada (9.682103ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (3.397018ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (1.997993ms)
+V01b | id = dois randomUUID sem hifen (64 hex, passa no tamanho) | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=227 fail=3, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+      import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
+    DEPOIS:
+      import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto'
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        return {
+          id: (randomUUID() + randomUUID()).replace(/-/g, ''), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (8.084827ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (7.279434ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (4.434985ms)
+V01o | id = dois randomUUID sem hifen, so o arquivo do identidadeOidc | repos/erp-nucleo/src/interno/login.ts | pnpm exec tsc -p tsconfig.json && node --conditions react-server --test test/identidade-oidc.test.mjs | PEGA (rc=1, tests=30 pass=29 fail=1, 2s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+      import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
+    DEPOIS:
+      import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto'
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        return {
+          id: (randomUUID() + randomUUID()).replace(/-/g, ''), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (7.953336ms)
+V02 | aleatorio() sorteia 16 bytes (todos os campos) | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=224 fail=6, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+      const aleatorio = () => randomBytes(32).toString('base64url')
+    DEPOIS:
+      const aleatorio = () => randomBytes(16).toString('base64url')
+    ✖ iniciar: URL de autorizacao do discovery com PKCE S256, state e nonce da transacao, sem o verifier (108.1869ms)
+    ✖ iniciar: id da transacao (cookie __Host-erp-login) independente de state, nonce e code_verifier, e fora da URL (16.575765ms)
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (15.049216ms)
+    ✖ iniciar devolve url e transacao com segredos aleatorios e unicos a cada chamada (9.040325ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (4.278624ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (2.120707ms)
+V02b | so o id com 16 bytes | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=225 fail=5, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        return {
+          id: randomBytes(16).toString('base64url'), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    ✖ iniciar: id da transacao (cookie __Host-erp-login) independente de state, nonce e code_verifier, e fora da URL (10.479511ms)
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (10.054625ms)
+    ✖ iniciar devolve url e transacao com segredos aleatorios e unicos a cada chamada (9.518046ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (4.754048ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (2.299066ms)
+V02c | id = dois sorteios de 16 bytes em hex (64 caracteres, passa no tamanho) | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=227 fail=3, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        return {
+          id: randomBytes(16).toString('hex') + randomBytes(16).toString('hex'), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (10.502515ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (7.003512ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (2.245441ms)
+V02d | code_verifier com 16 bytes repetidos duas vezes (base64url de 32 bytes, metade derivada) | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=227 fail=3, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        const meio = randomBytes(16)
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: Buffer.concat([meio, meio]).toString('base64url'), nonce: aleatorio(),
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (9.399399ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (5.597844ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (1.657506ms)
+V03 | mesmo sorteio em id e code_verifier (id = bytes invertidos) | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=227 fail=3, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        const b = randomBytes(32)
+        return {
+          id: Buffer.from(b).reverse().toString('base64url'), state: aleatorio(), codeVerifier: b.toString('base64url'), nonce: aleatorio(),
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (10.537041ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (6.137756ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (1.647948ms)
+V03b | mesmo sorteio em id (base64url) e state (hex): o state publica o id | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=227 fail=3, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        const b = randomBytes(32)
+        return {
+          id: b.toString('base64url'), state: b.toString('hex'), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (8.530904ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (7.057012ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (2.601599ms)
+V03c | mesmo sorteio em id e nonce (id = base64 padrao, nonce = base64url) | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=225 fail=5, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        const b = randomBytes(33)
+        return {
+          id: b.toString('base64'), state: aleatorio(), codeVerifier: aleatorio(), nonce: b.toString('base64url'),
+      
+    ✖ iniciar: id da transacao (cookie __Host-erp-login) independente de state, nonce e code_verifier, e fora da URL (9.535864ms)
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (8.932108ms)
+    ✖ iniciar devolve url e transacao com segredos aleatorios e unicos a cada chamada (10.978473ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (3.484352ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (2.085704ms)
+V04 | state = id invertido | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=227 fail=3, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        const id = aleatorio()
+        return {
+          id, state: [...id].reverse().join(''), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (8.914931ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (6.230338ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (1.610041ms)
+V04b | state = sha1(id) em hex mais sufixo (fora da lista de hashes do comportamental) | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=227 fail=3, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        const id = aleatorio()
+        return {
+          id, state: createHash('sha1').update(id).digest('hex') + 'abc', codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (8.455843ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (5.561679ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (2.16168ms)
+V05 | nonce constante | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=224 fail=6, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: 'n'.repeat(43),
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (10.442441ms)
+    ✖ iniciar: id, state, code_verifier, nonce e a URL mudam a cada chamada (9.17532ms)
+    ✖ iniciar devolve url e transacao com segredos aleatorios e unicos a cada chamada (9.368413ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (4.93913ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (2.113415ms)
+    ✖ concluir recusa state ou nonce adulterados, ausentes ou de outra transacao (5.997939ms)
+V05b | nonce constante por processo (sorteado uma vez no carregamento) | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=224 fail=6, 12s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+      const aleatorio = () => randomBytes(32).toString('base64url')
+    DEPOIS:
+      const aleatorio = () => randomBytes(32).toString('base64url')
+      const NONCE_FIXO = aleatorio()
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: NONCE_FIXO,
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (8.909928ms)
+    ✖ iniciar: id, state, code_verifier, nonce e a URL mudam a cada chamada (8.269989ms)
+    ✖ iniciar devolve url e transacao com segredos aleatorios e unicos a cada chamada (11.722176ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (5.439ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (2.549431ms)
+    ✖ concluir recusa state ou nonce adulterados, ausentes ou de outra transacao (5.623664ms)
+V05o | nonce constante por processo, so o arquivo do identidadeOidc | repos/erp-nucleo/src/interno/login.ts | pnpm exec tsc -p tsconfig.json && node --conditions react-server --test test/identidade-oidc.test.mjs | PEGA (rc=1, tests=30 pass=28 fail=2, 2s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+      const aleatorio = () => randomBytes(32).toString('base64url')
+    DEPOIS:
+      const aleatorio = () => randomBytes(32).toString('base64url')
+      const NONCE_FIXO = aleatorio()
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: NONCE_FIXO,
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (7.912437ms)
+    ✖ iniciar: id, state, code_verifier, nonce e a URL mudam a cada chamada (7.359619ms)
+V06 | um sorteio so (129 bytes) fatiado em quatro textos de 43 | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=227 fail=3, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        const s = randomBytes(129).toString('base64url')
+        return {
+          id: s.slice(0, 43), state: s.slice(43, 86), codeVerifier: s.slice(86, 129), nonce: s.slice(129, 172),
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (10.718742ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (4.284645ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (1.952864ms)
+V06b | um sorteio so (128 bytes) fatiado em quatro buffers de 32 | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=227 fail=3, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+      
+    DEPOIS:
+        const b = randomBytes(128)
+        return {
+          id: b.subarray(0, 32).toString('base64url'), state: b.subarray(32, 64).toString('base64url'), codeVerifier: b.subarray(64, 96).toString('base64url'), nonce: b.subarray(96, 128).toString('base64url'),
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (9.713127ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (5.217204ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (2.136461ms)
+V07 | adaptador OIDC sobrescreve o id com sha256(state) depois de novaTransacao | repos/erp-nucleo/src/adaptadores/identidade-oidc.ts | pnpm test | PEGA (rc=1, tests=230 pass=228 fail=2, 11s)
+    ARQUIVO: repos/erp-nucleo/src/adaptadores/identidade-oidc.ts
+    ANTES:
+      import * as oidc from 'openid-client'
+    DEPOIS:
+      import * as oidc from 'openid-client'
+      import { createHash } from 'node:crypto'
+    ARQUIVO: repos/erp-nucleo/src/adaptadores/identidade-oidc.ts
+    ANTES:
+            const transacao = novaTransacao(destino, vidaTransacaoMs)
+            const url = oidc.buildAuthorizationUrl
+    DEPOIS:
+            const transacao = novaTransacao(destino, vidaTransacaoMs)
+            transacao.id = createHash('sha256').update(transacao.state).digest('base64url')
+            const url = oidc.buildAuthorizationUrl
+    ✖ iniciar: id da transacao (cookie __Host-erp-login) independente de state, nonce e code_verifier, e fora da URL (13.541222ms)
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (11.214261ms)
+V07b | adaptador dev sobrescreve o code_verifier com o nonce invertido | repos/erp-nucleo/src/adaptadores/identidade-dev.ts | pnpm test | PEGA (rc=1, tests=230 pass=229 fail=1, 11s)
+    ARQUIVO: repos/erp-nucleo/src/adaptadores/identidade-dev.ts
+    ANTES:
+            const transacao = novaTransacao(destino, vidaTransacaoMs)
+            const busca
+    DEPOIS:
+            const transacao = novaTransacao(destino, vidaTransacaoMs)
+            transacao.codeVerifier = [...transacao.nonce].reverse().join('')
+            const busca
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (4.512169ms)
+TS1 | [dentes] troca de randomBytes desligada (produto limpo) | repos/erp-nucleo/test/apoio-transacao.mjs | pnpm test | PEGA (rc=1, tests=230 pass=227 fail=3, 11s)
+    ARQUIVO: repos/erp-nucleo/test/apoio-transacao.mjs
+    ANTES:
+        crypto.randomBytes = function randomBytesRegistrado(
+    DEPOIS:
+        crypto.randomBytesDesligado = function randomBytesRegistrado(
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (8.607685ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (7.684255ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (2.112385ms)
+TS2 | [dentes] registrador que nao anota (produto limpo) | repos/erp-nucleo/test/apoio-transacao.mjs | pnpm test | PEGA (rc=1, tests=230 pass=227 fail=3, 11s)
+    ARQUIVO: repos/erp-nucleo/test/apoio-transacao.mjs
+    ANTES:
+          sorteios.push({ tamanho, bytes: Buffer.from(bytes) })
+      
+    DEPOIS:
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (13.451927ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (5.482336ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (2.007948ms)
+TS3 | [dentes] sem syncBuiltinESMExports na troca (import nomeado nao ve o registrador; produto limpo) | repos/erp-nucleo/test/apoio-transacao.mjs | pnpm test | PEGA (rc=1, tests=230 pass=227 fail=3, 11s)
+    ARQUIVO: repos/erp-nucleo/test/apoio-transacao.mjs
+    ANTES:
+          return bytes
+        }
+        syncBuiltinESMExports()
+      
+    DEPOIS:
+          return bytes
+        }
+      
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (8.942856ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (3.801447ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (1.797067ms)
+TS4 | [dentes] registrador anota tamanho 32 fixo, com V02 aplicada (16 bytes) | repos/erp-nucleo/src/interno/login.ts, repos/erp-nucleo/test/apoio-transacao.mjs | pnpm test | PEGA (rc=1, tests=230 pass=227 fail=3, 11s)
+    ARQUIVO: repos/erp-nucleo/test/apoio-transacao.mjs
+    ANTES:
+      sorteios.push({ tamanho, bytes
+    DEPOIS:
+      sorteios.push({ tamanho: 32, bytes
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+      const aleatorio = () => randomBytes(32).toString('base64url')
+    DEPOIS:
+      const aleatorio = () => randomBytes(16).toString('base64url')
+    ✖ iniciar: URL de autorizacao do discovery com PKCE S256, state e nonce da transacao, sem o verifier (72.049262ms)
+    ✖ iniciar: id da transacao (cookie __Host-erp-login) independente de state, nonce e code_verifier, e fora da URL (10.218026ms)
+    ✖ iniciar devolve url e transacao com segredos aleatorios e unicos a cada chamada (8.014445ms)
+RS1 | [dentes da sonda] finally sem restaurar a propriedade | repos/erp-nucleo/test/apoio-transacao.mjs | out=$(node --conditions react-server --test test/zz-auditor-d2-3-restauracao.test.mjs 2>&1); echo "$out" | grep -E '^. R[123]'; if echo "$out" | grep -qE '^✖ R[123]'; then exit 1; fi | PEGA (rc=1, tests=? pass=? fail=?, 0s)
+    ARQUIVO: repos/erp-nucleo/test/apoio-transacao.mjs
+    ANTES:
+        } finally {
+          crypto.randomBytes = original
+      
+    DEPOIS:
+        } finally {
+      
+    ✖ R1 depois de F1: a original voltou (propriedade e import nomeado) (1.368427ms)
+    ✖ R2 depois de F2: a original voltou (0.431973ms)
+    ✖ R3 depois de F3: a original voltou e novaTransacao nao e registrada (0.486175ms)
+    SAIDA (fim):       ✖ R1 depois de F1: a original voltou (propriedade e import nomeado) (1.368427ms)
+      ✖ R2 depois de F2: a original voltou (0.431973ms)
+      ✖ R3 depois de F3: a original voltou e novaTransacao nao e registrada (0.486175ms)
+      ✖ R1 depois de F1: a original voltou (propriedade e import nomeado) (1.368427ms)
+      ✖ R2 depois de F2: a original voltou (0.431973ms)
+      ✖ R3 depois de F3: a original voltou e novaTransacao nao e registrada (0.486175ms)
+      
+RS2 | [dentes da sonda] restaura a propriedade sem syncBuiltinESMExports (import nomeado fica com o registrador) | repos/erp-nucleo/test/apoio-transacao.mjs | out=$(node --conditions react-server --test test/zz-auditor-d2-3-restauracao.test.mjs 2>&1); echo "$out" | grep -E '^. R[123]'; if echo "$out" | grep -qE '^✖ R[123]'; then exit 1; fi | PEGA (rc=1, tests=? pass=? fail=?, 0s)
+    ARQUIVO: repos/erp-nucleo/test/apoio-transacao.mjs
+    ANTES:
+          crypto.randomBytes = original
+          syncBuiltinESMExports()
+        }
+    DEPOIS:
+          crypto.randomBytes = original
+        }
+    ✖ R1 depois de F1: a original voltou (propriedade e import nomeado) (1.32744ms)
+    ✖ R2 depois de F2: a original voltou (0.486596ms)
+    ✖ R3 depois de F3: a original voltou e novaTransacao nao e registrada (0.517937ms)
+    SAIDA (fim):       ✖ R1 depois de F1: a original voltou (propriedade e import nomeado) (1.32744ms)
+      ✖ R2 depois de F2: a original voltou (0.486596ms)
+      ✖ R3 depois de F3: a original voltou e novaTransacao nao e registrada (0.517937ms)
+      ✖ R1 depois de F1: a original voltou (propriedade e import nomeado) (1.32744ms)
+      ✖ R2 depois de F2: a original voltou (0.486596ms)
+      ✖ R3 depois de F3: a original voltou e novaTransacao nao e registrada (0.517937ms)
+      
+RS3 | [dentes da sonda] restauracao fora do finally (so no caminho feliz) | repos/erp-nucleo/test/apoio-transacao.mjs | out=$(node --conditions react-server --test test/zz-auditor-d2-3-restauracao.test.mjs 2>&1); echo "$out" | grep -E '^. R[123]'; if echo "$out" | grep -qE '^✖ R[123]'; then exit 1; fi | PEGA (rc=1, tests=? pass=? fail=?, 0s)
+    ARQUIVO: repos/erp-nucleo/test/apoio-transacao.mjs
+    ANTES:
+        try {
+          return { resultado: await fn(), sorteios }
+        } finally {
+          crypto.randomBytes = original
+          syncBuiltinESMExports()
+        }
+    DEPOIS:
+        const resultado = await fn()
+        crypto.randomBytes = original
+        syncBuiltinESMExports()
+        return { resultado, sorteios }
+    ✖ R1 depois de F1: a original voltou (propriedade e import nomeado) (1.411755ms)
+    ✖ R2 depois de F2: a original voltou (0.404864ms)
+    ✖ R3 depois de F3: a original voltou e novaTransacao nao e registrada (0.528405ms)
+    SAIDA (fim):       ✖ R1 depois de F1: a original voltou (propriedade e import nomeado) (1.411755ms)
+      ✖ R2 depois de F2: a original voltou (0.404864ms)
+      ✖ R3 depois de F3: a original voltou e novaTransacao nao e registrada (0.528405ms)
+      ✖ R1 depois de F1: a original voltou (propriedade e import nomeado) (1.411755ms)
+      ✖ R2 depois de F2: a original voltou (0.404864ms)
+      ✖ R3 depois de F3: a original voltou e novaTransacao nao e registrada (0.528405ms)
+      
+P05 | zonas sem renovacao (ramo 3) | repos/erp-shell/lib/decisao-proxy.ts | pnpm test | PEGA (rc=1, tests=90 pass=86 fail=4, 1s)
+    ARQUIVO: repos/erp-shell/lib/decisao-proxy.ts
+    ANTES:
+          return prosseguirComRenovacao(contexto, renovar, nonce)
+        }
+    DEPOIS:
+          return { acao: 'prosseguir', nonce }
+        }
+    ✖ revogada (memoria): navegacao vai ao login com o cookie apagado e a sessao some do store (4.191453ms)
+    ✖ revogada (redis falso): navegacao vai ao login com o cookie apagado e a sessao some do store (0.793918ms)
+    ✖ revogada numa Server Action (POST): segue sem redirecionar, para a camada 2 responder, e apaga o cookie (3.392686ms)
+    ✖ cookie de sessao que nao existe no store (ausente): navegacao vai ao login com o cookie apagado (0.819258ms)
+P03 | erro na renovacao manda ao login | repos/erp-shell/lib/decisao-proxy.ts | pnpm test | PEGA (rc=1, tests=90 pass=88 fail=2, 1s)
+    ARQUIVO: repos/erp-shell/lib/decisao-proxy.ts
+    ANTES:
+        } catch {
+          return { acao: 'prosseguir', nonce }
+        }
+    DEPOIS:
+        } catch {
+          return { acao: 'redirecionar-login', destino: paraLogin(contexto.caminho) }
+        }
+    ✖ erro transitorio do IdP (memoria): a sessao fica e a requisicao segue (3.146752ms)
+    ✖ erro transitorio do IdP (redis falso): a sessao fica e a requisicao segue (0.61483ms)
+F04b | segredo do cliente OIDC na lista do dominio | base/scripts/ambiente.mjs | node --test base/scripts/*.test.mjs | PEGA (rc=1, tests=21 pass=20 fail=1, 0s)
+    ARQUIVO: base/scripts/ambiente.mjs
+    ANTES:
+      'IDP_EMISSOR', 'ERP_DESTINO_TIMEOUT_MS',
+    DEPOIS:
+      'IDP_EMISSOR', 'IDP_CLIENTE_SEGREDO', 'ERP_DESTINO_TIMEOUT_MS',
+    ✖ F04: variavel so do shell (segredo do cliente OIDC e afins) nunca entra no ambiente de zona nem de dominio (92.015803ms)
+F05 | zona sem ERP_PERMITIR_HTTP_LOCAL | base/scripts/ambiente.mjs | node --test base/scripts/*.test.mjs | PEGA (rc=1, tests=21 pass=20 fail=1, 0s)
+    ARQUIVO: base/scripts/ambiente.mjs
+    ANTES:
+          'ERP_PERMITIR_HTTP_LOCAL',
+        ],
+        dominio
+    DEPOIS:
+        ],
+        dominio
+    ✖ V1: a lista de inclusao cobre toda variavel que zona e dominio leem (variavel nova nao some calada) (121.519764ms)
+F01 | identidadeOidc exportado na raiz do pacote | repos/erp-nucleo/src/index.ts | pnpm test | PEGA (rc=1, tests=? pass=? fail=?, 4s)
+    ARQUIVO: repos/erp-nucleo/src/index.ts
+    ANTES:
+      export { criarNucleo, type ConfigDoNucleo, type Nucleo } from './fabricas/criarNucleo.js'
+    DEPOIS:
+      export { criarNucleo, type ConfigDoNucleo, type Nucleo } from './fabricas/criarNucleo.js'
+      export { identidadeOidc } from './adaptadores/identidade-oidc.js'
+    SAIDA (fim):       $ pnpm build && pnpm fronteira && node --conditions react-server --test test/*.test.mjs
+      $ tsc -p tsconfig.json
+      $ node scripts/fronteira.mjs
+      fronteira entre camadas violada:
+        index.ts: simbolo exclusivo do shell 'identidadeOidc' nao pode ser importado ou usado fora de shell/
+        index.ts: exporta 'identidadeOidc', que escreve sessao ou autentica: so /shell publica isso
+      [ELIFECYCLE] Command failed with exit code 1.
+      [ELIFECYCLE] Test failed. See above for more details.
+      
+F08 | zona importa openid-client | repos/erp-zona-1/lib/dominio-a.ts | node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs | PEGA (rc=1, tests=51 pass=50 fail=1, 8s)
+    ARQUIVO: repos/erp-zona-1/lib/dominio-a.ts
+    ANTES:
+      import { cache } from 'react'
+    DEPOIS:
+      import { cache } from 'react'
+      import * as oidcX from 'openid-client'
+      void oidcX
+    ✖ as quatro aplicacoes reais nao tem saida de rede fora do registro (fora as excecoes declaradas) (112.710272ms)
+L07 | nonce = state | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=225 fail=5, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+        return {
+          id: aleatorio(), state: aleatorio(), codeVerifier: aleatorio(), nonce: aleatorio(),
+    DEPOIS:
+        const state = aleatorio()
+        return {
+          id: aleatorio(), state, codeVerifier: aleatorio(), nonce: state,
+    ✖ iniciar: id da transacao (cookie __Host-erp-login) independente de state, nonce e code_verifier, e fora da URL (12.478117ms)
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (10.209614ms)
+    ✖ iniciar devolve url e transacao com segredos aleatorios e unicos a cada chamada (13.418161ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (3.906885ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (2.066497ms)
+L01 | destino // aceito | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=229 fail=1, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+       || destino.startsWith('//')
+    DEPOIS:
+      
+    ✖ iniciar so aceita destino interno: o resto vira "/" (redirecionamento aberto) (8.406741ms)
+T4 | todos os valores iguais (aleatorio constante) | repos/erp-nucleo/src/interno/login.ts | pnpm test | PEGA (rc=1, tests=230 pass=222 fail=8, 11s)
+    ARQUIVO: repos/erp-nucleo/src/interno/login.ts
+    ANTES:
+      const aleatorio = () => randomBytes(32).toString('base64url')
+    DEPOIS:
+      const aleatorio = () => 'x'.repeat(43)
+    ✖ iniciar: URL de autorizacao do discovery com PKCE S256, state e nonce da transacao, sem o verifier (73.1547ms)
+    ✖ iniciar: id da transacao (cookie __Host-erp-login) independente de state, nonce e code_verifier, e fora da URL (9.828754ms)
+    ✖ iniciar: id, state, code_verifier e nonce sao sorteios independentes de 32 bytes ou mais (7.591739ms)
+    ✖ iniciar: id, state, code_verifier, nonce e a URL mudam a cada chamada (6.456217ms)
+    ✖ iniciar devolve url e transacao com segredos aleatorios e unicos a cada chamada (9.371343ms)
+    ✖ novaTransacao: id, state, codeVerifier e nonce sao quatro sorteios independentes de 32 bytes ou mais (4.812621ms)
+    ✖ identidadeDev.iniciar: os quatro valores da transacao sao sorteios independentes e os segredos nao saem da URL (1.744185ms)
+    ✖ concluir recusa state ou nonce adulterados, ausentes ou de outra transacao (5.922541ms)
+O09 | fetch do IdP segue redirecionamento | repos/erp-nucleo/src/adaptadores/identidade-oidc.ts | pnpm test | PEGA (rc=1, tests=230 pass=229 fail=1, 12s)
+    ARQUIVO: repos/erp-nucleo/src/adaptadores/identidade-oidc.ts
+    ANTES:
+            redirect: 'manual',
+    DEPOIS:
+            redirect: 'follow',
+    ✖ redirecionamento do IdP nao e seguido (redirect: manual) (18.768888ms)
+H04 | loopback inclui 0.0.0.0 | repos/erp-nucleo/src/borda/http-local.ts | pnpm test | PEGA (rc=1, tests=230 pass=228 fail=2, 12s)
+    ARQUIVO: repos/erp-nucleo/src/borda/http-local.ts
+    ANTES:
+      new Set(['localhost', '127.0.0.1', '[::1]'])
+    DEPOIS:
+      new Set(['localhost', '127.0.0.1', '[::1]', '0.0.0.0'])
+    ✖ ehLoopback: so localhost, 127.0.0.1 e ::1, comparados pelo host ja normalizado (7.118832ms)
+    ✖ httpPermitido: em producao, com a flag, so loopback (1.602437ms)
+C03 | form-action sem regra de https | repos/erp-nucleo/src/borda/csp.ts | pnpm test | PEGA (rc=1, tests=230 pass=228 fail=2, 11s)
+    ARQUIVO: repos/erp-nucleo/src/borda/csp.ts
+    ANTES:
+      if (!httpPermitido(url)) {
+    DEPOIS:
+      if (!httpPermitido(url) && url.protocol === "ftp:") {
+    ✖ formularioPara: http so fora de producao (2.983666ms)
+    ✖ CSP formularioPara: com a flag, origem http de loopback aceita em producao; fora do loopback, recusada (6.685653ms)
+R04 | transacao lida com GET (sem apagar) | repos/erp-nucleo/src/adaptadores/sessao-redis.ts | pnpm test | PEGA (rc=1, tests=230 pass=229 fail=1, 13s)
+    ARQUIVO: repos/erp-nucleo/src/adaptadores/sessao-redis.ts
+    ANTES:
+      cfg.cliente.getDel(chaveLogin(id))
+    DEPOIS:
+      cfg.cliente.get(chaveLogin(id))
+    ✖ transacao de login: gravada com TTL da propria validade e consumida uma vez so, por GETDEL (8.095759ms)
+A03 | lock de arquivo sem criacao exclusiva | repos/erp-nucleo/src/adaptadores/sessao-arquivo.ts | pnpm test | PEGA (rc=1, tests=230 pass=227 fail=3, 11s)
+    ARQUIVO: repos/erp-nucleo/src/adaptadores/sessao-arquivo.ts
+    ANTES:
+      { flag: 'wx', mode: 0o600 }
+    DEPOIS:
+      { flag: 'w', mode: 0o600 }
+    ✖ arquivo: o lock de renovacao e de quem chega primeiro e vence pelo TTL (5.606431ms)
+    ✖ arquivo: 20 pedidos de lock concorrentes, exatamente um ganha (7.093791ms)
+    ✖ arquivo: 20 renovacoes concorrentes da mesma sessao chamam o IdP exatamente uma vez, e ninguem espera (326.899271ms)
+N05 | revogada nao remove a sessao | repos/erp-nucleo/src/fabricas/criarNucleo.ts | pnpm test | PEGA (rc=1, tests=230 pass=228 fail=2, 11s)
+    ARQUIVO: repos/erp-nucleo/src/fabricas/criarNucleo.ts
+    ANTES:
+              await store.remover(id)
+              return 'revogada'
+    DEPOIS:
+              return 'revogada'
+    ✖ renovarSessao: revogada remove a sessao; ausente ou vencida nao chama o IdP (22.917765ms)
+    ✖ renovarSessao: IdP devolvendo outro sujeito e tratado como revogacao (2.359995ms)
+S05 | Origin comparado so pelo hostname | repos/erp-shell/lib/rotas-auth.ts | pnpm test | PEGA (rc=1, tests=90 pass=89 fail=1, 1s)
+    ARQUIVO: repos/erp-shell/lib/rotas-auth.ts
+    ANTES:
+      hostsDoShell.includes(new URL(origem).host)
+    DEPOIS:
+      hostsDoShell.some((h) => h.split(":")[0] === new URL(origem).hostname)
+    ✖ POST /api/auth/sair de outra origem (sem Sec-Fetch-Site, Origin de outra porta): 403 com codigo e supportId, cookie e store intactos (2.730743ms)
+K01 | cookie sem HttpOnly | repos/erp-shell/lib/cookies.ts | pnpm test | PEGA (rc=1, tests=90 pass=88 fail=2, 1s)
+    ARQUIVO: repos/erp-shell/lib/cookies.ts
+    ANTES:
+      Path=/${idade}; HttpOnly; Secure; SameSite=Lax
+    DEPOIS:
+      Path=/${idade}; Secure; SameSite=Lax
+    ✖ GET /api/auth/entrar grava a transacao, poe o id em __Host-erp-login e manda ao IdP (62.318761ms)
+    ✖ GET /api/auth/retorno com retorno valido: sessao nova em __Host-session e __Host-erp-login apagado (4.482171ms)
+Z01 | NX nao repassado ao node-redis | repos/erp-shell/lib/redis.ts | pnpm test | PEGA (rc=1, tests=90 pass=89 fail=1, 1s)
+    ARQUIVO: repos/erp-shell/lib/redis.ts
+    ANTES:
+      ...(NX ? { condition: 'NX' as const } : XX ?
+    DEPOIS:
+      ...(NX && false ? { condition: 'NX' as const } : XX ?
+    ✖ SET com PX, NX e XX vira a forma de opcoes do node-redis, sem perder a condicao (6.026256ms)
+Y01 | CSP do shell sem a origem do IdP | repos/erp-shell/lib/csp.ts | pnpm test | PEGA (rc=1, tests=90 pass=89 fail=1, 1s)
+    ARQUIVO: repos/erp-shell/lib/csp.ts
+    ANTES:
+      const formularioPara = formularioDoLogout(emissor)
+    DEPOIS:
+      const formularioPara = (formularioDoLogout(emissor), [] as string[])
+    ✖ shell com OIDC (IDP_EMISSOR): form-action aceita a origem do IdP, para o logout (5.488277ms)
+J26 | assinatura nao verificada | repos/erp-dominio-stub/src/jwt.mjs | pnpm test | PEGA (rc=1, tests=75 pass=73 fail=2, 1s)
+    ARQUIVO: repos/erp-dominio-stub/src/jwt.mjs
+    ANTES:
+      if (!verify('sha256', assinado, chave, Buffer.from(partes[2], 'base64url'))) return null
+    DEPOIS:
+      if (!chave || !assinado) return null
+    ✖ outro algoritmo que nao RS256 e recusado, mesmo assinado com a chave certa (11.971738ms)
+    ✖ assinatura de outra chave, ou payload alterado depois de assinar, e recusado (8.770016ms)
+B01 | token de servico em toda rota no modo JWT | repos/erp-dominio-stub/src/base.mjs | pnpm test | PEGA (rc=1, tests=75 pass=73 fail=2, 1s)
+    ARQUIVO: repos/erp-dominio-stub/src/base.mjs
+    ANTES:
+      if (verificadorDoProcesso() && !opcoesDaRota?.registroDeManifesto) return null
+    DEPOIS:
+      if (false && verificadorDoProcesso()) return null
+    ✖ modo JWT: token de servico recusado com 401 em toda rota de todo dominio, menos o registro de manifesto (5.10022ms)
+    ✖ modo JWT: primeiro-acesso, decisoes e eventos fecham para svc.idp e para qualquer servico (10.829803ms)
+G02 | v2: manifesto de outro modulo aceito | repos/erp-dominio-stub/src/gestao-acesso-v2/servidor.mjs | pnpm test | PEGA (rc=1, tests=75 pass=74 fail=1, 1s)
+    ARQUIVO: repos/erp-dominio-stub/src/gestao-acesso-v2/servidor.mjs
+    ANTES:
+            if (c?.id !== servico) return erro(res, 403, 'OPERACAO_NAO_PERMITIDA')
+      
+    DEPOIS:
+      
+    ✖ modo JWT: registro de manifesto aceita so o modulo do proprio servico (v2: 200; v1: 204), outro id e 403 (8.113841ms)
+E09 | P04 no ponta a ponta: paginas do shell sem renovacao | repos/erp-shell/lib/decisao-proxy.ts | CONSTRUIR=1 task verificar:oidc | PEGA (rc=201, tests=5 pass=4 fail=1, 59s)
+    ARQUIVO: repos/erp-shell/lib/decisao-proxy.ts
+    ANTES:
+      
+        return prosseguirComRenovacao(contexto, renovar, nonce)
+      }
+    DEPOIS:
+      
+        return { acao: 'prosseguir', nonce }
+      }
+    ✖ pagina de zona ainda 200, com os dominios, depois do vencimento do primeiro access token (27287.338223ms)
+    ✖ modo OIDC contra o Keycloak do showcase (ADR-0013) (58972.277194ms)

@@ -1,0 +1,39 @@
+// TEMPORARIO (auditor_d2_3): a troca de randomBytes e desfeita quando o teste falha.
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+import crypto, { randomBytes } from 'node:crypto'
+import { comSorteiosRegistrados, conferirQuatroSorteios } from './apoio-transacao.mjs'
+import { novaTransacao } from '../dist/interno/login.js'
+const original = crypto.randomBytes
+
+test('F1 forcada: fn lanca sincrono', async () => {
+  await comSorteiosRegistrados(() => { randomBytes(32); throw new Error('falha forcada sincrona') })
+})
+test('R1 depois de F1: a original voltou (propriedade e import nomeado)', async () => {
+  assert.equal(crypto.randomBytes, original); assert.equal(randomBytes, original)
+  assert.equal((await import('node:crypto')).randomBytes, original)
+})
+test('F2 forcada: fn rejeita depois de um await', async () => {
+  await comSorteiosRegistrados(async () => { await new Promise((r) => setTimeout(r, 5)); novaTransacao('/', 1000); throw new Error('falha forcada assincrona') })
+})
+test('R2 depois de F2: a original voltou', () => {
+  assert.equal(crypto.randomBytes, original); assert.equal(randomBytes, original)
+})
+test('F3 forcada: assert da conferencia falha (fora de fn)', async () => {
+  const { sorteios } = await comSorteiosRegistrados(() => novaTransacao('/', 1000))
+  conferirQuatroSorteios({ id: 'a', state: 'b', codeVerifier: 'c', nonce: 'd' }, sorteios)
+})
+test('R3 depois de F3: a original voltou e novaTransacao nao e registrada', async () => {
+  assert.equal(crypto.randomBytes, original); assert.equal(randomBytes, original)
+  // um registro externo, se a troca tivesse ficado, nao veria nada; o inverso: com a original, sorteios do produto
+  // passam pela original (nao ha registrador ativo que anote)
+  const r = await comSorteiosRegistrados(() => novaTransacao('/', 1000))
+  assert.equal(r.sorteios.length, 4)
+  assert.equal(randomBytes, original)
+})
+test('F4 forcada: timeout com fn pendurada', { timeout: 100 }, async () => {
+  await comSorteiosRegistrados(() => new Promise(() => {}))
+})
+test('R4 depois de F4 (timeout): a original voltou?', () => {
+  assert.equal(crypto.randomBytes, original, 'troca ficou depois do timeout'); assert.equal(randomBytes, original)
+})
