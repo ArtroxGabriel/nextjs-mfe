@@ -125,6 +125,10 @@ const LIDAS_SO_NO_SHELL = [
     motivo: 'janela da renovação proativa; só a fábrica do shell renova (ADR-0013, decisão 4), exportada só por /shell' },
   { arquivo: 'fabricas/criarNucleo.ts', variavel: 'ERP_RENOVACAO_LOCK_S', funcao: 'criarNucleoDoShell',
     motivo: 'lock da renovação; mesma fábrica, só o shell a cria' },
+  { arquivo: 'fabricas/criarNucleo.ts', variavel: 'ERP_RENOVACAO_ESPERA_MS', funcao: 'criarNucleoDoShell',
+    motivo: 'espera de quem perde o lock com o token vencido (D19-B); só a fábrica do shell renova' },
+  { arquivo: 'fabricas/criarNucleo.ts', variavel: 'ERP_RENOVACAO_ESPERA_PASSO_MS', funcao: 'criarNucleoDoShell',
+    motivo: 'passo da releitura durante essa espera (D19-B); mesma fábrica, só o shell a cria' },
   { arquivo: 'interno/login.ts', variavel: 'ERP_LOGIN_TRANSACAO_S', funcao: 'lerVidaDaTransacaoMs',
     motivo: 'vida da transação de login; chamada só por identidadeDev e identidadeOidc, que só /shell exporta' },
 ]
