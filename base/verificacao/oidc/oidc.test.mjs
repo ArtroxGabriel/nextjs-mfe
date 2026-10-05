@@ -215,8 +215,14 @@ describe('modo OIDC contra o Keycloak do showcase (ADR-0013)', { skip: motivoPar
     const resta = antes.tokenExpiraEm - Date.now()
     assert.ok(resta > 0 && resta < JANELA_S * 1000, `lote fora da janela: o token vence em ${resta} ms (janela ${JANELA_S * 1000} ms)`)
     const monitor = await monitorarRedis(process.env.REDIS_URL)
-    const juntas = await Promise.all(Array.from({ length: 20 }, () => pedir('/zona1', { cookie })))
-    const comandos = await monitor.parar()
+    let juntas, comandos
+    try {
+      juntas = await Promise.all(Array.from({ length: 20 }, () => pedir('/zona1', { cookie })))
+    } finally {
+      comandos = await monitor.parar()
+    }
+    // o lote acaba antes do vencimento: uma renovação só de token vencido não aconteceria nele
+    assert.ok(Date.now() < antes.tokenExpiraEm, 'o lote passou do vencimento do token: a janela nao foi exercitada')
     juntas.forEach((r, i) => painelComDominios(r, `concorrente ${i}`))
     const gravacoes = comandos.filter((l) => l.toLowerCase().includes(`"set" "${chaveDaSessao(id)}"`))
     assert.equal(gravacoes.length, 1, `o lote gravou a sessao ${gravacoes.length} vez(es): renovacao ausente ou repetida`)

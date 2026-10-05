@@ -119,12 +119,18 @@ export async function monitorarRedis(url) {
     c.on('data', (d) => {
       dados += d
       if ((dados.match(/^\+OK\r$/gm) ?? []).length >= auth.length + 1) ok()
-      else if (/^-/m.test(dados)) falha(new Error(`MONITOR recusado: ${dados.trim()}`))
+      else if (/^-/m.test(dados)) { c.destroy(); falha(new Error(`MONITOR recusado: ${dados.trim()}`)) }
     })
-    c.on('error', falha)
+    c.on('error', (e) => { c.destroy(); falha(e) })
     c.write([...auth, ['MONITOR']].map((a) => resp(...a)).join(''))
   })
-  return { parar: () => new Promise((ok) => { c.once('close', () => ok(dados.split('\r\n'))); c.end() }) }
+  return {
+    parar: () => new Promise((ok) => {
+      if (c.destroyed) return ok(dados.split('\r\n'))
+      c.once('close', () => ok(dados.split('\r\n')))
+      c.end()
+    }),
+  }
 }
 
 /** Keycloak do showcase (`task showcase:subir`); os testes que precisam dele pulam quando está fora. */
