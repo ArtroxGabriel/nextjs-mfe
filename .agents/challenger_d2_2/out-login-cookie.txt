@@ -1,0 +1,5 @@
+status 303 cookie attrs: __Host-erp-login=<valor>; Path=/; Max-Age=600; HttpOnly; Secure; SameSite=Lax
+valor == state: false
+valor aparece na URL de autorizacao: false
+valor aparece em algum param (substring de state/nonce/challenge): false
+tamanhos valor/state 43 43

@@ -1,0 +1,13 @@
+import { SHELL, get, sc, val } from './lib.mjs'
+const e = await get(`${SHELL}/api/auth/entrar?de=/`)
+const cs = sc(e)
+const raw = cs.find((c) => c.startsWith('__Host-erp-login='))
+const id = val(cs, '__Host-erp-login')
+const loc = e.headers.get('location')
+const u = new URL(loc)
+const state = u.searchParams.get('state')
+console.log('status', e.status, 'cookie attrs:', raw.replace(id, '<valor>'))
+console.log('valor == state:', id === state)
+console.log('valor aparece na URL de autorizacao:', loc.includes(id))
+console.log('valor aparece em algum param (substring de state/nonce/challenge):', [...u.searchParams.values()].some((v) => v.includes(id) || id.includes(v)))
+console.log('tamanhos valor/state', id.length, state.length)

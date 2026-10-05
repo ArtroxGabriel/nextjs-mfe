@@ -1,0 +1,13 @@
+   1s login; token vence em 130s refresh# f1fcbde4 eventos KC {"CODE_TO_TOKEN":1,"LOGIN":1}
+ 139s vencido ha 8s, sem requisicao; refresh# f1fcbde4 access# 3ec038de
+ 139s GET / -> 200 bytes 10125 location null set-cookie 0
+file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/.agents/challenger_d2_2/t-p04.mjs:7
+const evs = async (user) => { const u = await (await fetch(`${KC}/admin/realms/erp/users?username=${user}&exact=true`, { headers: { authorization: 'Bearer ' + tok } })).json(); const e = await (await fetch(`${KC}/admin/realms/erp/events?max=500&user=${u[0].id}`, { headers: { authorization: 'Bearer ' + tok } })).json(); const c = {}; e.forEach((x) => { c[x.type] = (c[x.type] || 0) + 1 }); return c }
+                                                                                                                                                                                                                                                                 ^
+
+TypeError: Cannot read properties of undefined (reading 'id')
+    at evs (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/.agents/challenger_d2_2/t-p04.mjs:7:258)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/.agents/challenger_d2_2/t-p04.mjs:17:204
+
+Node.js v24.21.0

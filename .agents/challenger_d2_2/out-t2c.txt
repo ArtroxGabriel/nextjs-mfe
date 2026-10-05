@@ -1,0 +1,18 @@
+bruno / RSC 307 null 0 limpo
+bruno /zona1 RSC 307 null 0 limpo
+bruno /zona1/relatorios RSC 307 null 0 limpo
+bruno /zona1/recursos/r-1 RSC 307 null 0 limpo
+bruno /acesso RSC 307 null 0 limpo
+carla / RSC 307 null 0 limpo
+carla /zona1 RSC 307 null 0 limpo
+carla /zona1/relatorios RSC 307 null 0 limpo
+carla /zona1/recursos/r-1 RSC 307 null 0 limpo
+carla /acesso RSC 307 null 0 limpo
+zona GET   : +OK | $3121 | {"sub":"<id-sessao>","nome":"Ana Operadora","accessToken":"<jwt-mascarado>
+zona SET   : +OK | -NOPERM User zona has no permissions to run the 'set' command | 
+zona DEL   : +OK | -NOPERM User zona has no permissions to run the 'del' command | 
+zona SET other key: +OK | -NOPERM User zona has no permissions to run the 'set' command | 
+zona GET other key: +OK | -NOPERM No permissions to access a key | 
+zona KEYS  : +OK | -NOPERM User zona has no permissions to run the 'keys' command | 
+zona EVAL  : +OK | -NOPERM User zona has no permissions to run the 'eval' command | 
+anonimo SET: -WRONGPASS invalid username-password pair or user is disabled. | -NOAUTH Authentication required. | 
