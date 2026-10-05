@@ -11,6 +11,7 @@ depender de conversa anterior. Leia nesta ordem:
 | 4 | [`GATE_STATUS.md`](GATE_STATUS.md) | veredito de cada rodada de gate, com o handoff de cada verificador | ao fechar um gate |
 | 5 | [`DEFERRED.md`](DEFERRED.md) | o que foi adiado de propósito, com evidência | ao adiar ou resolver um item |
 | 6 | [`MANUTENCAO-GITLAB.md`](MANUTENCAO-GITLAB.md) | regras de quando e como avisar sobre o GitLab | raramente |
+| 7 | [`ledger/`](ledger/) | cópia do ledger SDD de cada plano (estado de cada task, achados adiados) | `task orquestrador:ledger` ao fechar task |
 
 Na raiz de `.agents/` ficam só o orquestrador e as pastas dos verificadores do gate em andamento
 (e do anterior, enquanto o atual cita os achados dele). **Gate fechado: as pastas saem com `git rm`**;
@@ -19,6 +20,16 @@ o que já saiu está na tag `historico-2026-09-22`.
 **Regras de processo (pedido do humano, 2026-09-22):** estado salvo e commitado a cada passo;
 handoff completo aos 80% do uso da sessão do horário; `ATIVIDADES.md` revisado a cada passo; só o
 necessário no repositório. Detalhes no fim de `RETOMADA.md`.
+
+**Regras de processo (humano, 2026-10-05):**
+- **Toda revisão com agente, de task ou de gate, escreve o rascunho desde o começo.** O revisor de task cria
+  `.superpowers/sdd/<plano>/review-task<N>-achados.md` com "(parcial)" antes de ler o diff e o atualiza a cada
+  parte revisada; no fim, "(final)" com o veredito. A primeira revisão da Task 6 do D2 morreu no limite de sessão
+  sem deixar nada.
+- **O ledger SDD vai para o git ao fechar cada task e antes de parar:** `task orquestrador:ledger` copia
+  `progress.md` e os `*-achados.md` (sem diffs, briefs nem relatórios) para `ledger/<plano>/` nesta pasta; o
+  commit vem junto com o do `RETOMADA.md`. `.superpowers/sdd/` continua fora do git (o `.gitignore` de lá é da
+  ferramenta).
 
 ## Como um gate funciona
 

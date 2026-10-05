@@ -149,6 +149,17 @@ tasks:
     desc: Confere que todo commit de submódulo fixado já está num branch remoto
     cmd: node base/scripts/checar-envio.mjs
 
+  orquestrador:ledger:
+    desc: "Copia o ledger SDD (progress.md e *-achados.md, sem diffs) para .agents/orchestrator/ledger/; rodar ao fechar cada task e antes de parar"
+    cmds:
+      - |
+        for d in .superpowers/sdd/*/; do
+          p=$(basename "$d"); destino=.agents/orchestrator/ledger/$p
+          [ -f "$d"progress.md ] || continue
+          mkdir -p "$destino"
+          for f in "$d"progress.md "$d"*-achados.md; do if [ -f "$f" ]; then cp "$f" "$destino/"; fi; done
+        done
+
   # --- showcase ----------------------------------------------------------------------------
   showcase:
     desc: "Sobe TUDO: Redis, Keycloak, domínios com dados gravados, shell e zonas em http://localhost:3000 (Ctrl-C derruba)"

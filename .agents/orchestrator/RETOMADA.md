@@ -46,8 +46,8 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 ## Próximo passo: revisão final do D2 (branch inteira) e depois o gate
 
 Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Subagent-Driven). Detalhe de cada task
-(revisões, achados menores) no ledger local `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/progress.md`
-(fora do git) e em `ATIVIDADES.md` §4.
+(revisões, achados menores) no ledger, copiado para o git em `ledger/2026-09-29-d2-k6-oidc-pkce-renovacao/progress.md`
+(`task orquestrador:ledger`), e em `ATIVIDADES.md` §4.
 
 1. ✅ **Task 1 (K6):** ator Eva (D13), lacunas LA–LG (D15), invariante 8 na zona 2. Principal `d1d6345`.
 2. ✅ **Task 2:** porta de identidade v2, transações de login de uso único, lock `SET NX PX`, `regravar` com `SET XX`. Núcleo `d481d14`..`fd94ecc`.
@@ -122,6 +122,8 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
   Submódulo enviado antes do principal (`AMBIENTE.md` §2). Commits sem rodapé de coautoria (hook `no-ai-authorship`).
 - **Handoff aos 80% do uso da sessão:** reescrever este arquivo com o passo exato, atualizar `ATIVIDADES.md`, commitar e enviar.
   Verificadores mantêm o próprio handoff "(parcial)" desde o começo.
+- **Revisor de task também grava rascunho** (`review-task<N>-achados.md`, "(parcial)" → "(final)") e o **ledger vai
+  para o git** com `task orquestrador:ledger` ao fechar cada task e antes de parar (regras de 2026-10-05, `LEIA-PRIMEIRO.md`).
 - **Decisão do humano em aberto → pedido em `pedidos/` e parar** o que depende dele.
 - **Duas pessoas na mesma branch, em horários diferentes** (humano, 2026-09-23): ao retomar, `git fetch` e ler os commits do
   outro antes de seguir; ao parar, deixar tudo commitado e enviado, com este arquivo dizendo o passo exato e o que está rodando.
@@ -145,7 +147,7 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 
 - No ar: Verdaccio (4873), Redis (6379) e Keycloak (8080) do showcase; portas da base 3000–3003 e 4001–4020 livres.
 - Agente rodando: revisor da Task 6 (só leitura). Tudo commitado e enviado em 2026-10-03; núcleo **0.10.2** publicado só no Verdaccio desta máquina (outra máquina: `task pacotes:publicar` e `task pacotes:alinhar-hashes`).
-- Relatórios das tasks do D2 em `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/` (fora do git, só nesta máquina); o essencial está acima.
+- Relatórios, briefs e diffs das tasks do D2 em `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/` (fora do git, só nesta máquina); o ledger e os achados têm cópia em `ledger/`.
 
 ## Ambiente (parada de 2026-10-01)
 
