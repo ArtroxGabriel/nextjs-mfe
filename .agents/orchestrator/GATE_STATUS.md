@@ -275,3 +275,14 @@ Pastas dos verificadores das iterações 2–9 removidas depois do registro; úl
 Gate Result: **VETO** (sem defeito de produto). `worker_d2_1` escreveu os testes (shell `bce8f59`, núcleo `aeae3af`, principal
 `base/scripts/ambiente.test.mjs` e `oidc.test.mjs`): P04, F04, L04 e L07 pegos; shell 86/86, núcleo 226/226, scripts 21/21,
 `verificar:oidc` 5/5. Iteração 2 com verificadores novos.
+
+## Gate — D2, iteração 2, principal `0b650ad` (testes do veto), shell `bce8f59`, núcleo `aeae3af`
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_d2_2 | revisor-mfe (sonnet) | APPROVE | .agents/reviewer_d2_2/handoff.md | testes novos provam P04/F04/L04/L07 pela lógica; só `test/` mudou; núcleo 0.10.2 |
+| challenger_d2_2 | simulador-condicoes (sonnet) | APPROVE | .agents/challenger_d2_2/handoff.md | `/` renova 1x com token vencido; `/proc/<pid>/environ` das zonas e domínios sem variável só do shell; cookie de login ≠ `state`; sem regressão; D19 observado em `/` |
+| auditor_d2_2 | general-purpose forense (opus) | **VETO** | .agents/auditor_d2_2/handoff.md, mutacoes.txt (com trecho exato) | 56 mutações de produto, 27 de regressão em todas as famílias pegas; P04/F04/L04/L07 pegos; veto: L04h (`id = sha256(state)`), L04k (`id = state + '.login'`), L04j (`codeVerifier = sha256(state)`) passam no teste de `iniciar` |
+
+Gate Result: **VETO** (sem defeito de produto). Correção: teste de independência dos segredos da transação (sorteios independentes de
+`randomBytes`, ou derivação por hash/inclusão recusada) e as recomendações P04b e T3o; iteração 3 com verificadores novos.
