@@ -1,0 +1,5 @@
+task: [verificar:oidc] node --test base/verificacao/oidc/*.test.mjs
+▶ modo OIDC contra o Keycloak do showcase (ADR-0013)
+  ✔ sem IDP de desenvolvimento: /login/dev nao existe (34.889543ms)
+  ✔ login pelo Keycloak com PKCE: sessao com id opaco, transacao de uso unico, nenhum token no navegador (314.744664ms)
+  ✔ nenhum refresh_token, id_token ou JWT no HTML, no payload RSC nem no JS das paginas (1091.879903ms)
