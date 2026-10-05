@@ -27,7 +27,10 @@ continua depois de reiniciar, e `task showcase:dados:resetar` volta tudo à seme
 | A12 | Derrube só a zona 2 (Ctrl-C no processo dela ou `kill` na porta 3002) e abra `/zona2` | 503 com `Retry-After: 5` e a página "zona indisponível"; `/` e `/zona1` seguem funcionando. Suba a zona de volta: em até ~1,5 s `/zona2` volta (medido 0,8–1,2 s) | falha isolada de zona (gate aprovado) |
 
 Com `task showcase:oidc` o mesmo roteiro vale com login pelo Keycloak: em A2, "Entrar" leva ao formulário
-do Keycloak (usuário e senha = nome do ator) e volta ao shell; em A11, "Sair" passa pelo logout do Keycloak.
+do Keycloak (usuário e senha = nome do ator) e volta ao shell; em A11, "Sair" encerra a sessão no shell e leva
+à página de confirmação de logout do Keycloak (a URL não leva `id_token_hint`, então ele pergunta); confirmando, o
+Keycloak volta a `/login` do shell, e o próximo "Entrar" pede senha de novo (a sessão SSO acabou). Sem confirmar,
+a sessão no shell já acabou, mas a do Keycloak continua: um novo "Entrar" volta sem pedir senha.
 A renovação do token é invisível: a página continua abrindo depois dos 5 min de vida do primeiro token
 (`task verificar:oidc` prova isso com um token de 20 s).
 

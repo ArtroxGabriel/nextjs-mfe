@@ -19,6 +19,8 @@ um fluxo com redirecionamento.
    para a verificação ponta a ponta exercitar o mesmo código de transação.
 2. **Sessão:** `expiraEm` continua sendo o fim da sessão (invariante 14). Campos novos só do escritor:
    `tokenExpiraEm`, `refreshToken?`, `idToken?`. O leitor (zonas) descarta `refreshToken` e `idToken`.
+   *Ressalva (revisão final do D2, 2026-10-05):* não cumprida; o leitor devolve a sessão inteira. Ver
+   `.agents/orchestrator/DEFERRED.md` D17.
 3. **Transação de login** (`state`, `code_verifier`, `nonce`, destino) guardada **no store de sessão**, TTL
    10 min, uso único; o navegador leva só um id opaco em `__Host-erp-login`. Cookie assinado recusado (segredo
    novo, sem uso único).

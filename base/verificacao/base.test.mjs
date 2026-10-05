@@ -375,6 +375,40 @@ test('N3: sair no shell encerra a sessao em todas as zonas', async () => {
   }
 })
 
+test('N2 (logout CSRF): sair vindo de outro site da 403 com codigo e supportId, sem apagar cookie nem encerrar a sessao', async () => {
+  const { cookie } = await entrar('ana')
+  for (const [nome, cabecalhos, origem] of [
+    ['Sec-Fetch-Site cross-site', { 'sec-fetch-site': 'cross-site' }, 'https://outro.exemplo'],
+    ['Origin de outro site', {}, 'https://outro.exemplo'],
+  ]) {
+    const r = await pedir('/api/auth/sair', { metodo: 'POST', cookie, origem, cabecalhos })
+    assert.equal(r.status, 403, nome)
+    assert.deepEqual(r.cookies, [], `${nome}: apagou cookie`)
+    assert.deepEqual(Object.keys(JSON.parse(r.html)).sort(), ['codigo', 'supportId'], nome)
+  }
+  assert.equal((await pedir('/zona2', { cookie })).status, 200, 'a sessao acabou com um pedido de outro site')
+})
+
+test('N2: o botao Sair do shell (formulario da mesma origem) encerra a sessao no navegador', {
+  skip: acharChrome() ? false : COMO_CONSEGUIR_UM_NAVEGADOR,
+}, async () => {
+  const { id, cookie } = await entrar('ana')
+  const { pagina, fechar } = await abrirNavegador()
+  try {
+    await pagina.cookie('__Host-session', id, SHELL_URL)
+    await pagina.ir(`${SHELL_URL}/zona1`)
+    assert.equal(await pagina.avaliar(`document.querySelectorAll('form[action="/api/auth/sair"] button').length`), 1, 'sem o botao Sair')
+    pagina.pedidos.length = 0
+    await pagina.avaliar(`document.querySelector('form[action="/api/auth/sair"] button').click()`)
+    await pagina.esperarRede()
+    assert.ok(pagina.pedidos.some((p) => new URL(p.url).pathname === '/api/auth/sair'), 'o clique nao enviou o formulario')
+    // o 303 de sair não aparece como resposta no CDP (é redirecionamento); um 403 deixaria a página em /api/auth/sair
+    assert.equal(await pagina.avaliar('location.pathname'), '/login')
+  } finally { await fechar() }
+  const s = await pedir('/zona1', { cookie })
+  assert.equal(s.status, 307, 'a sessao continua valida depois do Sair')
+})
+
 test('cookie forjado passa da camada 1 e morre na camada 2', async () => {
   const r = await pedir('/zona1', { cookie: '__Host-session=00000000-0000-0000-0000-000000000000' })
   assert.equal(r.status, 307)

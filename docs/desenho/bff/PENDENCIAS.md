@@ -243,8 +243,8 @@ A RFC 9110 define o ETag como validador da *representação selecionada* — a p
 > em 2026-10-03). É o terceiro caso da tabela. A saída escolhida foi a renovação proativa e serializada
 > ([ADR-0013](../../adr/0013-login-oidc-e-renovacao-proativa.md), núcleo 0.10): o proxy do shell renova
 > dentro da janela, só quem ganha `SET NX PX` relê a sessão e chama o IdP, quem perde segue sem esperar.
-> Teste: 20 renovações concorrentes → uma chamada ao IdP (núcleo, stores em memória e em arquivo; a variante
-> com Redis falso, pedida pelo ADR-0013, ainda não existe); pelo shell contra o Keycloak, 20 requisições
+> Teste: 20 renovações concorrentes → uma chamada ao IdP (núcleo, stores em memória e em arquivo; pelo proxy do
+> shell, em memória e com Redis falso `NX`, em `erp-shell/test/proxy-renovacao.test.mjs`, P0-d); pelo shell contra o Keycloak, 20 requisições
 > concorrentes com o token na janela (conferida no Redis) renovam uma vez só e não derrubam a sessão
 > (`task verificar:oidc`).
 > **Continua aberto:** exclusão mútua sob failover do Redis (P0-d, sem teste). O aviso "não implemente o

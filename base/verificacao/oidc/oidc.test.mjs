@@ -10,7 +10,8 @@
 // - 20 requisições concorrentes com o token na janela de renovação (conferida no Redis antes do lote): todas 200,
 //   o shell grava a sessão uma vez só, com refresh token novo e `tokenExpiraEm` adiante, e a sessão continua viva
 //   depois (com rotação e detecção de reuso, uma segunda renovação com o mesmo refresh token a derrubaria);
-// - sair: a sessão acaba e o 303 vai ao logout do Keycloak sem token na URL.
+// - sair: a sessão acaba e o 303 vai ao logout do Keycloak sem token na URL; seguido com os cookies do Keycloak,
+//   ele pede confirmação (sem `id_token_hint`), devolve ao `/login` do shell e a sessão SSO acaba (novo login pede senha).
 //
 // Tempos: a vida do access token do cliente `erp-shell` é encurtada no Keycloak pela API de administração
 // (`VERIFICAR_OIDC_TOKEN_VIDA_S`, padrão 20) e devolvida ao valor do realm no fim; `ERP_RENOVACAO_JANELA_S` e
@@ -82,22 +83,42 @@ async function sessaoNoRedis(id) {
   return JSON.parse(json)
 }
 
-/** Formulário de login do Keycloak a partir da URL de autorização; devolve a URL de retorno ao shell. */
-async function loginNoKeycloak(urlAutorizacao, usuario) {
+/** Pote de cookies do navegador no Keycloak: guarda o que cada resposta grava e monta o cabeçalho. */
+function poteDoKeycloak() {
   const jar = new Map()
-  const guardar = (r) => { for (const c of r.headers.getSetCookie()) { const [kv] = c.split(';'); const i = kv.indexOf('='); jar.set(kv.slice(0, i), kv.slice(i + 1)) } }
-  let r = await fetch(urlAutorizacao, { redirect: 'manual' })
-  guardar(r)
+  return {
+    guardar(r) {
+      for (const c of r.headers.getSetCookie()) {
+        const [kv] = c.split(';'); const i = kv.indexOf('=')
+        if (/Max-Age=0/i.test(c) || /Expires=Thu, 01[- ]Jan[- ]1970/i.test(c)) jar.delete(kv.slice(0, i))
+        else jar.set(kv.slice(0, i), kv.slice(i + 1))
+      }
+      return r
+    },
+    get cabecalho() { return [...jar].map(([k, v]) => `${k}=${v}`).join('; ') },
+  }
+}
+
+/** A página do Keycloak pede senha? (formulário de login, não o 302 da sessão SSO). */
+const pedeSenha = (status, html) => status === 200 && /name="password"/.test(html)
+
+/**
+ * Formulário de login do Keycloak a partir da URL de autorização. Devolve a URL de retorno ao shell e o
+ * pote de cookies do Keycloak (a sessão SSO), que o logout precisa para chegar à confirmação.
+ */
+async function loginNoKeycloak(urlAutorizacao, usuario) {
+  const pote = poteDoKeycloak()
+  let r = pote.guardar(await fetch(urlAutorizacao, { redirect: 'manual' }))
   const acao = (await r.text()).match(/action="([^"]+)"/)?.[1]?.replaceAll('&amp;', '&')
   if (!acao) throw new Error(`Keycloak sem formulario de login (HTTP ${r.status})`)
-  r = await fetch(acao, {
+  r = pote.guardar(await fetch(acao, {
     method: 'POST', redirect: 'manual',
-    headers: { cookie: [...jar].map(([k, v]) => `${k}=${v}`).join('; '), 'content-type': 'application/x-www-form-urlencoded' },
+    headers: { cookie: pote.cabecalho, 'content-type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ username: usuario, password: usuario }),
-  })
+  }))
   const local = r.headers.get('location')
   if (r.status !== 302 || !local) throw new Error(`login de ${usuario} no Keycloak recusado (HTTP ${r.status})`)
-  return new URL(local)
+  return { retorno: new URL(local), pote }
 }
 
 /** Login completo pelo shell, como o navegador: entrar → Keycloak → retorno. */
@@ -109,12 +130,12 @@ async function entrarPeloKeycloak(usuario, de = '/') {
   assert.equal(autorizacao.origin, RAIZ_KC, 'entrar nao mandou ao Keycloak')
   assert.equal(autorizacao.searchParams.get('code_challenge_method'), 'S256')
   for (const p of ['state', 'nonce', 'code_challenge']) assert.ok(autorizacao.searchParams.get(p), `${p} ausente na autorizacao`)
-  const retorno = await loginNoKeycloak(autorizacao, usuario)
+  const { retorno, pote } = await loginNoKeycloak(autorizacao, usuario)
   assert.equal(retorno.origin + retorno.pathname, `${SHELL}/api/auth/retorno`)
   const r = await pedir(retorno.pathname + retorno.search, { cookie: `__Host-erp-login=${transacao}` })
   const id = valorDoCookie(r.cookies, '__Host-session')
   assert.ok(id, `retorno sem sessao (HTTP ${r.status})`)
-  return { cookie: `__Host-session=${id}`, id, resposta: r }
+  return { cookie: `__Host-session=${id}`, id, resposta: r, poteKeycloak: pote }
 }
 
 /** A página da zona 1 com os blocos dos dois domínios: só sai assim se o access token da sessão vale. */
@@ -131,7 +152,7 @@ async function tokenDireto(usuario) {
   const desafio = createHash('sha256').update(verifier).digest('base64url')
   const retorno = `${SHELL}/api/auth/retorno`
   const busca = new URLSearchParams({ client_id: 'erp-shell', response_type: 'code', scope: 'openid profile', redirect_uri: retorno, state: 's', code_challenge: desafio, code_challenge_method: 'S256' })
-  const code = (await loginNoKeycloak(`${KEYCLOAK_EMISSOR}/protocol/openid-connect/auth?${busca}`, usuario)).searchParams.get('code')
+  const code = (await loginNoKeycloak(`${KEYCLOAK_EMISSOR}/protocol/openid-connect/auth?${busca}`, usuario)).retorno.searchParams.get('code')
   const j = await (await fetch(`${KEYCLOAK_EMISSOR}/protocol/openid-connect/token`, {
     method: 'POST',
     headers: { 'content-type': 'application/x-www-form-urlencoded', authorization: 'Basic ' + Buffer.from(`erp-shell:${SEGREDO}`).toString('base64') },
@@ -160,7 +181,7 @@ describe('modo OIDC contra o Keycloak do showcase (ADR-0013)', { skip: motivoPar
   test('login pelo Keycloak com PKCE: sessao com id opaco, transacao de uso unico, nenhum token no navegador', async () => {
     const ini = await pedir('/api/auth/entrar?de=%2Fzona1')
     const transacao = valorDoCookie(ini.cookies, '__Host-erp-login')
-    const retorno = await loginNoKeycloak(new URL(ini.local), 'ana')
+    const { retorno } = await loginNoKeycloak(new URL(ini.local), 'ana')
     const r = await pedir(retorno.pathname + retorno.search, { cookie: `__Host-erp-login=${transacao}` })
     assert.equal(r.status, 303)
     assert.equal(r.local, '/zona1')
@@ -235,8 +256,16 @@ describe('modo OIDC contra o Keycloak do showcase (ADR-0013)', { skip: motivoPar
     painelComDominios(await pedir('/zona1', { cookie }), 'segunda leitura')
   })
 
-  test('sair: sessao removida, 303 ao logout do Keycloak sem token; a CSP abre form-action so para o IdP', async () => {
-    const { cookie } = await entrarPeloKeycloak('carla')
+  test('sair: sessao removida, 303 ao logout do Keycloak sem token, confirmacao e volta ao /login; a CSP abre form-action so para o IdP', async () => {
+    const { cookie, poteKeycloak } = await entrarPeloKeycloak('carla')
+    // controle: com a sessão SSO viva, um novo entrar volta ao shell sem pedir senha
+    const autorizacao = async () => {
+      const ini = await pedir('/api/auth/entrar')
+      const r = poteKeycloak.guardar(await fetch(ini.local, { redirect: 'manual', headers: { cookie: poteKeycloak.cabecalho } }))
+      return { status: r.status, html: await r.text() }
+    }
+    const antes = await autorizacao()
+    assert.ok(!pedeSenha(antes.status, antes.html), `controle: o Keycloak pediu senha com a sessao SSO viva (HTTP ${antes.status})`)
     const pagina = await pedir('/', { cookie })
     assert.match(pagina.csp, new RegExp(`form-action 'self' ${RAIZ_KC.replaceAll('.', '\\.')}(;|$)`))
     const zona = await pedir('/zona1', { cookie })
@@ -249,5 +278,27 @@ describe('modo OIDC contra o Keycloak do showcase (ADR-0013)', { skip: motivoPar
     assert.deepEqual([...logout.searchParams.keys()].sort(), ['client_id', 'post_logout_redirect_uri'])
     for (const s of SEGREDOS) assert.doesNotMatch(r.local, s)
     assert.equal((await pedir('/zona1', { cookie })).status, 307, 'sessao continuou valendo depois de sair')
+
+    // o navegador segue o 303 com os cookies do Keycloak: sem `id_token_hint`, o Keycloak pede confirmação
+    const confirmacao = poteKeycloak.guardar(await fetch(logout, { redirect: 'manual', headers: { cookie: poteKeycloak.cabecalho } }))
+    const html = await confirmacao.text()
+    assert.equal(confirmacao.status, 200, `logout no Keycloak: HTTP ${confirmacao.status}`)
+    assert.doesNotMatch(html, /Invalid redirect uri|Invalid parameter/i, 'Keycloak recusou o post_logout_redirect_uri ou o client_id')
+    const form = html.match(/<form[^>]*action="([^"]*logout-confirm[^"]*)"[^>]*>([\s\S]*?)<\/form>/)
+    assert.ok(form, 'pagina de confirmacao de logout sem o formulario')
+    const campos = new URLSearchParams()
+    for (const m of form[2].matchAll(/<input[^>]*\bname="([^"]+)"[^>]*\bvalue="([^"]*)"/g)) campos.append(m[1], m[2])
+    assert.ok(campos.get('session_code'), 'formulario de confirmacao sem session_code')
+    const fim = poteKeycloak.guardar(await fetch(new URL(form[1].replaceAll('&amp;', '&'), RAIZ_KC), {
+      method: 'POST', redirect: 'manual',
+      headers: { cookie: poteKeycloak.cabecalho, 'content-type': 'application/x-www-form-urlencoded' },
+      body: campos,
+    }))
+    assert.equal(fim.status, 302, `confirmacao de logout: HTTP ${fim.status}`)
+    assert.equal(fim.headers.get('location'), `${SHELL}/login`, 'o Keycloak nao devolveu ao /login do shell')
+
+    // a sessão SSO acabou: um novo entrar pede senha de novo
+    const depois = await autorizacao()
+    assert.ok(pedeSenha(depois.status, depois.html), `depois do logout o Keycloak nao pediu senha (HTTP ${depois.status})`)
   })
 })

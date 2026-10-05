@@ -100,7 +100,8 @@ hoje, porque as decisões correspondentes estão abertas em [PENDENCIAS.md](PEND
 > o Keycloak (`task verificar:oidc`): página de zona ainda 200 depois do vencimento do primeiro token, 20
 > requisições concorrentes com o token na janela (conferida no Redis antes do lote) que gravam a sessão uma vez
 > só, com refresh token novo, sem derrubá-la (reprova se o proxy só renovar token vencido ou se o lock sair), e nenhum `refresh_token`, `id_token` ou `eyJ` no
-> HTML, no RSC e no JS. **Falta:** a variante com Redis falso (`NX`) e o failover do Redis.
+> HTML, no RSC e no JS. A variante com Redis falso (`SET NX/XX PX`) está em `erp-shell/test/proxy-renovacao.test.mjs`
+> (P0-d para cada store de `STORES`: memória e `redisFalso` com `sessaoRedisDeEscrita`). **Falta:** o failover do Redis.
 
 O P0-c é o mais revelador: ele testa exatamente a cadeia
 `evento perdido → cache stale → refresh que lê o cache`.
