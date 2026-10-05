@@ -84,3 +84,4 @@ Task 6: complete (main 232c8f4..848e5fe, núcleo 0.10.2 63e0425; review clean ap
 Final review: package review-final.diff rebuilt at main 848e5fe; dispatched (opus) com triagem dos menores adiados
 Final review (opus): pronto para o gate após A1–A5 (docs + A3 logout seguido no Keycloak); N1–N5 Minor; triagem: A3=M4, demais B (DEFERRED) ou C. Controlador acrescentou A6 (N2 logout CSRF: SameSite=Lax impede encerrar no store, mas resposta cross-site apaga o cookie). Dispatched implementer (opus) A1–A6 + DEFERRED dos B; relatório final-fix-report.md
 Final fixes: implementer DONE (shell bcef220, main 16570f1; shell 82/82, typecheck ok, oidc 5/5, construir 114+4, redis 118/118, estatica 51/51, scripts 20/20; mutações M1–M7 pegas; DEFERRED D19–D23). Re-review dispatched (sonnet), package rereview-final-r1.diff
+Final fixes: re-review (sonnet) limpo; minor SHELL_HOSTS padrão corrigido no CONFIGURACAO pelo controlador. D2 final review complete → gate d2 iteração 1

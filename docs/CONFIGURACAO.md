@@ -39,7 +39,7 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 | `DOMINIO_A_URL`, `DOMINIO_B_URL`, `DOMINIO_C_URL`, `DOMINIO_PLATAFORMA_URL` | `http://127.0.0.1:400x` | Origem de cada domínio no registro de destinos | apps | ✅ |
 | `ACESSO_URL` | `http://127.0.0.1:4020` | Gestão de acesso v2 (`GET /v2/eu`; manifesto em `/v2/modulos/manifesto`). Sem volta para a v1 (ADR-0014, adendo 1) | apps, `registrar-manifesto` das zonas 1 e 2 | ✅ (núcleo 0.9.0) |
 | `ERP_TOKEN_SERVICO` | dev | Token de serviço para registrar o manifesto | `registrar-manifesto` | ✅ |
-| `SHELL_HOSTS` | — | Hosts aceitos como origem do shell | apps | ✅ |
+| `SHELL_HOSTS` | `localhost:3000` | Hosts aceitos como origem do shell (páginas e `POST /api/auth/sair`), separados por vírgula | apps | ✅ |
 | `ERP_DESTINO_TIMEOUT_MS` | `5000` | Timeout de uma chamada a domínio e de cada requisição ao IdP (discovery, token); teto 60000 | núcleo (`interno/destinos.ts`; `identidadeOidc`, na criação); stub dos domínios (JWKS, §4) | ✅ (teto na 0.9.0; IdP na 0.10.0; stub no D2) |
 | `ERP_FRAGMENTO_TIMEOUT_MS` | `2000` | Timeout de um fragmento entre zonas; teto 30000 | núcleo (`fabricas/fragmento.ts`) | ✅ (teto na 0.9.0) |
 | `ERP_SONDA_TTL_MS` | `1000` | Por quanto tempo o shell confia no resultado da sonda de saúde de uma zona; teto 10000 | shell (`lib/saude-zonas.ts`) | ✅ (B5a) |
