@@ -3,3 +3,14 @@ task: [verificar:oidc] node --test base/verificacao/oidc/*.test.mjs
   ✔ sem IDP de desenvolvimento: /login/dev nao existe (34.889543ms)
   ✔ login pelo Keycloak com PKCE: sessao com id opaco, transacao de uso unico, nenhum token no navegador (314.744664ms)
   ✔ nenhum refresh_token, id_token ou JWT no HTML, no payload RSC nem no JS das paginas (1091.879903ms)
+  ✔ pagina de zona ainda 200, com os dominios, depois do vencimento do primeiro access token (72322.3823ms)
+  ✔ sair: sessao removida, 303 ao logout do Keycloak sem token, confirmacao e volta ao /login; a CSP abre form-action so para o IdP (239.087892ms)
+✔ modo OIDC contra o Keycloak do showcase (ADR-0013) (76655.396227ms)
+ℹ tests 5
+ℹ suites 1
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 76819.617406
