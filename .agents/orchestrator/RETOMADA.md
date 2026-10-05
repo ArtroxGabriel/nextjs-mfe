@@ -60,9 +60,10 @@ Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Su
    corrigidos em `848e5fe` (`verificar:oidc` 5/5). M4 vai para a triagem final.
 9. ✅ **Revisão final do D2** (2026-10-05): correções A1–A6 em shell `bcef220` e principal `16570f1` (logout seguido até o Keycloak,
    `sair` só da mesma origem, docs, DEFERRED D19–D23); re-revisão limpa. A triagem dos menores abaixo está feita (B no `DEFERRED.md`).
-10. ⏳ **Gate do D2**: iteração 1 (HEAD `b8a1034`) com revisor e challenger APPROVE e **auditor VETO** por 3 testes faltando (P04, F04,
-   L04; sem defeito de produto); `worker_d2_1` escreveu os testes (shell `bce8f59`, núcleo `aeae3af`). **Iteração 2**: `reviewer_d2_2`
-   APPROVE, `challenger_d2_2` APPROVE (D19 observado de novo em `/`: 1 de 10 concorrentes renovou); `auditor_d2_2` (Opus) rodando. Para depois do gate
+10. ⏳ **Gate do D2**: iterações 1 e 2 vetadas pelo auditor só por força de teste (sem defeito de produto); correções em
+   `0b650ad` (P04/F04/L04) e `cf72700` (sorteios independentes da transação, T3o, P04b; núcleo `83b00e0`, shell `3034f76`).
+   **Iteração 3** (2026-10-05): `reviewer_d2_3` e `challenger_d2_3` rodando; `auditor_d2_3` (Opus) depois do challenger, focado na
+   correção e numa amostra de regressão. Para depois do gate
    (achados menores): `server-only` em `erp-shell/lib/cookies.ts`; `trim` em `SHELL_HOSTS` no `sair`; `sair` compara só o host
    (aceita `https://` do mesmo host); `CONFIGURACAO.md` §5 diz que valor inválido falha na subida (é na primeira requisição);
    README §3 e ROTEIRO com contagem velha de testes (hoje 118); estado persistido do showcase sem a eva (`task showcase:dados:resetar`).
