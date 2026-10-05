@@ -68,7 +68,7 @@ Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Su
    README §3 e ROTEIRO com contagem velha de testes (hoje 118); estado persistido do showcase sem a eva (`task showcase:dados:resetar`).
    **Decisões do humano (2026-10-05):** histórico reescrito para tirar o JWT de `793f519` (feito pelo humano; ver "Ambiente
    (reescrita de 2026-10-05)"); **D19 → opção B em task própria** (`DEFERRED.md` D19).
-11. ⬜ **Task D19-B** (depois do gate): perdedor do lock com token **já vencido** espera a renovação até
+11. ⬜ **Task D19-B** (depois do gate; plano `docs/superpowers/plans/2026-10-05-d19b-espera-com-token-vencido.md`, com D20 e os menores do gate): perdedor do lock com token **já vencido** espera a renovação até
    `ERP_RENOVACAO_ESPERA_MS` e relê a sessão; núcleo 0.10.3 + lockstep, adendo 3 ao ADR-0013, teste de concorrência com token
    vencido (unidade no núcleo e no shell, ponta a ponta em `verificar:oidc`). Junto: os menores do gate listados acima.
    Achados menores adiados pelas revisões das tasks (cópia do ledger local, para a triagem):
