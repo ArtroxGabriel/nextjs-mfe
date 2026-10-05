@@ -1,0 +1,7 @@
+verifier errado                              400 {"error":"invalid_grant","error_description":"PKCE verification failed: Code mismatch"}
+mesmo code depois (verifier certo)           400 {"error":"invalid_grant","error_description":"Code not valid"}
+sem verifier                                 400 {"error":"invalid_grant","error_description":"PKCE code verifier not specified"}
+verifier certo (1a vez)                      200 {"access_token":"<jwt-mascarado>
+code reusado                                 400 {"error":"invalid_grant","error_description":"Code not valid"}
+challenge method plain                       ERR Cannot read properties of null (read
+auth sem PKCE                                302 http://localhost:3000/api/auth/retorno?error=invalid_request&error_description=Missing+parameter%3A+code_challenge_metho

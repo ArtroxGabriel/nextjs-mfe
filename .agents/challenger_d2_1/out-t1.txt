@@ -1,0 +1,22 @@
+A1 retorno do KC (host/path)                     http://localhost:3000/api/auth/retorno
+A1 params                                        state,session_state,iss,code
+A2 retorno status/location                       303 /
+A2 Set-Cookie                                    ["__Host-session=9433c515-2155-49ab-8be3-cb4c1a4c17ce; Path=/; HttpOnly; Secure; SameSite=Lax","__Host-erp-login=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax"]
+B1 replay retorno status/location                303 /login cookies=["__Host-erp-login="]
+C1 retorno sem transacao                         303 /login sess=undefined
+D1 transacao inexistente                         303 /login sess=undefined
+E1 state adulterado                              303 /login sess=undefined
+E2 retorno legitimo apos state errado            303 /login sess=undefined
+F1 code de B com state/transacao de A            303 /login sess=undefined
+F2 state de B com transacao de A                 303 /login sess=undefined
+H0 params do retorno                             ["state=M_gLvZXVOgiN","session_state=ad1d4f2e-c22","iss=http://127.0","code=b6108d1c-218"]
+H1 iss adulterado                                303 /login sess=undefined
+I redirect_uri=http://localhost:3000/api/auth/retorno/ 400 
+I redirect_uri=http://localhost:3000/api/auth/retorno?x=1 400 
+I redirect_uri=http://localhost:3000/api/auth/Retorno 400 
+I redirect_uri=http://localhost:3000/            400 
+I redirect_uri=http://evil.example/api/auth/retorno 400 
+I redirect_uri=http://localhost:3000/api/auth/retorno#f 400 
+I redirect_uri=http://localhost.evil.example:3000/api/auth/retorno 400 
+I redirect_uri=http://localhost:3001/api/auth/retorno 400 
+I redirect_uri=http://127.0.0.1:3000/api/auth/retorno 400 

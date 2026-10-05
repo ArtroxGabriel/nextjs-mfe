@@ -1,0 +1,6 @@
+   0.4 logins feitos
+   0.7 ana tokenExp em 1789419241545s (ms? 1791210451867) refresh# c6a288b5 access# 5dadf32a expiraEm 1791212121867
+   1.0 bruno tokenExp em 1789419241636s (ms? 1791210451959) refresh# 7bb7faa0 access# 49ac65a5 expiraEm 1791212121959
+   1.3 carla tokenExp em 1789419241735s (ms? 1791210452058) refresh# 8ae92dfc access# ae17acb0 expiraEm 1791212122058
+   1.5 RAJADA ana n=10 /zona1 {"200":10} ms p50=199 max=201 setcookies: []
+   1.6 RAJADA bruno n=10 /zona1 {"200":10} ms p50=136 max=136 setcookies: []
