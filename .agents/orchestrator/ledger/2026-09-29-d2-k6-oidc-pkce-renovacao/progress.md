@@ -71,3 +71,9 @@ Task 6: implementer NEEDS_CONTEXT parcial (main 232c8f4, 5a1d2f0; 409/409, verif
 Task 6: decisão do humano 2026-10-03: opção (a) exceção de loopback (ERP_PERMITIR_HTTP_LOCAL), núcleo 0.10.2 + lockstep + adendo 2 ao ADR-0013; resumed implementer para itens 1 e 2
 Task 6: implementer DONE (nucleo 63e0425 v0.10.2, stub 962932c, shell e171df8, z1 42df5ea, z2 7bf1cce, zacesso 75f8234, main 232c8f4..0d391d0; 419/419, verificar 112+4, redis 116/116, oidc 5/5); pushed; review package review-task6.diff
 Task 6: review (opus) de 2026-10-03 perdida com a sessão (sem veredito); 2026-10-05 re-dispatched (opus) sobre o mesmo review-task6.diff (submódulos conferidos sem mudança), com achados gravados em review-task6-achados.md a cada etapa
+2026-10-05: regras de processo novas (achados parciais do revisor; ledger no git via task orquestrador:ledger), commit 55d22c6. Pacote da revisão final pronto: review-final.diff (principal 4c88d33..HEAD, submódulos desde as fixações de antes do d1d6345; 418 KB) — despachar depois do veredito da Task 6
+Task 6: review (opus, 2026-10-05) — aprovado com ressalvas; 1 Important I1 (oidc.test.mjs:186-194: lote de 20 concorrentes não prova renovação na janela nem renovação única; mutação "só renova vencido" passaria; frase usada como evidência em ADR-0013, 11-testes §3.2, PENDENCIAS §4, atual.md); achados em review-task6-achados.md
+Task 6: minor (fix na rodada 1): M1 CONFIGURACAO.md:21,24,61 e ADR-0013 decisão 5 sem citar a exceção do adendo 2; M2 verificar:oidc sai 0 com Keycloak fora (pulo); M3 oidc.test.mjs:177 origem 4001 fixa
+Task 6: minor (deferred → triagem final): M4 logout OIDC não seguido até o Keycloak (menor T3 do id_token_hint agora verificável; ROTEIRO A11)
+Task 6: minor (sem ação): M5 pnpm-lock do stub com hash local de @erp/contratos 0.2.1 (AMBIENTE §1)
+Task 6: fix round 1/5 — dispatched implementer (opus) para I1, M1, M2, M3

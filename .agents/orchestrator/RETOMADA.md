@@ -56,10 +56,10 @@ Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Su
 5. ✅ **Task 5:** domínios falsos verificam RS256/JWKS; adendo 1 do ADR-0013 (token de serviço só registra o próprio manifesto em modo JWT). Stub `783242b`, principal `1f4414c`.
 6. ✅ **Task 6:** verificação final verde; documentos da lista do ADR-0013 atualizados; p95 do proxy medido (`task medir:proxy`); DEFERRED D17–D18 (D16 abriu e fechou). Relatório: `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/task-6-report.md`.
 7. ✅ **Modo OIDC** (decisão (a) do humano): núcleo **0.10.2** (`ERP_PERMITIR_HTTP_LOCAL`, só loopback; adendo 2 do ADR-0013), stub com a mesma regra, `task showcase:oidc` e `task verificar:oidc` (`base/verificacao/oidc/`).
-8. ⏳ **Revisão da Task 6** (Opus): a de 2026-10-03 morreu com a sessão, sem veredito. **Redespachada em 2026-10-05** sobre o mesmo
-   pacote (`review-task6.diff`; submódulos conferidos sem mudança), agora gravando os achados em
-   `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/review-task6-achados.md` a cada etapa. Se cair de novo: retomar
-   a partir desse arquivo.
+8. ⏳ **Revisão da Task 6** (Opus, 2026-10-05): **aprovado com ressalvas**. I1: o teste dos 20 concorrentes não prova a renovação
+   na janela; M1–M3 (docs do adendo 2, `verificar:oidc` verde com o Keycloak fora, origem fixa). **Rodada de correção 1 em andamento**
+   (implementador Opus, usando as portas; relatório `task-6-fix1-report.md`); depois re-revisão. M4 (logout seguido até o Keycloak)
+   vai para a triagem final. Achados: `ledger/2026-09-29-d2-k6-oidc-pkce-renovacao/review-task6-achados.md`.
 9. ⬜ **Revisão final do D2** (branch inteira; triagem dos menores do ledger) e depois o **gate** (`LEIA-PRIMEIRO.md`, "Como um gate funciona").
    Achados menores adiados pelas revisões das tasks (cópia do ledger local, para a triagem):
    - **T2:** tomada de lock velho no store de arquivo pode dar dois vencedores; teste de 20 renovações na fábrica sem Redis falso com NX; transações expiradas nunca limpas em arquivo/memória; `sessaoMemoria().adquirirLockRenovacao` sem `validarTtlDoLock`; `ERP_RENOVACAO_JANELA_S < ERP_TOKEN_VIDA_S/2` só documentado; teste de tempo dos perdedores (<200 ms) pode oscilar; `fronteira.mjs` com nomes genéricos como marcadores de escrita; `identidade-dev` sem `ERP_SESSAO_MAXIMA_S`.
