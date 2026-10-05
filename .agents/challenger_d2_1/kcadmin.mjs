@@ -4,7 +4,7 @@ export async function vida(seg) {   // '' restaura
   const [c] = await (await fetch(`${KC}/admin/realms/erp/clients?clientId=erp-shell`, { headers: await hdr() })).json()
   const antes = c.attributes?.['access.token.lifespan']
   const attrs = { ...c.attributes }
-  if (seg === '') delete attrs['access.token.lifespan']; else attrs['access.token.lifespan'] = String(seg)
+  attrs['access.token.lifespan'] = String(seg)
   const r = await fetch(`${KC}/admin/realms/erp/clients/${c.id}`, { method: 'PUT', headers: await hdr(), body: JSON.stringify({ ...c, attributes: attrs }) })
   return { antes, status: r.status }
 }

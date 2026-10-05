@@ -1,6 +1,30 @@
    0.4 logins feitos
-   0.7 ana tokenExp em 1789419241545s (ms? 1791210451867) refresh# c6a288b5 access# 5dadf32a expiraEm 1791212121867
-   1.0 bruno tokenExp em 1789419241636s (ms? 1791210451959) refresh# 7bb7faa0 access# 49ac65a5 expiraEm 1791212121959
-   1.3 carla tokenExp em 1789419241735s (ms? 1791210452058) refresh# 8ae92dfc access# ae17acb0 expiraEm 1791212122058
-   1.5 RAJADA ana n=10 /zona1 {"200":10} ms p50=199 max=201 setcookies: []
-   1.6 RAJADA bruno n=10 /zona1 {"200":10} ms p50=136 max=136 setcookies: []
+   0.7 ana token vence em 130s refresh# 7fffe953 access# c3cf58b2 sessaoExpiraEm 1800s
+   1.0 bruno token vence em 129s refresh# 3394eece access# a7c0861b sessaoExpiraEm 1799s
+   1.3 carla token vence em 129s refresh# df098441 access# ea9689d9 sessaoExpiraEm 1799s
+   1.5 RAJADA ana n=10 /zona1 {"200":10} ms p50=196 max=199 setcookies: []
+   1.6 RAJADA bruno n=10 /zona1 {"200":10} ms p50=129 max=129 setcookies: []
+  66.3 ana token vence em 64s refresh# 7fffe953 access# c3cf58b2 sessaoExpiraEm 1734s
+  72.3 ana(pos 72s) token vence em 58s refresh# 7fffe953 access# c3cf58b2 sessaoExpiraEm 1728s
+  72.7 RAJADA ana n=30 /zona1 {"200":30} ms p50=416 max=420 setcookies: []
+  73.0 ana token vence em 129s refresh# e1da21a1 access# 0ec43fea sessaoExpiraEm 1799s
+  73.4 RAJADA ana n=30 /zona1 {"200":30} ms p50=346 max=347 setcookies: []
+  73.7 ana token vence em 129s refresh# e1da21a1 access# 0ec43fea sessaoExpiraEm 1799s
+  74.0 RAJADA bruno n=30 /zona1/relatorios {"200":30} ms p50=319 max=323 setcookies: []
+  74.3 bruno token vence em 129s refresh# 8ed26bad access# 22580f70 sessaoExpiraEm 1799s
+ 100.1 RAJADA ana n=5 /zona1 {"200":5} ms p50=84 max=86 setcookies: []
+ 100.4 ana token vence em 102s refresh# e1da21a1 access# 0ec43fea sessaoExpiraEm 1772s
+ 140.1 RAJADA ana n=5 /zona1 {"200":5} ms p50=76 max=78 setcookies: []
+ 140.4 ana token vence em 62s refresh# e1da21a1 access# 0ec43fea sessaoExpiraEm 1732s
+ 190.1 RAJADA ana n=5 /zona1 {"200":5} ms p50=102 max=106 setcookies: []
+ 190.4 ana token vence em 130s refresh# 73b17c1e access# f82ef300 sessaoExpiraEm 1800s
+ 215.1 RAJADA ana n=5 /zona1 {"200":5} ms p50=83 max=85 setcookies: []
+ 215.4 ana token vence em 105s refresh# 73b17c1e access# f82ef300 sessaoExpiraEm 1775s
+ 222.3 carla(parada) token vence em -92s refresh# df098441 access# ea9689d9 sessaoExpiraEm 1578s
+ 222.6 RAJADA carla(token vencido) n=20 /zona1 {"200":20} ms p50=265 max=270 setcookies: []
+ 222.9 carla token vence em 130s refresh# 7f3bcb35 access# 835fecf5 sessaoExpiraEm 1800s
+ 223.0 RAJADA carla pos n=5 /zona1 {"200":5} ms p50=78 max=80 setcookies: []
+ 223.3 carla token vence em 129s refresh# 7f3bcb35 access# 835fecf5 sessaoExpiraEm 1799s
+ 223.3 RAJADA bruno(vencido) n=5 /zona1 {"200":5} ms p50=75 max=76 setcookies: []
+ 223.6 bruno token vence em 130s refresh# d43bb2e4 access# fa3e7423 sessaoExpiraEm 1800s
+ 223.9 userinfo(ana access token do store): 200

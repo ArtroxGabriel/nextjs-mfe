@@ -5,9 +5,9 @@ const log = (...a) => console.log(t(), ...a)
 const chave = (id) => 'erp:sessao:' + createHash('sha256').update(id).digest('hex')
 async function sess(id) { const r = await redisCmd(['GET', chave(id)]); const m = r.match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null }
 const sh = (x) => x ? createHash('sha256').update(x).digest('hex').slice(0, 8) : '-'
-async function resumo(nome, id) { const s = await sess(id); if (!s) return log(nome, 'SESSAO AUSENTE'); log(nome, `tokenExp em ${(s.tokenExpiraEm - Date.now() / 1000).toFixed(0)}s (ms? ${s.tokenExpiraEm})`, 'refresh#', sh(s.refreshToken), 'access#', sh(s.accessToken), 'expiraEm', s.expiraEm) }
+async function resumo(nome, o) { const s = await sess(o.id); if (!s) return log(nome, 'SESSAO AUSENTE'); log(nome, `token vence em ${((s.tokenExpiraEm - Date.now()) / 1000).toFixed(0)}s`, 'refresh#', sh(s.refreshToken), 'access#', sh(s.accessToken), 'sessaoExpiraEm', ((s.expiraEm - Date.now())/1000).toFixed(0)+'s') }
 const ana = await entrar('ana'), bruno = await entrar('bruno'), carla = await entrar('carla')
-log('logins feitos'); for (const [n, s] of [['ana', ana], ['bruno', bruno], ['carla', carla]]) await resumo(n, s.id)
+log('logins feitos'); for (const [n, s] of [['ana', ana], ['bruno', bruno], ['carla', carla]]) await resumo(n, s)
 async function rajada(nome, s, n, path = '/zona1') {
   const ini = Date.now()
   const rs = await Promise.all(Array.from({ length: n }, async () => { const a = Date.now(); const r = await get(SHELL + path, { headers: { cookie: s.cookie } }); await r.text(); return { st: r.status, loc: r.headers.get('location'), ms: Date.now() - a, sc: sc(r).map((c) => c.split(';')[0].slice(0, 20)) } }))

@@ -1,0 +1,7 @@
+"//evil.com"             303 /
+"/\\evil.com"            303 /
+"http://evil.com"        303 /
+"/zona1"                 303 /zona1
+"/%2f%2fevil.com"        303 /%2f%2fevil.com
+"/\t/evil.com"           303 /
+"/zona1?x=1#y"           303 /zona1?x=1#y
