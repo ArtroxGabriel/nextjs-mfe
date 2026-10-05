@@ -77,3 +77,4 @@ Task 6: minor (fix na rodada 1): M1 CONFIGURACAO.md:21,24,61 e ADR-0013 decisão
 Task 6: minor (deferred → triagem final): M4 logout OIDC não seguido até o Keycloak (menor T3 do id_token_hint agora verificável; ROTEIRO A11)
 Task 6: minor (sem ação): M5 pnpm-lock do stub com hash local de @erp/contratos 0.2.1 (AMBIENTE §1)
 Task 6: fix round 1/5 — dispatched implementer (opus) para I1, M1, M2, M3
+Task 6: fix round 1 implementer DONE (main d82e5b7; verificar:oidc 5/5, EXIGIR=1 com emissor inalcançável vermelho, estatica 51/51, scripts 20/20, redis 116/116; mutações (a) só renova vencido e (b) sem lock pegas); re-review dispatched (sonnet), package rereview-task6-r1.diff
