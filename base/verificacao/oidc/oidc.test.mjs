@@ -280,7 +280,7 @@ describe('modo OIDC contra o Keycloak do showcase (ADR-0013)', { skip: motivoPar
     // (ERP_RENOVACAO_ESPERA_MS)
     const antes = await sessaoNoRedis(id)
     await esperar(antes.tokenExpiraEm + (TOLERANCIA_S + 2) * 1000 - Date.now())
-    assert.ok(Date.now() > antes.tokenExpiraEm, 'o token ainda vale: o lote nao exercita o token vencido')
+    assert.ok(Date.now() > antes.tokenExpiraEm + TOLERANCIA_S * 1000, 'o token ainda vale para o dominio (vencimento + tolerancia): o lote nao exercita o token vencido')
     const monitor = await monitorarRedis(process.env.REDIS_URL)
     let juntas, comandos
     try {

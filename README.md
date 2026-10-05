@@ -71,14 +71,20 @@ Entre como `ana`, `bruno`, `carla` ou `davi`: cada um vê um menu diferente. Use
 
 ## 3. Como testar
 
-| Suíte | Comando | Testes | Protege |
-|---|---|---|---|
-| `erp-contratos` | `pnpm test` | 15 | manifesto: prefixo de zona, concessão entre zonas, duplicatas |
-| `erp-nucleo` | `pnpm test` | 107 | registro de destinos, sessão leitor/escritor (arquivo e Redis), fragmentos entre zonas, acesso, fronteira entre camadas, exports |
-| `erp-moldura` | `pnpm test` | 25 | menu e `aria-current`, host de toast, flash, `FormularioDeAcao` |
-| `erp-dominio-stub` | `pnpm test` | 24 | projeção e escopo dos domínios, `If-Match`, regras da gestão de acesso, dados em JSON e persistência |
-| `erp-shell` | `pnpm test` | 36 | decisão do proxy, sonda de saúde das zonas, mapa de zonas, gateway de telemetria |
-| ponta a ponta | `task verificar` | 50 | N3–N8 pelo shell com os quatro atores; toda Server Action pelo caminho do navegador; toast uma vez só; domínios e uma zona derrubados; zona travada vira 503 em < 2 s; nonce novo a cada requisição; gestão de acesso fora sem vazamento em nenhuma página de módulo |
+| Suíte | Comando | Protege |
+|---|---|---|
+| `erp-contratos` | `pnpm test` | manifesto: prefixo de zona, concessão entre zonas, duplicatas |
+| `erp-nucleo` | `pnpm test` | registro de destinos, sessão leitor/escritor (arquivo e Redis), renovação e espera do lock, fragmentos entre zonas, acesso, fronteira entre camadas, exports |
+| `erp-moldura` | `pnpm test` | menu e `aria-current`, host de toast, flash, `FormularioDeAcao` |
+| `erp-dominio-stub` | `pnpm test` | projeção e escopo dos domínios, `If-Match`, regras da gestão de acesso, dados em JSON e persistência, modo JWT |
+| `erp-shell` | `pnpm test` | decisão e renovação no proxy, rotas de login, sonda de saúde das zonas, mapa de zonas, gateway de telemetria |
+| estáticas | `task verificar:estatica` | saída de rede, `server-only`, DTO em ilha, links entre zonas, `NEXT_PUBLIC_*` |
+| ponta a ponta | `task verificar` (sessão em arquivo) e `task verificar:redis` (sessão no Redis do showcase) | N3–N8 pelo shell com os quatro atores; toda Server Action pelo caminho do navegador; toast uma vez só; domínios e uma zona derrubados; zona travada vira 503 em < 2 s; nonce novo a cada requisição; gestão de acesso fora sem vazamento em nenhuma página de módulo |
+| ponta a ponta OIDC | `task verificar:oidc` (Keycloak do showcase no ar) | login OIDC + PKCE, renovação na janela e com o token vencido, uma renovação só sob concorrência |
+
+**Verde é a suíte inteira passando:** o resumo do `node --test` termina com `fail 0`. A contagem muda a cada
+fatia e por isso não fica escrita aqui. Em `task verificar`, sem Redis, os testes que só valem com Redis aparecem
+como pulados (`skipped`); em `task verificar:redis`, nenhum é pulado.
 
 `task test` roda as unidades dos 8 repositórios. `task verificar` sobe domínios, shell e zonas, verifica
 e derruba tudo. Depois de mudar código de uma app, use `task verificar:construir` para refazer os builds. Rodando uma suíte à mão, use sempre

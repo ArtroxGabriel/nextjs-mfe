@@ -9,6 +9,7 @@
 import { execFileSync } from 'node:child_process'
 import { join } from 'node:path'
 import { subir, SHELL, RAIZ } from '../scripts/ambiente.mjs'
+import { atoresAusentes, avisoDeEstado } from '../scripts/estado-do-showcase.mjs'
 
 const COMPOSE = ['compose', '-f', join(import.meta.dirname, 'docker-compose.yml')]
 const KEYCLOAK = 'http://127.0.0.1:8080/realms/erp/.well-known/openid-configuration'
@@ -36,6 +37,9 @@ await esperar('Keycloak', async () => (await fetch(KEYCLOAK, { signal: AbortSign
 
 console.log('2/3 domínios falsos com estado gravado; 3/3 shell e zonas (pode levar alguns minutos no primeiro build)')
 process.env.DADOS_DIR ??= join(RAIZ, 'erp-dominio-stub', 'dados', 'estado')
+// estado gravado antes de a semente ganhar um ator (a eva): avisa e sugere o reset, sem migrar
+const aviso = avisoDeEstado(atoresAusentes(process.env.DADOS_DIR), process.env.DADOS_DIR)
+if (aviso) console.warn(`\n${aviso}\n`)
 // sessão no Redis do compose (D1): shell grava, zonas leem; ver docs/CONFIGURACAO.md
 process.env.REDIS_URL ??= `redis://default:${SENHA_SHELL}@127.0.0.1:6379`
 // zonas só leem a sessão: usuário ACL com GET e nada mais (invariante 15)
@@ -81,5 +85,5 @@ showcase no ar: ${SHELL}
   Keycloak (admin/admin):    http://localhost:8080  — conferido por task showcase:checar;
                              ${OIDC ? `login OIDC (${process.env.IDP_EMISSOR}); domínios só aceitam o token dele` : 'login de desenvolvimento; com o Keycloak: task showcase:oidc'}
 
-Ctrl-C derruba domínios, shell e zonas.`)
+Ctrl-C derruba domínios, shell e zonas.${aviso ? `\n\n${aviso}` : ''}`)
 for (const sinal of ['SIGINT', 'SIGTERM']) process.on(sinal, () => { derrubar(); process.exit(0) })

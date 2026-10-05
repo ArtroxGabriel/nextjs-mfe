@@ -5,6 +5,7 @@ import { test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { createServer } from 'node:http'
 import { spawn } from 'node:child_process'
 import { generateKeyPairSync, sign, createHmac } from 'node:crypto'
@@ -558,11 +559,20 @@ test('L1 (auditor_b1_d1_3, E05): /{zona}/api/health nao toca dominio nem sessao 
   }
 })
 
-test('P12: toda zona aceita Server Action so dos hosts do shell (SHELL_HOSTS), nunca uma lista escrita no codigo', () => {
+test('P12: toda zona aceita Server Action so dos hosts do shell (SHELL_HOSTS), nunca uma lista escrita no codigo', async () => {
+  // Uma leitura so por zona (lib/hosts-do-shell.ts), com trim como no shell: `SHELL_HOSTS='a, b'` passa
+  // nas paginas e no allowedOrigins do Next (I1 da revisao da Task 3 do D19-B).
   for (const app of ['erp-zona-1', 'erp-zona-2', 'erp-zona-acesso']) {
-    const fonte = readFileSync(join(RAIZ, app, 'lib', 'pagina.ts'), 'utf8')
-    const hosts = [...fonte.matchAll(/hostsPermitidos:\s*([^\n]+)/g)].map((m) => m[1].trim())
-    assert.deepEqual(hosts, ["(process.env.SHELL_HOSTS ?? 'localhost:3000').split(','),"], `${app}: hostsPermitidos`)
+    const pagina = readFileSync(join(RAIZ, app, 'lib', 'pagina.ts'), 'utf8')
+    const config = readFileSync(join(RAIZ, app, 'next.config.ts'), 'utf8')
+    assert.match(pagina, /hostsPermitidos:\s*lerHostsDoShell\(\s*\)/, `${app}: hostsPermitidos`)
+    assert.match(config, /allowedOrigins:\s*lerHostsDoShell\(\s*\)/, `${app}: allowedOrigins`)
+    for (const [nome, fonte] of [['lib/pagina.ts', pagina], ['next.config.ts', config]]) {
+      assert.doesNotMatch(fonte, /SHELL_HOSTS|\.split\(/, `${app}/${nome}: le SHELL_HOSTS por conta propria`)
+    }
+    const { lerHostsDoShell } = await import(pathToFileURL(join(RAIZ, app, 'lib', 'hosts-do-shell.ts')).href)
+    assert.deepEqual(lerHostsDoShell(undefined), ['localhost:3000'], app)
+    assert.deepEqual(lerHostsDoShell('erp.exemplo, b.exemplo:8443 ,,'), ['erp.exemplo', 'b.exemplo:8443'], app)
   }
 })
 

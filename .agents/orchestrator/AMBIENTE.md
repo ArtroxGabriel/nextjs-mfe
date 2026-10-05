@@ -96,6 +96,9 @@
 - **Um dono por vez para as portas** 3000–3003, 4001–4004 e 4010. Num gate, só o challenger sobe
   servidores; o auditor espera. O Verdaccio (4873) ninguém derruba.
 - Não existe `tsx` nem `rtk` nesta máquina; não buscar.
+- **Configuração inválida não derruba o `next start`.** O módulo que valida (`lib/nucleo.ts`, por exemplo) só carrega na
+  primeira requisição: o processo sobe, a porta abre e toda requisição responde 500 com `configuracao invalida: …` no log.
+  Ao testar uma variável nova, faça uma requisição e leia o log; porta aberta não prova nada (D19-B, 2026-10-05).
 
 - **Não edite por número de linha (`sed -i 'Ns…'`) depois de outra edição no mesmo arquivo.** Em
   2026-09-22 o número vinha de um `grep` anterior à edição e o `sed` apagou a asserção do L3; a

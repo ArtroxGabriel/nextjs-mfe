@@ -5,6 +5,16 @@
 > D13 (ator só com `tarefas.ver`) e D15 (lacunas sem veto da iteração 9) fecharam na K6 (2026-09-29, `d1d6345`;
 > saíram daqui em `51fd1ab`); conferido de novo na Task 6 do D2 (2026-10-03). D16 (verificação OIDC contra o Keycloak)
 > abriu e fechou na mesma task: adendo 2 do ADR-0013 e `task verificar:oidc`.
+> **D19** (token vencido ia ao login) fechou na D19-B (2026-10-05) pela opção B do humano: núcleo **0.10.3** em lockstep,
+> quem perde o lock com o token vencido espera o vencedor até `ERP_RENOVACAO_ESPERA_MS` (ADR-0013, adendo 3). Evidência:
+> `oidc.test.mjs` "token ja vencido: 10 requisicoes concorrentes…": com a 0.10.2 e com a mutação "não esperar" no build,
+> `200 200 307 200 307 …`; com a 0.10.3, 10 × 200 e uma gravação da sessão (`task verificar:oidc` 6/6); unidade nos três
+> stores em `erp-nucleo/test/identidade.test.mjs`. Commits: núcleo `c879b0b`, `fdea296`; shell `acec0bf`; principal
+> `d898b84`, `c26619c`. **D20** fechou inteiro no mesmo 0.10.3: lock > 2 × timeout recusado na criação e janela conferida
+> por sessão (`tokenVidaMs`, `FalhaDoNucleo` com `motivo`), `urlRetorno` sem query nem fragmento, JSDoc da porta
+> (`e1a09f2`, `3576971`); `iniciarLogin` devolve `expiraEm` e o shell não lê mais `ERP_LOGIN_TRANSACAO_S` (`acec0bf`).
+> Os menores do gate do D2 (`server-only` em `cookies.ts`, `SHELL_HOSTS` com espaço no shell e nas zonas, esquema no
+> `sair`, §5 do `CONFIGURACAO.md`, aviso do showcase sem a eva) entraram nas Tasks 3 e 4.
 
 ## D7 — Zona travada segura a requisição até o `proxyTimeout` do Next
 
@@ -79,31 +89,6 @@
 > Achados da revisão final (`.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/review-final-achados.md`, Parte 2)
 > sem defeito de produto hoje. D12 e D14 receberam os seus nas tabelas acima; D17 e D18 seguem nas próprias entradas.
 
-## D19 — Token vencido com o IdP instável ou o lock ocupado vai ao login (N1)
-
-- **O que é:** com o token **já vencido** (volta depois de mais de 5 min parado, ou erro transitório do IdP com o lock
-  ainda preso), quem perde o lock e o próprio vencedor que falhou seguem com o token vencido; o domínio responde 401 e
-  `criarPaginas` manda ao login. Só com o token ainda válido "um IdP instável não desloga ninguém"
-  (`erp-shell/lib/decisao-proxy.ts`, comentário corrigido na revisão final).
-- **Por que não foi corrigido:** a saída seria o perdedor com token vencido reler a sessão por até X ms, o que contraria
-  "quem perde não espera" (ADR-0013, decisão 4). É decisão de desenho, não correção.
-- **Decisão do humano (2026-10-05): opção B, em task própria depois do gate do D2.** Na janela, com o token ainda
-  válido, segue "quem perde não espera". Com o token **já vencido**, quem perde o lock espera a renovação do vencedor até
-  um teto configurável (`ERP_RENOVACAO_ESPERA_MS`, padrão da ordem de 2 s, em `docs/CONFIGURACAO.md`) e relê a sessão.
-  Exige núcleo 0.10.3 + lockstep, adendo 3 ao ADR-0013 e teste de concorrência com o token vencido. Medição do
-  challenger_d2_1: com o Keycloak de volta, 1 de 10 concorrentes renovou e 9 foram ao `/login`.
-- **Fecha em:** a task D19-B (ver `RETOMADA.md`).
-
-## D20 — Validações e ajustes para a próxima versão do núcleo
-
-| Item | Motivo de esperar | Gatilho |
-|---|---|---|
-| `ERP_RENOVACAO_LOCK_S` > 2 × `ERP_DESTINO_TIMEOUT_MS`/1000, validado em `criarNucleoDoShell` (N3) | hoje só documentado (`CONFIGURACAO.md` §1); os padrões (15 s e 5 s) cumprem; violar faz a segunda renovação com o mesmo refresh token e o Keycloak revoga a sessão | próxima versão do núcleo |
-| `ERP_RENOVACAO_JANELA_S` < metade da vida do token, validado por sessão | o núcleo só conhece a vida depois do token; se violado, renova a cada vencimento do lock, sem perder sessão | próxima versão do núcleo |
-| `urlRetorno` aceita query e fragmento (`identidade-oidc.ts:93`; correção: `validarUrl(..., true)`) | erro só de configuração, que falha alto (todo login vira `null`) | próxima versão do núcleo |
-| JSDoc da porta (`portas/identidade.ts:29-31`) não diz que `iniciar`/`concluir` lançam | as rotas do shell já têm `try/catch` | próxima versão do núcleo |
-| `vidaTransacaoS` do shell repete padrão e teto de `ERP_LOGIN_TRANSACAO_S` (ideal: `iniciarLogin` devolve `expiraEm`) | hoje os dois são iguais | mudar o padrão ou o teto no núcleo |
-
 ## D21 — Diagnóstico de falha de login
 
 - **O que é:** `concluir` trata `invalid_client` como recusa (vai ao login como credencial ruim), e a causa do erro do IdP
@@ -129,3 +114,12 @@
 | intervalo mínimo do JWKS medido de início a início | só importa com timeout maior que o intervalo | validar `ERP_DESTINO_TIMEOUT_MS < ERP_JWKS_INTERVALO_MIN_S` no stub, na próxima mudança do JWKS |
 | `r.json()` do JWKS sem limite de tamanho | a origem é o emissor confiável | domínio real (fora do stub) |
 | `azp` não conferido | hoje só o cliente `erp-shell` tem o mapper `erp-dominios` | segundo cliente no realm (client credentials do adendo 1) |
+
+## D24 — Releitura da espera sem timeout próprio (menor 7 da Task 1 da D19-B)
+
+- **O que é:** a espera do perdedor com o token vencido (ADR-0013, adendo 3) relê a sessão no store a cada passo, e a
+  releitura não tem timeout próprio. Um Redis travado estica a espera além de `ERP_RENOVACAO_ESPERA_MS`.
+- **Por que não foi corrigido:** o risco já existe em toda leitura do store (proxy, páginas, `renovarSessao`); um timeout
+  só na espera não muda o resultado da requisição, que trava na leitura seguinte. Não é desta task.
+- **Fecha em:** timeout de comando no cliente Redis das apps (configuração, `docs/CONFIGURACAO.md`), junto com a próxima
+  mudança em `lib/redis.ts` ou em P1 (deploy), o que vier primeiro.

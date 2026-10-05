@@ -1,6 +1,6 @@
 # ADR-0013 — Login OIDC e renovação proativa no shell
 
-**Status:** aceito (humano, 2026-09-23), com os **adendos 1 e 2** no fim (humano, 2026-10-03); proposto em 2026-09-22 pelo `arquiteto-mfe`; **implementado no D2** (núcleo 0.10.2, 2026-10-03), verificado ponta a ponta contra o Keycloak do showcase (`task verificar:oidc`).
+**Status:** aceito (humano, 2026-09-23), com os **adendos 1 e 2** no fim (humano, 2026-10-03) e o **adendo 3** (humano, 2026-10-05; núcleo 0.10.3); proposto em 2026-09-22 pelo `arquiteto-mfe`; **implementado no D2** (núcleo 0.10.2, 2026-10-03), verificado ponta a ponta contra o Keycloak do showcase (`task verificar:oidc`).
 **Substitui:** ADR-0009, decisão 3 (endpoint interno do shell que a zona chamaria para renovar).
 
 ## Contexto
@@ -25,7 +25,8 @@ um fluxo com redirecionamento.
    10 min, uso único; o navegador leva só um id opaco em `__Host-erp-login`. Cookie assinado recusado (segredo
    novo, sem uso único).
 4. **Renovação proativa e serializada no `proxy.ts` do shell** (toda requisição a zona passa por ele): se o
-   token vence em menos de 60 s, `SET NX PX` de 15 s; quem perde **não espera**; quem ganha **relê** a sessão
+   token vence em menos de 60 s, `SET NX PX` de 15 s; quem perde **não espera** enquanto o token ainda vale (com o
+   token já vencido, espera o vencedor até um teto: adendo 3); quem ganha **relê** a sessão
    (evita reusar refresh token com rotação), renova e grava; `revogada` remove a sessão; erro transitório
    mantém a sessão e segura o lock (backoff). O lock não é liberado explicitamente. O `criarProxy` das zonas
    continua sem I/O; zona nenhuma renova (invariante 15).
@@ -165,3 +166,64 @@ recusa ativa da flag fora da máquina local (não há como o núcleo saber onde 
 host recusado, sem flag nem loopback passa em produção, hosts enganosos e formas IPv6; 9 mutações pegas);
 `erp-dominio-stub/test/http-local.test.mjs` (4 mutações pegas); `base/verificacao/oidc/oidc.test.mjs` (a base em modo
 OIDC contra o Keycloak).
+
+## Adendo 3 (2026-10-05) — com o token já vencido, quem perde o lock espera o vencedor
+
+Decisão do humano (D19, opção B), implementada no núcleo **0.10.3** (lockstep nas 4 apps). Emenda a decisão 4.
+
+**Achado que motivou o adendo.** Com o token **já vencido** (volta depois de mais tempo parado que a vida do token, ou
+erro transitório do IdP com o lock ainda preso), quem perdia o lock seguia com o token morto, o domínio respondia `401`
+e a página mandava ao login com a sessão intacta no store. Medido pelo `challenger_d2_1` e pelo `challenger_d2_2`:
+10 requisições concorrentes, 1 renovação, 1 resposta `200` e 9 respostas `307` para `/login`
+(`.agents/orchestrator/DEFERRED.md`, D19).
+
+1. **Espera só com o token vencido.** Em `renovarSessao`, quem perde o lock olha o token da sessão que leu antes do
+   lock. Se ele ainda vale (a janela), segue com ele e volta `em-andamento` na hora, como antes. Se já venceu, relê a
+   sessão **no store** até um teto e devolve `em-dia` quando o token relido vale (outro renovou), `ausente` quando a
+   sessão sumiu (encerrada ou revogada pelo vencedor) e `em-andamento` no teto. O tipo `EstadoDaRenovacao` não muda, e
+   o proxy do shell trata os três como já tratava. A espera **nunca chama o IdP**: o refresh token continua sendo gasto
+   uma vez só.
+2. **Teto e passo são configuração** (`docs/CONFIGURACAO.md` §1), validados em `criarNucleoDoShell`:
+   `ERP_RENOVACAO_ESPERA_MS` (padrão 2000, `0` desliga e volta ao comportamento anterior, menor que
+   `ERP_RENOVACAO_LOCK_S`×1000) e `ERP_RENOVACAO_ESPERA_PASSO_MS` (padrão 50, mínimo 10, menor que a espera quando ela
+   está ligada). Depois do lock, outra requisição pode ganhar o lock e renovar ela mesma; esperar mais não serve a
+   ninguém. A espera volta no máximo um passo depois do teto.
+3. **Custo com o IdP fora.** O vencedor falha, a sessão fica e o lock fica preso até vencer (backoff, decisão 4).
+   Durante esse tempo, toda requisição com o token vencido espera o teto inteiro e depois segue para o login como
+   antes. Com o padrão, são 2 s a mais por requisição enquanto o IdP estiver fora. A sessão continua no store e volta a
+   funcionar quando o IdP voltar.
+4. **Por que a janela continua sem espera.** Com o token ainda válido, seguir com ele dá a mesma resposta que esperar
+   daria: o domínio aceita o token. Esperar só somaria latência a toda requisição concorrente na janela, que é o caso
+   comum (toda renovação proativa passa por ela), e não muda resposta nenhuma.
+5. **Validações do D20, na mesma versão.**
+   - `ERP_RENOVACAO_LOCK_S`×1000 tem de ser **maior que 2 × `ERP_DESTINO_TIMEOUT_MS`** (discovery e troca do token,
+     cada uma até o timeout). Recusado na criação. Com o lock vencendo no meio de uma renovação, outra requisição
+     gastaria o mesmo refresh token, e o Keycloak (detecção de reuso) revogaria a sessão.
+   - `ERP_RENOVACAO_JANELA_S` menor que metade da vida do token, **conferida por sessão**: a vida só se conhece com o
+     token na mão. Ao gravar a sessão, o núcleo guarda a vida medida (`tokenVidaMs`, número não sensível). Se a janela
+     não couber, registra a falha no servidor e usa metade da vida como janela daquela sessão, sem renovar em laço.
+     Token cortado pelo fim da sessão não mede a vida.
+6. **`FalhaDoNucleo` diz o motivo.** O registro no servidor é `{ motivo, codigo, supportId }`, com `motivo` literal
+   fechado (`'janela-de-renovacao'`), sem token nem dado da pessoa (invariante 12). O shell passa o mesmo registrador das
+   rotas de autenticação (`[auth] renovacao: motivo=… codigo=… supportId=…`). Se o registrador injetado lança ou
+   rejeita, o login e a renovação seguem e a falha vai ao console.
+
+**Risco residual.**
+- As releituras da espera não têm timeout próprio: um Redis travado estica a espera além do teto. O risco já existe
+  nas outras leituras do store (`.agents/orchestrator/DEFERRED.md`, D24).
+- O registro da janela "uma vez por sessão" é aproximado. A renovação com o token cortado apaga `tokenVidaMs`, e a
+  seguinte registra de novo. Durante um deploy gradual, um shell ainda no 0.10.2 grava sem o campo.
+
+**Verificação.**
+- `erp-nucleo/test/identidade.test.mjs`, nos três stores (memória, arquivo e Redis falso com NX):
+  - 20 renovações concorrentes com o token vencido fazem uma chamada ao IdP, e nenhuma volta `em-andamento`;
+  - na janela, quem perde volta sem esperar;
+  - com o IdP em erro transitório, quem perde volta `em-andamento` entre o teto e o teto mais dois passos;
+  - sessão encerrada durante a espera dá `ausente`;
+  - `0` desliga a espera;
+  - valores inválidos e acima do teto são recusados.
+  As mutações "não esperar", "esperar também na janela", "chamar o IdP na espera" e "ignorar o teto" são pegas.
+- `erp-shell/test/proxy-renovacao.test.mjs` cobre o proxy com o token vencido.
+- `base/verificacao/oidc/oidc.test.mjs`: com o token vencido e além da tolerância de relógio do domínio, 10 requisições
+  concorrentes a `/` e a `/zona1` respondem todas `200`, com uma gravação da sessão só. Com o núcleo 0.10.2, ou com a
+  mutação "não esperar" no build, reprova (`200 200 307 200 307 …`).

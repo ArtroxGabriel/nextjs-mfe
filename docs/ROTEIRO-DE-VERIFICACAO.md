@@ -3,12 +3,14 @@
 ## Base genérica em `repos/`
 
 Leva uns 10 minutos. A verificação automática faz o mesmo por HTTP:
-`task verificar` (esperado: `tests 51`, `pass 51`).
+`task verificar` (esperado: a suíte inteira passa, `fail 0` no resumo; com a sessão no Redis do showcase,
+`task verificar:redis`, sem nenhum pulado).
 
 **Preparar.** `task showcase` (ou só `task base`, sem Redis e Keycloak). Com o showcase no ar,
 `task showcase:conferir` mostra de uma vez o que cada ator vê em cada zona; os passos abaixo são o
 mesmo, à mão, no navegador. No showcase os dados dos domínios ficam gravados: o que A6 e A8 mudam
-continua depois de reiniciar, e `task showcase:dados:resetar` volta tudo à semente. Use `http://localhost:3000`, não `127.0.0.1`: o cookie
+continua depois de reiniciar, e `task showcase:dados:resetar` volta tudo à semente. Se o estado gravado for
+anterior à semente atual (um ator que não existe nele, como a eva), `task showcase` avisa e sugere esse reset. Use `http://localhost:3000`, não `127.0.0.1`: o cookie
 `__Host-session` exige origem segura, e o navegador só trata `localhost` assim.
 
 | # | Faça | Deve acontecer | Requisito |

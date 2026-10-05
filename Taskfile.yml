@@ -130,10 +130,14 @@ tasks:
       ERP_RENOVACAO_LOCK_S: '5'
       # o núcleo exige lock > 2 x ERP_DESTINO_TIMEOUT_MS (D20); com o padrão de 5 s, o lock de 5 s é recusado
       ERP_DESTINO_TIMEOUT_MS: '2000'
+      # espera do perdedor com o token vencido (adendo 3 do ADR-0013): abaixo do lock de 5 s (o núcleo recusa
+      # espera >= lock) e acima do timeout de 2 s, para um refresh lento do Keycloak não virar 307 nos perdedores.
+      # O timeout de 2 s vale também para zonas e stub (JWKS): com o Keycloak frio, a primeira chamada pode oscilar
+      ERP_RENOVACAO_ESPERA_MS: '4000'
       CONSTRUIR: '{{.CONSTRUIR | default "1"}}'
 
   scripts:test:
-    desc: Testes dos scripts da base (ambiente, lockstep, hashes)
+    desc: Testes dos scripts da base (ambiente, lockstep, hashes, estado do showcase)
     cmd: node --test base/scripts/*.test.mjs
 
   verificar:estatica:
