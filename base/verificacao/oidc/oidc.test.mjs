@@ -11,6 +11,8 @@
 // - 20 requisições concorrentes com o token na janela de renovação (conferida no Redis antes do lote): todas 200,
 //   o shell grava a sessão uma vez só, com refresh token novo e `tokenExpiraEm` adiante, e a sessão continua viva
 //   depois (com rotação e detecção de reuso, uma segunda renovação com o mesmo refresh token a derrubaria);
+// - 10 requisições concorrentes a `/` e a `/zona1` com o token JÁ vencido: todas 200, com uma renovação só; quem perde
+//   o lock espera quem renova em vez de seguir com o token morto e cair no `/login` (D19-B);
 // - sair: a sessão acaba e o 303 vai ao logout do Keycloak sem token na URL; seguido com os cookies do Keycloak,
 //   ele pede confirmação (sem `id_token_hint`), devolve ao `/login` do shell e a sessão SSO acaba (novo login pede senha).
 //
@@ -269,6 +271,31 @@ describe('modo OIDC contra o Keycloak do showcase (ADR-0013)', { skip: motivoPar
     await esperar((VIDA_S + TOLERANCIA_S + 2) * 1000)
     painelComDominios(await pedir('/zona1', { cookie }), 'depois das renovacoes concorrentes (sessao viva no Keycloak)')
     painelComDominios(await pedir('/zona1', { cookie }), 'segunda leitura')
+  })
+
+  test('token ja vencido: 10 requisicoes concorrentes a / e a uma pagina de zona, todas 200, com uma renovacao so (D19-B)', { timeout: 120_000 }, async () => {
+    const { cookie, id } = await entrarPeloKeycloak('bruno')
+    // nenhuma requisição até o token da sessão vencer e passar da tolerância de relógio do domínio (senão o domínio
+    // ainda aceita o token morto e o lote passa sem renovar): quem perde o lock tem de esperar quem renova
+    // (ERP_RENOVACAO_ESPERA_MS)
+    const antes = await sessaoNoRedis(id)
+    await esperar(antes.tokenExpiraEm + (TOLERANCIA_S + 2) * 1000 - Date.now())
+    assert.ok(Date.now() > antes.tokenExpiraEm, 'o token ainda vale: o lote nao exercita o token vencido')
+    const monitor = await monitorarRedis(process.env.REDIS_URL)
+    let juntas, comandos
+    try {
+      juntas = await Promise.all(Array.from({ length: 10 }, (_, i) => pedir(i % 2 ? '/zona1' : '/', { cookie })))
+    } finally {
+      comandos = await monitor.parar()
+    }
+    const status = juntas.map((r) => r.status)
+    assert.deepEqual(status, Array(10).fill(200), `status do lote: ${status.join(' ')}`)
+    juntas.forEach((r, i) => (i % 2 ? painelComDominios : inicioComDominios)(r, `concorrente ${i}`))
+    const gravacoes = comandos.filter((l) => l.toLowerCase().includes(`"set" "${chaveDaSessao(id)}"`))
+    assert.equal(gravacoes.length, 1, `o lote gravou a sessao ${gravacoes.length} vez(es): renovacao ausente ou repetida`)
+    const depois = await sessaoNoRedis(id)
+    assert.notEqual(depois.refreshToken, antes.refreshToken, 'o refresh token nao mudou no lote')
+    assert.ok(depois.tokenExpiraEm > Date.now(), 'o token gravado depois do lote ja esta vencido')
   })
 
   test('sair: sessao removida, 303 ao logout do Keycloak sem token, confirmacao e volta ao /login; a CSP abre form-action so para o IdP', async () => {
