@@ -187,7 +187,7 @@ e a página mandava ao login com a sessão intacta no store. Medido pelo `challe
    `ERP_RENOVACAO_ESPERA_MS` (padrão 2000, `0` desliga e volta ao comportamento anterior, menor que
    `ERP_RENOVACAO_LOCK_S`×1000) e `ERP_RENOVACAO_ESPERA_PASSO_MS` (padrão 50, mínimo 10, menor que a espera quando ela
    está ligada). Depois do lock, outra requisição pode ganhar o lock e renovar ela mesma; esperar mais não serve a
-   ninguém. A espera volta no máximo um passo depois do teto.
+   ninguém. A espera volta no máximo um passo (mais uma releitura) depois do teto; a margem de dois passos nos testes é só folga de agendador.
 3. **Custo com o IdP fora.** O vencedor falha, a sessão fica e o lock fica preso até vencer (backoff, decisão 4).
    Durante esse tempo, toda requisição com o token vencido espera o teto inteiro e depois segue para o login como
    antes. Com o padrão, são 2 s a mais por requisição enquanto o IdP estiver fora. A sessão continua no store e volta a
