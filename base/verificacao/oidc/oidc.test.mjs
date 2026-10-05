@@ -16,7 +16,8 @@
 //
 // Tempos: a vida do access token do cliente `erp-shell` é encurtada no Keycloak pela API de administração
 // (`VERIFICAR_OIDC_TOKEN_VIDA_S`, padrão 20) e devolvida ao valor do realm no fim; `ERP_RENOVACAO_JANELA_S` e
-// `ERP_RENOVACAO_LOCK_S` (5 s na tarefa) cabem nela. Ver docs/CONFIGURACAO.md §1 e §6.
+// `ERP_RENOVACAO_LOCK_S` (5 s na tarefa) cabem nela; o lock passa de 2 x `ERP_DESTINO_TIMEOUT_MS` (2 s na tarefa),
+// como o núcleo exige (D20). Ver docs/CONFIGURACAO.md §1 e §6.
 //
 // Fora da tarefa o arquivo pula. Com `VERIFICAR_OIDC_EXIGIR=1` (a tarefa define) o motivo para pular vira falha:
 // no gate, verde é rodado, nunca pulado.

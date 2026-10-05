@@ -128,6 +128,8 @@ tasks:
       VERIFICAR_OIDC_TOKEN_VIDA_S: '{{.VERIFICAR_OIDC_TOKEN_VIDA_S | default "20"}}'
       ERP_RENOVACAO_JANELA_S: '5'
       ERP_RENOVACAO_LOCK_S: '5'
+      # o núcleo exige lock > 2 x ERP_DESTINO_TIMEOUT_MS (D20); com o padrão de 5 s, o lock de 5 s é recusado
+      ERP_DESTINO_TIMEOUT_MS: '2000'
       CONSTRUIR: '{{.CONSTRUIR | default "1"}}'
 
   scripts:test:
