@@ -125,7 +125,7 @@
 - **Classificador do auto mode fora do ar** (2026-09-28): nenhum Bash nem escrita passa, nem `ls`, e dez falhas seguidas
   encerram o turno. Não insistir: sair do auto mode (`Shift+Tab`) ou usar as regras `allow` de `.claude/settings.local.json`
   (fora do git), que dispensam o classificador. Comando com `|` ou `;` não casa com a regra; rode um comando por chamada.
-- **Evidência bruta de verificador pode levar token.** Em 2026-10-05 o parcial do challenger_d2_1 (`793f519`) subiu com um JWT do
+- **Evidência bruta de verificador pode levar token.** Em 2026-10-05 o parcial do challenger_d2_1 (`793f519`, hoje `e52414e` depois da reescrita) subiu com um JWT do
   Keycloak local em `out-t2c.txt`. Antes de commitar pasta de verificador: `grep -rlE "eyJ[A-Za-z0-9_-]{20,}" .agents/<nome>` e
   mascarar (`<jwt-mascarado>`); no despacho, pedir que o próprio agente mascare antes de salvar.
 - **PUT do realm no Keycloak mescla atributos.** Para devolver a vida do token ao padrão, gravar o atributo com `''`

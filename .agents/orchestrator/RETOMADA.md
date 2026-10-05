@@ -66,8 +66,8 @@ Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Su
    (achados menores): `server-only` em `erp-shell/lib/cookies.ts`; `trim` em `SHELL_HOSTS` no `sair`; `sair` compara só o host
    (aceita `https://` do mesmo host); `CONFIGURACAO.md` §5 diz que valor inválido falha na subida (é na primeira requisição);
    README §3 e ROTEIRO com contagem velha de testes (hoje 118); estado persistido do showcase sem a eva (`task showcase:dados:resetar`).
-   **Decisões do humano (2026-10-05):** reescrever o histórico para tirar o JWT de `793f519` (sim; o auto mode bloqueou, o
-   humano roda os comandos num clone à parte); **D19 → opção B em task própria** (`DEFERRED.md` D19).
+   **Decisões do humano (2026-10-05):** histórico reescrito para tirar o JWT de `793f519` (feito pelo humano; ver "Ambiente
+   (reescrita de 2026-10-05)"); **D19 → opção B em task própria** (`DEFERRED.md` D19).
 11. ⬜ **Task D19-B** (depois do gate): perdedor do lock com token **já vencido** espera a renovação até
    `ERP_RENOVACAO_ESPERA_MS` e relê a sessão; núcleo 0.10.3 + lockstep, adendo 3 ao ADR-0013, teste de concorrência com token
    vencido (unidade no núcleo e no shell, ponta a ponta em `verificar:oidc`). Junto: os menores do gate listados acima.
@@ -152,6 +152,13 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 5. **Registro de pacotes / CI (P1): no fim do plano** (humano, 2026-09-23). Até lá, `task pacotes:alinhar-hashes`.
 6. Aplicar no GitLab o que estiver "pendente" em `ATIVIDADES.md` §2 (hoje só comentários opcionais).
 7. ✅ **Modo OIDC na máquina local** (2026-10-03): opção (a), ver "Decisões do humano" acima.
+
+## Ambiente (reescrita de 2026-10-05)
+
+- Em 2026-10-05 a `bff-multizone` foi **reescrita com push forçado** de `793f519` em diante (8 commits, `72ca361` → `f5664bc`) só
+  para mascarar um JWT do Keycloak local em `.agents/challenger_d2_1/out-t1b.txt` e `out-t2c.txt`; o conteúdo do resto é o mesmo.
+  Os submódulos não mudaram. **Quem baixou antes:** `git fetch` e `git reset --hard origin/bff-multizone` (ou `reset --mixed` para
+  manter a árvore). Os SHAs do principal citados no ledger e em handoffs entre `793f519` e `72ca361` são os antigos.
 
 ## Ambiente (2026-10-03, fim da Task 6 do D2)
 
