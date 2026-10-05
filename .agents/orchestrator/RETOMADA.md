@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-05 (Task 6 do D2 fechada; revisão final do D2 em andamento; depois o gate)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-05 (revisão final do D2 feita; correções A1–A6 em andamento; depois o gate)**.
 
 ## Objetivo final
 
@@ -58,8 +58,10 @@ Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Su
 7. ✅ **Modo OIDC** (decisão (a) do humano): núcleo **0.10.2** (`ERP_PERMITIR_HTTP_LOCAL`, só loopback; adendo 2 do ADR-0013), stub com a mesma regra, `task showcase:oidc` e `task verificar:oidc` (`base/verificacao/oidc/`).
 8. ✅ **Revisão da Task 6** (2026-10-05): aprovado com ressalvas; I1 e M1–M3 corrigidos em `d82e5b7`, re-revisão limpa com R1/R2
    corrigidos em `848e5fe` (`verificar:oidc` 5/5). M4 vai para a triagem final.
-9. ⏳ **Revisão final do D2** (Opus, despachada em 2026-10-05; pacote `review-final.diff`, rascunho `review-final-achados.md`; branch inteira;
-   triagem dos menores do ledger) e depois o **gate** (`LEIA-PRIMEIRO.md`, "Como um gate funciona").
+9. ⏳ **Revisão final do D2** (Opus, 2026-10-05): **pronto para o gate após as correções A1–A6** (ADR-0013 decisão 2 com ressalva D17;
+   docs do teste NX; logout seguido até o Keycloak; regra do lock em CONFIGURACAO; comentário do proxy; A6 logout só da mesma origem).
+   Triagem dos menores feita (B → `DEFERRED.md`, C descartados); achados em `ledger/.../review-final-achados.md`. **Implementador das
+   correções em andamento** (relatório `final-fix-report.md`); depois re-revisão curta e o **gate**.
    Achados menores adiados pelas revisões das tasks (cópia do ledger local, para a triagem):
    - **T2:** tomada de lock velho no store de arquivo pode dar dois vencedores; teste de 20 renovações na fábrica sem Redis falso com NX; transações expiradas nunca limpas em arquivo/memória; `sessaoMemoria().adquirirLockRenovacao` sem `validarTtlDoLock`; `ERP_RENOVACAO_JANELA_S < ERP_TOKEN_VIDA_S/2` só documentado; teste de tempo dos perdedores (<200 ms) pode oscilar; `fronteira.mjs` com nomes genéricos como marcadores de escrita; `identidade-dev` sem `ERP_SESSAO_MAXIMA_S`.
    - **T3:** `urlRetorno` aceita query/fragmento (o `redirect_uri` da troca diverge); `concluir` trata `invalid_client` como recusa; porta não documenta que `concluir`/`iniciar` lançam; `ehTransitorio` trata todo `TypeError` como transitório; causa do erro descartada sem rastro no servidor; sem `id_token_hint` o Keycloak pode não redirecionar no logout (conferir).

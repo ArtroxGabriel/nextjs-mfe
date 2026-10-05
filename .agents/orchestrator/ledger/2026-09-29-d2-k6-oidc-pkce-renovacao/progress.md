@@ -82,3 +82,4 @@ Task 6: re-review (sonnet) aprovado com 2 menores: R1 (lote pode passar do venci
 Task 6: fix round 1/5 (I1, M1–M3 addressed + R1, R2; main d82e5b7, 848e5fe)
 Task 6: complete (main 232c8f4..848e5fe, núcleo 0.10.2 63e0425; review clean após correções). M4 → triagem da revisão final
 Final review: package review-final.diff rebuilt at main 848e5fe; dispatched (opus) com triagem dos menores adiados
+Final review (opus): pronto para o gate após A1–A5 (docs + A3 logout seguido no Keycloak); N1–N5 Minor; triagem: A3=M4, demais B (DEFERRED) ou C. Controlador acrescentou A6 (N2 logout CSRF: SameSite=Lax impede encerrar no store, mas resposta cross-site apaga o cookie). Dispatched implementer (opus) A1–A6 + DEFERRED dos B; relatório final-fix-report.md
