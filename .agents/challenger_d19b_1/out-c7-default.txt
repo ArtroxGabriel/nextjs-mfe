@@ -1,0 +1,63 @@
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+dominio-a em http://127.0.0.1:4001
+dominio-c em http://127.0.0.1:4003
+dominio-b em http://127.0.0.1:4002
+plataforma em http://127.0.0.1:4004
+gestao-acesso-v2 em http://127.0.0.1:4020
+$ node scripts/registrar-manifesto.ts
+manifesto de zona1 registrado
+$ node scripts/registrar-manifesto.ts
+manifesto de zona2 registrado
+$ ERP_PERMITIR_IDENTIDADE_DEV=1 next start -p 3000
+$ next start -p 3003
+$ next start -p 3002
+$ next start -p 3001
+▲ Next.js 16.3.4
+- Local:         http://localhost:3002
+- Network:       http://192.168.18.57:3002
+✓ Ready in 223ms
+▲ Next.js 16.3.4
+- Local:         http://localhost:3000
+- Network:       http://192.168.18.57:3000
+✓ Ready in 233ms
+▲ Next.js 16.3.4
+- Local:         http://localhost:3001
+- Network:       http://192.168.18.57:3001
+✓ Ready in 231ms
+▲ Next.js 16.3.4
+- Local:         http://localhost:3003
+- Network:       http://192.168.18.57:3003
+✓ Ready in 241ms
+✓ Running next.config.ts took 63ms
+✓ Running next.config.ts took 83ms
+✓ Running next.config.ts took 85ms
+✓ Running next.config.ts took 83ms
+##### ERP_LOGIN_TRANSACAO_S=(padrao 600)
+Set-Cookie login (valor omitido): __Host-erp-login=<id>; Path=/; Max-Age=600; HttpOnly; Secure; SameSite=Lax
+SET no Redis da transacao: [" \"SET\" \"erp:login:46966eae735a32b7f38c8e7756c8e0f958dcbd756a8f6ab0a64f6ef4b18dab2b\" \"<json>\" \"PX\" \"599998\""]
+campos da sessao no Redis (so chaves): ["sub","nome","accessToken","expiraEm","tokenExpiraEm","refreshToken","idToken","tokenVidaMs"]
+varredura: 32 corpos (HTML, RSC, 21 scripts, /acesso), achados=0 []
+cookies da resposta do retorno (nomes+atributos, valor omitido): ["__Host-session=<v>; Path=/; HttpOnly; Secure; SameSite=Lax","__Host-erp-login=<v>; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax"]
+ZONA GET erp:sessao:8 -> +OK | $3159 | <json> | +OK | 
+ZONA SET erp:sessao:8 -> +OK | -NOPERM User zona has no permissions to run the 'set' command | +OK | 
+ZONA SET erp:sessao:n -> +OK | -NOPERM User zona has no permissions to run the 'set' command | +OK | 
+ZONA DEL erp:sessao:8 -> +OK | -NOPERM User zona has no permissions to run the 'del' command | +OK | 
+ZONA EXPIRE erp:sessao:8 -> +OK | -NOPERM User zona has no permissions to run the 'expire' command | +OK | 
+ZONA SET erp:renovaca -> +OK | -NOPERM User zona has no permissions to run the 'set' command | +OK | 
+ZONA FLUSHALL  -> +OK | -NOPERM User zona has no permissions to run the 'flushall' command | +OK | 
+ZONA KEYS * -> +OK | -NOPERM User zona has no permissions to run the 'keys' command | +OK | 
+ZONA EVAL return 1 -> +OK | -NOPERM User zona has no permissions to run the 'eval' command | +OK | 
+ZONA CONFIG GET -> +OK | -NOPERM User zona has no permissions to run the 'config|get' command | +OK | 
+sessao ainda intacta no Redis (shell): true
+GET /api/auth/sair -> 405 null
+zona1 direta :3001 com cookie -> 200 <!DOCTYPE html><html lang="pt-BR"><head><meta charSet="utf-8"/><meta name="viewp
+stub :4001 sem Authorization -> 401 {"codigo":"SESSAO_EXPIRADA"}
+stub com Bearer lixo -> 403 {"codigo":"OPERACAO_NAO_PERMITIDA"}
+[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed.

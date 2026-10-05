@@ -19,3 +19,4 @@ Task 4: implementer DONE (shell 72ecc2f, z1 860a176, z2 5a665a7, zacesso 4ea036d
 Task 4: review (sonnet) APROVADA; minors 1–3 de doc corrigidos pelo controlador em 4674495; minor 4 (P12 não compara helper entre zonas, hoje idêntico) aceito
 Task 4: complete
 Task 5: revisão final da branch fica a cargo do revisor do gate (escopo: branch inteira da D19-B, costuras entre tasks); gate d19b iteração 1 dispatched
+Gate d19b it.1: reviewer APPROVE; challenger interrompido (limite da API) após etapas 1–6 sem divergência; retomar etapa 7–8; depois auditor

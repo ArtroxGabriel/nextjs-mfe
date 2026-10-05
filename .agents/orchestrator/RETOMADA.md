@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-05 (D19-B implementada; gate da D19-B em andamento)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-05 ~18:50 (gate da D19-B parado no challenger pelo limite da API; retomar da etapa 7)**.
 
 ## Objetivo final
 
@@ -70,7 +70,15 @@ Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Su
    (reescrita de 2026-10-05)"); **D19 → opção B em task própria** (`DEFERRED.md` D19).
 11. ⏳ **Task D19-B**: Tasks 1–4 feitas e revisadas (núcleo **0.10.3** `fdea296` publicado e em lockstep; shell, zonas e docs;
    adendo 3 ao ADR-0013; D19 e D20 fechados, D24 novo; `verificar:oidc` 6/6 com o teste das 10 concorrentes com token vencido).
-   **Gate da D19-B, iteração 1** em andamento (o revisor do gate cobre a branch inteira da D19-B no lugar da revisão final).
+   **Gate da D19-B, iteração 1** (o revisor do gate cobre a branch inteira no lugar da revisão final):
+   - `reviewer_d19b_1` **APPROVE** (`.agents/reviewer_d19b_1/handoff.md`).
+   - `challenger_d19b_1` **interrompido pelo limite de sessão da API** (2026-10-05 ~18:50) depois das etapas 1–6, todas sem
+     divergência de produto: 10/30/100 concorrentes com token vencido todas 200 e 1 renovação por lote; Keycloak parado: perdedores
+     esperam o teto e a sessão se recupera sem novo login; janela sem espera; config inválida → 500 com mensagem no log;
+     `SHELL_HOSTS` com espaço ok; `sair` com esquema trocado 403, com `X-Forwarded-Proto` 303. Achado a registrar: com o JWKS do
+     stub frio, a recuperação depois do IdP voltar leva ~30 s (`ERP_JWKS_INTERVALO_MIN_S`). **Falta:** etapa 7 (regressão do D2) e
+     8 (suítes). **Próximo passo:** retomar o MESMO challenger (SendMessage) a partir da etapa 7; se não der, despachar
+     `challenger_d19b_2` só com as etapas 7 e 8. Depois, `auditor_d19b_1` (Opus, veto).
    Achados menores adiados pelas revisões das tasks (cópia do ledger local, para a triagem):
    - **T2:** tomada de lock velho no store de arquivo pode dar dois vencedores; teste de 20 renovações na fábrica sem Redis falso com NX; transações expiradas nunca limpas em arquivo/memória; `sessaoMemoria().adquirirLockRenovacao` sem `validarTtlDoLock`; `ERP_RENOVACAO_JANELA_S < ERP_TOKEN_VIDA_S/2` só documentado; teste de tempo dos perdedores (<200 ms) pode oscilar; `fronteira.mjs` com nomes genéricos como marcadores de escrita; `identidade-dev` sem `ERP_SESSAO_MAXIMA_S`.
    - **T3:** `urlRetorno` aceita query/fragmento (o `redirect_uri` da troca diverge); `concluir` trata `invalid_client` como recusa; porta não documenta que `concluir`/`iniciar` lançam; `ehTransitorio` trata todo `TypeError` como transitório; causa do erro descartada sem rastro no servidor; sem `id_token_hint` o Keycloak pode não redirecionar no logout (conferir).
@@ -152,6 +160,16 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 5. **Registro de pacotes / CI (P1): no fim do plano** (humano, 2026-09-23). Até lá, `task pacotes:alinhar-hashes`.
 6. Aplicar no GitLab o que estiver "pendente" em `ATIVIDADES.md` §2 (hoje só comentários opcionais).
 7. ✅ **Modo OIDC na máquina local** (2026-10-03): opção (a), ver "Decisões do humano" acima.
+
+## Ambiente (parada de 2026-10-05, ~18:50)
+
+- No ar: Verdaccio (4873), Redis (6379) e Keycloak (8080, religado pelo challenger e conferido no padrão). Portas da base livres.
+- `@erp/nucleo` **0.10.3** publicado só no Verdaccio desta máquina; lockfiles das apps commitados com o hash daqui. Outra máquina:
+  `task pacotes:publicar` (ou só o núcleo) e `task pacotes:alinhar-hashes`.
+- Processo órfão `node --test` no `repos/erp-nucleo` (pid 247896, pai `systemd --user`, inspector em 127.0.0.1:9229), vivo desde
+  ~16:15; não ocupa porta da base; não foi encerrado (pode ser de IDE). Encerrar só com confirmação do humano.
+- Fora de commit, de propósito: `docs/README.md`, `docs/arquitetura/alvo.md`, `docs/arquitetura/infraestrutura-alvo.md`
+  (trabalho do humano/outra sessão) e os `pnpm-lock.yaml` de erp-dominio-stub e erp-moldura (hash local).
 
 ## Ambiente (reescrita de 2026-10-05)
 

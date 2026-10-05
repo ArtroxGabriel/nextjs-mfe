@@ -1,0 +1,88 @@
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+dominio-b em http://127.0.0.1:4002
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+plataforma em http://127.0.0.1:4004
+dominio-a em http://127.0.0.1:4001
+gestao-acesso-v2 em http://127.0.0.1:4020
+dominio-c em http://127.0.0.1:4003
+$ node scripts/registrar-manifesto.ts
+manifesto de zona1 registrado
+$ node scripts/registrar-manifesto.ts
+manifesto de zona2 registrado
+$ next start -p 3001
+$ ERP_PERMITIR_IDENTIDADE_DEV=1 next start -p 3000
+$ next start -p 3002
+$ next start -p 3003
+▲ Next.js 16.3.4
+- Local:         http://localhost:3000
+- Network:       http://192.168.18.57:3000
+✓ Ready in 243ms
+▲ Next.js 16.3.4
+- Local:         http://localhost:3002
+- Network:       http://192.168.18.57:3002
+✓ Ready in 267ms
+▲ Next.js 16.3.4
+- Local:         http://localhost:3003
+- Network:       http://192.168.18.57:3003
+✓ Ready in 260ms
+▲ Next.js 16.3.4
+- Local:         http://localhost:3001
+- Network:       http://192.168.18.57:3001
+✓ Ready in 318ms
+✓ Running next.config.ts took 124ms
+✓ Running next.config.ts took 144ms
+✓ Running next.config.ts took 143ms
+✓ Running next.config.ts took 118ms
+##### modo=hosts SHELL_HOSTS="localhost:3000, 127.0.0.1:3000"
+PAGINA http://localhost:3000/ -> 200 
+PAGINA http://localhost:3000/zona1 -> 200 
+PAGINA http://localhost:3000/zona2 -> 200 
+PAGINA http://localhost:3000/acesso -> 404 
+PAGINA http://127.0.0.1:3000/ -> 200 
+PAGINA http://127.0.0.1:3000/zona1 -> 200 
+PAGINA http://127.0.0.1:3000/zona2 -> 200 
+PAGINA http://127.0.0.1:3000/acesso -> 404 
+formularios com campos: [["id","versao"],["id","versao"]]
+tarefas encontradas: 2
+`x-forwarded-host` header with value `localhost:3000` does not match `origin` header with value `evil.example` from a forwarded Server Actions request. Aborting the action.
+⨯ Error: Invalid Server Actions request.
+    at ignore-listed frames {
+  digest: '2093749743@E80'
+}
+ACTION Origin de outro site: 500 redirect=null corpo="0:{\"a\":\"$@1\",\"f\":\"\",\"q\":\"\",\"i\":false,\"b\":\"ONwsCT3l1bHBdrJ0CBViG\"}\n1:E{\"digest\":\"2093749743" tarefas antes=2 depois=2
+`x-forwarded-host` header with value `127.0.0.1:3000` does not match `origin` header with value `evil.example:3000` from a forwarded Server Actions request. Aborting the action.
+⨯ Error: Invalid Server Actions request.
+    at ignore-listed frames {
+  digest: '2093749743@E80'
+}
+ACTION host 127.0.0.1, Origin outro: 500 redirect=null corpo="0:{\"a\":\"$@1\",\"f\":\"\",\"q\":\"\",\"i\":false,\"b\":\"ONwsCT3l1bHBdrJ0CBViG\"}\n1:E{\"digest\":\"2093749743" tarefas antes=2 depois=2
+ACTION host localhost, Origin localhost: 200 redirect=null corpo="2:\"$Sreact.fragment\"\n4:I[89376,[\"/zona2-static/_next/static/chunks/1uxz1tbt6-12n.js\"],\"def" tarefas antes=2 depois=1
+ACTION host 127.0.0.1, Origin 127.0.0.1: 200 redirect=null corpo="2:\"$Sreact.fragment\"\n4:I[89376,[\"/zona2-static/_next/static/chunks/1uxz1tbt6-12n.js\"],\"def" tarefas antes=1 depois=0
+tarefas restantes depois: 0 (antes 2)
+SAIR [Origin localhost (http)] -> 303 location=http://127.0.0.1:8080/realms/erp/protocol/openid-connect/logout sessaoViva=false 
+SAIR [Origin 127.0.0.1 (http)] -> 303 location=http://127.0.0.1:8080/realms/erp/protocol/openid-connect/logout sessaoViva=false 
+[auth] sair falhou: codigo=OPERACAO_NAO_PERMITIDA supportId=a1b98fd3-ef10-4a15-b9aa-2507580418a1
+SAIR [Origin de outro site] -> 403 location= sessaoViva=true {"codigo":"OPERACAO_NAO_PERMITIDA","supportId":"a1b98fd3-ef10-4a15-b9aa-2507580418a1"}
+[auth] sair falhou: codigo=OPERACAO_NAO_PERMITIDA supportId=93ec6b6f-b40a-4aa4-ad20-0afb7325a69e
+SAIR [Origin https://localhost:3000 sem Sec-Fetch-Site (esquema trocado)] -> 403 location= sessaoViva=true {"codigo":"OPERACAO_NAO_PERMITIDA","supportId":"93ec6b6f-b40a-4aa4-ad20-0afb7325a69e"}
+SAIR [Origin https://localhost:3000 + X-Forwarded-Proto https] -> 303 location=http://127.0.0.1:8080/realms/erp/protocol/openid-connect/logout sessaoViva=false 
+SAIR [Origin https://127.0.0.1:3000 + X-Forwarded-Proto https] -> 303 location=http://127.0.0.1:8080/realms/erp/protocol/openid-connect/logout sessaoViva=false 
+[auth] sair falhou: codigo=OPERACAO_NAO_PERMITIDA supportId=7a1d294e-fb8d-4faa-9520-26e892a24b80
+SAIR [Origin http://localhost:3000 + X-Forwarded-Proto https (navegador http, proxy diz https)] -> 403 location= sessaoViva=true {"codigo":"OPERACAO_NAO_PERMITIDA","supportId":"7a1d294e-fb8d-4faa-9520-26e892a24b80"}
+[auth] sair falhou: codigo=OPERACAO_NAO_PERMITIDA supportId=3e4bce25-1f7f-45c8-b5d2-34e3b558cacd
+SAIR [Origin null] -> 403 location= sessaoViva=true {"codigo":"OPERACAO_NAO_PERMITIDA","supportId":"3e4bce25-1f7f-45c8-b5d2-34e3b558cacd"}
+SAIR [sem Origin nem Sec-Fetch-Site] -> 303 location=http://127.0.0.1:8080/realms/erp/protocol/openid-connect/logout sessaoViva=false 
+SAIR [Sec-Fetch-Site same-origin] -> 303 location=http://127.0.0.1:8080/realms/erp/protocol/openid-connect/logout sessaoViva=false 
+[auth] sair falhou: codigo=OPERACAO_NAO_PERMITIDA supportId=b10f87e9-255c-4e9c-b1b4-ab81e7dbb226
+SAIR [Sec-Fetch-Site same-site] -> 403 location= sessaoViva=true {"codigo":"OPERACAO_NAO_PERMITIDA","supportId":"b10f87e9-255c-4e9c-b1b4-ab81e7dbb226"}
+[auth] sair falhou: codigo=OPERACAO_NAO_PERMITIDA supportId=34981aa6-d3ca-43bb-8e4a-85577bca4d91
+SAIR [Sec-Fetch-Site cross-site] -> 403 location= sessaoViva=true {"codigo":"OPERACAO_NAO_PERMITIDA","supportId":"34981aa6-d3ca-43bb-8e4a-85577bca4d91"}
+[auth] sair falhou: codigo=OPERACAO_NAO_PERMITIDA supportId=9a51f218-0701-454d-ada1-db99b8f2b9f5
+SAIR [Sec-Fetch-Site none] -> 403 location= sessaoViva=true {"codigo":"OPERACAO_NAO_PERMITIDA","supportId":"9a51f218-0701-454d-ada1-db99b8f2b9f5"}
+[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed.

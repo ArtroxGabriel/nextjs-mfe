@@ -1,0 +1,73 @@
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+dominio-a em http://127.0.0.1:4001
+gestao-acesso-v2 em http://127.0.0.1:4020
+dominio-b em http://127.0.0.1:4002
+dominio-c em http://127.0.0.1:4003
+plataforma em http://127.0.0.1:4004
+$ node scripts/registrar-manifesto.ts
+manifesto de zona1 registrado
+$ node scripts/registrar-manifesto.ts
+manifesto de zona2 registrado
+$ $ ERP_PERMITIR_IDENTIDADE_DEV=1 next start -p 3000next start -p 3001
+
+$ next start -p 3002
+$ next start -p 3003
+▲ Next.js 16.3.4
+- Local:         http://localhost:3000
+- Network:       http://192.168.18.57:3000
+▲ Next.js 16.3.4
+✓ Ready in 219ms
+- Local:         http://localhost:3003
+- Network:       http://192.168.18.57:3003
+✓ Ready in 224ms
+▲ Next.js 16.3.4
+- Local:         http://localhost:3002
+- Network:       http://192.168.18.57:3002
+✓ Ready in 222ms
+▲ Next.js 16.3.4
+- Local:         http://localhost:3001
+- Network:       http://192.168.18.57:3001
+✓ Ready in 234ms
+✓ Running next.config.ts took 67ms
+✓ Running next.config.ts took 70ms
+✓ Running next.config.ts took 93ms
+✓ Running next.config.ts took 87ms
+[4.6s] login ok; sessao no Redis; cfg=tarefa modo=vencido-pause
+[4.8s] aquecimento /: 200 194 ms
+[5.2s] aquecimento /zona1: 200 363 ms
+[5.2s] aquecimento /: 200 38 ms
+[31.6s] token vencido ha >= 7 s; derrubando Keycloak (vencido-pause)
+[35.9s] rajada de 10 com Keycloak fora: {"n":10,"status":{"307->/login":10},"p50":4099,"max":4185,"min":2070}
+  req 0 / -> 307 /login?de=%2F 2070 ms 
+  req 1 /zona1 -> 307 /login?de=%2Fzona1 4185 ms 
+  req 2 / -> 307 /login?de=%2F 4094 ms 
+  req 3 /zona1 -> 307 /login?de=%2Fzona1 4185 ms 
+  req 4 / -> 307 /login?de=%2F 4098 ms 
+  req 5 /zona1 -> 307 /login?de=%2Fzona1 4185 ms 
+  req 6 / -> 307 /login?de=%2F 4099 ms 
+  req 7 /zona1 -> 307 /login?de=%2Fzona1 4185 ms 
+  req 8 / -> 307 /login?de=%2F 4099 ms 
+  req 9 /zona1 -> 307 /login?de=%2Fzona1 4184 ms 
+[35.9s] sessao no Redis depois da rajada: presente=true refreshIgual=true ttl=:1769s
+[39.9s] sequencial 0 lock preso: 307 /login?de=%2Fzona1 4043 ms
+[42.0s] sequencial 1 lock preso: 307 /login?de=%2Fzona1 2055 ms
+[46.0s] sequencial 2 lock preso: 307 /login?de=%2Fzona1 4038 ms
+(node:309020) TimeoutNegativeWarning: -8828 is a negative number.
+Timeout duration was set to 1.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[48.1s] depois do lock vencer (Keycloak ainda fora) 0: 307 /login?de=%2F 2047 ms
+[52.1s] depois do lock vencer (Keycloak ainda fora) 1: 307 /login?de=%2F 4026 ms
+[52.1s] sessao no Redis ainda: presente=true refreshIgual=true
+[52.1s] /login com o cookie: 200  16 ms
+[52.2s] Keycloak de volta (pronto=true) em 0.1 s
+[52.3s] lockPTTL:-2 sonda 0: 200  84 ms painel=true
+[52.3s] primeiro 200 completo 0.1 s apos o Keycloak responder; mesma sessao=true; refreshMudou=true; tokenValido=true
+[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed.
+KC final: Up 4 minutes

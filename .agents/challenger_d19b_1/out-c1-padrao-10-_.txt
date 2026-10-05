@@ -1,0 +1,48 @@
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+plataforma em http://127.0.0.1:4004
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+dominio-b em http://127.0.0.1:4002
+dominio-c em http://127.0.0.1:4003
+dominio-a em http://127.0.0.1:4001
+gestao-acesso-v2 em http://127.0.0.1:4020
+$ node scripts/registrar-manifesto.ts
+manifesto de zona1 registrado
+$ node scripts/registrar-manifesto.ts
+manifesto de zona2 registrado
+$ ERP_PERMITIR_IDENTIDADE_DEV=1 next start -p 3000
+$ next start -p 3001
+$ next start -p 3002
+$ next start -p 3003
+▲ Next.js 16.3.4
+- Local:         http://localhost:3001
+- Network:       http://192.168.18.57:3001
+✓ Ready in 265ms
+▲ Next.js 16.3.4
+- Local:         http://localhost:3000
+- Network:       http://192.168.18.57:3000
+✓ Ready in 284ms
+▲ Next.js 16.3.4
+- Local:         http://localhost:3002
+- Network:       http://192.168.18.57:3002
+✓ Ready in 277ms
+▲ Next.js 16.3.4
+- Local:         http://localhost:3003
+- Network:       http://192.168.18.57:3003
+✓ Ready in 283ms
+✓ Running next.config.ts took 71ms
+✓ Running next.config.ts took 79ms
+✓ Running next.config.ts took 83ms
+✓ Running next.config.ts took 80ms
+{"cfg":"padrao","n":10,"caminho":"/","rep":0,"status":{"200":10},"corpoCompletoOk":10,"setsSessao":1,"outrosSetsErp":10,"refreshMudou":true,"tokenValidoDepois":true,"totalMs":384,"p50":381,"p95":382,"max":382,"min":379,"loadavg":"0.78 0.70 0.70 1/2048 300034"}
+  comandos SET/redis no lote (mascarado): ["+1791232700.672517 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:1cb64e78d764d5108dddd06f34630e7714f4a4bd8060bcc4237642f881c8b231\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232700.672566 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:1cb64e78d764d5108dddd06f34630e7714f4a4bd8060bcc4237642f881c8b231\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232700.672586 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:1cb64e78d764d5108dddd06f34630e7714f4a4bd8060bcc4237642f881c8b231\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232700.672602 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:1cb64e78d764d5108dddd06f34630e7714f4a4bd8060bcc4237642f881c8b231\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232700.672618 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:1cb64e78d764d5108dddd06f34630e7714f4a4bd8060bcc4237642f881c8b231\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232700.681325 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:1cb64e78d764d5108dddd06f34630e7714f4a4bd8060bcc4237642f881c8b231\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232700.684081 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:1cb64e78d764d5108dddd06f34630e7714f4a4bd8060bcc4237642f881c8b231\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232700.684099 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:1cb64e78d764d5108dddd06f34630e7714f4a4bd8060bcc4237642f881c8b231\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232700.684116 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:1cb64e78d764d5108dddd06f34630e7714f4a4bd8060bcc4237642f881c8b231\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232700.684132 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:1cb64e78d764d5108dddd06f34630e7714f4a4bd8060bcc4237642f881c8b231\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232700.713721 [0 172.28.0.1:54646] \"SET\" \"erp:sessao:1cb64e78d764d5108dddd06f34630e7714f4a4bd8060bcc4237642f881c8b231\" \"<json>\" \"PX\" \"1800000\" \"XX\""]
+{"cfg":"padrao","n":10,"caminho":"/","rep":1,"status":{"200":10},"corpoCompletoOk":10,"setsSessao":1,"outrosSetsErp":10,"refreshMudou":true,"tokenValidoDepois":true,"totalMs":172,"p50":168,"p95":169,"max":169,"min":68,"loadavg":"0.60 0.66 0.69 1/2047 300047"}
+  comandos SET/redis no lote (mascarado): ["+1791232728.086978 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:164c679859943fc880bd12b45c7e560d019159b84b8424be921328ed2c1fa63d\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232728.095709 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:164c679859943fc880bd12b45c7e560d019159b84b8424be921328ed2c1fa63d\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232728.095734 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:164c679859943fc880bd12b45c7e560d019159b84b8424be921328ed2c1fa63d\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232728.098936 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:164c679859943fc880bd12b45c7e560d019159b84b8424be921328ed2c1fa63d\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232728.098952 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:164c679859943fc880bd12b45c7e560d019159b84b8424be921328ed2c1fa63d\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232728.098967 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:164c679859943fc880bd12b45c7e560d019159b84b8424be921328ed2c1fa63d\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232728.098981 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:164c679859943fc880bd12b45c7e560d019159b84b8424be921328ed2c1fa63d\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232728.098996 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:164c679859943fc880bd12b45c7e560d019159b84b8424be921328ed2c1fa63d\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232728.100833 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:164c679859943fc880bd12b45c7e560d019159b84b8424be921328ed2c1fa63d\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232728.103284 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:164c679859943fc880bd12b45c7e560d019159b84b8424be921328ed2c1fa63d\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232728.117763 [0 172.28.0.1:54646] \"SET\" \"erp:sessao:164c679859943fc880bd12b45c7e560d019159b84b8424be921328ed2c1fa63d\" \"<json>\" \"PX\" \"1799999\" \"XX\""]
+{"cfg":"padrao","n":10,"caminho":"/","rep":2,"status":{"200":10},"corpoCompletoOk":10,"setsSessao":1,"outrosSetsErp":10,"refreshMudou":true,"tokenValidoDepois":true,"totalMs":164,"p50":160,"p95":162,"max":162,"min":62,"loadavg":"0.39 0.61 0.67 1/2048 300062"}
+  comandos SET/redis no lote (mascarado): ["+1791232755.364582 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:57c3649a20d03420249ff1adba155adc817e013e4e6d809ff6357f0a5dd1cb2c\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232755.373297 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:57c3649a20d03420249ff1adba155adc817e013e4e6d809ff6357f0a5dd1cb2c\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232755.373330 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:57c3649a20d03420249ff1adba155adc817e013e4e6d809ff6357f0a5dd1cb2c\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232755.373351 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:57c3649a20d03420249ff1adba155adc817e013e4e6d809ff6357f0a5dd1cb2c\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232755.373372 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:57c3649a20d03420249ff1adba155adc817e013e4e6d809ff6357f0a5dd1cb2c\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232755.374762 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:57c3649a20d03420249ff1adba155adc817e013e4e6d809ff6357f0a5dd1cb2c\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232755.375279 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:57c3649a20d03420249ff1adba155adc817e013e4e6d809ff6357f0a5dd1cb2c\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232755.375314 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:57c3649a20d03420249ff1adba155adc817e013e4e6d809ff6357f0a5dd1cb2c\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232755.375337 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:57c3649a20d03420249ff1adba155adc817e013e4e6d809ff6357f0a5dd1cb2c\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232755.375360 [0 172.28.0.1:54646] \"SET\" \"erp:renovacao:57c3649a20d03420249ff1adba155adc817e013e4e6d809ff6357f0a5dd1cb2c\" \"1\" \"PX\" \"15000\" \"NX\"","+1791232755.391117 [0 172.28.0.1:54646] \"SET\" \"erp:sessao:57c3649a20d03420249ff1adba155adc817e013e4e6d809ff6357f0a5dd1cb2c\" \"<json>\" \"PX\" \"1800000\" \"XX\""]
+[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed.

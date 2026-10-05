@@ -1,0 +1,51 @@
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+identidade: JWT do emissor http://127.0.0.1:8080/realms/erp
+gestao-acesso-v2 em http://127.0.0.1:4020
+dominio-b em http://127.0.0.1:4002
+dominio-a em http://127.0.0.1:4001
+dominio-c em http://127.0.0.1:4003
+plataforma em http://127.0.0.1:4004
+$ node scripts/registrar-manifesto.ts
+manifesto de zona1 registrado
+$ node scripts/registrar-manifesto.ts
+manifesto de zona2 registrado
+$ ERP_PERMITIR_IDENTIDADE_DEV=1 next start -p 3000
+$ next start -p 3001
+$ next start -p 3002
+$ next start -p 3003
+▲ Next.js 16.3.4
+- Local:         http://localhost:3003
+- Network:       http://192.168.18.57:3003
+✓ Ready in 230ms
+▲ Next.js 16.3.4
+- Local:         http://localhost:3001
+- Network:       http://192.168.18.57:3001
+✓ Ready in 247ms
+▲ Next.js 16.3.4
+- Local:         http://localhost:3002
+- Network:       http://192.168.18.57:3002
+✓ Ready in 230ms
+▲ Next.js 16.3.4
+- Local:         http://localhost:3000
+- Network:       http://192.168.18.57:3000
+✓ Ready in 232ms
+✓ Running next.config.ts took 75ms
+✓ Running next.config.ts took 72ms
+✓ Running next.config.ts took 75ms
+✓ Running next.config.ts took 80ms
+=== CASO janela=60 (vida do token 20 s, conferida por sessao) {"ERP_RENOVACAO_JANELA_S":"60"}
+GET /login -> 200  corpo="<!DOCTYPE html><html lang=\"pt-BR\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initia"
+GET /zona1 -> 307 /login?de=%2Fzona1 corpo="/login?de=%2Fzona1"
+GET / -> 307 /login?de=%2F corpo="/login?de=%2F"
+[auth] renovacao: motivo=janela-de-renovacao codigo=ERRO_INTERNO supportId=c851b019-329b-4c3d-8096-9c53fdc7d807
+apos login /zona1 -> 200
+tokenVidaMs na sessao: 20000 janela efetiva esperada metade da vida
+11,5 s depois /zona1 -> 200 
+renovou? true
+[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed.
+[ELIFECYCLE] Command failed.
