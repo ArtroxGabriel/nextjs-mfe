@@ -89,6 +89,44 @@ export async function acaoPeloCliente({ app, arquivo, nome, caminho, campos, coo
   }
 }
 
+/** Conversa RESP crua com o Redis de `url` (usuário e senha da URL); termina com QUIT e devolve tudo o que veio. */
+export async function redisCru(url, comandos) {
+  const { createConnection } = await import('node:net')
+  const u = new URL(url)
+  const resp = (...args) => `*${args.length}\r\n` + args.map((a) => `$${Buffer.byteLength(a)}\r\n${a}\r\n`).join('')
+  const auth = u.username || u.password ? [['AUTH', decodeURIComponent(u.username || 'default'), decodeURIComponent(u.password)]] : []
+  return new Promise((ok, falha) => {
+    const c = createConnection({ host: u.hostname, port: Number(u.port || 6379) })
+    let dados = ''
+    c.on('data', (d) => { dados += d })
+    c.on('close', () => ok(dados))
+    c.on('error', falha)
+    c.write([...auth, ...comandos, ['QUIT']].map((a) => resp(...a)).join(''))
+  })
+}
+/**
+ * `MONITOR` no Redis de `url`: volta quando o Redis confirma o modo e `parar()` fecha a conexão e devolve
+ * as linhas recebidas (cada comando executado por qualquer cliente nesse intervalo, um por linha).
+ */
+export async function monitorarRedis(url) {
+  const { createConnection } = await import('node:net')
+  const u = new URL(url)
+  const resp = (...args) => `*${args.length}\r\n` + args.map((a) => `$${Buffer.byteLength(a)}\r\n${a}\r\n`).join('')
+  const auth = u.username || u.password ? [['AUTH', decodeURIComponent(u.username || 'default'), decodeURIComponent(u.password)]] : []
+  const c = createConnection({ host: u.hostname, port: Number(u.port || 6379) })
+  let dados = ''
+  await new Promise((ok, falha) => {
+    c.on('data', (d) => {
+      dados += d
+      if ((dados.match(/^\+OK\r$/gm) ?? []).length >= auth.length + 1) ok()
+      else if (/^-/m.test(dados)) falha(new Error(`MONITOR recusado: ${dados.trim()}`))
+    })
+    c.on('error', falha)
+    c.write([...auth, ['MONITOR']].map((a) => resp(...a)).join(''))
+  })
+  return { parar: () => new Promise((ok) => { c.once('close', () => ok(dados.split('\r\n'))); c.end() }) }
+}
+
 /** Keycloak do showcase (`task showcase:subir`); os testes que precisam dele pulam quando está fora. */
 export const KEYCLOAK_EMISSOR = 'http://127.0.0.1:8080/realms/erp'
 export const keycloakNoAr = () =>

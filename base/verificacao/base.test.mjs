@@ -9,7 +9,7 @@ import { createServer } from 'node:http'
 import { spawn } from 'node:child_process'
 import { generateKeyPairSync, sign, createHmac } from 'node:crypto'
 import { subir, RAIZ, SHELL as SHELL_URL, ambienteDoPapel } from '../scripts/ambiente.mjs'
-import { pedir, entrar, iniciarLogin, menu, formularios, valorDoCookie, acaoPeloCliente, keycloakNoAr, tokenDoKeycloak, KEYCLOAK_EMISSOR } from './apoio.mjs'
+import { pedir, entrar, iniciarLogin, menu, formularios, valorDoCookie, acaoPeloCliente, keycloakNoAr, tokenDoKeycloak, KEYCLOAK_EMISSOR, redisCru } from './apoio.mjs'
 import { abrirNavegador, acharChrome, COMO_CONSEGUIR_UM_NAVEGADOR } from './navegador.mjs'
 import { varrerAplicacoes } from './saida-de-rede.mjs'
 
@@ -444,21 +444,6 @@ test('V1 estatico: o cliente Redis das zonas so le (sem set, del nem outro coman
   }
 })
 
-/** Conversa RESP crua com o Redis de `url` (usuário e senha da URL); termina com QUIT e devolve tudo o que veio. */
-async function redisCru(url, comandos) {
-  const { createConnection } = await import('node:net')
-  const u = new URL(url)
-  const resp = (...args) => `*${args.length}\r\n` + args.map((a) => `$${Buffer.byteLength(a)}\r\n${a}\r\n`).join('')
-  const auth = u.username || u.password ? [['AUTH', decodeURIComponent(u.username || 'default'), decodeURIComponent(u.password)]] : []
-  return new Promise((ok, falha) => {
-    const c = createConnection({ host: u.hostname, port: Number(u.port || 6379) })
-    let dados = ''
-    c.on('data', (d) => { dados += d })
-    c.on('close', () => ok(dados))
-    c.on('error', falha)
-    c.write([...auth, ...comandos, ['QUIT']].map((a) => resp(...a)).join(''))
-  })
-}
 /** Conexões abertas no Redis (id, usuário, último comando), sem a própria conexão de quem pergunta. */
 async function conexoesRedis() {
   const lista = await redisCru(process.env.REDIS_URL, [['CLIENT', 'LIST']])

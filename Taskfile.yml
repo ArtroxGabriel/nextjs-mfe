@@ -112,7 +112,7 @@ tasks:
       REDIS_URL_ZONA: redis://zona:dev-zona-leitura@127.0.0.1:6379
 
   verificar:oidc:
-    desc: "Ponta a ponta em modo OIDC contra o Keycloak do showcase (task showcase:subir antes; pula sem ele)"
+    desc: "Ponta a ponta em modo OIDC contra o Keycloak do showcase (task showcase:subir antes; falha sem ele)"
     cmd: node --test base/verificacao/oidc/*.test.mjs
     env:
       REDIS_URL: redis://default:dev-shell-escrita@127.0.0.1:6379
@@ -121,6 +121,8 @@ tasks:
       IDP_CLIENTE_SEGREDO: dev-erp-shell-segredo
       # o Keycloak local é http://; a base sobe em produção (ADR-0013, adendo 2: só loopback)
       ERP_PERMITIR_HTTP_LOCAL: '1'
+      # no gate, verde é rodado: sem o Keycloak (ou outra pré-condição) o teste falha em vez de pular
+      VERIFICAR_OIDC_EXIGIR: '1'
       # o teste encurta a vida do access token do cliente no Keycloak (e a devolve no fim); janela e lock
       # cabem nela (docs/CONFIGURACAO.md §6)
       VERIFICAR_OIDC_TOKEN_VIDA_S: '{{.VERIFICAR_OIDC_TOKEN_VIDA_S | default "20"}}'

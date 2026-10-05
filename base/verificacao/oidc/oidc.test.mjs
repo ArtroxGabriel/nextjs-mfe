@@ -7,17 +7,22 @@
 // - nenhum `refresh_token`, `id_token` nem JWT (`eyJ`) no HTML, no payload RSC, no JS nem nos cookies;
 // - página de zona ainda 200, com os blocos dos domínios, DEPOIS do vencimento do primeiro access token
 //   (os domínios em modo JWT recusam o token vencido: controle no mesmo teste);
-// - 20 requisições concorrentes com o token na janela de renovação: todas 200 e a sessão continua viva depois
-//   (com rotação e detecção de reuso, uma segunda renovação com o mesmo refresh token derrubaria a sessão);
+// - 20 requisições concorrentes com o token na janela de renovação (conferida no Redis antes do lote): todas 200,
+//   o shell grava a sessão uma vez só, com refresh token novo e `tokenExpiraEm` adiante, e a sessão continua viva
+//   depois (com rotação e detecção de reuso, uma segunda renovação com o mesmo refresh token a derrubaria);
 // - sair: a sessão acaba e o 303 vai ao logout do Keycloak sem token na URL.
 //
 // Tempos: a vida do access token do cliente `erp-shell` é encurtada no Keycloak pela API de administração
 // (`VERIFICAR_OIDC_TOKEN_VIDA_S`, padrão 20) e devolvida ao valor do realm no fim; `ERP_RENOVACAO_JANELA_S` e
 // `ERP_RENOVACAO_LOCK_S` (5 s na tarefa) cabem nela. Ver docs/CONFIGURACAO.md §1 e §6.
+//
+// Fora da tarefa o arquivo pula. Com `VERIFICAR_OIDC_EXIGIR=1` (a tarefa define) o motivo para pular vira falha:
+// no gate, verde é rodado, nunca pulado.
 import { describe, test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
-import { subir, SHELL } from '../../scripts/ambiente.mjs'
-import { pedir, valorDoCookie, keycloakNoAr, KEYCLOAK_EMISSOR } from '../apoio.mjs'
+import { createHash } from 'node:crypto'
+import { subir, SHELL, PORTAS_DE_DOMINIO } from '../../scripts/ambiente.mjs'
+import { pedir, valorDoCookie, keycloakNoAr, KEYCLOAK_EMISSOR, redisCru, monitorarRedis } from '../apoio.mjs'
 
 const RAIZ_KC = new URL(KEYCLOAK_EMISSOR).origin
 const VIDA_S = Number(process.env.VERIFICAR_OIDC_TOKEN_VIDA_S ?? 20)
@@ -25,14 +30,20 @@ const JANELA_S = Number(process.env.ERP_RENOVACAO_JANELA_S ?? 60)
 const TOLERANCIA_S = Number(process.env.ERP_JWT_TOLERANCIA_S ?? 5)
 const ADMIN = { usuario: process.env.KEYCLOAK_ADMIN_USUARIO ?? 'admin', senha: process.env.KEYCLOAK_ADMIN_SENHA ?? 'admin' }
 const SEGREDO = process.env.IDP_CLIENTE_SEGREDO ?? 'dev-erp-shell-segredo'
+const DOMINIO_A = `http://127.0.0.1:${PORTAS_DE_DOMINIO['dominio-a']}`
 
 const motivoParaPular = await (async () => {
   if (process.env.IDP_EMISSOR !== KEYCLOAK_EMISSOR) return `IDP_EMISSOR tem de ser ${KEYCLOAK_EMISSOR} (use task verificar:oidc)`
   if (process.env.ERP_PERMITIR_HTTP_LOCAL !== '1') return 'ERP_PERMITIR_HTTP_LOCAL=1 ausente (use task verificar:oidc)'
+  if (!process.env.REDIS_URL) return 'REDIS_URL ausente: a renovacao e conferida no store (use task verificar:oidc)'
   if (!(await keycloakNoAr())) return 'Keycloak do showcase fora do ar (task showcase:subir)'
   if (!Number.isInteger(VIDA_S) || VIDA_S < 10 || JANELA_S * 2 >= VIDA_S) return 'VERIFICAR_OIDC_TOKEN_VIDA_S >= 10 e ERP_RENOVACAO_JANELA_S < metade dela'
   return false
 })()
+
+if (motivoParaPular && process.env.VERIFICAR_OIDC_EXIGIR === '1') {
+  test('pre-condicoes do modo OIDC (VERIFICAR_OIDC_EXIGIR=1)', () => assert.fail(`a verificacao OIDC pularia: ${motivoParaPular}`))
+}
 
 const esperar = (ms) => new Promise((ok) => setTimeout(ok, ms))
 const SEGREDOS = [/refresh_token/i, /id_token/i, /eyJ[A-Za-z0-9_-]{8,}/, /refreshToken/, /idToken/, /accessToken/]
@@ -57,6 +68,18 @@ async function encurtarVidaDoToken(segundos) {
   }
   await gravar(String(segundos))
   return () => gravar(original)   // '' tira o atributo: volta a valer a vida do realm
+}
+
+/**
+ * A sessão como o shell a gravou no Redis. A chave é o prefixo mais o SHA-256 do id do cookie, como em
+ * `sessaoRedisDeEscrita` (`erp-nucleo/src/adaptadores/sessao-redis.ts`).
+ */
+const chaveDaSessao = (id) => `erp:sessao:${createHash('sha256').update(id).digest('hex')}`
+async function sessaoNoRedis(id) {
+  const r = await redisCru(process.env.REDIS_URL, [['GET', chaveDaSessao(id)]])
+  const json = r.match(/\$\d+\r\n(\{.*\})\r\n/s)?.[1]
+  assert.ok(json, 'sessao ausente no Redis')
+  return JSON.parse(json)
 }
 
 /** Formulário de login do Keycloak a partir da URL de autorização; devolve a URL de retorno ao shell. */
@@ -171,10 +194,10 @@ describe('modo OIDC contra o Keycloak do showcase (ADR-0013)', { skip: motivoPar
   })
 
   test('pagina de zona ainda 200, com os dominios, depois do vencimento do primeiro access token', { timeout: 180_000 }, async () => {
-    const { cookie } = await entrarPeloKeycloak('ana')
+    const { cookie, id } = await entrarPeloKeycloak('ana')
     const controle = await tokenDireto('ana')
     assert.ok(controle.expires_in <= VIDA_S, `Keycloak nao encurtou a vida do token: ${controle.expires_in} s`)
-    const comControle = () => fetch('http://127.0.0.1:4001/v1/recursos', { headers: { authorization: `Bearer ${controle.access_token}` } })
+    const comControle = () => fetch(`${DOMINIO_A}/v1/recursos`, { headers: { authorization: `Bearer ${controle.access_token}` } })
     assert.equal((await comControle()).status, 200, 'dominio A recusou o access token novo')
     painelComDominios(await pedir('/zona1', { cookie }), 'antes de vencer')
 
@@ -183,11 +206,23 @@ describe('modo OIDC contra o Keycloak do showcase (ADR-0013)', { skip: motivoPar
     assert.equal((await comControle()).status, 401, 'controle: o dominio aceitou o access token vencido')
     painelComDominios(await pedir('/zona1', { cookie }), 'depois do vencimento do primeiro token')
 
-    // 20 requisições juntas com o token na janela: o lock deixa uma renovar; o Keycloak, com rotação e detecção
-    // de reuso, derrubaria a sessão inteira numa segunda renovação com o mesmo refresh token
-    await esperar((VIDA_S - JANELA_S + 1) * 1000)
+    // 20 requisições juntas com o token na janela, ainda válido: o lock deixa uma renovar; o Keycloak, com rotação e
+    // detecção de reuso, derrubaria a sessão inteira numa segunda renovação com o mesmo refresh token. O meio da
+    // janela sai do `tokenExpiraEm` gravado, não de uma conta de tempo, e é conferido antes do lote.
+    const renovada = await sessaoNoRedis(id)
+    await esperar(renovada.tokenExpiraEm - JANELA_S * 500 - Date.now())
+    const antes = await sessaoNoRedis(id)
+    const resta = antes.tokenExpiraEm - Date.now()
+    assert.ok(resta > 0 && resta < JANELA_S * 1000, `lote fora da janela: o token vence em ${resta} ms (janela ${JANELA_S * 1000} ms)`)
+    const monitor = await monitorarRedis(process.env.REDIS_URL)
     const juntas = await Promise.all(Array.from({ length: 20 }, () => pedir('/zona1', { cookie })))
+    const comandos = await monitor.parar()
     juntas.forEach((r, i) => painelComDominios(r, `concorrente ${i}`))
+    const gravacoes = comandos.filter((l) => l.toLowerCase().includes(`"set" "${chaveDaSessao(id)}"`))
+    assert.equal(gravacoes.length, 1, `o lote gravou a sessao ${gravacoes.length} vez(es): renovacao ausente ou repetida`)
+    const depois = await sessaoNoRedis(id)
+    assert.notEqual(depois.refreshToken, antes.refreshToken, 'o refresh token nao mudou no lote')
+    assert.ok(depois.tokenExpiraEm > antes.tokenExpiraEm, 'tokenExpiraEm nao avancou no lote')
     // e o token dessa rodada vence também: a próxima página obriga uma renovação com o refresh token que ela deixou
     await esperar((VIDA_S + TOLERANCIA_S + 2) * 1000)
     painelComDominios(await pedir('/zona1', { cookie }), 'depois das renovacoes concorrentes (sessao viva no Keycloak)')

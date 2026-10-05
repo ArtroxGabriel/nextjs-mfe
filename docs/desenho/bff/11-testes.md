@@ -98,7 +98,8 @@ hoje, porque as decisões correspondentes estão abertas em [PENDENCIAS.md](PEND
 > releitura com o lock sair (`erp-nucleo/test/identidade.test.mjs`, stores em memória e em arquivo); o
 > Keycloak do showcase com rotação e detecção de reuso é conferido por `task showcase:checar`. Pelo shell, contra
 > o Keycloak (`task verificar:oidc`): página de zona ainda 200 depois do vencimento do primeiro token, 20
-> requisições concorrentes na janela sem derrubar a sessão, e nenhum `refresh_token`, `id_token` ou `eyJ` no
+> requisições concorrentes com o token na janela (conferida no Redis antes do lote) que gravam a sessão uma vez
+> só, com refresh token novo, sem derrubá-la (reprova se o proxy só renovar token vencido ou se o lock sair), e nenhum `refresh_token`, `id_token` ou `eyJ` no
 > HTML, no RSC e no JS. **Falta:** a variante com Redis falso (`NX`) e o failover do Redis.
 
 O P0-c é o mais revelador: ele testa exatamente a cadeia

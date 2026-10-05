@@ -29,7 +29,8 @@ um fluxo com redirecionamento.
    continua sem I/O; zona nenhuma renova (invariante 15).
 5. **`openid-client` v6** como `peerDependency` opcional do núcleo, importado só por
    `adaptadores/identidade-oidc.ts` (`server-only`, só em `/shell`); `customFetch` com `redirect: 'manual'` e
-   timeout; todo endpoint do discovery com a origem do emissor; `http://` só fora de produção. O IdP **não**
+   timeout; todo endpoint do discovery com a origem do emissor; `http://` só fora de produção (exceto loopback
+   com `ERP_PERMITIR_HTTP_LOCAL=1`, adendo 2). O IdP **não**
    entra no registro de destinos (semântica de transporte errada para o token endpoint); o N8 passa a recusar
    `openid-client` importado direto por app.
 6. **Shell:** `GET /api/auth/entrar` (link, não formulário: `form-action 'self'` barra o 303 para o IdP
@@ -78,8 +79,10 @@ um fluxo com redirecionamento.
    `userinfo` e o refresh token novo dá `invalid_grant` ("Session doesn't have required client")
    ([medição 1](../../base/showcase/medicao-refresh-concorrente.md), 2026-09-23; repetida com o mesmo
    resultado em 2026-10-03). O lock com releitura (decisão 4) é o que impede isso. Pelo shell de verdade
-   (`base/verificacao/oidc/oidc.test.mjs`): 20 requisições concorrentes com o token na janela, todas `200`, e a
-   renovação seguinte com o refresh token que sobrou funciona: a sessão não caiu.
+   (`base/verificacao/oidc/oidc.test.mjs`): 20 requisições concorrentes com o token na janela (conferida no
+   Redis antes do lote), todas `200`, a sessão gravada uma vez só, com refresh token novo e `tokenExpiraEm`
+   adiante, e a renovação seguinte com o refresh token que sobrou funciona: a sessão não caiu. O teste reprova
+   se o proxy só renovar token vencido (nenhuma gravação no lote) e se o lock sair (a sessão cai).
 2. ~~**Base em modo OIDC na máquina local**~~ (achado da Task 6 do D2, 2026-10-03): a decisão 5 recusava o
    Keycloak `http://` do showcase com a base em `next start` (o shell dava 500 em toda rota). **Resolvido pelo
    adendo 2.**
