@@ -78,3 +78,7 @@ Task 6: minor (deferred → triagem final): M4 logout OIDC não seguido até o K
 Task 6: minor (sem ação): M5 pnpm-lock do stub com hash local de @erp/contratos 0.2.1 (AMBIENTE §1)
 Task 6: fix round 1/5 — dispatched implementer (opus) para I1, M1, M2, M3
 Task 6: fix round 1 implementer DONE (main d82e5b7; verificar:oidc 5/5, EXIGIR=1 com emissor inalcançável vermelho, estatica 51/51, scripts 20/20, redis 116/116; mutações (a) só renova vencido e (b) sem lock pegas); re-review dispatched (sonnet), package rereview-task6-r1.diff
+Task 6: re-review (sonnet) aprovado com 2 menores: R1 (lote pode passar do vencimento e mascarar 'só renova vencido'), R2 (monitorarRedis sem try/finally). Corrigidos pelo controlador em 848e5fe: verificar:oidc 5/5, estatica 51/51, scripts 20/20
+Task 6: fix round 1/5 (I1, M1–M3 addressed + R1, R2; main d82e5b7, 848e5fe)
+Task 6: complete (main 232c8f4..848e5fe, núcleo 0.10.2 63e0425; review clean após correções). M4 → triagem da revisão final
+Final review: package review-final.diff rebuilt at main 848e5fe; dispatched (opus) com triagem dos menores adiados

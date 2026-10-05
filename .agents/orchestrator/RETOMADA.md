@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-05 (revisão da Task 6 do D2 redespachada; depois revisão final e gate)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-05 (Task 6 do D2 fechada; revisão final do D2 em andamento; depois o gate)**.
 
 ## Objetivo final
 
@@ -56,11 +56,10 @@ Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Su
 5. ✅ **Task 5:** domínios falsos verificam RS256/JWKS; adendo 1 do ADR-0013 (token de serviço só registra o próprio manifesto em modo JWT). Stub `783242b`, principal `1f4414c`.
 6. ✅ **Task 6:** verificação final verde; documentos da lista do ADR-0013 atualizados; p95 do proxy medido (`task medir:proxy`); DEFERRED D17–D18 (D16 abriu e fechou). Relatório: `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/task-6-report.md`.
 7. ✅ **Modo OIDC** (decisão (a) do humano): núcleo **0.10.2** (`ERP_PERMITIR_HTTP_LOCAL`, só loopback; adendo 2 do ADR-0013), stub com a mesma regra, `task showcase:oidc` e `task verificar:oidc` (`base/verificacao/oidc/`).
-8. ⏳ **Revisão da Task 6** (Opus, 2026-10-05): aprovado com ressalvas (I1: o teste dos 20 concorrentes não provava a renovação
-   na janela; M1–M3). **Correção feita em `d82e5b7`**: o teste lê a sessão no Redis e exige uma única regravação; mutações "só renova
-   vencido" e "sem lock" pegas; `verificar:oidc` 5/5, `verificar:redis` 116/116. **Re-revisão (Sonnet) em andamento.** M4 (logout
-   seguido até o Keycloak) vai para a triagem final. Achados e ledger em `ledger/2026-09-29-d2-k6-oidc-pkce-renovacao/`.
-9. ⬜ **Revisão final do D2** (branch inteira; triagem dos menores do ledger) e depois o **gate** (`LEIA-PRIMEIRO.md`, "Como um gate funciona").
+8. ✅ **Revisão da Task 6** (2026-10-05): aprovado com ressalvas; I1 e M1–M3 corrigidos em `d82e5b7`, re-revisão limpa com R1/R2
+   corrigidos em `848e5fe` (`verificar:oidc` 5/5). M4 vai para a triagem final.
+9. ⏳ **Revisão final do D2** (Opus, despachada em 2026-10-05; pacote `review-final.diff`, rascunho `review-final-achados.md`; branch inteira;
+   triagem dos menores do ledger) e depois o **gate** (`LEIA-PRIMEIRO.md`, "Como um gate funciona").
    Achados menores adiados pelas revisões das tasks (cópia do ledger local, para a triagem):
    - **T2:** tomada de lock velho no store de arquivo pode dar dois vencedores; teste de 20 renovações na fábrica sem Redis falso com NX; transações expiradas nunca limpas em arquivo/memória; `sessaoMemoria().adquirirLockRenovacao` sem `validarTtlDoLock`; `ERP_RENOVACAO_JANELA_S < ERP_TOKEN_VIDA_S/2` só documentado; teste de tempo dos perdedores (<200 ms) pode oscilar; `fronteira.mjs` com nomes genéricos como marcadores de escrita; `identidade-dev` sem `ERP_SESSAO_MAXIMA_S`.
    - **T3:** `urlRetorno` aceita query/fragmento (o `redirect_uri` da troca diverge); `concluir` trata `invalid_client` como recusa; porta não documenta que `concluir`/`iniciar` lançam; `ehTransitorio` trata todo `TypeError` como transitório; causa do erro descartada sem rastro no servidor; sem `id_token_hint` o Keycloak pode não redirecionar no logout (conferir).
