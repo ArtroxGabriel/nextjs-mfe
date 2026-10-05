@@ -15,3 +15,7 @@ Task 3: implementer DONE (nucleo fdea296 v0.10.3 publicado, shell 9c8b11a+acec0b
 Task 3: review (opus) aprovado com ressalvas; Important I1 (zonas sem trim em SHELL_HOSTS: lib/pagina.ts:16 e next.config.ts:9) → Task 4; minors: guarda do e2e com tolerância (oidc.test.mjs:283), ESPERA 4000 no verificar:oidc, regex frágil do teste de lib/nucleo.ts → Task 4; esquema no sair: manter (Next usa X-Forwarded-Proto), documentar na Task 4
 Task 3: complete (nucleo fdea296 v0.10.3, shell acec0bf, zonas, main c26619c)
 Task 4: dispatched implementer (opus): docs + I1 zonas + minors da Task 3 + menores do gate do D2 restantes
+Task 4: implementer DONE (shell 72ecc2f, z1 860a176, z2 5a665a7, zacesso 4ea036d, main 6511c8a; tudo verde; D19/D20 fechados, D24 novo). Review dispatched (sonnet)
+Task 4: review (sonnet) APROVADA; minors 1–3 de doc corrigidos pelo controlador em 4674495; minor 4 (P12 não compara helper entre zonas, hoje idêntico) aceito
+Task 4: complete
+Task 5: revisão final da branch fica a cargo do revisor do gate (escopo: branch inteira da D19-B, costuras entre tasks); gate d19b iteração 1 dispatched

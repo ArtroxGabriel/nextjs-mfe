@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-05 (gate do D2 aprovado; próximo: task D19-B)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-05 (D19-B implementada; gate da D19-B em andamento)**.
 
 ## Objetivo final
 
@@ -36,7 +36,7 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 |---|---|---|
 | Base em `repos/` (Next 16) | `base/verificacao` **116/116** com Redis e **112 + 4 pulados** com arquivo (login de dev); **modo OIDC 5/5** contra o Keycloak | `task verificar:redis`, `task verificar:construir`, `task verificar:oidc` |
 | Unidades | contratos 20, núcleo 225, moldura 26, stub 75, shell 73; estática 51/51; scripts 20/20; typecheck das 4 apps ok | `task test`, `task typecheck`, `task verificar:estatica`, `task scripts:test` |
-| `@erp/nucleo` | **0.10.2** publicado no Verdaccio **desta máquina** e nas 4 apps (lockstep ok). Outra máquina: publicar 0.10.2 no próprio Verdaccio e `task pacotes:alinhar-hashes` | `task lockstep` |
+| `@erp/nucleo` | **0.10.3** (D19-B) publicado; antes **0.10.2** no Verdaccio **desta máquina** e nas 4 apps (lockstep ok). Outra máquina: publicar 0.10.2 no próprio Verdaccio e `task pacotes:alinhar-hashes` | `task lockstep` |
 | `@erp/contratos` / `@erp/moldura` | **0.4.0** / **0.5.0** | ADR-0012, ADR-0014 adendo 1 |
 | ADRs | **0013 aceito com adendos 1 e 2 (2026-10-03), implementado e verificado contra o Keycloak**; 0014 + adendo 1 aceito | `docs/adr/` |
 | Keycloak do showcase | `task showcase:checar` ok; reuso de refresh token revoga a sessão inteira (medição 1 repetida em 2026-10-03) | `base/showcase/medicao-refresh-concorrente.md` |
@@ -68,9 +68,9 @@ Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Su
    README §3 e ROTEIRO com contagem velha de testes (hoje 118); estado persistido do showcase sem a eva (`task showcase:dados:resetar`).
    **Decisões do humano (2026-10-05):** histórico reescrito para tirar o JWT de `793f519` (feito pelo humano; ver "Ambiente
    (reescrita de 2026-10-05)"); **D19 → opção B em task própria** (`DEFERRED.md` D19).
-11. ⏳ **Task D19-B** (Tasks 1 e 2 feitas: núcleo `3576971`; Task 3, publicar 0.10.3 + shell + ponta a ponta, em andamento) (depois do gate; plano `docs/superpowers/plans/2026-10-05-d19b-espera-com-token-vencido.md`, com D20 e os menores do gate): perdedor do lock com token **já vencido** espera a renovação até
-   `ERP_RENOVACAO_ESPERA_MS` e relê a sessão; núcleo 0.10.3 + lockstep, adendo 3 ao ADR-0013, teste de concorrência com token
-   vencido (unidade no núcleo e no shell, ponta a ponta em `verificar:oidc`). Junto: os menores do gate listados acima.
+11. ⏳ **Task D19-B**: Tasks 1–4 feitas e revisadas (núcleo **0.10.3** `fdea296` publicado e em lockstep; shell, zonas e docs;
+   adendo 3 ao ADR-0013; D19 e D20 fechados, D24 novo; `verificar:oidc` 6/6 com o teste das 10 concorrentes com token vencido).
+   **Gate da D19-B, iteração 1** em andamento (o revisor do gate cobre a branch inteira da D19-B no lugar da revisão final).
    Achados menores adiados pelas revisões das tasks (cópia do ledger local, para a triagem):
    - **T2:** tomada de lock velho no store de arquivo pode dar dois vencedores; teste de 20 renovações na fábrica sem Redis falso com NX; transações expiradas nunca limpas em arquivo/memória; `sessaoMemoria().adquirirLockRenovacao` sem `validarTtlDoLock`; `ERP_RENOVACAO_JANELA_S < ERP_TOKEN_VIDA_S/2` só documentado; teste de tempo dos perdedores (<200 ms) pode oscilar; `fronteira.mjs` com nomes genéricos como marcadores de escrita; `identidade-dev` sem `ERP_SESSAO_MAXIMA_S`.
    - **T3:** `urlRetorno` aceita query/fragmento (o `redirect_uri` da troca diverge); `concluir` trata `invalid_client` como recusa; porta não documenta que `concluir`/`iniciar` lançam; `ehTransitorio` trata todo `TypeError` como transitório; causa do erro descartada sem rastro no servidor; sem `id_token_hint` o Keycloak pode não redirecionar no logout (conferir).
