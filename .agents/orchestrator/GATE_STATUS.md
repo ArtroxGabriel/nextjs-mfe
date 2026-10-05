@@ -263,3 +263,15 @@ escrita só no shell) e G3 (acesso v2). Estado conferido ao fim: fontes nos HEAD
 (`9ff2f87f…`), dados do stub iguais, chaves forjadas apagadas, `task verificar:redis` 109/109, modo arquivo 105 + 4, portas livres.
 Pastas dos verificadores das iterações 2–9 removidas depois do registro; última versão no commit `f010760`
 (`git show f010760:.agents/<nome>/handoff.md`). Tag `gate-b1-d1-g3-aprovado`.
+
+## Gate — D2 (OIDC + PKCE, renovação proativa com lock; núcleo 0.10.2), iteração 1, HEAD `b8a1034`
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_d2_1 | revisor-mfe (sonnet) | APPROVE | .agents/reviewer_d2_1/handoff.md | sem bloqueante; menores: `server-only` em `erp-shell/lib/cookies.ts`, `trim` em `SHELL_HOSTS` no `sair` |
+| challenger_d2_1 | simulador-condicoes (sonnet) | APPROVE | .agents/challenger_d2_1/handoff.md | PKCE/state/redirect_uri, varredura de tokens, ACL do Redis, logout CSRF, loopback, JWT do stub; suítes 2x verdes; D19 medido; divergências de documento (CONFIGURACAO §5, contagem de testes, eva no estado persistido) |
+| auditor_d2_1 | general-purpose forense (opus) | **VETO** | .agents/auditor_d2_1/handoff.md, mutacoes.txt | 144 mutações distintas, 127 pegas; veto por 3 testes faltando: P04 (páginas do shell sem renovação), F04 (`IDP_CLIENTE_SEGREDO` na lista da zona), L04 (id da transação = `state`); X01 limite declarado (D22); 13 equivalentes/sem defeito |
+
+Gate Result: **VETO** (sem defeito de produto). `worker_d2_1` escreveu os testes (shell `bce8f59`, núcleo `aeae3af`, principal
+`base/scripts/ambiente.test.mjs` e `oidc.test.mjs`): P04, F04, L04 e L07 pegos; shell 86/86, núcleo 226/226, scripts 21/21,
+`verificar:oidc` 5/5. Iteração 2 com verificadores novos.

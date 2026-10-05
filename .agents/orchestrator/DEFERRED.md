@@ -87,8 +87,12 @@
   (`erp-shell/lib/decisao-proxy.ts`, comentário corrigido na revisão final).
 - **Por que não foi corrigido:** a saída seria o perdedor com token vencido reler a sessão por até X ms, o que contraria
   "quem perde não espera" (ADR-0013, decisão 4). É decisão de desenho, não correção.
-- **Fecha em:** decisão do humano (aditivo ao ADR-0013), ou primeiro relato de uso de logout depois de pausa; até lá,
-  o efeito é um novo login, sem perda de dado.
+- **Decisão do humano (2026-10-05): opção B, em task própria depois do gate do D2.** Na janela, com o token ainda
+  válido, segue "quem perde não espera". Com o token **já vencido**, quem perde o lock espera a renovação do vencedor até
+  um teto configurável (`ERP_RENOVACAO_ESPERA_MS`, padrão da ordem de 2 s, em `docs/CONFIGURACAO.md`) e relê a sessão.
+  Exige núcleo 0.10.3 + lockstep, adendo 3 ao ADR-0013 e teste de concorrência com o token vencido. Medição do
+  challenger_d2_1: com o Keycloak de volta, 1 de 10 concorrentes renovou e 9 foram ao `/login`.
+- **Fecha em:** a task D19-B (ver `RETOMADA.md`).
 
 ## D20 — Validações e ajustes para a próxima versão do núcleo
 

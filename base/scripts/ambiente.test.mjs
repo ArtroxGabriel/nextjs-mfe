@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, utimesSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync, utimesSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
@@ -224,17 +224,18 @@ function variaveisLidas(texto) {
   return [...diretas, ...desestruturadas]
 }
 
+/** Variáveis que o fonte de uma app (ou pasta) lê, fora dependências, builds e testes. */
+function lidas(dir) {
+  const andar = (d) => readdirSync(d).flatMap((n) => {
+    if (['node_modules', '.next', 'dist', 'test'].includes(n)) return []
+    const p = join(d, n)
+    return statSync(p).isDirectory() ? andar(p) : /\.(ts|tsx|mjs|js)$/.test(n) ? [p] : []
+  })
+  return new Set(andar(dir).flatMap((f) => variaveisLidas(readFileSync(f, 'utf8'))))
+}
+
 test('V1: a lista de inclusao cobre toda variavel que zona e dominio leem (variavel nova nao some calada)', async () => {
   const { AMBIENTE_PERMITIDO, RAIZ } = await import('./ambiente.mjs')
-  const { readdirSync, statSync } = await import('node:fs')
-  const lidas = (dir) => {
-    const andar = (d) => readdirSync(d).flatMap((n) => {
-      if (['node_modules', '.next', 'dist', 'test'].includes(n)) return []
-      const p = join(d, n)
-      return statSync(p).isDirectory() ? andar(p) : /\.(ts|tsx|mjs|js)$/.test(n) ? [p] : []
-    })
-    return new Set(andar(dir).flatMap((f) => variaveisLidas(readFileSync(f, 'utf8'))))
-  }
   // dentes: as três formas de ler (challenger_b1_d1_9: desestruturação passava sem ser vista)
   assert.deepEqual([...variaveisLidas("process.env.A; process.env['B']; const { C, D: d, E = '1' } = process.env")].sort(), ['A', 'B', 'C', 'D', 'E'])
   const zona = new Set([...lidasPeloNucleoDaZona(RAIZ), ...['erp-zona-1', 'erp-zona-2', 'erp-zona-acesso'].flatMap((z) => [...lidas(join(RAIZ, z))])])
@@ -246,4 +247,28 @@ test('V1: a lista de inclusao cobre toda variavel que zona e dominio leem (varia
   assert.ok(dominio.has('DADOS_DIR'), 'varredura do dominio vazia')
   assert.deepEqual([...dominio].filter((v) => !AMBIENTE_PERMITIDO.dominio.includes(v)), [])
   assert.ok(!AMBIENTE_PERMITIDO.zona.some((v) => /^REDIS_URL$|SENHA_SHELL/.test(v)), 'credencial de escrita na lista da zona')
+})
+
+// --- auditor_d2_1 (F04): o que só o shell lê não chega à zona nem ao domínio ---
+// O segredo do cliente OIDC é o caso que importa: com ele, uma zona (que lê o refresh token de toda sessão no
+// Redis, D17) renovaria qualquer sessão. A lista sai do código: o que o shell lê (a app e o que o núcleo lê só
+// no shell) e nem zona nem domínio leem; o piso explícito dá dentes à derivação.
+const SO_DO_SHELL_PISO = ['IDP_CLIENTE_SEGREDO', 'IDP_CLIENTE_ID', 'IDP_URL_RETORNO', 'IDP_URL_POS_LOGOUT']
+
+test('F04: variavel so do shell (segredo do cliente OIDC e afins) nunca entra no ambiente de zona nem de dominio', async () => {
+  const { AMBIENTE_PERMITIDO, RAIZ, ambienteDoPapel } = await import('./ambiente.mjs')
+  const zona = new Set([...lidasPeloNucleoDaZona(RAIZ), ...['erp-zona-1', 'erp-zona-2', 'erp-zona-acesso'].flatMap((z) => [...lidas(join(RAIZ, z))])])
+  const dominio = lidas(join(RAIZ, 'erp-dominio-stub', 'src'))
+  const shell = new Set([...lidas(join(RAIZ, 'erp-shell')), ...LIDAS_SO_NO_SHELL.map((e) => e.variavel)])
+  const soDoShell = [...shell].filter((v) => !zona.has(v) && !dominio.has(v))
+  for (const v of SO_DO_SHELL_PISO) assert.ok(soDoShell.includes(v), `${v}: o shell nao le mais, ou zona/dominio passaram a ler`)
+  // as credenciais de escrita do Redis a zona lê só para se recusar a subir com elas; nunca as recebe
+  const proibidas = [...new Set([...soDoShell, 'REDIS_URL', 'ERP_REDIS_SENHA_SHELL'])]
+  for (const papel of ['zona', 'dominio']) {
+    assert.deepEqual(proibidas.filter((v) => AMBIENTE_PERMITIDO[papel].includes(v)), [], `variavel so do shell na lista de ${papel}`)
+    const base = Object.fromEntries(proibidas.map((v) => [v, `valor-de-${v}`]))
+    assert.deepEqual(Object.keys(ambienteDoPapel(papel, { ...base, PATH: '/usr/bin' })), ['PATH'], `${papel} recebeu variavel so do shell`)
+  }
+  // dentes: o shell recebe o segredo
+  assert.equal(ambienteDoPapel('shell', { IDP_CLIENTE_SEGREDO: 's' }).IDP_CLIENTE_SEGREDO, 's')
 })

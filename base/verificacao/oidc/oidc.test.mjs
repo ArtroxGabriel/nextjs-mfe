@@ -5,7 +5,8 @@
 // O que prova, pelo shell, como o navegador:
 // - login por OIDC + PKCE (entrar → formulário do Keycloak → retorno), sessão só com id opaco;
 // - nenhum `refresh_token`, `id_token` nem JWT (`eyJ`) no HTML, no payload RSC, no JS nem nos cookies;
-// - página de zona ainda 200, com os blocos dos domínios, DEPOIS do vencimento do primeiro access token
+// - página de zona ainda 200, com os blocos dos domínios, DEPOIS do vencimento do primeiro access token, e o início
+//   do shell (`/`) também, pedido antes de qualquer página de zona (a renovação no proxy vale para as páginas do shell)
 //   (os domínios em modo JWT recusam o token vencido: controle no mesmo teste);
 // - 20 requisições concorrentes com o token na janela de renovação (conferida no Redis antes do lote): todas 200,
 //   o shell grava a sessão uma vez só, com refresh token novo e `tokenExpiraEm` adiante, e a sessão continua viva
@@ -145,6 +146,16 @@ function painelComDominios(r, contexto) {
   assert.doesNotMatch(r.html, /Indicadores indisponíveis|Recursos indisponíveis/, `${contexto}: domínio recusou o token da sessão`)
 }
 
+/**
+ * O início do shell (`/`) com os avisos da plataforma e os módulos da gestão de acesso: só sai assim se o access
+ * token da sessão vale. Página do shell, não de zona: a renovação no proxy vale para ela também (ADR-0013, decisão 4).
+ */
+function inicioComDominios(r, contexto) {
+  assert.equal(r.status, 200, `${contexto}: HTTP ${r.status}`)
+  assert.match(r.html, /Seus módulos/, contexto)
+  assert.doesNotMatch(r.html, /Avisos indisponíveis/, `${contexto}: domínio recusou o token da sessão`)
+}
+
 /** Access token direto do Keycloak (fora do shell), para o controle de vencimento no domínio. */
 async function tokenDireto(usuario) {
   const { createHash, randomBytes } = await import('node:crypto')
@@ -221,10 +232,13 @@ describe('modo OIDC contra o Keycloak do showcase (ADR-0013)', { skip: motivoPar
     const comControle = () => fetch(`${DOMINIO_A}/v1/recursos`, { headers: { authorization: `Bearer ${controle.access_token}` } })
     assert.equal((await comControle()).status, 200, 'dominio A recusou o access token novo')
     painelComDominios(await pedir('/zona1', { cookie }), 'antes de vencer')
+    inicioComDominios(await pedir('/', { cookie }), 'inicio do shell antes de vencer')
 
     // passa da vida do token e da tolerância de relógio do domínio
     await esperar((VIDA_S + TOLERANCIA_S + 2) * 1000)
     assert.equal((await comControle()).status, 401, 'controle: o dominio aceitou o access token vencido')
+    // primeiro a página do shell, sozinha: nenhuma página de zona renova antes dela
+    inicioComDominios(await pedir('/', { cookie }), 'inicio do shell depois do vencimento do primeiro token')
     painelComDominios(await pedir('/zona1', { cookie }), 'depois do vencimento do primeiro token')
 
     // 20 requisições juntas com o token na janela, ainda válido: o lock deixa uma renovar; o Keycloak, com rotação e
