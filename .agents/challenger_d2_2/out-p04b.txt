@@ -1,3 +1,0 @@
-login; refresh# 5769e268
-rajada 10 em / com token vencido: {"200":1,"307->/login?de=%2F":9}
-depois refresh# 87f25213

@@ -1,5 +1,0 @@
-   1s login; token vence em 130s refresh# 5cae1748 eventos KC {"CODE_TO_TOKEN":23,"LOGIN":23,"REFRESH_TOKEN":1}
- 138s vencido ha 8s, sem requisicao; refresh# 5cae1748 access# 4388a830
- 139s GET / -> 200 bytes 10125 location null set-cookie 0
- 140s depois; refresh# ca51d539 access# f5a583a1 token vence em 128s eventos KC {"REFRESH_TOKEN":2,"CODE_TO_TOKEN":23,"LOGIN":23}
- 140s 2o GET / -> 200 eventos KC {"REFRESH_TOKEN":2,"CODE_TO_TOKEN":23,"LOGIN":23}
