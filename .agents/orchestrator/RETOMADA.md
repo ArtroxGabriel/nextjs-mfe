@@ -60,9 +60,13 @@ Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Su
    corrigidos em `848e5fe` (`verificar:oidc` 5/5). M4 vai para a triagem final.
 9. ✅ **Revisão final do D2** (2026-10-05): correções A1–A6 em shell `bcef220` e principal `16570f1` (logout seguido até o Keycloak,
    `sair` só da mesma origem, docs, DEFERRED D19–D23); re-revisão limpa. A triagem dos menores abaixo está feita (B no `DEFERRED.md`).
-10. ⏳ **Gate do D2, iteração 1** (despachado em 2026-10-05, HEAD `b8a1034`): `reviewer_d2_1` (revisor-mfe, Sonnet) e `challenger_d2_1`
-   (simulador-condicoes, Sonnet, dono das portas) rodando; `auditor_d2_1` (Opus, veto) entra quando o challenger liberar as portas.
-   Handoffs em `.agents/<nome>/handoff.md`. O orquestrador não mexe nos submódulos durante o gate. **Decisão aberta do humano: D19.**
+10. ⏳ **Gate do D2, iteração 1** (HEAD `b8a1034`): `reviewer_d2_1` **APPROVE** e `challenger_d2_1` **APPROVE** (handoffs commitados);
+   `auditor_d2_1` (Opus, veto) rodando, dono das portas. O orquestrador não mexe nos submódulos durante o gate. Para depois do gate
+   (achados menores): `server-only` em `erp-shell/lib/cookies.ts`; `trim` em `SHELL_HOSTS` no `sair`; `sair` compara só o host
+   (aceita `https://` do mesmo host); `CONFIGURACAO.md` §5 diz que valor inválido falha na subida (é na primeira requisição);
+   README §3 e ROTEIRO com contagem velha de testes (hoje 118); estado persistido do showcase sem a eva (`task showcase:dados:resetar`).
+   **Decisões abertas do humano:** D19 (observado pelo challenger: com o Keycloak de volta, 9 de 10 concorrentes foram ao `/login`
+   e a sessão se recuperou); JWT do Keycloak local no commit enviado `793f519` (reescrever o histórico ou não).
    Achados menores adiados pelas revisões das tasks (cópia do ledger local, para a triagem):
    - **T2:** tomada de lock velho no store de arquivo pode dar dois vencedores; teste de 20 renovações na fábrica sem Redis falso com NX; transações expiradas nunca limpas em arquivo/memória; `sessaoMemoria().adquirirLockRenovacao` sem `validarTtlDoLock`; `ERP_RENOVACAO_JANELA_S < ERP_TOKEN_VIDA_S/2` só documentado; teste de tempo dos perdedores (<200 ms) pode oscilar; `fronteira.mjs` com nomes genéricos como marcadores de escrita; `identidade-dev` sem `ERP_SESSAO_MAXIMA_S`.
    - **T3:** `urlRetorno` aceita query/fragmento (o `redirect_uri` da troca diverge); `concluir` trata `invalid_client` como recusa; porta não documenta que `concluir`/`iniciar` lançam; `ehTransitorio` trata todo `TypeError` como transitório; causa do erro descartada sem rastro no servidor; sem `id_token_hint` o Keycloak pode não redirecionar no logout (conferir).
