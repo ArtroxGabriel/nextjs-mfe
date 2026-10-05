@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-03 (Task 6 do D2 feita, com o modo OIDC; revisão da Task 6 em andamento; depois revisão final e gate)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-05 (revisão da Task 6 do D2 redespachada; depois revisão final e gate)**.
 
 ## Objetivo final
 
@@ -56,7 +56,10 @@ Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Su
 5. ✅ **Task 5:** domínios falsos verificam RS256/JWKS; adendo 1 do ADR-0013 (token de serviço só registra o próprio manifesto em modo JWT). Stub `783242b`, principal `1f4414c`.
 6. ✅ **Task 6:** verificação final verde; documentos da lista do ADR-0013 atualizados; p95 do proxy medido (`task medir:proxy`); DEFERRED D17–D18 (D16 abriu e fechou). Relatório: `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/task-6-report.md`.
 7. ✅ **Modo OIDC** (decisão (a) do humano): núcleo **0.10.2** (`ERP_PERMITIR_HTTP_LOCAL`, só loopback; adendo 2 do ADR-0013), stub com a mesma regra, `task showcase:oidc` e `task verificar:oidc` (`base/verificacao/oidc/`).
-8. ⏳ **Revisão da Task 6** (Opus) em andamento em 2026-10-03, sobre `1f4414c..0d391d0` e os submódulos (núcleo 0.10.2, stub, shell, zonas). Se a sessão cair antes do veredito: refazer o pacote de revisão desse intervalo e despachar de novo.
+8. ⏳ **Revisão da Task 6** (Opus): a de 2026-10-03 morreu com a sessão, sem veredito. **Redespachada em 2026-10-05** sobre o mesmo
+   pacote (`review-task6.diff`; submódulos conferidos sem mudança), agora gravando os achados em
+   `.superpowers/sdd/2026-09-29-d2-k6-oidc-pkce-renovacao/review-task6-achados.md` a cada etapa. Se cair de novo: retomar
+   a partir desse arquivo.
 9. ⬜ **Revisão final do D2** (branch inteira; triagem dos menores do ledger) e depois o **gate** (`LEIA-PRIMEIRO.md`, "Como um gate funciona").
    Achados menores adiados pelas revisões das tasks (cópia do ledger local, para a triagem):
    - **T2:** tomada de lock velho no store de arquivo pode dar dois vencedores; teste de 20 renovações na fábrica sem Redis falso com NX; transações expiradas nunca limpas em arquivo/memória; `sessaoMemoria().adquirirLockRenovacao` sem `validarTtlDoLock`; `ERP_RENOVACAO_JANELA_S < ERP_TOKEN_VIDA_S/2` só documentado; teste de tempo dos perdedores (<200 ms) pode oscilar; `fronteira.mjs` com nomes genéricos como marcadores de escrita; `identidade-dev` sem `ERP_SESSAO_MAXIMA_S`.
