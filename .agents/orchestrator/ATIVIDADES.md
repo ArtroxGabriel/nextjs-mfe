@@ -4,7 +4,7 @@
 > atualiza ao fim de todo gate, task ou decisão; o humano copia para o GitLab e marca a coluna
 > "No GitLab?". Regras de quando avisar: `MANUTENCAO-GITLAB.md`.
 >
-> Última revisão: **2026-10-03 (Task 6 do D2: verificação final, modo OIDC verificado contra o Keycloak)** (#132 e #136 fechadas; #9 com estado e comentário de andamento novos em §3; #9 e #21 seguem em andamento com D2, G4 e G5).
+> Última revisão: **2026-10-05 (gate do D2 aprovado na iteração 3)** (**fechar #9 (#120)** com o comentário de §3; #21 segue em andamento com G4 e G5; a espera do perdedor com token vencido, D19-B, segue no repositório).
 
 ## 1. Como ler e manter
 
@@ -20,7 +20,6 @@
 
 | # | Título | Estado real | Ação | No GitLab? | Evidência |
 |---|---|---|---|---|---|
-| 9 | Trocar login e store de desenvolvimento por OIDC e Redis *(era "Implementar sessão e autorização no servidor")* | cookie opaco, escritor único e autorização por módulo entregues; **Redis ligado** (100/100 com Redis; zonas leem a sessão com usuário ACL só de leitura; escrita exige senha desde a K4-4); **D1 aprovado** no gate B1+D1+G3+K (iteração 9, 2026-09-28; zonas e domínios recebem o ambiente por lista de inclusão); **D2 implementado** (Tasks 1–6, 2026-10-03): núcleo 0.10.2 nas 4 apps com porta de identidade, adaptador OIDC + PKCE, transações de login de uso único e renovação proativa no `proxy.ts` do shell com lock `SET NX PX`; domínios verificam RS256 pelo JWKS do Keycloak; p95 do proxy medido (+0,3–0,4 ms); **modo OIDC verificado** contra o Keycloak (`task verificar:oidc` 5/5: página de zona 200 depois do vencimento do primeiro token, 20 renovações concorrentes sem derrubar a sessão, nenhum token no navegador). **Falta:** a revisão final do D2 e o gate | em andamento | feito (2026-10-02, #120: título, critérios e comentário) | ADR-0009 decisão 3; ADR-0013; `GATE_STATUS.md` |
 | 10 | Implementar composição por fragmentos | núcleo pronto (`@erp/nucleo` 0.5.0, 18 testes, 16 mutações); falta ligar zona 1 ← zona 2 e bloquear no shell | mover para **em andamento** | feito (2026-09-23, #121) | ADR-0011; `erp-nucleo` `1841771` |
 | 11 | Centralizar o tempo real no shell | não iniciado | manter; tirar a dependência da #2 | feito (2026-09-23, #122) | `alvo.md` §6 (SSE) |
 | 12 | Publicar o pacote visual @erp/ui | não iniciado; depende de medir duplicação de bundle | manter | — | `alvo.md` §6 |
@@ -49,6 +48,7 @@ Sugestão para o GitLab: criar agora com a etiqueta "refinamento" e o estado "bl
 
 | # | Título | Motivo | No GitLab? | Evidência |
 |---|---|---|---|---|
+| 9 | Trocar login e store de desenvolvimento por OIDC e Redis | **D1 e D2 aprovados**: sessão no Redis (gate B1+D1+G3+K, 2026-09-28) e login OIDC + PKCE com renovação proativa e lock (gate do D2, iteração 3, 2026-10-05; núcleo 0.10.2 nas 4 apps; ponta a ponta 118/118 com Redis e 5/5 contra o Keycloak; 55/55 mutações pegas). Seguem no repositório: D19-B (espera do perdedor com token vencido, decisão do humano), D17, D18 | **fechar** com o comentário de §3 | pendente | `GATE_STATUS.md` (gate D2, it.3); tag `gate-d2-aprovado`; ADR-0013 |
 | 1 | Finalizar a validação da prova de conceito | substituída pela base; PoC removida | feito (2026-09-23, #112) | tag `poc-final`; `73bdc8b` |
 | 2 | Corrigir o encerramento do SSE | substituída (era da PoC); SSE da base é a #11 | feito (2026-09-23, #113) | `DEFERRED.md` D1 |
 | 4 | Padronizar a moldura compartilhada | entregue | feito (2026-09-23, #115) | `@erp/moldura` 0.3.0 |
@@ -76,12 +76,12 @@ serão criadas: o trabalho delas está na #17.
 > #9 segue com o login OIDC + PKCE e a renovação com lock (D2); #21 segue com o showcase dos atores (G4) e a revogação por eventos (G5).
 
 
-### #9 (#120) — comentário de andamento (2026-10-03)
+### #9 (#120) — comentário de fechamento: gate do D2 aprovado (2026-10-05)
 
 ```
-D2 implementado (login OIDC + PKCE e renovação com lock), @erp/nucleo 0.10.2 nas 4 apps. Feito: porta de identidade (iniciar, concluir, renovar, encerrar); adaptador OIDC com openid-client e PKCE S256 (URL de logout sem token); transações de login de uso único no store; renovação proativa no proxy do shell com lock SET NX PX e releitura (só uma chamada ao IdP por sessão); rotas entrar/retorno/sair; CSP com a origem do IdP para o logout; domínios verificam o access token RS256 pelo JWKS do Keycloak; token de serviço restrito ao registro do próprio manifesto em modo JWT (ADR-0013, adendo 1). Custo medido: a leitura da sessão no proxy soma 0,3–0,4 ms ao p95.
-Verificação: unidades 419/419, estática 51/51, ponta a ponta 116/116 com Redis e 112 + 4 pulados com arquivo; em modo OIDC contra o Keycloak, 5/5: a página de zona continua abrindo depois do vencimento do primeiro token, 20 requisições concorrentes não derrubam a sessão e nenhum token chega ao navegador. Showcase com login pelo Keycloak: task showcase:oidc.
-Falta: a revisão final e o gate.
+Gate do D2 aprovado na iteração 3 (revisor, challenger e auditor forense). Entregue: login OIDC + PKCE com o Keycloak, transações de login de uso único, renovação proativa do token no proxy do shell com lock no Redis (uma só chamada ao IdP por sessão), domínios verificando o token RS256 pelo JWKS, token de serviço restrito ao próprio manifesto, logout que encerra a sessão no Keycloak e só aceita pedido da mesma origem. @erp/nucleo 0.10.2 nas 4 apps.
+Verificação: ponta a ponta 118/118 com Redis; modo OIDC contra o Keycloak 5/5 (página abre depois do vencimento do token, 20 requisições concorrentes na janela com uma renovação só, logout seguido até o Keycloak, nenhum token no navegador); auditoria por mutação com 55/55 mutações pegas na rodada final.
+Segue no repositório, fora desta atividade: com o token já vencido, as requisições que perdem o lock vão esperar a renovação (decisão de 2026-10-05, D19-B).
 ```
 
 ### #3 e #18 — comentário: gate aprovado
@@ -426,3 +426,4 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-10-03 (D2 Task 4) | Shell no núcleo 0.10.1 (lockstep nas 4 apps): login OIDC + PKCE, renovação proativa no proxy, logout com `formularioPara` na CSP; aprovado. Falta a Task 5 (stub com RS256) e a verificação final. #9 segue **em andamento**; nada muda no GitLab |
 | 2026-10-03 (D2 Task 5) | Domínios falsos verificam o access token RS256 pelo JWKS do Keycloak; decisão do humano: token de serviço só registra o próprio manifesto em modo JWT (ADR-0013, adendo 1); aprovado. #9 segue **em andamento**; nada muda no GitLab |
 | 2026-10-03 (D2 Task 6) | Verificação final verde nos dois modos; documentos do ADR-0013 atualizados; p95 do proxy medido. Humano decidiu (a): `ERP_PERMITIR_HTTP_LOCAL` só para loopback (núcleo 0.10.2, adendo 2); `task showcase:oidc` e `task verificar:oidc` (5/5) contra o Keycloak. #9 segue **em andamento** até o gate; comentário opcional em #120 (texto em §3) |
+| 2026-10-05 (gate D2) | Revisão final do D2 com correções (logout seguido até o Keycloak, `sair` só da mesma origem); gate do D2 vetado nas iterações 1 e 2 só por força de teste e **aprovado na iteração 3**. **Fechar #9 (#120)** com o comentário de §3. Decisão do humano: D19 → B, em task própria |

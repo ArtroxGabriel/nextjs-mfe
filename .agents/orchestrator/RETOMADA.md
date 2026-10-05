@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-05 (gate do D2, iteração 1, em andamento)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-05 (gate do D2 aprovado; próximo: task D19-B)**.
 
 ## Objetivo final
 
@@ -42,8 +42,9 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | Keycloak do showcase | `task showcase:checar` ok; reuso de refresh token revoga a sessão inteira (medição 1 repetida em 2026-10-03) | `base/showcase/medicao-refresh-concorrente.md` |
 | Custo do proxy do shell | +0,3–0,4 ms no p95 com a leitura da sessão (página de zona: ~19 ms de p95) | `task medir:proxy`; ADR-0013, Consequências |
 | Gate B1+D1+G3+K | **aprovado** na iteração 9 (2026-09-28); tag `gate-b1-d1-g3-aprovado` | `GATE_STATUS.md` |
+| Gate do D2 | **aprovado** na iteração 3 (2026-10-05); tag `gate-d2-aprovado`; unidades: núcleo 230, shell 90, stub 75; `verificar:redis` 118/118; `verificar:oidc` 5/5 | `GATE_STATUS.md` |
 
-## Próximo passo: revisão final do D2 (branch inteira) e depois o gate
+## Próximo passo: task D19-B (o D2 está fechado; histórico do D2 abaixo)
 
 Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Subagent-Driven). Detalhe de cada task
 (revisões, achados menores) no ledger, copiado para o git em `ledger/2026-09-29-d2-k6-oidc-pkce-renovacao/progress.md`
@@ -60,16 +61,14 @@ Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Su
    corrigidos em `848e5fe` (`verificar:oidc` 5/5). M4 vai para a triagem final.
 9. ✅ **Revisão final do D2** (2026-10-05): correções A1–A6 em shell `bcef220` e principal `16570f1` (logout seguido até o Keycloak,
    `sair` só da mesma origem, docs, DEFERRED D19–D23); re-revisão limpa. A triagem dos menores abaixo está feita (B no `DEFERRED.md`).
-10. ⏳ **Gate do D2**: iterações 1 e 2 vetadas pelo auditor só por força de teste (sem defeito de produto); correções em
-   `0b650ad` (P04/F04/L04) e `cf72700` (sorteios independentes da transação, T3o, P04b; núcleo `83b00e0`, shell `3034f76`).
-   **Iteração 3** (2026-10-05): `reviewer_d2_3` e `challenger_d2_3` rodando; `auditor_d2_3` (Opus) depois do challenger, focado na
-   correção e numa amostra de regressão. Para depois do gate
+10. ✅ **Gate do D2 aprovado** na iteração 3 (2026-10-05; tag `gate-d2-aprovado`; `GATE_STATUS.md`). Iterações 1 e 2 vetadas só
+   por força de teste, corrigidas em `0b650ad` e `cf72700`. Para depois do gate
    (achados menores): `server-only` em `erp-shell/lib/cookies.ts`; `trim` em `SHELL_HOSTS` no `sair`; `sair` compara só o host
    (aceita `https://` do mesmo host); `CONFIGURACAO.md` §5 diz que valor inválido falha na subida (é na primeira requisição);
    README §3 e ROTEIRO com contagem velha de testes (hoje 118); estado persistido do showcase sem a eva (`task showcase:dados:resetar`).
    **Decisões do humano (2026-10-05):** histórico reescrito para tirar o JWT de `793f519` (feito pelo humano; ver "Ambiente
    (reescrita de 2026-10-05)"); **D19 → opção B em task própria** (`DEFERRED.md` D19).
-11. ⬜ **Task D19-B** (depois do gate; plano `docs/superpowers/plans/2026-10-05-d19b-espera-com-token-vencido.md`, com D20 e os menores do gate): perdedor do lock com token **já vencido** espera a renovação até
+11. ⏭️ **Próximo: Task D19-B** (depois do gate; plano `docs/superpowers/plans/2026-10-05-d19b-espera-com-token-vencido.md`, com D20 e os menores do gate): perdedor do lock com token **já vencido** espera a renovação até
    `ERP_RENOVACAO_ESPERA_MS` e relê a sessão; núcleo 0.10.3 + lockstep, adendo 3 ao ADR-0013, teste de concorrência com token
    vencido (unidade no núcleo e no shell, ponta a ponta em `verificar:oidc`). Junto: os menores do gate listados acima.
    Achados menores adiados pelas revisões das tasks (cópia do ledger local, para a triagem):
@@ -98,7 +97,7 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 | | C2 SSE no shell (`/api/stream` + `SharedWorker`); fechar D7 (`proxyTimeout`) | ⬜ | #11 | B1; decisão B ok |
 | | C3 mapa de zonas vindo dos manifestos | ⬜ | #14 | B1 |
 | **D. Sessão e identidade reais** | D1 sessão no Redis (shell grava com senha, zonas leem com ACL só de leitura) | ✅ gate B1+D1+G3+K aprovado (ambiente por lista de inclusão) | #9 | — |
-| | D2 OIDC + PKCE e renovação proativa com lock (**ADR-0013 aceito**; pessoa por `sub`) | ⏳ Tasks 1–6 feitas, modo OIDC verificado contra o Keycloak; falta a revisão final e o gate | #9 | — |
+| | D2 OIDC + PKCE e renovação proativa com lock (**ADR-0013 aceito**; pessoa por `sub`) | ✅ gate do D2 aprovado (iteração 3, 2026-10-05); D19-B a seguir | #9 | — |
 | **E. Showcase** | E1 domínios mock com dados em JSON | ✅ | #19 | — |
 | | E2 `docker-compose` com Redis e Keycloak | ✅ | #19 | — |
 | | E3 `task showcase` e `task showcase:conferir` | ✅ login pelo Keycloak com `task showcase:oidc`; `showcase:conferir` ainda só no login de dev | #19 | — |

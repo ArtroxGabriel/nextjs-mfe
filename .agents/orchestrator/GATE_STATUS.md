@@ -286,3 +286,18 @@ Gate Result: **VETO** (sem defeito de produto). `worker_d2_1` escreveu os testes
 
 Gate Result: **VETO** (sem defeito de produto). Correção: teste de independência dos segredos da transação (sorteios independentes de
 `randomBytes`, ou derivação por hash/inclusão recusada) e as recomendações P04b e T3o; iteração 3 com verificadores novos.
+
+## Gate — D2, iteração 3, principal `cf72700`, núcleo `83b00e0`, shell `3034f76` (núcleo 0.10.2)
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_d2_3 | revisor-mfe (sonnet) | APPROVE | .agents/reviewer_d2_3/handoff.md | troca de `randomBytes` restaurada no `finally`, sem vazamento; teste estrutural prova 4 sorteios independentes ≥ 32 bytes; só `test/` mudou |
+| challenger_d2_3 | simulador-condicoes (sonnet) | APPROVE | .agents/challenger_d2_3/handoff.md | produto igual ao da iteração 2 fora de `test/`; suítes verdes (118/118, 5/5, 114+4); ataques centrais sem regressão |
+| auditor_d2_3 | general-purpose forense (opus) | **PASS** | .agents/auditor_d2_3/handoff.md, mutacoes.txt (trecho exato) | 55 mutações, 55 pegas: veto da it.2 (6), variantes do teste estrutural (19), dentes do teste (4), restauração da troca, regressão por família (22), E09 no ponta a ponta |
+
+Gate Result: **PASS**. Fecha o **D2** (#9): login OIDC + PKCE, transações de login de uso único, renovação proativa no `proxy.ts` do shell
+com lock `SET NX PX`, domínios verificando RS256/JWKS, token de serviço restrito em modo JWT, `ERP_PERMITIR_HTTP_LOCAL` só loopback,
+logout seguido até o Keycloak e `sair` só da mesma origem (ADR-0013 com adendos 1 e 2). Estado conferido ao fim pelo auditor: fontes
+nos HEADs, `dist` do núcleo nas 4 apps = tarball 0.10.2, `task test` verde, `verificar:redis` 118/118, `verificar:oidc` 5/5, Keycloak
+no padrão, portas livres. Pastas dos verificadores e workers das iterações 1–3 removidas depois do registro; última versão no commit
+`0419774` (`git show 0419774:.agents/<nome>/handoff.md`). Tag `gate-d2-aprovado`. Depois: task D19-B (`DEFERRED.md` D19).
