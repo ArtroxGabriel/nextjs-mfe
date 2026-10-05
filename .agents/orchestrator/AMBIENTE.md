@@ -130,5 +130,7 @@
   mascarar (`<jwt-mascarado>`); no despacho, pedir que o próprio agente mascare antes de salvar.
 - **PUT do realm no Keycloak mescla atributos.** Para devolver a vida do token ao padrão, gravar o atributo com `''`
   (`access.token.lifespan: ''`); omitir o atributo deixa o valor curto e `task showcase:checar` reprova (`12 !== 300`).
+  Script que recebe o valor por `process.argv[2]` não serve para isso: `''` é falso em JS e o script não grava nada
+  (`kcadmin.mjs` do challenger_d2_1 e do d2_2); chamar a função com `''` direto.
 - **`CONSTRUIR=1` não vê mudança no `dist` instalado** (`node_modules` fora de `ENTRADAS_DO_BUILD`): ao mutar o `dist`, tocar a
   app antes e depois. Restaurar a fonte com `cp -p`/`copy2` preserva o mtime e deixa o build mutado valendo (auditor_d2_1).
