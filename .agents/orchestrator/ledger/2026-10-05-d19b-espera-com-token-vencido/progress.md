@@ -11,3 +11,7 @@ Task 2: fix round 1 DONE (nucleo 3576971 local; 262/262; 8 mutações pegas); re
 Task 2: re-review (sonnet) limpo; minor opcional (thenable não nativo em registrarFalha: Promise.resolve(r).catch) → Task 3
 Task 2: complete (nucleo c879b0b..3576971, main 264352f..c36441b; review clean). Push pendente com o humano
 Task 3: dispatched implementer (opus) at main c36441b, nucleo 3576971 (push liberado pelo humano para estes; agente tenta push e reporta se negado)
+Task 3: implementer DONE (nucleo fdea296 v0.10.3 publicado, shell 9c8b11a+acec0bf, z1 2754937, z2 d830ad4, zacesso 88772d3, main c26619c; tudo enviado; verificar:oidc 6/6 com o novo e2e que reprova na 0.10.2; mutações pegas). Review dispatched (opus)
+Task 3: review (opus) aprovado com ressalvas; Important I1 (zonas sem trim em SHELL_HOSTS: lib/pagina.ts:16 e next.config.ts:9) → Task 4; minors: guarda do e2e com tolerância (oidc.test.mjs:283), ESPERA 4000 no verificar:oidc, regex frágil do teste de lib/nucleo.ts → Task 4; esquema no sair: manter (Next usa X-Forwarded-Proto), documentar na Task 4
+Task 3: complete (nucleo fdea296 v0.10.3, shell acec0bf, zonas, main c26619c)
+Task 4: dispatched implementer (opus): docs + I1 zonas + minors da Task 3 + menores do gate do D2 restantes
