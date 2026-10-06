@@ -9,7 +9,7 @@ import { pathToFileURL } from 'node:url'
 import { createServer } from 'node:http'
 import { spawn } from 'node:child_process'
 import { generateKeyPairSync, sign, createHmac } from 'node:crypto'
-import { subir, RAIZ, SHELL as SHELL_URL, ambienteDoPapel } from '../scripts/ambiente.mjs'
+import { subir, RAIZ, SHELL as SHELL_URL, APPS, ambienteDoPapel } from '../scripts/ambiente.mjs'
 import { pedir, entrar, iniciarLogin, menu, formularios, valorDoCookie, acaoPeloCliente, keycloakNoAr, tokenDoKeycloak, KEYCLOAK_EMISSOR, redisCru } from './apoio.mjs'
 import { abrirNavegador, acharChrome, COMO_CONSEGUIR_UM_NAVEGADOR } from './navegador.mjs'
 import { varrerAplicacoes } from './saida-de-rede.mjs'
@@ -848,6 +848,44 @@ test('L9 (D7): zona que trava com a sonda ainda valida solta a requisicao no tet
   assert.equal(segurada.status, 500, `status ${segurada.status} em ${segurada.ms} ms`)
   assert.ok(segurada.ms >= teto - 500, `soltou em ${segurada.ms} ms, antes do teto de ${teto} ms`)
   assert.ok(segurada.ms < teto + 2_000, `soltou em ${segurada.ms} ms; teto ${teto} ms (sem o D7 seriam ~30 s)`)
+})
+
+// C1 (ADR-0011): a zona 1 embute um bloco da zona 2. O fragmento é servidor→servidor, direto na origem interna da zona.
+const ZONA2_DIRETO = `http://127.0.0.1:${APPS.find((a) => a.dir === 'erp-zona-2').porta}`
+const FRAGMENTO_TAREFAS = '/zona2/_fragmento/tarefas/pendentes'
+const BLOCO_TAREFAS = /data-fragmento="zona2\/tarefas"/
+const pedirFragmento = (caminho, { cookie, cabecalhos = {} } = {}) => fetch(`${ZONA2_DIRETO}${caminho}`, {
+  headers: { accept: 'text/html', ...(cookie ? { cookie } : {}), ...cabecalhos }, redirect: 'manual',
+})
+
+test('C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache', async () => {
+  for (const u of ['ana', 'eva']) {
+    const r = await pedirFragmento(FRAGMENTO_TAREFAS, { cookie: (await entrar(u)).cookie, cabecalhos: { 'accept-fragmento-versao': '1' } })
+    assert.equal(r.status, 200, u)
+    assert.match(r.headers.get('content-type') ?? '', /^text\/html/, u)
+    assert.equal(r.headers.get('cache-control'), 'private, no-store', u)
+    const html = await r.text()
+    assert.match(html, BLOCO_TAREFAS, u)
+    assert.match(html, /Tarefas pendentes \(zona 2\)/, u)
+    assert.doesNotMatch(html, /<script|<html|<body|\son[a-z]+\s*=|javascript:/i, `fragmento ativo ou documento inteiro para ${u}`)
+  }
+  // sem o modulo da zona 2: ausencia, sem corpo (invariante 8; ADR-0011, decisao 6)
+  for (const u of ['bruno', 'davi']) {
+    const r = await pedirFragmento(FRAGMENTO_TAREFAS, { cookie: (await entrar(u)).cookie })
+    assert.equal(r.status, 204, u)
+    assert.equal(await r.text(), '', u)
+  }
+  const ana = (await entrar('ana')).cookie
+  // sem cookie, a camada 1 da zona manda ao login (o consumidor trata como ausencia); cookie forjado morre na camada 2
+  assert.equal((await pedirFragmento(FRAGMENTO_TAREFAS)).status, 307)
+  assert.equal((await pedirFragmento(FRAGMENTO_TAREFAS, { cookie: '__Host-session=forjado' })).status, 204)
+  // so a chave `pendentes` existe; outra versao do contrato e ausencia
+  assert.equal((await pedirFragmento('/zona2/_fragmento/tarefas/todas', { cookie: ana })).status, 204)
+  assert.equal((await pedirFragmento(FRAGMENTO_TAREFAS, { cookie: ana, cabecalhos: { 'accept-fragmento-versao': '2' } })).status, 204)
+  // navegacao de documento ou iframe nao e composicao (ADR-0011, decisao 8)
+  for (const destino of ['document', 'iframe']) {
+    assert.equal((await pedirFragmento(FRAGMENTO_TAREFAS, { cookie: ana, cabecalhos: { 'sec-fetch-dest': destino } })).status, 404, destino)
+  }
 })
 
 test('L8 (auditor_shell_3/4): o nonce da CSP e novo e imprevisivel a cada requisicao, no shell, na rota publica e nas zonas', async () => {
