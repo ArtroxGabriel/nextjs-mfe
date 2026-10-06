@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06 (gate do D7 aprovado; Task 1 do C1 fechada; próximo: Task 2 do C1)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06 (gate do D7 aprovado; Tasks 1 e 2 do C1 fechadas; próximo: Task 3 do C1)**.
 
 ## Objetivo final
 
@@ -65,7 +65,7 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
    **Decisão do humano (2026-10-06): teto agora, página com o C3.** O `proxyTimeout` do Next conta inatividade do socket e, ao
    estourar, o próprio Next escreve o 500 cru (`proxy-request.js`, sem gancho); o D7 entrega `ERP_ZONA_TETO_MS` (10 s, B1) e a
    página de indisponível dentro do teto passa a ser requisito do C3.
-2. ⏳ **C1 — fragmentos entre zonas** (#10). Plano: `docs/superpowers/plans/2026-10-06-c1-fragmentos-entre-zonas.md` (3 tasks + gate: dona na zona 2, recusa no shell, bloco no painel da zona 1 com `ZONA2_URL`). **Task 1 ✅** (zona 2 `1626fd1`, principal `eb5cf05`, C1a; revisão limpa, 3 menores no ledger). Núcleo pronto desde a 0.5.0 (`criarFragmento`/`responderFragmento`, ADR-0011).
+2. ⏳ **C1 — fragmentos entre zonas** (#10). Plano: `docs/superpowers/plans/2026-10-06-c1-fragmentos-entre-zonas.md` (3 tasks + gate: dona na zona 2, recusa no shell, bloco no painel da zona 1 com `ZONA2_URL`). **Task 1 ✅** (zona 2 `1626fd1`, principal `eb5cf05`, C1a; revisão limpa, 3 menores no ledger). **Task 2 ✅** (shell `836ddc4`, principal `4e9de60`, C1b; revisão limpa; suspeita de grafia com barra dupla para o challenger do gate). Núcleo pronto desde a 0.5.0 (`criarFragmento`/`responderFragmento`, ADR-0011).
    Falta: rota `_fragmento` na zona 2, bloco dela na zona 1, o shell recusa `/{zona}/_fragmento/` vindo do navegador, e
    o teste ponta a ponta.
 3. ⬜ **C3 — mapa de zonas pelos manifestos** (#14). Zona nova entra sem editar o `zonas.json` nem republicar o shell.
@@ -78,7 +78,7 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
 
 **Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente
 (`docker ps`: Redis e Keycloak podem ter caído com a máquina → `task showcase:subir` e `task showcase:checar`); então
-despachar a **Task 2 do C1** (Task 1 fechada) (plano `docs/superpowers/plans/2026-10-06-c1-fragmentos-entre-zonas.md`, modo Subagent-Driven). Nada está rodando e nenhum agente está aberto.
+despachar a **Task 3 do C1** (Tasks 1 e 2 fechadas) (plano `docs/superpowers/plans/2026-10-06-c1-fragmentos-entre-zonas.md`, modo Subagent-Driven). Nada está rodando e nenhum agente está aberto.
 
 ## Plano até o objetivo
 
