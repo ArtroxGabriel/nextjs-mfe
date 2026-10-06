@@ -1,0 +1,32 @@
+##### ERP_LOGIN_TRANSACAO_S=(padrao 600)
+A atributos: __Host-erp-login=<id>; Path=/; Max-Age=600; HttpOnly; Secure; SameSite=Lax
+A valor do cookie == state? false | comprimento cookie 43 state 43
+A params da autorizacao: redirect_uri,scope,code_challenge,code_challenge_method,state,nonce,client_id,response_type | method S256 | redirect_uri http://localhost:3000/api/auth/retorno
+A chaves erp:login:*  +OK|*2|$74|erp:login:<h>|$74|erp:login:<h>|+OK|
+B fluxo normal: keycloak devolveu 302 http://localhost:3000/api/auth/retorno?state=<m>&session_state=<m>&iss=http%3A%2F%2F127.0.
+B retorno 1: status=303 location=/zona1 setCookieSessao=true
+B REPLAY (mesmo code+state+cookie): status=303 location=/login setCookieSessao=false
+B REPLAY 2: status=303 location=/login setCookieSessao=false
+B chaves erp:login restantes +OK|*2|$74|erp:login:<h>|$74|erp:login:<h>|+OK|
+C retorno SEM cookie de transacao: status=303 location=/login setCookieSessao=false
+C retorno com cookie de OUTRA transacao: status=303 location=/login setCookieSessao=false
+C state adulterado: status=303 location=/login setCookieSessao=false
+C code adulterado: status=303 location=/login setCookieSessao=false
+C sem state: status=303 location=/login setCookieSessao=false
+C ?error=access_denied: status=303 location=/login setCookieSessao=false
+C o state valido ainda funciona apos tentativas falhas? (c3 consumida/adulterada) status=303 location=/login setCookieSessao=false
+C c.local original ainda utilizavel apos tentativas sem/ outro cookie? status=303 location=/login setCookieSessao=false
+D PKCE challenge trocado: retorno -> status=303 location=/login setCookieSessao=false
+D PKCE removido: Keycloak 302 
+D state trocado na ida: retorno -> status=303 location=/login setCookieSessao=false
+E redirect_uri http://evil.example/api/auth/retorno -> Keycloak 400  Sign in to erp { "imports": { "rfc4648": "/resources/co4gs/common/keycloak/vendor/rfc4648/rfc4648.js" } } import { startSessionPolling } from "/resources/co4gs/login/keycloak.v2/js/authChecker.js"; s
+E redirect_uri http://localhost:3000/outra -> Keycloak 400  Sign in to erp { "imports": { "rfc4648": "/resources/co4gs/common/keycloak/vendor/rfc4648/rfc4648.js" } } import { startSessionPolling } from "/resources/co4gs/login/keycloak.v2/js/authChecker.js"; s
+E redirect_uri http://localhost:3000/api/auth/retorno/../x -> Keycloak 400  Sign in to erp { "imports": { "rfc4648": "/resources/co4gs/common/keycloak/vendor/rfc4648/rfc4648.js" } } import { startSessionPolling } from "/resources/co4gs/login/keycloak.v2/js/authChecker.js"; s
+F sair Origin outro site -> 403 sessaoViva= true {"codigo":"OPERACAO_NAO_PERMITIDA","supportId":"5d604622-9370-4fd5-84fc-d87ac752
+F sair Sec-Fetch-Site cross-site -> 403 sessaoViva= true {"codigo":"OPERACAO_NAO_PERMITIDA","supportId":"95c39a52-7d2f-4d58-b612-7e808cdb
+F sair Origin null -> 403 sessaoViva= true {"codigo":"OPERACAO_NAO_PERMITIDA","supportId":"26024c8a-3e83-4bf5-b3f6-d20f5879
+F sair mesma origem -> 303 http://127.0.0.1:8080/realms/erp/protocol/openid-connect/logout?client_id=erp-shell&post_logout_redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Flogin sessaoViva= false set-cookie: ["__Host-session=<v>; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax"]
+F zona1 depois de sair -> 307
+F logout no Keycloak: HTTP 200 form-confirmacao= true
+F confirmacao -> 302 http://localhost:3000/login
+F novo entrar apos logout pede senha? true

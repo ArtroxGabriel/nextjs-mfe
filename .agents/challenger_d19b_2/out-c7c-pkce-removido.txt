@@ -1,0 +1,2 @@
+PKCE removido: Keycloak 302 http://localhost:3000/api/auth/retorno?error=invalid_request&error_description=Missing+parameter%3A+code_challenge_method&state=<m>&iss=<m>
+ seguindo -> 303 /login
