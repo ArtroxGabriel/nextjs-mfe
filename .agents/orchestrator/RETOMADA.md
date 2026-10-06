@@ -95,7 +95,8 @@ Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Su
      8 (suítes). **2026-10-06:** humano mandou fechar a D19-B; Redis e Keycloak religados (`showcase:checar` ok) e
      `challenger_d19b_2` (etapas 7 e 8) **APPROVE** (`.agents/challenger_d19b_2/handoff.md`: regressão do D2 sem divergência;
      `task test` verde, estática 51/51, `verificar:redis` 118/118 e `verificar:oidc` 6/6, 2x). `auditor_d19b_1` **VETO** só por teste (A10: erro do store na espera vira `ausente`; `GATE_STATUS.md`).
-     **`worker_d19b_1` escrevendo os testes do veto**; depois, iteração 2 **só com `auditor_d19b_2`** (decisão do humano,
+     `worker_d19b_1` fez os testes do veto (núcleo `610217d` 271/271, shell `0a3131d` 108/108, só `test/`; principal `b1bacee`).
+     **`auditor_d19b_2` rodando** na iteração 2, **só com ele** (decisão do humano,
      2026-10-06: sem revisor nem challenger nesta iteração; o auditor confere as mutações do veto e a regressão).
    Achados menores adiados pelas revisões das tasks (cópia do ledger local, para a triagem):
    - **T2:** tomada de lock velho no store de arquivo pode dar dois vencedores; teste de 20 renovações na fábrica sem Redis falso com NX; transações expiradas nunca limpas em arquivo/memória; `sessaoMemoria().adquirirLockRenovacao` sem `validarTtlDoLock`; `ERP_RENOVACAO_JANELA_S < ERP_TOKEN_VIDA_S/2` só documentado; teste de tempo dos perdedores (<200 ms) pode oscilar; `fronteira.mjs` com nomes genéricos como marcadores de escrita; `identidade-dev` sem `ERP_SESSAO_MAXIMA_S`.
