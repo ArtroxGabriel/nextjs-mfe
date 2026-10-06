@@ -222,9 +222,21 @@ medido na iteração anterior com o cache de 3 s, o intervalo foi de 2,96 s. A j
 limitada por tempo, e quantas requisições caem nela depende da taxa.
 
 A segunda exceção é a zona travada: processo vivo, porta aceitando conexão, sem resposta
-(medido com `SIGSTOP`). Uma requisição enviada dentro do mesmo intervalo de 1 s não recebe
-o 500 na hora: espera o timeout do proxy do Next, observado em 30 s (3 de 3), e só então
-recebe o 500 cru. Depois do intervalo, a requisição que dispara a sonda espera o timeout da
+(medido com `SIGSTOP`). Uma requisição enviada dentro do mesmo intervalo de 1 s passa pela
+sonda e fica presa na zona até o teto do proxy do Next (`experimental.proxyTimeout`), que o
+shell lê de `ERP_ZONA_TETO_MS`: **10 s** por padrão (decisão B1, 2026-09-23; antes do D7 era o
+padrão fixo do Next, 30 s, observado 3 de 3). No teto, o próprio Next responde 500 cru; o
+`rewrites()` não tem gancho para trocar essa resposta pela página da base, que vem com o
+mecanismo de roteamento do C3. O teto conta **silêncio**, não duração: é o tempo do socket sem
+nenhum byte, então uma resposta longa que segue mandando dados (streaming, download) não é
+cortada. O SSE do C2 mora no shell e nem passa pelo proxy; uma resposta longa de zona convive
+com o teto mandando algum byte em intervalo menor que ele, e a que precisar ficar mais tempo
+calada vira pedido assíncrono. O teto tem de passar `ERP_DESTINO_TIMEOUT_MS` (o shell recusa
+subir se não passar): senão uma página que espera um domínio lento seria cortada antes de
+degradar. A verificação ponta a ponta (L9) sobe o shell com 6 s e confere a requisição solta
+no teto.
+
+Depois do intervalo, a requisição que dispara a sonda espera o timeout da
 sonda, 800 ms (815 a 817 ms medidos), e recebe 503. O custo não é único: o cache vale 1 s a
 partir do fim de cada sonda, então, enquanto a zona seguir travada, cada expiração abre uma
 nova sonda, e toda requisição que chega durante ela espera o restante dessa sonda, até

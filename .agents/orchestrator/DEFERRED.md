@@ -16,14 +16,14 @@
 > Os menores do gate do D2 (`server-only` em `cookies.ts`, `SHELL_HOSTS` com espaço no shell e nas zonas, esquema no
 > `sair`, §5 do `CONFIGURACAO.md`, aviso do showcase sem a eva) entraram nas Tasks 3 e 4.
 
-## D7 — Zona travada segura a requisição até o `proxyTimeout` do Next
+## D7 — Zona travada: teto feito, página com o C3
 
-- **Evidência:** zona congelada com `SIGSTOP` logo após uma sonda saudável: a requisição dentro da janela
-  de 1 s esperou ~30 s e recebeu 500 cru (3/3); na PoC e de novo no `challenger_shell_1` (~0,6 s com a sonda nova).
-- **Por que não foi corrigido:** a alavanca é `experimental.proxyTimeout`, que vale para toda resposta
-  repassada, inclusive SSE. Escolher o valor é decisão operacional.
-- **Fecha em:** C2 (SSE no shell), junto com o tempo de vida de respostas longas; registrar o valor em
-  `docs/desenho/mfe/01-operacao.md` §5.1.
+- **Feito (2026-10-06):** o shell lê `ERP_ZONA_TETO_MS` (padrão 10 s, decisão B1) como `experimental.proxyTimeout`; a
+  requisição que já passou pela sonda é solta no teto, não nos 30 s fixos do Next. Verificação L9.
+- **Fica:** no teto, quem responde é o Next, com 500 cru; o `rewrites()` não tem gancho para a página da base
+  (`proxy-request.js`, `onProxyError`). Escolha do humano (2026-10-06): a página dentro do teto vem com o mecanismo de
+  roteamento do C3, para o caminho de toda requisição mudar uma vez só.
+- **Fecha em:** C3.
 
 ## D12 — Menores do núcleo (fatia 1)
 

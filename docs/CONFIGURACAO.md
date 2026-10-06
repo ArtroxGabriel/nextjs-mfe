@@ -46,6 +46,7 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 | `ERP_FRAGMENTO_TIMEOUT_MS` | `2000` | Timeout de um fragmento entre zonas; teto 30000 | núcleo (`fabricas/fragmento.ts`) | ✅ (teto na 0.9.0) |
 | `ERP_SONDA_TTL_MS` | `1000` | Por quanto tempo o shell confia no resultado da sonda de saúde de uma zona; teto 10000 | shell (`lib/saude-zonas.ts`) | ✅ (B5a) |
 | `ERP_SONDA_TIMEOUT_MS` | `500` | Timeout da sonda de saúde; teto 2000 (zona travada vira 503 em menos de 2 s). Só 2xx de `/{zona}/api/health` conta como no ar | shell | ✅ (B5a) |
+| `ERP_ZONA_TETO_MS` | `10000` | Tempo máximo que uma zona pode ficar **sem mandar nenhum byte** numa resposta repassada pelo shell; vira o `experimental.proxyTimeout` do Next. É inatividade, não duração: página em streaming, download ou SSE que segue mandando dados não é cortado. Ao estourar, o Next responde 500 (sem a página da base, que vem com o C3). Teto 120000; tem de ser **maior** que `ERP_DESTINO_TIMEOUT_MS`, senão o shell recusa subir. Lido em todo `next start` | shell (`lib/configuracao.ts`, `next.config.ts`) | ✅ (D7) |
 
 **Proxy que termina TLS (`X-Forwarded-Proto`).** O proxy na frente do shell tem de **definir** `X-Forwarded-Proto` com o
 esquema que o navegador usou, sobrescrevendo o que vier do cliente. O Next monta a URL da requisição com esse cabeçalho, e o
