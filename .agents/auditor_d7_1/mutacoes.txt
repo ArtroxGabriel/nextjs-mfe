@@ -1,0 +1,252 @@
+
+[M2a] repos/erp-shell/lib/configuracao.ts:32
+  antes : lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)
+  depois: lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 9_999, 'ERP_ZONA_TETO_MS', 120_000)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: sem variavel, 10 s (decisao B1)
+
+[M2b] repos/erp-shell/lib/configuracao.ts:32
+  antes : lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)
+  depois: lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_001, 'ERP_ZONA_TETO_MS', 120_000)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: sem variavel, 10 s (decisao B1)
+
+[M2c] repos/erp-shell/lib/configuracao.ts:32
+  antes : lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)
+  depois: lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 30_000, 'ERP_ZONA_TETO_MS', 120_000)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: sem variavel, 10 s (decisao B1)
+
+[M2d] repos/erp-shell/lib/configuracao.ts:32
+  antes : lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)
+  depois: lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 6_000, 'ERP_ZONA_TETO_MS', 120_000)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: sem variavel, 10 s (decisao B1)
+
+[M3a] repos/erp-shell/lib/configuracao.ts:35
+  antes : if (teto <= destino) {
+  depois: if (teto < destino) {
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: recusa teto igual ou menor que o timeout de dominio (padrao 5000)
+
+[M3b] repos/erp-shell/lib/configuracao.ts:35
+  antes : if (teto <= destino) {
+  depois: if (teto >= destino) {
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (4 falhas): lerTetoDaZona: aceita o teto de 120 s; lerTetoDaZona: le ERP_ZONA_TETO_MS; lerTetoDaZona: recusa teto igual ou menor que o timeout de dominio (padrao 5000); lerTetoDaZona: sem variavel, 10 s (decisao B1)
+
+[M3c] repos/erp-shell/lib/configuracao.ts:35
+  antes : if (teto <= destino) {
+  depois: if (false) {
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: recusa teto igual ou menor que o timeout de dominio (padrao 5000)
+
+[M3d] repos/erp-shell/lib/configuracao.ts:35
+  antes : if (teto <= destino) {
+  depois: if (teto <= 5_000) {
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: recusa teto igual ou menor que o timeout de dominio (padrao 5000)
+
+[M4a] repos/erp-shell/lib/configuracao.ts:32
+  antes : lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)
+  depois: lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_001)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: valor invalido falha na subida, nunca vira o padrao
+
+[M4b] repos/erp-shell/lib/configuracao.ts:32
+  antes : lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)
+  depois: lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 119_999)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: aceita o teto de 120 s
+
+[M4c] repos/erp-shell/lib/configuracao.ts:32
+  antes : lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)
+  depois: lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS')
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: valor invalido falha na subida, nunca vira o padrao
+
+[M4d] repos/erp-shell/lib/configuracao.ts:32
+  antes : lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)
+  depois: lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 60_000)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: aceita o teto de 120 s
+
+[M5a] repos/erp-shell/lib/configuracao.ts:34
+  antes : lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  depois: lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 4_999, 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: recusa teto igual ou menor que o timeout de dominio (padrao 5000)
+
+[M5b] repos/erp-shell/lib/configuracao.ts:34
+  antes : lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  depois: lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_001, 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: recusa teto igual ou menor que o timeout de dominio (padrao 5000)
+
+[M5c] repos/erp-shell/lib/configuracao.ts:34
+  antes : lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  depois: lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 2_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: recusa teto igual ou menor que o timeout de dominio (padrao 5000)
+
+[M5d] repos/erp-shell/lib/configuracao.ts:34
+  antes : lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  depois: lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 10_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (3 falhas): lerTetoDaZona: le ERP_ZONA_TETO_MS; lerTetoDaZona: recusa teto igual ou menor que o timeout de dominio (padrao 5000); lerTetoDaZona: sem variavel, 10 s (decisao B1)
+
+[M6a] repos/erp-shell/lib/configuracao.ts:34
+  antes : lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  depois: lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_001)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: ERP_DESTINO_TIMEOUT_MS invalido tambem falha (mesma validacao do nucleo)
+
+[M6b] repos/erp-shell/lib/configuracao.ts:34
+  antes : lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  depois: lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 59_999)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: VIVA
+
+[M6c] repos/erp-shell/lib/configuracao.ts:34
+  antes : lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  depois: lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS')
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: ERP_DESTINO_TIMEOUT_MS invalido tambem falha (mesma validacao do nucleo)
+
+[M6d] repos/erp-shell/lib/configuracao.ts:34
+  antes : lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  depois: lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 120_000)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: ERP_DESTINO_TIMEOUT_MS invalido tambem falha (mesma validacao do nucleo)
+
+[M7a] repos/erp-shell/lib/configuracao.ts:32
+  antes : lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)
+  depois: lerNumeroPositivo(process.env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (4 falhas): lerTetoDaZona: aceita o teto de 120 s; lerTetoDaZona: le ERP_ZONA_TETO_MS; lerTetoDaZona: recusa teto igual ou menor que o timeout de dominio (padrao 5000); lerTetoDaZona: valor invalido falha na subida, nunca vira o padrao
+
+[M7b] repos/erp-shell/lib/configuracao.ts:34
+  antes : lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  depois: lerNumeroPositivo(process.env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (2 falhas): lerTetoDaZona: ERP_DESTINO_TIMEOUT_MS invalido tambem falha (mesma validacao do nucleo); lerTetoDaZona: recusa teto igual ou menor que o timeout de dominio (padrao 5000)
+
+[M7c] repos/erp-shell/lib/configuracao.ts:34
+  antes : lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  depois: lerNumeroPositivo(undefined, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (2 falhas): lerTetoDaZona: ERP_DESTINO_TIMEOUT_MS invalido tambem falha (mesma validacao do nucleo); lerTetoDaZona: recusa teto igual ou menor que o timeout de dominio (padrao 5000)
+
+[M8a] repos/erp-shell/lib/configuracao.ts:38
+  antes :   return teto
+}
+  depois:   return Math.max(teto, 10_000)
+}
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (2 falhas): lerTetoDaZona: le ERP_ZONA_TETO_MS; lerTetoDaZona: recusa teto igual ou menor que o timeout de dominio (padrao 5000)
+
+[M8b] repos/erp-shell/lib/configuracao.ts:38
+  antes :   return teto
+}
+  depois:   return Math.min(teto, 60_000)
+}
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (1 falhas): lerTetoDaZona: aceita o teto de 120 s
+
+[M8c] repos/erp-shell/lib/configuracao.ts:38
+  antes :   return teto
+}
+  depois:   return destino * 2
+}
+  comando: cd repos/erp-shell && pnpm test
+  resultado: REPROVOU (3 falhas): lerTetoDaZona: aceita o teto de 120 s; lerTetoDaZona: le ERP_ZONA_TETO_MS; lerTetoDaZona: recusa teto igual ou menor que o timeout de dominio (padrao 5000)
+
+[M9a] repos/erp-nucleo/src/interno/configuracao.ts:40 (deriva do núcleo; o shell duplica o valor)
+  antes : 5_000, 'ERP_DESTINO
+  depois: 8_000, 'ERP_DESTINO
+  comando: cd repos/erp-nucleo && node --conditions react-server --test test/configuracao.test.mjs
+  resultado: ℹ fail 1
+
+[M9b] repos/erp-nucleo/src/interno/configuracao.ts:40 (deriva do núcleo; o shell duplica o valor)
+  antes : 'ERP_DESTINO_TIMEOUT_MS', 60_000)
+  depois: 'ERP_DESTINO_TIMEOUT_MS', 120_000)
+  comando: cd repos/erp-nucleo && node --conditions react-server --test test/configuracao.test.mjs
+  resultado: ℹ fail 1
+
+[E1] repos/erp-shell/next.config.ts:10
+  antes : '    proxyTimeout: lerTetoDaZona(),\n'
+  depois: ''
+  comando: CONSTRUIR=1 node --test --test-name-pattern='L9' base/verificacao/base.test.mjs  (26 s)
+  resultado: tests 1 pass 0 fail 1 skipped 0 -> REPROVOU (L9); status sem resposta (TimeoutError) em 16002 ms
+
+[E2] repos/erp-shell/next.config.ts:10
+  antes : '    proxyTimeout: lerTetoDaZona(),\n'
+  depois: '    proxyTimeout: 10_000,\n'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='L9' base/verificacao/base.test.mjs  (20 s)
+  resultado: tests 1 pass 0 fail 1 skipped 0 -> REPROVOU (L9); soltou em 10018 ms; teto 6000 ms (sem o D7 seriam ~30 s)
+
+[E3] repos/erp-shell/next.config.ts:10
+  antes : '    proxyTimeout: lerTetoDaZona(),\n'
+  depois: '    proxyTimeout: 6_000,\n'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='L9' base/verificacao/base.test.mjs  (16 s)
+  resultado: tests 1 pass 1 fail 0 skipped 0 -> VIVA; 
+
+[E4] repos/erp-shell/next.config.ts:10
+  antes : '    proxyTimeout: lerTetoDaZona(),\n'
+  depois: '    proxyTimeout: lerTetoDaZona({}),\n'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='L9' base/verificacao/base.test.mjs  (5 s)
+  resultado: tests 1 pass 0 fail 1 skipped 0 -> REPROVOU (L9); 
+
+[E5] repos/erp-shell/next.config.ts:10
+  antes : '    proxyTimeout: lerTetoDaZona(),\n'
+  depois: '    proxyTimeout: Number(process.env.ERP_ZONA_TETO_MS) || 10_000,\n'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='L9' base/verificacao/base.test.mjs  (16 s)
+  resultado: tests 1 pass 1 fail 0 skipped 0 -> VIVA; 
+
+[E6] repos/erp-shell/next.config.ts:10
+  antes : '    proxyTimeout: lerTetoDaZona(),\n  },\n'
+  depois: '  },\n  proxyTimeout: lerTetoDaZona(),\n'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='L9' base/verificacao/base.test.mjs  (5 s)
+  resultado: tests 1 pass 0 fail 1 skipped 0 -> REPROVOU (L9); 
+
+[E7] repos/erp-shell/next.config.ts:10
+  antes : '    proxyTimeout: lerTetoDaZona(),\n'
+  depois: '    proxyTimeout: lerTetoDaZona() * 1000,\n'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='L9' base/verificacao/base.test.mjs  (26 s)
+  resultado: tests 1 pass 0 fail 1 skipped 0 -> REPROVOU (L9); status sem resposta (TimeoutError) em 16003 ms
+
+[E0-restaurado] repos/erp-shell/next.config.ts:-
+  antes : None
+  depois: None
+  comando: CONSTRUIR=1 node --test --test-name-pattern='L9' base/verificacao/base.test.mjs  (16 s)
+  resultado: tests 1 pass 1 fail 0 skipped 0 -> VIVA; 
+
+  nota E4/E6: reprovaram no `pnpm build` (verificação de tipo do Next), antes do L9:
+    E4: next.config.ts(10,33): error TS2345: Argument of type '{}' is not assignable to parameter of type 'ProcessEnv'.
+    E6: next.config.ts(11,3): error TS2353: ... 'proxyTimeout' does not exist in type 'NextConfig'.
+  Pegas pelo build, não pelo L9; refeitas abaixo em formas que passam no tipo (E4b, E6b).
+  E0-restaurado: next.config.ts original, CONSTRUIR=1 reconstruiu o shell (BUILD_ID 19:52:15 > next.config.ts 19:52:08); L9 passa.
+
+[E4b] repos/erp-shell/next.config.ts:10
+  antes : '    proxyTimeout: lerTetoDaZona(),\n'
+  depois: "    proxyTimeout: lerTetoDaZona({ NODE_ENV: 'production' }),\n"
+  comando: CONSTRUIR=1 node --test --test-name-pattern='L9' base/verificacao/base.test.mjs  (20 s)
+  resultado: tests 1 pass 0 fail 1 skipped 0 -> REPROVOU (L9); soltou em 10018 ms; teto 6000 ms (sem o D7 seriam ~30 s)
+
+[E6b] repos/erp-shell/next.config.ts:10
+  antes : '    proxyTimeout: lerTetoDaZona(),\n  },\n'
+  depois: '  },\n  ...({ proxyTimeout: lerTetoDaZona() } as object),\n'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='L9' base/verificacao/base.test.mjs  (26 s)
+  resultado: tests 1 pass 0 fail 1 skipped 0 -> REPROVOU (L9); status sem resposta (TimeoutError) em 16002 ms
+
+[E8] repos/erp-shell/next.config.ts:10
+  antes : '    proxyTimeout: lerTetoDaZona(),\n'
+  depois: '    proxyTimeout: lerTetoDaZona({ ...process.env, ERP_ZONA_TETO_MS: process.env.ERP_DESTINO_TIMEOUT_MS }),\n'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='L9' base/verificacao/base.test.mjs  (20 s)
+  resultado: tests 1 pass 0 fail 1 skipped 0 -> REPROVOU (L9); soltou em 10015 ms; teto 6000 ms (sem o D7 seriam ~30 s)
+
+[E0-restaurado-2] repos/erp-shell/next.config.ts:-
+  antes : None
+  depois: None
+  comando: CONSTRUIR=1 node --test --test-name-pattern='L9' base/verificacao/base.test.mjs  (16 s)
+  resultado: tests 1 pass 1 fail 0 skipped 0 -> VIVA; 
