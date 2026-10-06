@@ -314,3 +314,16 @@ no padrão, portas livres. Pastas dos verificadores e workers das iterações 1�
 Gate Result: **VETO** (sem defeito de produto). Correção: testes em `erp-nucleo/test/identidade.test.mjs` (nos três stores) para erro do
 leitor durante a espera, antes do lock e na releitura com o lock (A10, A10c, A10d) e, recomendado, no shell (`proxy-renovacao.test.mjs`)
 store que lança com token vencido termina em `prosseguir` sem `limparSessao`. Iteração 2 com verificadores novos.
+
+## Gate — D19-B, iteração 2 (só auditor: veto só por teste, regra do humano de 2026-10-06), principal `b1bacee`, núcleo `610217d`, shell `0a3131d`
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| worker_d19b_1 | correção do veto (opus) | — | .agents/worker_d19b_1/handoff.md | só `test/`: núcleo +9 (três momentos × três stores) e casos de `''`, 271/271; shell +6, 108/108; cada mutação do veto reprova só o seu momento |
+| auditor_d19b_2 | general-purpose forense (opus) | **PASS** | .agents/auditor_d19b_2/handoff.md, mutacoes.txt | 34 registros, 32 pegos: veto da it.1 e 16 variantes (catch → `revogada`, laço inteiro, catch dentro de `valida`…), regressão 13/13 por família com E01; A10b pega e coerente com o ADR-0013; V11 viva sem veto (`lib/redis.ts` das apps → `DEFERRED.md` D26) |
+
+Gate Result: **PASS**. Fecha a **D19-B** (`DEFERRED.md` D19 e D20): o perdedor do lock espera a renovação quando o token já venceu
+(ADR-0013, adendo 3; núcleo 0.10.3). Estado conferido ao fim pelo auditor: fontes nos HEADs, `dist` do núcleo nas 4 apps = tarball
+0.10.3, núcleo 271/271, shell 108/108, `task test` ok, `verificar:redis` 118/118, `verificar:oidc` 6/6, `showcase:checar` ok, portas
+livres. Pastas dos verificadores e do worker removidas depois do registro; última versão no commit `fa93c2c`
+(`git show fa93c2c:.agents/<nome>/handoff.md`). Tag `gate-d19b-aprovado`.

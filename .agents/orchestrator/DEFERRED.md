@@ -123,3 +123,38 @@
   só na espera não muda o resultado da requisição, que trava na leitura seguinte. Não é desta task.
 - **Fecha em:** timeout de comando no cliente Redis das apps (configuração, `docs/CONFIGURACAO.md`), junto com a próxima
   mudança em `lib/redis.ts` ou em P1 (deploy), o que vier primeiro.
+
+## D25 — Recuperação do stub com o JWKS frio (gate da D19-B, challenger_d19b_1)
+
+- **O que é:** se o IdP cai antes de o domínio falso ter baixado o JWKS, o stub entra no intervalo mínimo entre buscas
+  (`ERP_JWKS_INTERVALO_MIN_S`, 30 s) e só volta a aceitar tokens ~30 s depois de o IdP voltar. Com o JWKS já em cache, a
+  recuperação é imediata.
+- **Evidência:** `git show fa93c2c:.agents/challenger_d19b_1/out-c2-vencido-stop-tarefa.txt` (sem aquecimento)
+  contra `out-c2-vencido-stop-tarefa-quente.txt`.
+- **Por que não foi corrigido:** comportamento do domínio falso, fora do BFF; o intervalo é o que protege o IdP de rajadas.
+- **Fecha em:** documentar em `docs/CONFIGURACAO.md` (linha de `ERP_JWKS_INTERVALO_MIN_S`) junto com o T5 da triagem
+  ("JWKS falha fechado ≥ intervalo com IdP fora").
+
+## D26 — `lib/redis.ts` das apps transforma GET que falha em `null` (gate da D19-B, auditor_d19b_2, V11)
+
+- **O que é:** o invólucro do node-redis em `erp-shell/lib/redis.ts:15` (e o equivalente nas 3 zonas) devolve `null`
+  quando o GET falha. Para o núcleo, `null` é sessão ausente: o proxy apaga o cookie e manda ao login com a sessão
+  intacta no Redis (o sintoma do D19). O adaptador do núcleo trata certo (`sessao-redis.test.mjs`, V09 pega).
+- **Evidência:** mutação V11/V11e em `.agents/auditor_d19b_2/mutacoes.txt` (passa em shell 108/108 e `verificar:redis`
+  118/118). Código anterior à D19-B (D1 `8559367`, D2 `03ba9b0`).
+- **Por que não foi corrigido:** fora do diff da D19-B; observação sem veto.
+- **Fecha em:** junto com o D24 (próxima mudança em `lib/redis.ts`): teste "GET ou conexão que falha rejeita, nunca
+  `null`" no shell e nas 3 zonas, e a correção se o teste reprovar.
+
+
+## D27 — Menores das tasks do D2 (triagem de 2026-10-06)
+
+- **O que é:** achados menores das revisões das Tasks 2–5 do D2, sem defeito de produto hoje (cópia do ledger; o detalhe
+  está em `ledger/2026-09-29-d2-k6-oidc-pkce-renovacao/`). O D18 tem entrada própria.
+- **T2:** tomada de lock velho no store de arquivo pode dar dois vencedores; teste de 20 renovações na fábrica sem Redis falso com NX; transações expiradas nunca limpas em arquivo/memória; `sessaoMemoria().adquirirLockRenovacao` sem `validarTtlDoLock`; `ERP_RENOVACAO_JANELA_S < ERP_TOKEN_VIDA_S/2` só documentado; teste de tempo dos perdedores (<200 ms) pode oscilar; `fronteira.mjs` com nomes genéricos como marcadores de escrita; `identidade-dev` sem `ERP_SESSAO_MAXIMA_S`.
+- **T3:** `urlRetorno` aceita query/fragmento (o `redirect_uri` da troca diverge); `concluir` trata `invalid_client` como recusa; porta não documenta que `concluir`/`iniciar` lançam; `ehTransitorio` trata todo `TypeError` como transitório; causa do erro descartada sem rastro no servidor; sem `id_token_hint` o Keycloak pode não redirecionar no logout (conferir).
+- **T4:** `vidaTransacaoS` do shell repete padrão/teto do núcleo; cola de `proxy.ts` (`Set-Cookie` em redirect/next) sem teste unitário; GET `/api/auth/entrar` grava no store sem autenticação (limitar taxa na borda); resposta atrasada com cookie morto pode apagar sessão nova de outra aba; V1 não vê chamador no próprio arquivo nem `import()` dinâmico; **D18** (`/login/dev` aberto em produção sem `IDP_EMISSOR`).
+- **T5:** base64url sem forma canônica (só a assinatura); JWKS falha fechado ≥ `ERP_JWKS_INTERVALO_MIN_S` com IdP fora (documentar); intervalo mínimo medido início a início; `r.json()` do JWKS sem limite; `azp` não conferido; varredura de rotas do teste por regex.
+- **Por que não foi corrigido:** sessão compartilhada e identidade não são funcionamento básico (humano, 2026-10-06); o
+  objetivo segue por C1, C3, D7 e o showcase.
+- **Fecha em:** quando a sessão voltar ao plano (G5 ou P1), um por um; o da documentação do JWKS junto com o D25.
