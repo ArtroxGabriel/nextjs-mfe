@@ -301,3 +301,16 @@ logout seguido até o Keycloak e `sair` só da mesma origem (ADR-0013 com adendo
 nos HEADs, `dist` do núcleo nas 4 apps = tarball 0.10.2, `task test` verde, `verificar:redis` 118/118, `verificar:oidc` 5/5, Keycloak
 no padrão, portas livres. Pastas dos verificadores e workers das iterações 1–3 removidas depois do registro; última versão no commit
 `0419774` (`git show 0419774:.agents/<nome>/handoff.md`). Tag `gate-d2-aprovado`. Depois: task D19-B (`DEFERRED.md` D19).
+
+## Gate — D19-B (perdedor espera a renovação com token vencido; núcleo 0.10.3), iteração 1, principal `896c751`, núcleo `fdea296`, shell `72ecc2f`
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| reviewer_d19b_1 | revisor-mfe (sonnet) | APPROVE | .agents/reviewer_d19b_1/handoff.md | branch inteira no lugar da revisão final; sem Critical/Important; `ERP_DESTINO_TIMEOUT_MS ≥ 7500` com lock padrão recusa a configuração (documentado) |
+| challenger_d19b_1 | simulador-condicoes (sonnet) | — (interrompido) | .agents/challenger_d19b_1/handoff.md | etapas 1–6 sem divergência; limite da API antes da 7; JWKS do stub frio: recuperação ~30 s depois de o IdP voltar |
+| challenger_d19b_2 | simulador-condicoes (sonnet) | APPROVE | .agents/challenger_d19b_2/handoff.md | etapas 7–8: regressão do D2 sem divergência; `task test`, estática 51/51, `verificar:redis` 118/118 e `verificar:oidc` 6/6, 2x |
+| auditor_d19b_1 | general-purpose forense (opus) | **VETO** | .agents/auditor_d19b_1/handoff.md, mutacoes.txt, sonda-erro-na-espera.test.mjs.txt | 96 registros, 81 pegos; E01 (0.10.2 no shell) reprova o e2e das 10 concorrentes; veto A10 (`valida(id).catch(() => null)` na espera: erro do store vira `ausente` e apaga a sessão, sintoma do D19), mais A10c/A10d do D2; observação B11 (`ESPERA_MS=''` recusado em vez de padrão) |
+
+Gate Result: **VETO** (sem defeito de produto). Correção: testes em `erp-nucleo/test/identidade.test.mjs` (nos três stores) para erro do
+leitor durante a espera, antes do lock e na releitura com o lock (A10, A10c, A10d) e, recomendado, no shell (`proxy-renovacao.test.mjs`)
+store que lança com token vencido termina em `prosseguir` sem `limparSessao`. Iteração 2 com verificadores novos.
