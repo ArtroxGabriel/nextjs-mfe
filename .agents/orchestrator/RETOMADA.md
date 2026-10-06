@@ -17,6 +17,18 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
   papéis com escopo, módulos com validação, segregação de funções, auditoria — e a arquitetura (núcleo, BFFs,
   zonas, domínios, shell) alinhada a ele, sem perder nenhum invariante de segurança.
 
+**Funcionalidades básicas (definidas pelo humano, 2026-10-06)** — o critério de pronto do showcase:
+1. renderizar o shell;
+2. ter zonas;
+3. integrar as zonas;
+4. os tratamentos de todo esse fluxo (erro, acesso negado, zona fora do ar);
+5. base de UI;
+6. base de contrato e outras bases do mesmo tipo, cada uma em pacote separado;
+7. integração com os backends (domínios).
+
+**Não são funcionamento básico:** sessão compartilhada e cache. A repriorização do plano abaixo por esse critério
+ainda depende do humano.
+
 ## Decisões do humano (respondido em 2026-09-23)
 
 O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-decisoes-gate-c2-d2.md) foi respondido pelo humano:
