@@ -1,0 +1,13 @@
+5a zona2 congelada:
+   /login status=200 ms=19 loc= retry-after= title="ERP — entrar" supportId=false stack=false
+   / status=200 ms=40 loc= retry-after= title="ERP" supportId=false stack=false
+   /erro-de-zona status=200 ms=20 loc= retry-after= title="Zona Indisponível — ERP" supportId=false stack=false
+   /zona1 status=200 ms=203 loc= retry-after= title="<!DOCTYPE html><html lang=\"pt-BR\"><head><meta char" supportId=false stack=false
+5b zona2 fora do ar (SIGKILL):
+   /zona2 status=503 ms=16 loc= retry-after=5 title="Zona temporariamente indisponível" supportId=false stack=false
+   /zona2 status=503 ms=7 loc= retry-after=5 title="Zona temporariamente indisponível" supportId=false stack=false
+   zona2 de volta: /zona2 status=200 ms=213 loc= retry-after= title="<!DOCTYPE html><html lang=\"pt-BR\"><head><meta char" supportId=false stack=false
+5c dominio-b congelado: /zona1 status=200 ms=2033 loc= retry-after= title="<!DOCTYPE html><html lang=\"pt-BR\"><head><meta char" supportId=false stack=false /zona1 status=200 ms=2044 loc= retry-after= title="<!DOCTYPE html><html lang=\"pt-BR\"><head><meta char" supportId=false stack=false
+   depois: /zona1 status=200 ms=44 loc= retry-after= title="<!DOCTYPE html><html lang=\"pt-BR\"><head><meta char" supportId=false stack=false
+5c dominio-c congelado: /zona2 status=500 ms=2044 loc= retry-after= title="<!DOCTYPE html><html id=\"__next_error__\"><head><me" supportId=false stack=false /zona2 status=500 ms=2043 loc= retry-after= title="<!DOCTYPE html><html id=\"__next_error__\"><head><me" supportId=false stack=false
+   depois: /zona2 status=200 ms=43 loc= retry-after= title="<!DOCTYPE html><html lang=\"pt-BR\"><head><meta char" supportId=false stack=false

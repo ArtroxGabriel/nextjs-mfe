@@ -1,0 +1,2 @@
+dominio-b congelado (DESTINO=7000, FRAGMENTO=9000, TETO=10000): /zona1 status=200 ms=2039
+dominio-c congelado (DESTINO=7000, FRAGMENTO=9000, TETO=10000): /zona2 status=500 ms=2049
