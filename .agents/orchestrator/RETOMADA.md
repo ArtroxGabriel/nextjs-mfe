@@ -26,8 +26,11 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
 6. base de contrato e outras bases do mesmo tipo, cada uma em pacote separado;
 7. integração com os backends (domínios).
 
-**Não são funcionamento básico:** sessão compartilhada e cache. A repriorização do plano abaixo por esse critério
-ainda depende do humano.
+**Não são funcionamento básico:** sessão compartilhada e cache.
+
+**Repriorização (humano, 2026-10-06):** o objetivo fecha com **C1, C3, D7, E3 (resto), E4 e E5**. **C3 entra** (zona nova
+sem editar o `zonas.json` nem republicar o shell). **C2, B2, G4 e G5 ficam para depois do objetivo.** A D19-B fecha o gate
+em andamento. Ordem: D19-B → C1, C3 e D7 → E3 (resto) e E4 → E5.
 
 ## Decisões do humano (respondido em 2026-09-23)
 
@@ -102,7 +105,7 @@ Plano: `docs/superpowers/plans/2026-09-29-d2-k6-oidc-pkce-renovacao.md` (modo Su
 
 ## Plano até o objetivo
 
-Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo na coluna).
+Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · ⏸️ depois do objetivo · 🔒 bloqueado (motivo na coluna).
 
 ### Lista 1 — atividades atuais (estrutura, funcionalidades e showcase)
 
@@ -110,30 +113,31 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · 🔒 bloqueado (motivo 
 |---|---|---|---|---|
 | **A. Fechar o aberto** | A1 gate do shell | ✅ aprovado na iteração 4 | #3, #18 | — |
 | **B. Base consistente** | B1 migrar as 4 apps para o kit | ✅ gate B1+D1+G3+K aprovado (2026-09-28) | #20 | — |
-| | B2 exportar spans (SDK OpenTelemetry) | ⬜ | #18 | — (instalação aprovada) |
+| | B2 exportar spans (SDK OpenTelemetry) | ⏸️ depois do objetivo (humano, 2026-10-06) | #18 | — (instalação aprovada) |
 | | B3 `/{zona}/api/health` sem domínio; sonda do shell o usa | ✅ gate B1+D1+G3+K aprovado | #3 | — |
 | | B5 parâmetros em configuração (B5a shell, B5b núcleo) | ✅; os de sessão entram com o D2 | #20 | — |
 | | B4/B6 verificações estáticas de segurança | ✅ 48 testes; limites em D14, lacunas em D15 (K6) | #20 | — |
 | **C. Funcionalidades** | C1 fragmentos entre zonas | ⬜ | #10 | B1 |
-| | C2 SSE no shell (`/api/stream` + `SharedWorker`); fechar D7 (`proxyTimeout`) | ⬜ | #11 | B1; decisão B ok |
-| | C3 mapa de zonas vindo dos manifestos | ⬜ | #14 | B1 |
+| | C2 SSE no shell (`/api/stream` + `SharedWorker`) | ⏸️ depois do objetivo (humano, 2026-10-06) | #11 | B1; decisão B ok |
+| | **D7** zona travada segura a requisição ~30 s e devolve 500 cru (separado do C2) | ⬜ básico (tratamentos) | #11 | — |
+| | C3 mapa de zonas vindo dos manifestos | ⬜ básico (humano, 2026-10-06) | #14 | B1 |
 | **D. Sessão e identidade reais** | D1 sessão no Redis (shell grava com senha, zonas leem com ACL só de leitura) | ✅ gate B1+D1+G3+K aprovado (ambiente por lista de inclusão) | #9 | — |
 | | D2 OIDC + PKCE e renovação proativa com lock (**ADR-0013 aceito**; pessoa por `sub`) | ✅ gate do D2 aprovado (iteração 3, 2026-10-05); D19-B a seguir | #9 | — |
 | **E. Showcase** | E1 domínios mock com dados em JSON | ✅ | #19 | — |
 | | E2 `docker-compose` com Redis e Keycloak | ✅ | #19 | — |
 | | E3 `task showcase` e `task showcase:conferir` | ✅ login pelo Keycloak com `task showcase:oidc`; `showcase:conferir` ainda só no login de dev | #19 | — |
-| | E4 roteiro do showcase | ⬜ | #19 | C1–C3, E3 |
+| | E4 roteiro do showcase: uma linha por funcionalidade básica | ⬜ | #19 | C1, C3, D7, E3 |
 | | E5 verificação ponta a ponta contra o showcase | ⬜ | #19 | E4 |
 | **G. Gestão de acesso v2** | G1 modelo e mock (porta 4020) | ✅ | #21 | — |
 | | G2 **ADR-0014 + adendo 1, aceito** | ✅ | #21 | — |
 | | G3 alinhar à v2 | ✅ gate B1+D1+G3+K aprovado | #21 | — |
-| | G4 gate e showcase com os atores da v2 | ⬜ | #21, #19 | G3 |
-| | G5 revogação ativa por `/v2/eventos` | ⬜ **lacuna declarada e aceita** até lá | #21 | G3, D2 |
+| | G4 gate e showcase com os atores da v2 | ⏸️ depois do objetivo (humano, 2026-10-06) | #21, #19 | G3 |
+| | G5 revogação ativa por `/v2/eventos` | ⏸️ depois do objetivo (humano, 2026-10-06); **lacuna declarada e aceita** até lá | #21 | G3, D2 |
 
 ### Lista 2 — refinamento (separada; **não começar agora**)
 
-Condição para começar qualquer item: **Lista 1 fases A–E concluídas** (estrutura da arquitetura e
-atividades relacionadas feitas) **e todas as funcionalidades basilares no showcase**.
+Condição para começar qualquer item: **objetivo atingido**, isto é, todas as funcionalidades básicas no showcase
+(itens ⬜ da Lista 1). A ordem entre a Lista 2 e os itens ⏸️ ainda não foi decidida.
 Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assunto>.md` (formato em
 `pedidos/README.md`); só se implementa depois que o humano devolver o detalhamento.
 

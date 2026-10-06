@@ -4,7 +4,7 @@
 > atualiza ao fim de todo gate, task ou decisão; o humano copia para o GitLab e marca a coluna
 > "No GitLab?". Regras de quando avisar: `MANUTENCAO-GITLAB.md`.
 >
-> Última revisão: **2026-10-05 (gate do D2 aprovado na iteração 3)** (**fechar #9 (#120)** com o comentário de §3; #21 segue em andamento com G4 e G5; a espera do perdedor com token vencido, D19-B, segue no repositório).
+> Última revisão: **2026-10-06 (funcionalidades básicas definidas e plano repriorizado; comentários em #11, #14, #18, #19, #21 pendentes)**. Anterior: **2026-10-05 (gate do D2 aprovado na iteração 3)** (**fechar #9 (#120)** com o comentário de §3; #21 segue em andamento com G4 e G5; a espera do perdedor com token vencido, D19-B, segue no repositório).
 
 ## 1. Como ler e manter
 
@@ -67,6 +67,16 @@ As quatro atividades do anexo de `docs/historico/revisao/2026-09-15-revisao-base
 serão criadas: o trabalho delas está na #17.
 
 ## 3. Textos prontos para colar
+
+### #11, #14, #18, #19 e #21 — comentário: repriorização pelo objetivo (2026-10-06)
+
+Pendente no GitLab. Um comentário por atividade:
+
+- **#11:** `Repriorizada (2026-10-06): o SSE no shell fica para depois do objetivo da base (funcionalidades básicas no showcase). A zona travada que segura a requisição até o proxyTimeout (D7) sai daqui e é tratada antes, como tratamento de fluxo.`
+- **#14:** `Repriorizada (2026-10-06): o mapa de zonas vindo dos manifestos (C3) entra no objetivo: uma zona nova passa a ser integrada sem editar o zonas.json nem republicar o shell. Registro único de pacotes e CI continuam no fim do plano.`
+- **#18:** `Repriorizada (2026-10-06): exportar os spans (SDK OpenTelemetry) fica para depois do objetivo da base. A geração e a propagação de trace entre shell e zonas seguem entregues.`
+- **#19:** `Critério de pronto definido (2026-10-06): o showcase mostra as funcionalidades básicas: renderizar o shell, zonas, integração entre zonas (fragmentos e mapa pelos manifestos), tratamentos do fluxo (erro, acesso negado, zona fora do ar ou travada), base de UI, bases em pacotes separados (contratos, núcleo, moldura) e integração com os backends. Sessão compartilhada e cache não fazem parte do básico. Faltam o roteiro e a verificação ponta a ponta contra ele.`
+- **#21:** `Repriorizada (2026-10-06): o showcase com os atores da v2 (G4) e a revogação ativa por /v2/eventos (G5) ficam para depois do objetivo da base. A revogação ativa continua como lacuna declarada até lá.`
 
 ### #3 (#132), #20 (#136), #9 e #21 — comentário: gate B1+D1+G3+K aprovado (2026-09-28)
 
@@ -428,3 +438,4 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-10-03 (D2 Task 6) | Verificação final verde nos dois modos; documentos do ADR-0013 atualizados; p95 do proxy medido. Humano decidiu (a): `ERP_PERMITIR_HTTP_LOCAL` só para loopback (núcleo 0.10.2, adendo 2); `task showcase:oidc` e `task verificar:oidc` (5/5) contra o Keycloak. #9 segue **em andamento** até o gate; comentário opcional em #120 (texto em §3) |
 | 2026-10-05 (gate D2) | Revisão final do D2 com correções (logout seguido até o Keycloak, `sair` só da mesma origem); gate do D2 vetado nas iterações 1 e 2 só por força de teste e **aprovado na iteração 3**. **Fechar #9 (#120)** com o comentário de §3. Decisão do humano: D19 → B, em task própria |
 | 2026-10-05 (D19-B) | D19-B implementada (núcleo 0.10.3 nas 4 apps: perdedor do lock espera a renovação com token vencido; validações do D20; `SHELL_HOSTS` com `trim`; `sair` compara o esquema; adendo 3 ao ADR-0013); gate da D19-B: revisor APPROVE, challenger parado pelo limite da API depois da etapa 6. Nada novo no GitLab além de **fechar #9 (#120)**, ainda pendente |
+| 2026-10-06 | Humano define as funcionalidades básicas (critério de pronto da #19); C3 entra no objetivo; C2 (#11), B2 (#18), G4 e G5 (#21) para depois do objetivo; D7 separado do C2. Comentários pendentes em #11, #14, #18, #19, #21 |
