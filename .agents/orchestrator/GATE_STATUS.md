@@ -327,3 +327,17 @@ Gate Result: **PASS**. Fecha a **D19-B** (`DEFERRED.md` D19 e D20): o perdedor d
 0.10.3, núcleo 271/271, shell 108/108, `task test` ok, `verificar:redis` 118/118, `verificar:oidc` 6/6, `showcase:checar` ok, portas
 livres. Pastas dos verificadores e do worker removidas depois do registro; última versão no commit `fa93c2c`
 (`git show fa93c2c:.agents/<nome>/handoff.md`). Tag `gate-d19b-aprovado`.
+
+## Gate — D7 (zona travada: teto `ERP_ZONA_TETO_MS` como `proxyTimeout`), iteração 1, principal `f330cb7`, shell `45787f1`
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| revisor_d7_1 | revisor-mfe (sonnet) | **APPROVE** | .agents/revisor_d7_1/handoff.md | sem crítico nem importante; 4 menores (várias chamadas lentas sem bytes cortadas no teto; padrão/teto de `ERP_DESTINO_TIMEOUT_MS` copiados do núcleo; `??=` do L9 com variável vazia; dívidas antigas de `atual.md`) |
+| challenger_d7_1 | simulador-condicoes (sonnet) | **APPROVE** | .agents/challenger_d7_1/handoff.md, out-*.txt | zona congelada solta em 10009–10016 ms (padrão) e 6010–6015 ms (6000); inválidos recusados na subida; streaming com bytes a cada 2 s não cortado; zona fora do ar 503 em 7–16 ms; `verificar` 115 + 4 pulados, `verificar:redis` 119/119 |
+| auditor_d7_1 | general-purpose forense (opus) | **PASS** | .agents/auditor_d7_1/handoff.md, mutacoes.txt | 39 mutações, 36 pegas: as 4 do plano (`proxyTimeout` pelo L9; padrão, `<=` e teto pela unidade); vivas sem veto, por contorno (A2): E3 `proxyTimeout` fixo em 6000, E5 leitura sem validação no `next.config.ts`, M6b teto do destino 59_999 → `DEFERRED.md` D28 |
+
+Gate Result: **PASS**. Fecha o **D7** na parte do teto (`DEFERRED.md` D7): a zona que não manda nenhum byte é solta em
+`ERP_ZONA_TETO_MS` (10 s), não nos 30 s do Next; a página de indisponível dentro do teto passa ao C3. Estado conferido ao fim pelo
+auditor: shell 114/114, `task verificar` 115 + 4 pulados, `verificar:redis` 119/119, árvores restauradas, portas livres. Pastas dos
+verificadores removidas depois do registro; última versão no commit `aa26ba2` (`git show aa26ba2:.agents/<nome>/handoff.md`).
+Tag `gate-d7-aprovado`.

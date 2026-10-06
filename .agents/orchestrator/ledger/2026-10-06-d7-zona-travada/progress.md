@@ -15,3 +15,4 @@ Task 2: minor (deferred): RED message was "TimeoutError em 16002 ms" (fetch abor
 Task 2: minor (deferred): L9 "ms >= 2000" alone does not tell proxy hold from other slowness; the "teto - 500" floor covers it
 Task 2: minor (deferred): probe timeout 800 ms in 01-operacao.md vs 500 ms default in CONFIGURACAO.md; pre-existing
 Task 2: complete (main commits e8da5e7..f01b25d, review clean)
+Gate: iteration 1 PASS (revisor_d7_1 APPROVE, challenger_d7_1 APPROVE, auditor_d7_1 PASS 36/39, 3 live as declared limits -> DEFERRED D28); tag gate-d7-aprovado

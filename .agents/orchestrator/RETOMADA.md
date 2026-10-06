@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06 (Tasks 1 e 2 do D7 fechadas, revisões limpas; gate do D7 iteração 1 em andamento)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06 (gate do D7 aprovado na iteração 1; próximo: C1)**.
 
 ## Objetivo final
 
@@ -53,15 +53,15 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | Unidades | contratos 20, núcleo 271, moldura 26, stub 75, shell 108; estática 51/51 | `task test`, `task verificar:estatica` |
 | Pacotes | `@erp/nucleo` **0.10.3**, `@erp/contratos` **0.4.0**, `@erp/moldura` **0.5.0**, só no Verdaccio desta máquina; lockstep ok | `task lockstep` |
 | ADRs | 0013 com adendos 1–3 e 0014 com adendo 1, aceitos | `docs/adr/` |
-| Gates fechados | shell, B1+D1+G3+K, D2, **D19-B** (2026-10-06, iteração 2, tag `gate-d19b-aprovado`) | `GATE_STATUS.md` |
+| Gates fechados | shell, B1+D1+G3+K, D2, D19-B (2026-10-06, tag `gate-d19b-aprovado`), **D7** (2026-10-06, iteração 1, tag `gate-d7-aprovado`) | `GATE_STATUS.md` |
 
-## Próximo passo: D7, depois C1, depois C3 (ordem do humano, 2026-10-06)
+## Próximo passo: C1, depois C3 (ordem do humano, 2026-10-06; D7 ✅)
 
 Sessão e identidade estão fechadas (D1, D2, D19-B). Os menores do D2 estão em `DEFERRED.md` D27; os de arquitetura em
 D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com plano em `docs/superpowers/plans/`
 (modo Subagent-Driven), tasks revisadas e gate:
 
-1. ⏳ **D7 — zona travada** (#11). Plano: `docs/superpowers/plans/2026-10-06-d7-zona-travada.md` (2 tasks + gate). **Task 1 ✅** (erp-shell `45787f1`) e **Task 2 ✅** (principal `f01b25d`, L9; `verificar` 115 + 4 pulados, `verificar:redis` 119/119, `verificar:oidc` 6/6); revisões limpas, 6 menores no ledger. **Gate iteração 1 em andamento** (2026-10-06): `revisor_d7_1` APROVA (4 menores), `challenger_d7_1` APROVA (teto medido em 10 s e 6 s, streaming não cortado; portas liberadas); `auditor_d7_1` (Opus) despachado sobre principal `f330cb7`, shell `45787f1`.
+1. ✅ **D7 — zona travada** (#11). Plano: `docs/superpowers/plans/2026-10-06-d7-zona-travada.md`. Tasks 1 e 2 (erp-shell `45787f1`, principal `f01b25d`, L9) e **gate aprovado na iteração 1** (2026-10-06): revisor e challenger APROVAM, auditor PASS (39 mutações, 36 pegas, 3 vivas como limite declarado); tag `gate-d7-aprovado`. Menores e limites em `DEFERRED.md` D28.
    **Decisão do humano (2026-10-06): teto agora, página com o C3.** O `proxyTimeout` do Next conta inatividade do socket e, ao
    estourar, o próprio Next escreve o 500 cru (`proxy-request.js`, sem gancho); o D7 entrega `ERP_ZONA_TETO_MS` (10 s, B1) e a
    página de indisponível dentro do teto passa a ser requisito do C3.
@@ -70,13 +70,15 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
    o teste ponta a ponta.
 3. ⬜ **C3 — mapa de zonas pelos manifestos** (#14). Zona nova entra sem editar o `zonas.json` nem republicar o shell.
    **Requisito vindo do D7 (2026-10-06):** o mecanismo escolhido entrega a página de indisponível dentro de `ERP_ZONA_TETO_MS`.
+   Do gate do D7: uma página com várias chamadas lentas em sequência, sem mandar bytes, também é cortada no teto (500 cru);
+   e a zona com um domínio congelado devolve a página genérica do Next, sem `supportId` (`DEFERRED.md` D28).
    **Começa pelo `arquiteto-mfe`** (os rewrites do Next são fixados na subida; escolher o mecanismo); se for estrutural,
    ADR e pedido em `pedidos/` para o humano.
 4. Depois: resto do E3 (`showcase:conferir` no modo OIDC), E4 (roteiro: uma linha por funcionalidade básica) e E5.
 
 **Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente
 (`docker ps`: Redis e Keycloak podem ter caído com a máquina → `task showcase:subir` e `task showcase:checar`); então
-despachar o **gate do D7** (revisor, challenger e auditor, `LEIA-PRIMEIRO.md`; tasks 1 e 2 fechadas, head `f01b25d`) (plano `docs/superpowers/plans/2026-10-06-d7-zona-travada.md`, modo Subagent-Driven). **Em andamento:** auditor_d7_1 (revisor e challenger já aprovaram) (handoffs em `.agents/<nome>/handoff.md`); se a sessão cair, despachar novos (`_2`) só com as etapas que faltam.
+despachar o plano do **C1** (fragmentos entre zonas, #10): escrever o plano em `docs/superpowers/plans/` (modo Subagent-Driven) e seguir task a task. Nada está rodando e nenhum agente está aberto.
 
 ## Plano até o objetivo
 
@@ -94,7 +96,7 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · ⏸️ depois do objeti
 | | B4/B6 verificações estáticas de segurança | ✅ 48 testes; limites em D14, lacunas em D15 (K6) | #20 | — |
 | **C. Funcionalidades** | C1 fragmentos entre zonas | ⬜ | #10 | B1 |
 | | C2 SSE no shell (`/api/stream` + `SharedWorker`) | ⏸️ depois do objetivo (humano, 2026-10-06) | #11 | B1; decisão B ok |
-| | **D7** zona travada segura a requisição ~30 s e devolve 500 cru (separado do C2) | ⬜ básico (tratamentos) | #11 | — |
+| | **D7** zona travada segura a requisição ~30 s e devolve 500 cru (separado do C2) | ✅ teto; gate aprovado (2026-10-06); página com o C3 | #11 | — |
 | | C3 mapa de zonas vindo dos manifestos | ⬜ básico (humano, 2026-10-06) | #14 | B1 |
 | **D. Sessão e identidade reais** | D1 sessão no Redis (shell grava com senha, zonas leem com ACL só de leitura) | ✅ gate B1+D1+G3+K aprovado (ambiente por lista de inclusão) | #9 | — |
 | | D2 OIDC + PKCE e renovação proativa com lock (**ADR-0013 aceito**; pessoa por `sub`) | ✅ gate do D2 aprovado (iteração 3, 2026-10-05); D19-B aprovada (2026-10-06) | #9 | — |
@@ -155,7 +157,7 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 6. Aplicar no GitLab o que estiver "pendente" em `ATIVIDADES.md` §2 (hoje só comentários opcionais).
 7. ✅ **Modo OIDC na máquina local** (2026-10-03): opção (a), ver "Decisões do humano" acima.
 
-## Ambiente (2026-10-06, fim do gate da D19-B)
+## Ambiente (2026-10-06, fim do gate do D7)
 
 - No ar: Verdaccio (4873), Redis (6379) e Keycloak (8080), `showcase:checar` ok. Portas da base 3000–3003 e 4001–4120 livres;
   nenhum agente rodando.

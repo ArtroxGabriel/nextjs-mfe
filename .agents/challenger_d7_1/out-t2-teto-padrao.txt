@@ -1,5 +1,0 @@
-antes: /zona2 status=200 ms=237 corpo="<!DOCTYPE html><html lang=\"pt-BR\"><head><meta charSet=\"utf-8"
-congelada #1: /zona2 status=500 ms=10016 corpo="Internal Server Error"
-congelada #2: /zona2 status=500 ms=10010 corpo="Internal Server Error"
-congelada #3: /zona2 status=500 ms=10009 corpo="Internal Server Error"
-depois: /zona2 status=200 ms=48 corpo="<!DOCTYPE html><html lang=\"pt-BR\"><head><meta charSet=\"utf-8"

@@ -23,7 +23,7 @@
 - **Fica:** no teto, quem responde é o Next, com 500 cru; o `rewrites()` não tem gancho para a página da base
   (`proxy-request.js`, `onProxyError`). Escolha do humano (2026-10-06): a página dentro do teto vem com o mecanismo de
   roteamento do C3, para o caminho de toda requisição mudar uma vez só.
-- **Fecha em:** C3.
+- **Fecha em:** C3. Teto aprovado no gate do D7 (2026-10-06, `GATE_STATUS.md`); menores e limites em D28.
 
 ## D12 — Menores do núcleo (fatia 1)
 
@@ -158,3 +158,21 @@
 - **Por que não foi corrigido:** sessão compartilhada e identidade não são funcionamento básico (humano, 2026-10-06); o
   objetivo segue por C1, C3, D7 e o showcase.
 - **Fecha em:** quando a sessão voltar ao plano (G5 ou P1), um por um; o da documentação do JWKS junto com o D25.
+
+## D28 — Menores e limites declarados do D7 (tasks e gate, 2026-10-06)
+
+- **O que é:** achados sem defeito de produto das revisões das Tasks 1 e 2 e do gate do D7 (cópia do ledger em
+  `ledger/2026-10-06-d7-zona-travada/`; handoffs em `git show aa26ba2:.agents/<nome>/handoff.md`).
+- **Limites declarados (auditor_d7_1, contorno pela regra A2):** E3 `proxyTimeout` fixo no valor que o L9 usa; E5
+  `Number(process.env.ERP_ZONA_TETO_MS) || 10_000` no `next.config.ts` perde a validação sem teste que note (nenhum teste liga
+  o `next.config.ts` ao leitor validado; sugestão: teste estático ou caso ponta a ponta com 5000 recusado); M6b padrão/teto de
+  `ERP_DESTINO_TIMEOUT_MS` copiados do núcleo no shell, sem teste de paridade (a deriva no núcleo é pega pelo teste de fixação dele).
+- **Para o C3:** página com várias chamadas lentas em sequência, sem mandar bytes, também é cortada no teto com 500 cru (a regra
+  teto > tempo de domínio cobre uma chamada); com o `dominio-c` congelado a `/zona2` devolve a página de erro genérica do Next,
+  sem `supportId`.
+- **Para o C2:** com `Accept-Encoding: gzip` o shell entrega a resposta da zona toda de uma vez no fim (com `identity`, aos pedaços).
+- **Menores:** L9 com `??=` calcula teto 0 se `ERP_ZONA_TETO_MS` vier vazio (falha alta, sem falso verde); critério `ms >= 2000`
+  do L9 sozinho não separa o teto de outra lentidão (o piso `teto - 500` cobre); contagens de teste de `docs/arquitetura/atual.md`
+  defasadas; sonda 800 ms em `01-operacao.md` contra 500 ms de padrão em `CONFIGURACAO.md`; espera de domínio entre 5 e 10 s não
+  exercitada (as zonas declaram 2 s por destino).
+- **Fecha em:** o do C3 e o do C2 com eles; os demais quando o shell ou a verificação forem tocados de novo.

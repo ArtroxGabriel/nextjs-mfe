@@ -4,7 +4,7 @@
 > atualiza ao fim de todo gate, task ou decisão; o humano copia para o GitLab e marca a coluna
 > "No GitLab?". Regras de quando avisar: `MANUTENCAO-GITLAB.md`.
 >
-> Última revisão: **2026-10-06 (funcionalidades básicas definidas e plano repriorizado; comentários em #11, #14, #18, #19, #21 pendentes)**. Anterior: **2026-10-05 (gate do D2 aprovado na iteração 3)** (**fechar #9 (#120)** com o comentário de §3; #21 segue em andamento com G4 e G5; a espera do perdedor com token vencido, D19-B, segue no repositório).
+> Última revisão: **2026-10-06 (gate do D7 aprovado; comentário opcional em #11; comentários de repriorização em #11, #14, #18, #19, #21 pendentes)**. Anterior: **2026-10-05 (gate do D2 aprovado na iteração 3)** (**fechar #9 (#120)** com o comentário de §3; #21 segue em andamento com G4 e G5; a espera do perdedor com token vencido, D19-B, segue no repositório).
 
 ## 1. Como ler e manter
 
@@ -21,7 +21,7 @@
 | # | Título | Estado real | Ação | No GitLab? | Evidência |
 |---|---|---|---|---|---|
 | 10 | Implementar composição por fragmentos | núcleo pronto (`@erp/nucleo` 0.5.0, 18 testes, 16 mutações); falta ligar zona 1 ← zona 2 e bloquear no shell | mover para **em andamento** | feito (2026-09-23, #121) | ADR-0011; `erp-nucleo` `1841771` |
-| 11 | Centralizar o tempo real no shell | não iniciado | manter; tirar a dependência da #2 | feito (2026-09-23, #122) | `alvo.md` §6 (SSE) |
+| 11 | Centralizar o tempo real no shell | **zona travada (D7) entregue**: teto `ERP_ZONA_TETO_MS` (10 s), gate aprovado (2026-10-06); SSE (C2) depois do objetivo | manter; tirar a dependência da #2 | feito (2026-09-23, #122) | `alvo.md` §6 (SSE) |
 | 12 | Publicar o pacote visual @erp/ui | não iniciado; depende de medir duplicação de bundle | manter | — | `alvo.md` §6 |
 | 14 | Definir estratégia de publicação e compatibilidade | submódulos **feitos**; hook `pre-push` que recusa submódulo não enviado **feito** (`base/scripts/checar-envio.mjs`, provado com commit só local); **gate de lockstep do núcleo feito** (`base/scripts/verificar-lockstep.mjs`, no `pre-push`, provado com divergência real); falta registro único ou publicação pelo CI — em 2026-09-22 as duas máquinas alternaram commits só de hash de lockfile, cada um quebrando a instalação da outra; paliativo: `task pacotes:alinhar-hashes` e não commitar hash local | acrescentar critérios: gate de lockstep no CI, registro único, nunca republicar a mesma versão,  checar submódulo não enviado antes do push, mapa de zonas vindo do domínio de acesso | feito (2026-09-23, #125; segue em #133) | ADR-0010; `AMBIENTE.md` §1–2; `4eb128b` |
 | 19 | Entregar o showcase da base com mocks, Keycloak e Redis *(nova)* | **`task showcase` sobe tudo** (Redis, Keycloak, domínios com dados em JSON gravados, shell e 3 zonas) e `task showcase:conferir` mostra ator × zona; sessão já no Redis; **login pelo Keycloak com `task showcase:oidc`** (D2); faltam `showcase:conferir` no modo OIDC e o roteiro completo (E4, E5) | **criar** (texto em §3) | feito (2026-09-23, #135) | `RETOMADA.md` |
@@ -67,6 +67,10 @@ As quatro atividades do anexo de `docs/historico/revisao/2026-09-15-revisao-base
 serão criadas: o trabalho delas está na #17.
 
 ## 3. Textos prontos para colar
+
+### #11 — comentário: zona travada entregue (gate do D7, 2026-10-06)
+
+Pendente no GitLab (opcional; a #11 segue aberta pelo SSE): `Zona travada (D7) entregue: uma zona que não manda nenhum byte é solta pelo shell em ERP_ZONA_TETO_MS (padrão 10 s, documentada em CONFIGURACAO.md), não mais nos 30 s do Next. Verificação ponta a ponta L9; gate aprovado em 2026-10-06 (tag gate-d7-aprovado). A página de indisponível dentro do teto vem com o mapa de zonas (#14). O SSE no shell continua para depois do objetivo.`
 
 ### #11, #14, #18, #19 e #21 — comentário: repriorização pelo objetivo (2026-10-06)
 
@@ -441,3 +445,4 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-10-06 | Humano define as funcionalidades básicas (critério de pronto da #19); C3 entra no objetivo; C2 (#11), B2 (#18), G4 e G5 (#21) para depois do objetivo; D7 separado do C2. Comentários pendentes em #11, #14, #18, #19, #21 |
 | 2026-10-06 (gate D19-B) | Gate da D19-B aprovado na iteração 2 (só auditor, regra nova para veto só por teste); tag `gate-d19b-aprovado`. Sem mudança de ação no GitLab (#9 já fechada); próximo: C1 (#10), C3 (#14), D7 (#11) |
 | 2026-10-06 (ordem) | Humano fixa a ordem D7 (#11) → C1 (#10) → C3 (#14); texto da #11 ajustado. Comentários de §3 seguem pendentes |
+| 2026-10-06 (gate D7) | D7 entregue: teto `ERP_ZONA_TETO_MS` no shell, L9; gate aprovado na iteração 1 (tag `gate-d7-aprovado`). #11 segue aberta pelo SSE; comentário opcional em §3; próximo: C1 (#10) |
