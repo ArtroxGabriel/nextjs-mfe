@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06, fim da sessão (D19-B fechada; próximo: plano do D7)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06 (plano do D7 escrito; próximo: Task 1 do D7)**.
 
 ## Objetivo final
 
@@ -61,23 +61,22 @@ Sessão e identidade estão fechadas (D1, D2, D19-B). Os menores do D2 estão em
 D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com plano em `docs/superpowers/plans/`
 (modo Subagent-Driven), tasks revisadas e gate:
 
-1. ⬜ **D7 — zona travada** (#11). Hoje segura a requisição ~30 s (`proxyTimeout` do Next) e devolve 500 cru. Alvo: página de
-   indisponível dentro de um teto configurável (env lida no servidor, padrão seguro, `docs/CONFIGURACAO.md`). Evidência e
-   alavanca em `DEFERRED.md` D7; registrar o valor em `docs/desenho/mfe/01-operacao.md` §5.1. Atenção: o `proxyTimeout`
-   vale para toda resposta repassada; sem o C2 (SSE adiado) não há resposta longa a preservar hoje, mas o plano deve dizer
-   como o C2 conviverá com o teto.
+1. ⏳ **D7 — zona travada** (#11). Plano: `docs/superpowers/plans/2026-10-06-d7-zona-travada.md` (2 tasks + gate).
+   **Decisão do humano (2026-10-06): teto agora, página com o C3.** O `proxyTimeout` do Next conta inatividade do socket e, ao
+   estourar, o próprio Next escreve o 500 cru (`proxy-request.js`, sem gancho); o D7 entrega `ERP_ZONA_TETO_MS` (10 s, B1) e a
+   página de indisponível dentro do teto passa a ser requisito do C3.
 2. ⬜ **C1 — fragmentos entre zonas** (#10). Núcleo pronto desde a 0.5.0 (`criarFragmento`/`responderFragmento`, ADR-0011).
    Falta: rota `_fragmento` na zona 2, bloco dela na zona 1, o shell recusa `/{zona}/_fragmento/` vindo do navegador, e
    o teste ponta a ponta.
 3. ⬜ **C3 — mapa de zonas pelos manifestos** (#14). Zona nova entra sem editar o `zonas.json` nem republicar o shell.
+   **Requisito vindo do D7 (2026-10-06):** o mecanismo escolhido entrega a página de indisponível dentro de `ERP_ZONA_TETO_MS`.
    **Começa pelo `arquiteto-mfe`** (os rewrites do Next são fixados na subida; escolher o mecanismo); se for estrutural,
    ADR e pedido em `pedidos/` para o humano.
 4. Depois: resto do E3 (`showcase:conferir` no modo OIDC), E4 (roteiro: uma linha por funcionalidade básica) e E5.
 
 **Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente
 (`docker ps`: Redis e Keycloak podem ter caído com a máquina → `task showcase:subir` e `task showcase:checar`); então
-**escrever o plano do D7** (`superpowers:writing-plans`) em `docs/superpowers/plans/2026-10-AA-d7-zona-travada.md`, commitar
-e despachar a Task 1. Nada está rodando e nenhum agente está aberto.
+despachar a **Task 1 do D7** (plano `docs/superpowers/plans/2026-10-06-d7-zona-travada.md`, modo Subagent-Driven). Nada está rodando e nenhum agente está aberto.
 
 ## Plano até o objetivo
 
