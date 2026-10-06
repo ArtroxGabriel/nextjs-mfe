@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06 (plano do D7 escrito; próximo: Task 1 do D7)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06 (Task 1 do D7 fechada, revisão limpa; próximo: Task 2 do D7)**.
 
 ## Objetivo final
 
@@ -61,7 +61,7 @@ Sessão e identidade estão fechadas (D1, D2, D19-B). Os menores do D2 estão em
 D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com plano em `docs/superpowers/plans/`
 (modo Subagent-Driven), tasks revisadas e gate:
 
-1. ⏳ **D7 — zona travada** (#11). Plano: `docs/superpowers/plans/2026-10-06-d7-zona-travada.md` (2 tasks + gate).
+1. ⏳ **D7 — zona travada** (#11). Plano: `docs/superpowers/plans/2026-10-06-d7-zona-travada.md` (2 tasks + gate). **Task 1 ✅** (erp-shell `45787f1`, revisão limpa, 2 menores no ledger); Task 2 a seguir.
    **Decisão do humano (2026-10-06): teto agora, página com o C3.** O `proxyTimeout` do Next conta inatividade do socket e, ao
    estourar, o próprio Next escreve o 500 cru (`proxy-request.js`, sem gancho); o D7 entrega `ERP_ZONA_TETO_MS` (10 s, B1) e a
    página de indisponível dentro do teto passa a ser requisito do C3.
@@ -76,7 +76,7 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
 
 **Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente
 (`docker ps`: Redis e Keycloak podem ter caído com a máquina → `task showcase:subir` e `task showcase:checar`); então
-despachar a **Task 1 do D7** (plano `docs/superpowers/plans/2026-10-06-d7-zona-travada.md`, modo Subagent-Driven). Nada está rodando e nenhum agente está aberto.
+despachar a **Task 2 do D7** (Task 1 fechada: erp-shell `45787f1`; o ponteiro do submódulo no principal vai no commit da Task 2) (plano `docs/superpowers/plans/2026-10-06-d7-zona-travada.md`, modo Subagent-Driven). Nada está rodando e nenhum agente está aberto.
 
 ## Plano até o objetivo
 
