@@ -61,7 +61,7 @@ Sessão e identidade estão fechadas (D1, D2, D19-B). Os menores do D2 estão em
 D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com plano em `docs/superpowers/plans/`
 (modo Subagent-Driven), tasks revisadas e gate:
 
-1. ⏳ **D7 — zona travada** (#11). Plano: `docs/superpowers/plans/2026-10-06-d7-zona-travada.md` (2 tasks + gate). **Task 1 ✅** (erp-shell `45787f1`) e **Task 2 ✅** (principal `f01b25d`, L9; `verificar` 115 + 4 pulados, `verificar:redis` 119/119, `verificar:oidc` 6/6); revisões limpas, 6 menores no ledger. **Gate iteração 1 em andamento** (2026-10-06): `revisor_d7_1` e `challenger_d7_1` despachados (principal `fe5bbf4`, shell `45787f1`); o auditor (Opus) entra quando o challenger liberar as portas.
+1. ⏳ **D7 — zona travada** (#11). Plano: `docs/superpowers/plans/2026-10-06-d7-zona-travada.md` (2 tasks + gate). **Task 1 ✅** (erp-shell `45787f1`) e **Task 2 ✅** (principal `f01b25d`, L9; `verificar` 115 + 4 pulados, `verificar:redis` 119/119, `verificar:oidc` 6/6); revisões limpas, 6 menores no ledger. **Gate iteração 1 em andamento** (2026-10-06): `revisor_d7_1` APROVA (4 menores), `challenger_d7_1` APROVA (teto medido em 10 s e 6 s, streaming não cortado; portas liberadas); `auditor_d7_1` (Opus) despachado sobre principal `f330cb7`, shell `45787f1`.
    **Decisão do humano (2026-10-06): teto agora, página com o C3.** O `proxyTimeout` do Next conta inatividade do socket e, ao
    estourar, o próprio Next escreve o 500 cru (`proxy-request.js`, sem gancho); o D7 entrega `ERP_ZONA_TETO_MS` (10 s, B1) e a
    página de indisponível dentro do teto passa a ser requisito do C3.
@@ -76,7 +76,7 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
 
 **Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente
 (`docker ps`: Redis e Keycloak podem ter caído com a máquina → `task showcase:subir` e `task showcase:checar`); então
-despachar o **gate do D7** (revisor, challenger e auditor, `LEIA-PRIMEIRO.md`; tasks 1 e 2 fechadas, head `f01b25d`) (plano `docs/superpowers/plans/2026-10-06-d7-zona-travada.md`, modo Subagent-Driven). **Em andamento:** revisor_d7_1 e challenger_d7_1 (handoffs em `.agents/<nome>/handoff.md`); se a sessão cair, despachar novos (`_2`) só com as etapas que faltam.
+despachar o **gate do D7** (revisor, challenger e auditor, `LEIA-PRIMEIRO.md`; tasks 1 e 2 fechadas, head `f01b25d`) (plano `docs/superpowers/plans/2026-10-06-d7-zona-travada.md`, modo Subagent-Driven). **Em andamento:** auditor_d7_1 (revisor e challenger já aprovaram) (handoffs em `.agents/<nome>/handoff.md`); se a sessão cair, despachar novos (`_2`) só com as etapas que faltam.
 
 ## Plano até o objetivo
 
