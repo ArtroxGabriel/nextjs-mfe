@@ -888,6 +888,21 @@ test('C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefa
   }
 })
 
+test('C1b (ADR-0011, decisao 8): o navegador nao alcanca _fragmento pelo shell, em nenhuma grafia, com ou sem cookie', async () => {
+  const ana = (await entrar('ana')).cookie
+  const caminhos = [FRAGMENTO_TAREFAS, '/ZONA2/_Fragmento/tarefas/pendentes', '/zona2/%5Ffragmento/tarefas/pendentes', '/zona1/_fragmento/x/y']
+  for (const caminho of caminhos) {
+    for (const cookie of [ana, undefined]) {
+      const r = await fetch(`${SHELL_URL}${caminho}`, { headers: cookie ? { cookie } : {}, redirect: 'manual' })
+      assert.equal(r.status, 404, `${caminho} ${cookie ? 'com' : 'sem'} cookie`)
+      assert.equal(await r.text(), '', `${caminho}: 404 com corpo`)
+      assert.equal(r.headers.get('cache-control'), 'no-store', caminho)
+    }
+  }
+  // dente: a mesma ana pelo shell chega a zona 2
+  assert.equal((await pedir('/zona2', { cookie: ana })).status, 200)
+})
+
 test('L8 (auditor_shell_3/4): o nonce da CSP e novo e imprevisivel a cada requisicao, no shell, na rota publica e nas zonas', async () => {
   // as zonas tem nonce proprio (criarProxy do nucleo): so o shell nao pegava nonce fixo nelas
   const { cookie } = await entrar('ana')
