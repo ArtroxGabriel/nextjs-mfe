@@ -1,0 +1,372 @@
+# Catalogo de mutacoes auditor_d19b_2 (gate D19-B, iteracao 2). Piso: .agents/auditor_d19b_1/mutacoes.txt
+# formato: ID | descricao | arquivo | comando | resultado | classificacao ; depois ANTES/DEPOIS com o trecho exato e as falhas que pegaram
+# (linha da mutacao: ver "arquivo:linha" no handoff; o trecho ANTES e unico no arquivo)
+V-A10 | veto A10: erro do store na releitura da espera vira ausente | repos/erp-nucleo/src/fabricas/criarNucleo.ts:263 | pnpm test | PEGA (rc=1, tests=271 pass=268 fail=3, 25s) | mutacao
+    ANTES:
+              await pausa(Math.min(passoMs, limite - Date.now()))
+              const s = await valida(id)
+              if (!s) return 'ausente'
+    DEPOIS:
+              await pausa(Math.min(passoMs, limite - Date.now()))
+              const s = await valida(id).catch(() => null)
+              if (!s) return 'ausente'
+    ✖ memoria: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (26.585569ms)
+    ✖ arquivo: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (31.883749ms)
+    ✖ redis: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (26.923272ms)
+V-A10c | veto A10c: erro na leitura de antes do lock vira ausente | repos/erp-nucleo/src/fabricas/criarNucleo.ts:296 | pnpm test | PEGA (rc=1, tests=271 pass=268 fail=3, 26s) | mutacao
+    ANTES:
+                const antes = await valida(id)
+                if (!antes) return 'ausente'
+    DEPOIS:
+                const antes = await valida(id).catch(() => null)
+                if (!antes) return 'ausente'
+    ✖ memoria: token vencido e store lancando antes do lock (A10c): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (18.840201ms)
+    ✖ arquivo: token vencido e store lancando antes do lock (A10c): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (8.073091ms)
+    ✖ redis: token vencido e store lancando antes do lock (A10c): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (11.531564ms)
+V-A10d | veto A10d: erro na releitura com o lock na mao vira ausente | repos/erp-nucleo/src/fabricas/criarNucleo.ts:306 | pnpm test | PEGA (rc=1, tests=271 pass=268 fail=3, 19s) | mutacao
+    ANTES:
+                const s = await valida(id)
+                if (!s) return 'ausente'
+                if (emDia(s)) return 'em-dia'
+    DEPOIS:
+                const s = await valida(id).catch(() => null)
+                if (!s) return 'ausente'
+                if (emDia(s)) return 'em-dia'
+    ✖ memoria: token vencido e store lancando na releitura com o lock na mao (A10d): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (2.279142ms)
+    ✖ arquivo: token vencido e store lancando na releitura com o lock na mao (A10d): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (1.430723ms)
+    ✖ redis: token vencido e store lancando na releitura com o lock na mao (A10d): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (0.71442ms)
+V-A10b | A10b: erro na releitura engolido, segue esperando ate o teto | repos/erp-nucleo/src/fabricas/criarNucleo.ts:263 | pnpm test | PEGA (rc=1, tests=271 pass=268 fail=3, 18s) | mutacao
+    ANTES:
+              await pausa(Math.min(passoMs, limite - Date.now()))
+              const s = await valida(id)
+              if (!s) return 'ausente'
+    DEPOIS:
+              await pausa(Math.min(passoMs, limite - Date.now()))
+              let s
+              try { s = await valida(id) } catch { continue }
+              if (!s) return 'ausente'
+    ✖ memoria: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (301.892973ms)
+    ✖ arquivo: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (301.567975ms)
+    ✖ redis: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (302.250222ms)
+V01 | catch na espera devolve revogada | repos/erp-nucleo/src/fabricas/criarNucleo.ts:263 | pnpm test | PEGA (rc=1, tests=271 pass=268 fail=3, 18s) | mutacao
+    ANTES:
+              await pausa(Math.min(passoMs, limite - Date.now()))
+              const s = await valida(id)
+              if (!s) return 'ausente'
+    DEPOIS:
+              await pausa(Math.min(passoMs, limite - Date.now()))
+              let s
+              try { s = await valida(id) } catch { return 'revogada' }
+              if (!s) return 'ausente'
+    ✖ memoria: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (22.709203ms)
+    ✖ arquivo: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (22.281758ms)
+    ✖ redis: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (21.985592ms)
+V02 | catch na espera devolve em-andamento na hora (segue sem apagar: mesmo efeito no proxy) | repos/erp-nucleo/src/fabricas/criarNucleo.ts:263 | pnpm test | PEGA (rc=1, tests=271 pass=268 fail=3, 23s) | mutacao
+    ANTES:
+              await pausa(Math.min(passoMs, limite - Date.now()))
+              const s = await valida(id)
+              if (!s) return 'ausente'
+    DEPOIS:
+              await pausa(Math.min(passoMs, limite - Date.now()))
+              let s
+              try { s = await valida(id) } catch { return 'em-andamento' }
+              if (!s) return 'ausente'
+    ✖ memoria: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (23.653483ms)
+    ✖ arquivo: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (22.443149ms)
+    ✖ redis: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (23.026169ms)
+V03 | catch na espera reconsulta depois de um passo e devolve ausente se falhar de novo | repos/erp-nucleo/src/fabricas/criarNucleo.ts:263 | pnpm test | PEGA (rc=1, tests=271 pass=268 fail=3, 15s) | mutacao
+    ANTES:
+              await pausa(Math.min(passoMs, limite - Date.now()))
+              const s = await valida(id)
+              if (!s) return 'ausente'
+    DEPOIS:
+              await pausa(Math.min(passoMs, limite - Date.now()))
+              let s
+              try { s = await valida(id) } catch { await pausa(passoMs); s = await valida(id).catch(() => null) }
+              if (!s) return 'ausente'
+    ✖ memoria: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (41.439327ms)
+    ✖ arquivo: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (41.554686ms)
+    ✖ redis: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (41.561547ms)
+V04 | try/catch em torno do laco inteiro da espera, catch devolve ausente | repos/erp-nucleo/src/fabricas/criarNucleo.ts:262 | pnpm test | PEGA (rc=1, tests=271 pass=268 fail=3, 13s) | mutacao
+    ANTES:
+            while (Date.now() < limite) {
+              await pausa(Math.min(passoMs, limite - Date.now()))
+              const s = await valida(id)
+              if (!s) return 'ausente'
+              if (tokenVale(s)) return 'em-dia'
+            }
+            return 'em-andamento'
+    DEPOIS:
+            try {
+            while (Date.now() < limite) {
+              await pausa(Math.min(passoMs, limite - Date.now()))
+              const s = await valida(id)
+              if (!s) return 'ausente'
+              if (tokenVale(s)) return 'em-dia'
+            }
+            return 'em-andamento'
+            } catch { return 'ausente' }
+    ✖ memoria: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (21.820146ms)
+    ✖ arquivo: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (21.352016ms)
+    ✖ redis: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (20.846161ms)
+V05 | catch no proprio valida (as tres leituras viram null) | repos/erp-nucleo/src/fabricas/criarNucleo.ts:222 | pnpm test | PEGA (rc=1, tests=271 pass=262 fail=9, 13s) | mutacao
+    ANTES:
+            const s = await cfg.sessao.ler(id)
+            return s && Date.now() < s.expiraEm ? s : null
+    DEPOIS:
+            const s = await cfg.sessao.ler(id).catch(() => null)
+            return s && Date.now() < s.expiraEm ? s : null
+    ✖ memoria: token vencido e store lancando antes do lock (A10c): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (2.174454ms)
+    ✖ memoria: token vencido e store lancando na releitura com o lock na mao (A10d): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (0.646228ms)
+    ✖ memoria: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (20.830163ms)
+    ✖ arquivo: token vencido e store lancando antes do lock (A10c): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (1.550282ms)
+    ✖ arquivo: token vencido e store lancando na releitura com o lock na mao (A10d): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (1.097133ms)
+    ✖ arquivo: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (20.727083ms)
+V06 | catch em torno de renovarSessao inteiro chamando esperarRenovacao: perdedor com erro devolve ausente | repos/erp-nucleo/src/fabricas/criarNucleo.ts:302 | pnpm test | PEGA (rc=1, tests=271 pass=268 fail=3, 13s) | mutacao
+    ANTES:
+                  return tokenVale(antes) ? 'em-andamento' : esperarRenovacao(id)
+    DEPOIS:
+                  return tokenVale(antes) ? 'em-andamento' : esperarRenovacao(id).catch(() => 'ausente' as const)
+    ✖ memoria: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (21.726278ms)
+    ✖ arquivo: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (21.919639ms)
+    ✖ redis: token vencido e store lancando durante a espera do perdedor (A10): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (21.026519ms)
+V07 | catch antes do lock devolve revogada | repos/erp-nucleo/src/fabricas/criarNucleo.ts:296 | pnpm test | PEGA (rc=1, tests=271 pass=268 fail=3, 14s) | mutacao
+    ANTES:
+                const antes = await valida(id)
+                if (!antes) return 'ausente'
+    DEPOIS:
+                let antes
+                try { antes = await valida(id) } catch { return 'revogada' }
+                if (!antes) return 'ausente'
+    ✖ memoria: token vencido e store lancando antes do lock (A10c): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (2.345214ms)
+    ✖ arquivo: token vencido e store lancando antes do lock (A10c): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (1.670472ms)
+    ✖ redis: token vencido e store lancando antes do lock (A10c): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (0.888596ms)
+V08 | catch com o lock na mao remove a sessao e devolve revogada | repos/erp-nucleo/src/fabricas/criarNucleo.ts:306 | pnpm test | PEGA (rc=1, tests=271 pass=268 fail=3, 13s) | mutacao
+    ANTES:
+                const s = await valida(id)
+                if (!s) return 'ausente'
+                if (emDia(s)) return 'em-dia'
+    DEPOIS:
+                let s
+                try { s = await valida(id) } catch { await store.remover(id); return 'revogada' }
+                if (!s) return 'ausente'
+                if (emDia(s)) return 'em-dia'
+    ✖ memoria: token vencido e store lancando na releitura com o lock na mao (A10d): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (1.856781ms)
+    ✖ arquivo: token vencido e store lancando na releitura com o lock na mao (A10d): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (1.65499ms)
+    ✖ redis: token vencido e store lancando na releitura com o lock na mao (A10d): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (0.869941ms)
+V09 | adaptador Redis do nucleo: GET que falha vira null | repos/erp-nucleo/src/adaptadores/sessao-redis.ts:85 | pnpm test | PEGA (rc=1, tests=271 pass=270 fail=1, 13s) | mutacao
+    ANTES:
+              const bruto = await semVazar(() => cfg.cliente.get(chave(id)))
+              if (bruto === null) return null
+    DEPOIS:
+              const bruto = await cfg.cliente.get(chave(id)).catch(() => null)
+              if (bruto === null) return null
+    ✖ Redis fora do ar vira erro normalizado, sem vazar o motivo (invariante 12) (5.772567ms)
+V11 | shell lib/redis.ts: GET que falha vira null no involucro do node-redis | repos/erp-shell/lib/redis.ts:15 | pnpm test | VIVA (rc=0, tests=108 pass=108, 2s) | mutacao
+    ANTES:
+            get: async (chave) => (await conectado()).get(chave),
+    DEPOIS:
+            get: async (chave) => { try { return await (await conectado()).get(chave) } catch { return null } },
+VS-A10 | [dist shell] A10: erro na releitura da espera vira ausente | repos/erp-shell/node_modules/.pnpm/@erp+nucleo@0.10.3_next@16.3.4_@types+node@24.13.6_react-dom@19.2.8_react@19.2.8__react_7743fe1223faf641eedf22b3cd37c57b/node_modules/@erp/nucleo/dist/fabricas/criarNucleo.js:161 | pnpm test | PEGA (rc=1, tests=108 pass=106 fail=2, 2s) | mutacao
+    ANTES:
+                    await pausa(Math.min(passoMs, limite - Date.now()));
+                    const s = await valida(id);
+    DEPOIS:
+                    await pausa(Math.min(passoMs, limite - Date.now()));
+                    const s = await valida(id).catch(() => null);
+    ✖ store fora durante a espera do perdedor (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (54.225038ms)
+    ✖ store fora durante a espera do perdedor (redis falso): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (50.990373ms)
+VS-A10c | [dist shell] A10c: erro antes do lock vira ausente | repos/erp-shell/node_modules/.pnpm/@erp+nucleo@0.10.3_next@16.3.4_@types+node@24.13.6_react-dom@19.2.8_react@19.2.8__react_7743fe1223faf641eedf22b3cd37c57b/node_modules/@erp/nucleo/dist/fabricas/criarNucleo.js:196 | pnpm test | PEGA (rc=1, tests=108 pass=106 fail=2, 2s) | mutacao
+    ANTES:
+                        const antes = await valida(id);
+    DEPOIS:
+                        const antes = await valida(id).catch(() => null);
+    ✖ store fora antes do lock (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (4.699651ms)
+    ✖ store fora antes do lock (redis falso): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (0.889765ms)
+VS-A10d | [dist shell] A10d: erro na releitura com o lock vira ausente | repos/erp-shell/node_modules/.pnpm/@erp+nucleo@0.10.3_next@16.3.4_@types+node@24.13.6_react-dom@19.2.8_react@19.2.8__react_7743fe1223faf641eedf22b3cd37c57b/node_modules/@erp/nucleo/dist/fabricas/criarNucleo.js:208 | pnpm test | PEGA (rc=1, tests=108 pass=106 fail=2, 2s) | mutacao
+    ANTES:
+                        const s = await valida(id);
+                        if (!s)
+                            return 'ausente';
+                        if (emDia(s))
+    DEPOIS:
+                        const s = await valida(id).catch(() => null);
+                        if (!s)
+                            return 'ausente';
+                        if (emDia(s))
+    ✖ store fora na releitura com o lock na mao (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (2.542258ms)
+    ✖ store fora na releitura com o lock na mao (redis falso): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (0.520591ms)
+VS-A10b | [dist shell] A10b: erro engolido, espera ate o teto | repos/erp-shell/node_modules/.pnpm/@erp+nucleo@0.10.3_next@16.3.4_@types+node@24.13.6_react-dom@19.2.8_react@19.2.8__react_7743fe1223faf641eedf22b3cd37c57b/node_modules/@erp/nucleo/dist/fabricas/criarNucleo.js:161 | pnpm test | PEGA (rc=1, tests=108 pass=106 fail=2, 5s) | mutacao
+    ANTES:
+                    await pausa(Math.min(passoMs, limite - Date.now()));
+                    const s = await valida(id);
+    DEPOIS:
+                    await pausa(Math.min(passoMs, limite - Date.now()));
+                    let s; try { s = await valida(id); } catch { continue; }
+    ✖ store fora durante a espera do perdedor (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (2004.809724ms)
+    ✖ store fora durante a espera do perdedor (redis falso): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (2000.810825ms)
+VS-V01 | [dist shell] catch na espera devolve revogada | repos/erp-shell/node_modules/.pnpm/@erp+nucleo@0.10.3_next@16.3.4_@types+node@24.13.6_react-dom@19.2.8_react@19.2.8__react_7743fe1223faf641eedf22b3cd37c57b/node_modules/@erp/nucleo/dist/fabricas/criarNucleo.js:161 | pnpm test | PEGA (rc=1, tests=108 pass=106 fail=2, 2s) | mutacao
+    ANTES:
+                    await pausa(Math.min(passoMs, limite - Date.now()));
+                    const s = await valida(id);
+    DEPOIS:
+                    await pausa(Math.min(passoMs, limite - Date.now()));
+                    let s; try { s = await valida(id); } catch { return 'revogada'; }
+    ✖ store fora durante a espera do perdedor (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (56.640363ms)
+    ✖ store fora durante a espera do perdedor (redis falso): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (50.903737ms)
+VS-V05 | [dist shell] catch no proprio valida | repos/erp-shell/node_modules/.pnpm/@erp+nucleo@0.10.3_next@16.3.4_@types+node@24.13.6_react-dom@19.2.8_react@19.2.8__react_7743fe1223faf641eedf22b3cd37c57b/node_modules/@erp/nucleo/dist/fabricas/criarNucleo.js:122 | pnpm test | PEGA (rc=1, tests=108 pass=102 fail=6, 2s) | mutacao
+    ANTES:
+                const s = await cfg.sessao.ler(id);
+                return s && Date.now() < s.expiraEm ? s : null;
+    DEPOIS:
+                const s = await cfg.sessao.ler(id).catch(() => null);
+                return s && Date.now() < s.expiraEm ? s : null;
+    ✖ store fora antes do lock (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (4.845476ms)
+    ✖ store fora na releitura com o lock na mao (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (0.748872ms)
+    ✖ store fora durante a espera do perdedor (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (51.504039ms)
+    ✖ store fora antes do lock (redis falso): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (1.33312ms)
+    ✖ store fora na releitura com o lock na mao (redis falso): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (0.901058ms)
+    ✖ store fora durante a espera do perdedor (redis falso): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (52.086634ms)
+R1-A01 | [piso it.1 A01] perdedor nao espera com o token vencido (comportamento 0.10.2) | repos/erp-nucleo/src/fabricas/criarNucleo.ts:302 | pnpm test | PEGA (rc=1, tests=271 pass=255 fail=16, 26s) | mutacao
+    ANTES:
+        return tokenVale(antes) ? 'em-andamento' : esperarRenovacao(id)
+    DEPOIS:
+        return 'em-andamento'
+    ✖ memoria: token vencido, 20 renovacoes concorrentes chamam o IdP uma vez e ninguem segue com o token morto (158.87932ms)
+    ✖ memoria: token vencido e IdP com erro transitorio, o perdedor espera o teto e segue; o IdP e chamado uma vez (34.797128ms)
+    ✖ memoria: sessao encerrada durante a espera, o perdedor volta ausente sem esperar o teto (66.83045ms)
+    ✖ arquivo: token vencido, 20 renovacoes concorrentes chamam o IdP uma vez e ninguem segue com o token morto (160.057045ms)
+    ✖ arquivo: token vencido e IdP com erro transitorio, o perdedor espera o teto e segue; o IdP e chamado uma vez (37.865424ms)
+    ✖ arquivo: sessao encerrada durante a espera, o perdedor volta ausente sem esperar o teto (66.536632ms)
+R1-A04b | [piso it.1 A04b] teto da espera dobrado | repos/erp-nucleo/src/fabricas/criarNucleo.ts:261 | pnpm test | PEGA (rc=1, tests=271 pass=267 fail=4, 14s) | mutacao
+    ANTES:
+        const limite = Date.now() + esperaMs
+    DEPOIS:
+        const limite = Date.now() + 2 * esperaMs
+    ✖ memoria: token vencido e IdP com erro transitorio, o perdedor espera o teto e segue; o IdP e chamado uma vez (602.913871ms)
+    ✖ arquivo: token vencido e IdP com erro transitorio, o perdedor espera o teto e segue; o IdP e chamado uma vez (603.093387ms)
+    ✖ redis: token vencido e IdP com erro transitorio, o perdedor espera o teto e segue; o IdP e chamado uma vez (602.314144ms)
+    ✖ a espera rele no passo configurado (ERP_RENOVACAO_ESPERA_PASSO_MS), nao em laco (602.282171ms)
+R1-B01 | [piso it.1 B01] sem recusa de espera >= lock | repos/erp-nucleo/src/fabricas/criarNucleo.ts:199 | pnpm test | PEGA (rc=1, tests=271 pass=270 fail=1, 15s) | mutacao
+    ANTES:
+          if (esperaMs >= lockMs) {
+    DEPOIS:
+          if (false) {
+    ✖ ERP_RENOVACAO_ESPERA_MS e ERP_RENOVACAO_ESPERA_PASSO_MS: padrao, teto e recusa na criacao (2.728578ms)
+R1-B11 | [piso it.1 B11] lerInteiroEntre: vazio vira 0 em vez do padrao | repos/erp-nucleo/src/interno/configuracao.ts:28 | pnpm test | PEGA (rc=1, tests=271 pass=270 fail=1, 17s) | mutacao
+    ANTES:
+        if (valor === undefined || valor === '') return padrao
+          const n = /^
+    DEPOIS:
+        if (valor === undefined) return padrao
+          const n = /^
+    ✖ ERP_RENOVACAO_ESPERA_MS e ERP_RENOVACAO_ESPERA_PASSO_MS: padrao, teto e recusa na criacao (3.150682ms)
+R1-C03 | [piso it.1 C03] supportId do registro carrega o refresh token | repos/erp-nucleo/src/fabricas/criarNucleo.ts:248 | pnpm test | PEGA (rc=1, tests=271 pass=268 fail=3, 16s) | mutacao
+    ANTES:
+        registrarFalha({ motivo: 'janela-de-renovacao', codigo: 'ERRO_INTERNO', supportId: randomUUID() })
+    DEPOIS:
+        registrarFalha({ motivo: 'janela-de-renovacao', codigo: 'ERRO_INTERNO', supportId: s.refreshToken ?? randomUUID() })
+    ✖ janela >= vida do token: registra uma vez por sessao, so motivo, codigo e supportId, e nao renova em laco (2.133542ms)
+    ✖ registro padrao da violacao: uma linha no console do servidor so com motivo, codigo e supportId (1.721283ms)
+    ✖ registrarFalha que lanca, rejeita ou devolve thenable que rejeita nao derruba o login nem a renovacao: a falha vai ao console (22.877293ms)
+R1-D14 | [piso it.1 D14] decisao-proxy: erro na renovacao manda ao login (regressao do D2, P03) | repos/erp-shell/lib/decisao-proxy.ts:70 | pnpm test | PEGA (rc=1, tests=108 pass=100 fail=8, 2s) | mutacao
+    ANTES:
+          } catch {
+            return { acao: 'prosseguir', nonce }
+          }
+    DEPOIS:
+          } catch {
+            return { acao: 'redirecionar-login', destino: paraLogin(contexto.caminho), limparSessao: true }
+          }
+    ✖ erro transitorio do IdP (memoria): a sessao fica e a requisicao segue (3.199304ms)
+    ✖ erro transitorio do IdP (redis falso): a sessao fica e a requisicao segue (0.600223ms)
+    ✖ store fora antes do lock (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (1.791582ms)
+    ✖ store fora na releitura com o lock na mao (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (0.761762ms)
+    ✖ store fora durante a espera do perdedor (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (51.182375ms)
+    ✖ store fora antes do lock (redis falso): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (1.430351ms)
+R1-A10e | [piso it.1 A10e] shell: erro na renovacao apaga o cookie (prossegue, mas com limparSessao) | repos/erp-shell/lib/decisao-proxy.ts:70 | pnpm test | PEGA (rc=1, tests=108 pass=100 fail=8, 2s) | mutacao
+    ANTES:
+          } catch {
+            return { acao: 'prosseguir', nonce }
+          }
+    DEPOIS:
+          } catch {
+            return { acao: 'prosseguir', nonce, limparSessao: true }
+          }
+    ✖ erro transitorio do IdP (memoria): a sessao fica e a requisicao segue (3.27964ms)
+    ✖ erro transitorio do IdP (redis falso): a sessao fica e a requisicao segue (0.72526ms)
+    ✖ store fora antes do lock (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (1.770551ms)
+    ✖ store fora na releitura com o lock na mao (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (0.726274ms)
+    ✖ store fora durante a espera do perdedor (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (50.760762ms)
+    ✖ store fora antes do lock (redis falso): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (1.079239ms)
+R1-Z01 | [piso it.1 Z01] zona-1 lerHostsDoShell sem trim | repos/erp-zona-1/lib/hosts-do-shell.ts:9 | node --test --test-name-pattern='^P12' base/verificacao/base.test.mjs | PEGA (rc=1, tests=1 pass=0 fail=1, 4s) | mutacao
+    ANTES:
+        .split(',').map((h) => h.trim()).filter((h) => h !== '')
+    DEPOIS:
+        .split(',').filter((h) => h !== '')
+    ✖ P12: toda zona aceita Server Action so dos hosts do shell (SHELL_HOSTS), nunca uma lista escrita no codigo (3151.597915ms)
+R1-R05 | [piso it.1 R05] lock SET NX PX: Redis sem NX | repos/erp-nucleo/src/adaptadores/sessao-redis.ts:147 | pnpm test | PEGA (rc=1, tests=271 pass=262 fail=8, 22s) | mutacao
+    ANTES:
+        cfg.cliente.set(chaveLock(idSessao), '1', { PX: ttlMs, NX: true })
+    DEPOIS:
+        cfg.cliente.set(chaveLock(idSessao), '1', { PX: ttlMs })
+    ✖ redis: token vencido, 20 renovacoes concorrentes chamam o IdP uma vez e ninguem segue com o token morto (158.827568ms)
+    ✖ redis: token na janela e ainda valido, o perdedor nao espera (408.476644ms)
+    ✖ redis: token vencido e IdP com erro transitorio, o perdedor espera o teto e segue; o IdP e chamado uma vez (31.97464ms)
+    ✖ redis: sessao encerrada durante a espera, o perdedor volta ausente sem esperar o teto (10004.044952ms)
+    ✖ redis: ERP_RENOVACAO_ESPERA_MS=0 desliga a espera (comportamento anterior) (405.618557ms)
+    ✖ redis: o vencedor recebe revogada e o perdedor, que estava esperando, volta ausente (154.109842ms)
+R1-R11 | [piso it.1 R11] renovacao: nao rele a sessao depois do lock (refresh token gasto duas vezes) | repos/erp-nucleo/src/fabricas/criarNucleo.ts:306 | pnpm test | PEGA (rc=1, tests=271 pass=267 fail=4, 30s) | mutacao
+    ANTES:
+                const s = await valida(id)
+                if (!s) return 'ausente'
+                if (emDia(s)) return 'em-dia'
+    DEPOIS:
+                const s = antes
+    ✖ renovarSessao rele a sessao depois do lock: renovacao feita por outro nao e repetida (24.387738ms)
+    ✖ memoria: token vencido e store lancando na releitura com o lock na mao (A10d): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (22.734087ms)
+    ✖ arquivo: token vencido e store lancando na releitura com o lock na mao (A10d): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (23.911594ms)
+    ✖ redis: token vencido e store lancando na releitura com o lock na mao (A10d): renovarSessao rejeita, nunca ausente nem revogada, e a sessao fica (22.539902ms)
+R1-S01 | [piso it.1 S01] ERP_RENOVACAO_ESPERA_MS entregue as zonas (lista de inclusao) | base/scripts/ambiente.mjs:64 | task scripts:test | PEGA (rc=201, tests=25 pass=24 fail=1, 3s) | mutacao
+    ANTES:
+        'SESSAO_DIR', 'REDIS_URL_ZONA', 'ACESSO_URL', 'SHELL_HOSTS',
+    DEPOIS:
+        'SESSAO_DIR', 'REDIS_URL_ZONA', 'ACESSO_URL', 'SHELL_HOSTS', 'ERP_RENOVACAO_ESPERA_MS',
+    ✖ F04: variavel so do shell (segredo do cliente OIDC e afins) nunca entra no ambiente de zona nem de dominio (480.972347ms)
+R1-S02 | [piso it.1 S02] espera lida fora de criarNucleoDoShell (no carregamento do modulo, alcancavel pela raiz) | repos/erp-nucleo/src/fabricas/criarNucleo.ts:186 | task scripts:test | PEGA (rc=201, tests=25 pass=23 fail=2, 2s) | mutacao
+    ANTES:
+        export function criarNucleoDoShell(cfg: ConfigDoNucleoDoShell): NucleoDoShell {
+    DEPOIS:
+        const ESPERA_DO_MODULO = process.env.ERP_RENOVACAO_ESPERA_PASSO_MS
+        export function criarNucleoDoShell(cfg: ConfigDoNucleoDoShell): NucleoDoShell {
+          void ESPERA_DO_MODULO
+    ✖ V1: a lista de inclusao cobre toda variavel que zona e dominio leem (variavel nova nao some calada) (148.432571ms)
+    ✖ F04: variavel so do shell (segredo do cliente OIDC e afins) nunca entra no ambiente de zona nem de dominio (162.255952ms)
+R1-E01 | [piso it.1 E01] [ponta a ponta] renovarSessao da 0.10.2 no dist do shell: perdedor nao espera com o token vencido | repos/erp-shell/node_modules/.pnpm/@erp+nucleo@0.10.3_next@16.3.4_@types+node@24.13.6_react-dom@19.2.8_react@19.2.8__react_7743fe1223faf641eedf22b3cd37c57b/node_modules/@erp/nucleo/dist/fabricas/criarNucleo.js:204 | touch repos/erp-shell/lib/nucleo.ts && CONSTRUIR=1 task verificar:oidc | PEGA (rc=201, tests=6 pass=5 fail=1, 118s) | regressao 0.10.2
+    ANTES:
+        return tokenVale(antes) ? 'em-andamento' : esperarRenovacao(id);
+    DEPOIS:
+        return 'em-andamento';
+    ✖ token ja vencido: 10 requisicoes concorrentes a / e a uma pagina de zona, todas 200, com uma renovacao so (D19-B) (27437.22317ms)
+    ✖ modo OIDC contra o Keycloak do showcase (ADR-0013) (117169.075503ms)
+V11e | [ponta a ponta] shell lib/redis.ts: GET que falha vira null no involucro do node-redis | repos/erp-shell/lib/redis.ts:15 | CONSTRUIR=1 task verificar:redis | VIVA (rc=0, tests=118 pass=118, 54s) | mutacao
+    ANTES:
+            get: async (chave) => (await conectado()).get(chave),
+    DEPOIS:
+            get: async (chave) => { try { return await (await conectado()).get(chave) } catch { return null } },
+
+# --- classificacao final (auditor_d19b_2) ---
+# Etapa 2 (veto e variantes): V-A10 V-A10c V-A10d V-A10b V01..V09 V11 no fonte; VS-* no dist 0.10.3 instalado no shell (sha256 815631ad... igual antes e depois).
+#   19 pegas, 1 viva (V11). Nenhuma equivalente contada como viva.
+#   V-A10b e V02: PEGAS, mas "equivalentes no efeito" para o proxy (estado nao-terminal -> prosseguir sem limparSessao); o teste fixa
+#     um contrato mais estrito ("erro do store propaga, sem esperar o teto"). No nucleo, A10b cai pela assercao `instanceof Error`
+#     (teto curto de 300 ms, abaixo do limite de 1 s); no shell (teto padrao 2000 ms), pela assercao de tempo (< 1 s), 2004 ms.
+#   V09 (adaptador Redis do nucleo engole GET): PEGA pelo teste do adaptador (sessao-redis.test.mjs, "Redis fora do ar vira erro
+#     normalizado"), nao pelos testes novos (que injetam o erro acima do adaptador).
+#   V11 / V11e (shell lib/redis.ts, involucro do node-redis, GET que falha vira null): VIVA nas unidades do shell (108/108) e no
+#     ponta a ponta `verificar:redis` com o shell reconstruido (118/118). OBSERVACAO, sem veto: codigo pre-existente (D1 8559367,
+#     tocado no D2 03ba9b0), fora do diff da D19-B e fora das leituras de renovarSessao que o veto cobriu; mesmo sintoma (erro do
+#     Redis -> sessao "ausente" -> cookie apagado e login com a sessao intacta). Teste sugerido: erp-shell/test/redis.test.mjs,
+#     "GET (e conexao) que falha rejeita, nunca null"; o mesmo vale para lib/redis.ts das 3 zonas.
+# Etapa 4 (piso da it.1, uma ou mais por familia A B C D Z R S + E01): 13 pegas, 0 vivas. B11 (viva na it.1) agora pega.
+# Total: 34 registros, 32 pegas, 2 vivas (V11 e V11e, a mesma mutacao em duas suites), 0 equivalentes vivas.
