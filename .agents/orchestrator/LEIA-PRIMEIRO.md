@@ -31,6 +31,12 @@ necessário no repositório. Detalhes no fim de `RETOMADA.md`.
   commit vem junto com o do `RETOMADA.md`. `.superpowers/sdd/` continua fora do git (o `.gitignore` de lá é da
   ferramenta).
 
+**Regras de processo (humano, 2026-10-06):**
+- **Critério de pronto do objetivo:** as funcionalidades básicas listadas em `RETOMADA.md` ("Objetivo final"). Sessão
+  compartilhada e cache não são básicas; C2, B2, G4 e G5 ficam para depois do objetivo.
+- **Veto só por teste → iteração seguinte só com um auditor novo** (detalhe em "Como um gate funciona").
+- **Verificador interrompido pelo limite não é retomado em outra sessão:** despacha-se um novo com as etapas que faltam.
+
 ## Como um gate funciona
 
 ```mermaid

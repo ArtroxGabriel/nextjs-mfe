@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06 (gate da D19-B aprovado; próximo: C1, C3 e D7)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06, fim da sessão (D19-B fechada; próximo: plano do D7)**.
 
 ## Objetivo final
 
@@ -28,9 +28,9 @@ Uma base genérica BFF + Multi-Zones **funcionando, testável e pronta para esca
 
 **Não são funcionamento básico:** sessão compartilhada e cache.
 
-**Repriorização (humano, 2026-10-06):** o objetivo fecha com **C1, C3, D7, E3 (resto), E4 e E5**. **C3 entra** (zona nova
+**Repriorização (humano, 2026-10-06):** o objetivo fecha com **D7, C1, C3 (nesta ordem), E3 (resto), E4 e E5**. **C3 entra** (zona nova
 sem editar o `zonas.json` nem republicar o shell). **C2, B2, G4 e G5 ficam para depois do objetivo.** A D19-B fecha o gate
-em andamento. Ordem: D19-B → C1, C3 e D7 → E3 (resto) e E4 → E5.
+em andamento. Ordem: D19-B (✅) → D7 → C1 → C3 → E3 (resto) e E4 → E5.
 
 ## Decisões do humano (respondido em 2026-09-23)
 
@@ -55,19 +55,29 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | ADRs | 0013 com adendos 1–3 e 0014 com adendo 1, aceitos | `docs/adr/` |
 | Gates fechados | shell, B1+D1+G3+K, D2, **D19-B** (2026-10-06, iteração 2, tag `gate-d19b-aprovado`) | `GATE_STATUS.md` |
 
-## Próximo passo: C1, C3 e D7 (funcionalidades básicas)
+## Próximo passo: D7, depois C1, depois C3 (ordem do humano, 2026-10-06)
 
-Sessão e identidade estão fechadas (D1, D2, D19-B). Os menores das tasks do D2 e da D19-B estão em `DEFERRED.md` D27; os
-de arquitetura em D17, D18, D24–D26. Pela repriorização de 2026-10-06, o próximo trabalho é:
+Sessão e identidade estão fechadas (D1, D2, D19-B). Os menores do D2 estão em `DEFERRED.md` D27; os de arquitetura em
+D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com plano em `docs/superpowers/plans/`
+(modo Subagent-Driven), tasks revisadas e gate:
 
-1. **C1 — fragmentos entre zonas** (#10): rota `_fragmento` na zona 2, bloco dela na zona 1 com `criarFragmento`, o shell
-   recusa `/{zona}/_fragmento/` vindo do navegador, ponta a ponta. Núcleo pronto desde a 0.5.0 (ADR-0011).
-2. **C3 — mapa de zonas pelos manifestos** (#14): zona nova entra sem editar o `zonas.json` nem republicar o shell. Começa
-   por decidir o mecanismo (rewrites do Next são fixados na subida) — passar pelo `arquiteto-mfe` e, se for estrutural, ADR.
-3. **D7 — zona travada** (#11): hoje segura a requisição ~30 s e devolve 500 cru; resposta de indisponível dentro de um
-   teto configurável (`docs/CONFIGURACAO.md`).
+1. ⬜ **D7 — zona travada** (#11). Hoje segura a requisição ~30 s (`proxyTimeout` do Next) e devolve 500 cru. Alvo: página de
+   indisponível dentro de um teto configurável (env lida no servidor, padrão seguro, `docs/CONFIGURACAO.md`). Evidência e
+   alavanca em `DEFERRED.md` D7; registrar o valor em `docs/desenho/mfe/01-operacao.md` §5.1. Atenção: o `proxyTimeout`
+   vale para toda resposta repassada; sem o C2 (SSE adiado) não há resposta longa a preservar hoje, mas o plano deve dizer
+   como o C2 conviverá com o teto.
+2. ⬜ **C1 — fragmentos entre zonas** (#10). Núcleo pronto desde a 0.5.0 (`criarFragmento`/`responderFragmento`, ADR-0011).
+   Falta: rota `_fragmento` na zona 2, bloco dela na zona 1, o shell recusa `/{zona}/_fragmento/` vindo do navegador, e
+   o teste ponta a ponta.
+3. ⬜ **C3 — mapa de zonas pelos manifestos** (#14). Zona nova entra sem editar o `zonas.json` nem republicar o shell.
+   **Começa pelo `arquiteto-mfe`** (os rewrites do Next são fixados na subida; escolher o mecanismo); se for estrutural,
+   ADR e pedido em `pedidos/` para o humano.
+4. Depois: resto do E3 (`showcase:conferir` no modo OIDC), E4 (roteiro: uma linha por funcionalidade básica) e E5.
 
-Cada um com plano em `docs/superpowers/plans/`, tasks com revisão e gate. Os três são independentes.
+**Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente
+(`docker ps`: Redis e Keycloak podem ter caído com a máquina → `task showcase:subir` e `task showcase:checar`); então
+**escrever o plano do D7** (`superpowers:writing-plans`) em `docs/superpowers/plans/2026-10-AA-d7-zona-travada.md`, commitar
+e despachar a Task 1. Nada está rodando e nenhum agente está aberto.
 
 ## Plano até o objetivo
 
@@ -129,6 +139,8 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 - **Duas pessoas na mesma branch, em horários diferentes** (humano, 2026-09-23): ao retomar, `git fetch` e ler os commits do
   outro antes de seguir; ao parar, deixar tudo commitado e enviado, com este arquivo dizendo o passo exato e o que está rodando.
 - **Pendências do GitLab revisadas a cada passo:** `ATIVIDADES.md` atualizado e bloco 📌 GitLab na resposta.
+- **Verificador interrompido não é retomado em outra sessão:** o agente some com a sessão; despachar um novo (`<papel>_<gate>_<n+1>`)
+  só com as etapas que faltam, a partir do handoff parcial do anterior (2026-10-06).
 - **Gate segue o `LEIA-PRIMEIRO.md`:** revisor e challenger em Sonnet, auditor forense em Opus com veto (veto só por teste: a iteração seguinte é só um auditor novo); o auditor só roda
   quando o challenger libera as portas. Verificador que já entregou handoff não é reusado.
 - **Nada específico do material de levantamento** entra no repositório; só o vocabulário genérico da base, com dados fictícios.

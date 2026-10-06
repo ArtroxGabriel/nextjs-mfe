@@ -72,7 +72,7 @@ serão criadas: o trabalho delas está na #17.
 
 Pendente no GitLab. Um comentário por atividade:
 
-- **#11:** `Repriorizada (2026-10-06): o SSE no shell fica para depois do objetivo da base (funcionalidades básicas no showcase). A zona travada que segura a requisição até o proxyTimeout (D7) sai daqui e é tratada antes, como tratamento de fluxo.`
+- **#11:** `Repriorizada (2026-10-06): o SSE no shell fica para depois do objetivo da base (funcionalidades básicas no showcase). A zona travada que segura a requisição até o proxyTimeout (D7) sai daqui e é a próxima entrega, antes dos fragmentos (#10) e do mapa de zonas (#14).`
 - **#14:** `Repriorizada (2026-10-06): o mapa de zonas vindo dos manifestos (C3) entra no objetivo: uma zona nova passa a ser integrada sem editar o zonas.json nem republicar o shell. Registro único de pacotes e CI continuam no fim do plano.`
 - **#18:** `Repriorizada (2026-10-06): exportar os spans (SDK OpenTelemetry) fica para depois do objetivo da base. A geração e a propagação de trace entre shell e zonas seguem entregues.`
 - **#19:** `Critério de pronto definido (2026-10-06): o showcase mostra as funcionalidades básicas: renderizar o shell, zonas, integração entre zonas (fragmentos e mapa pelos manifestos), tratamentos do fluxo (erro, acesso negado, zona fora do ar ou travada), base de UI, bases em pacotes separados (contratos, núcleo, moldura) e integração com os backends. Sessão compartilhada e cache não fazem parte do básico. Faltam o roteiro e a verificação ponta a ponta contra ele.`
@@ -440,3 +440,4 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-10-05 (D19-B) | D19-B implementada (núcleo 0.10.3 nas 4 apps: perdedor do lock espera a renovação com token vencido; validações do D20; `SHELL_HOSTS` com `trim`; `sair` compara o esquema; adendo 3 ao ADR-0013); gate da D19-B: revisor APPROVE, challenger parado pelo limite da API depois da etapa 6. Nada novo no GitLab além de **fechar #9 (#120)**, ainda pendente |
 | 2026-10-06 | Humano define as funcionalidades básicas (critério de pronto da #19); C3 entra no objetivo; C2 (#11), B2 (#18), G4 e G5 (#21) para depois do objetivo; D7 separado do C2. Comentários pendentes em #11, #14, #18, #19, #21 |
 | 2026-10-06 (gate D19-B) | Gate da D19-B aprovado na iteração 2 (só auditor, regra nova para veto só por teste); tag `gate-d19b-aprovado`. Sem mudança de ação no GitLab (#9 já fechada); próximo: C1 (#10), C3 (#14), D7 (#11) |
+| 2026-10-06 (ordem) | Humano fixa a ordem D7 (#11) → C1 (#10) → C3 (#14); texto da #11 ajustado. Comentários de §3 seguem pendentes |

@@ -137,3 +137,9 @@
   (`kcadmin.mjs` do challenger_d2_1 e do d2_2); chamar a função com `''` direto.
 - **`CONSTRUIR=1` não vê mudança no `dist` instalado** (`node_modules` fora de `ENTRADAS_DO_BUILD`): ao mutar o `dist`, tocar a
   app antes e depois. Restaurar a fonte com `cp -p`/`copy2` preserva o mtime e deixa o build mutado valendo (auditor_d2_1).
+- **Ao retomar, conferir os contêineres antes de despachar verificador** (2026-10-06): a máquina reiniciou entre sessões e
+  só o Verdaccio voltou; Redis e Keycloak estavam parados, ao contrário do `RETOMADA.md`. `docker ps`, depois
+  `task showcase:subir` e esperar o Keycloak responder (`/realms/erp/.well-known/openid-configuration`) antes de
+  `task showcase:checar` — logo depois do `up` ele reprova por ainda estar subindo.
+- **Agente de outra sessão não existe mais:** `SendMessage` para um verificador da sessão anterior não funciona; despachar
+  um novo com as etapas que faltam.
