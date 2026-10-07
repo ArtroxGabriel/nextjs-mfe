@@ -432,6 +432,6 @@ Gate Result: **REJECT** (challenger, pelo roteiro e pela mensagem de erro do `zo
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
 | worker_e3e5_1 | correção do veto (sonnet) | — | .agents/worker_e3e5_1/handoff.md | A3, A8 a A10, A14, A15 e a nota da suíte reescritos pela tela real e seguidos por HTTP; `zona-demo` com mensagem clara e exit 1 para porta ocupada e gestão de acesso fora, sem rota nem porta órfã; eva no `conferir`; `conferir` 0, `verificar` 7/7 |
-| revisor_e3e5_2 | revisor-mfe (sonnet) | em andamento | .agents/revisor_e3e5_2/handoff.md | |
+| revisor_e3e5_2 | revisor-mfe (sonnet) | **APPROVE** | .agents/revisor_e3e5_2/handoff.md | todos os achados do challenger_e3e5_1 conferem com o código; 4 menores (`catch {}` do `zona-demo` descarta a causa; POST registrado com resposta estourando o timeout deixa rota com servidor fechado; `fechar()` no `catch` pode mascarar o erro; `dados:resetar` citado duas vezes no Preparar) |
 | challenger_e3e5_2 | simulador-condicoes (sonnet) | em andamento | .agents/challenger_e3e5_2/handoff.md | |
 | auditor_e3e5_1 | general-purpose forense (opus) | aguardando challenger | .agents/auditor_e3e5_1/handoff.md | |
