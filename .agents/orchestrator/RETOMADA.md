@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06 (gate do D7 aprovado; Tasks 1–3 do C1 fechadas; gate do C1 iteração 1 vetado só por teste; correção feita (worker_c1_1); iteração 2 vetada só por teste; worker_c1_2 corrigindo)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06 (gate do D7 aprovado; Tasks 1–3 do C1 fechadas; gate do C1 iteração 1 vetado só por teste; correção feita (worker_c1_1); iteração 2 vetada só por teste; correção feita; iteração 3 só com auditor)**.
 
 ## Objetivo final
 
@@ -85,7 +85,7 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
 
 **Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente
 (`docker ps`: Redis e Keycloak podem ter caído com a máquina → `task showcase:subir` e `task showcase:checar`); então
-**Em andamento:** gate do C1, iteração 2 vetada só por teste (`auditor_c1_2`: placeholder com outro texto e escape da lista inteira não pegos). Correção por `worker_c1_2` (só teste); depois iteração 3 só com `auditor_c1_3`, que reaplica V-U1c, V-U1d, V-U1f, V-Z4e e E-U1b. Depois do C1: núcleo 0.10.4 (`DEFERRED.md` D29), antes do C3.
+**Em andamento:** gate do C1, iteração 2 vetada só por teste (`auditor_c1_2`: placeholder com outro texto e escape da lista inteira não pegos). Correção feita por `worker_c1_2` (principal `103c656`, só teste); **iteração 3 em andamento**, só com `auditor_c1_3`, que reaplica V-U1c, V-U1d, V-U1f, V-Z4e e E-U1b. Depois do C1: núcleo 0.10.4 (`DEFERRED.md` D29), antes do C3.
 
 ## Plano até o objetivo
 
