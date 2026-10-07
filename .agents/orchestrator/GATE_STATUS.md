@@ -384,7 +384,7 @@ Antes do gate (2026-10-07): `task test` verde (contratos 20, núcleo 286, moldur
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
-| revisor_d29_1 | revisor-mfe (sonnet) | em andamento | .agents/revisor_d29_1/handoff.md | |
-| challenger_d29_1 | simulador-condicoes (sonnet) | em andamento | .agents/challenger_d29_1/handoff.md | |
-| auditor_d29_1 | general-purpose forense (opus) | espera o challenger | .agents/auditor_d29_1/handoff.md | |
+| revisor_d29_1 | revisor-mfe (sonnet) | **APPROVE** | .agents/revisor_d29_1/handoff.md | sem crítico nem importante; 2 menores (U+202E e U+FEFF aceitos em texto e valor; `id="__next"` é variante do limite `id`/`class` do D30); suspeita de logout por GET descartada pelo orquestrador (`/api/auth/sair` só tem POST) |
+| challenger_d29_1 | simulador-condicoes (sonnet) | **APPROVE** | .agents/challenger_d29_1/handoff.md | 24 fragmentos hostis por uma dona falsa (`ZONA2_URL`): o bloco some do painel da zona 1 em HTML e RSC; controle canônico aparece; dono real 200/204/404, 20 produtores hostis dão 500 sem corpo; `verificar:redis` 123/123; divergências: fragmento direto sem cookie dá 307 ao `/login` (não 204; anterior ao D29), BOM aceito como texto |
+| auditor_d29_1 | general-purpose forense (opus) | em andamento | .agents/auditor_d29_1/handoff.md | |
 
