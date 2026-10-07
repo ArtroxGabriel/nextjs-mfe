@@ -68,12 +68,14 @@ Medido em 2026-10-07 com `task medir:gateway` (base de produção no showcase, a
 | a. documento `GET /zona1`, pelo gateway | 4 | 44,2 | 60,7 | 87 | 3263 | 4,39 |
 | b. RSC da mesma página, caminho rápido | 1 | 18,4 | 37,2 | 51 | 2703 | 5,33 |
 | b. RSC da mesma página, caminho rápido | 4 | 34,6 | 54,1 | 114 | 2703 | 3,41 |
-| c. ativo `/zona1-static/...`, caminho rápido | 1 | 3,3 | 8,1 | 271 | 662 | 2,19 |
-| c. ativo `/zona1-static/...`, caminho rápido | 4 | 5,8 | 15,0 | 581 | 662 | 2,04 |
+| c. ativo `/zona1-static/...` (CSS), caminho rápido | 1 | 3,3 | 8,1 | 271 | 662 | 2,19 |
+| c. ativo `/zona1-static/...` (CSS), caminho rápido | 4 | 5,8 | 15,0 | 581 | 662 | 2,04 |
 
-O documento chegou comprimido (`content-encoding: gzip`) e nenhum cenário teve erro. O RSC é pedido como o App Router pede, com `RSC: 1` e `?_rsc` sem valor (com outro valor o Next da zona responde 307 para `?_rsc`).
+O documento chegou comprimido (`content-encoding: gzip`) e nenhum cenário teve erro. É uma rodada só, com cerca de 300 amostras com uma conexão, então diferenças de p99 entre cenários estão dentro do ruído.
 
-Contra o tempo de renderização da própria zona (o RSC da mesma página, 18,4 ms com uma conexão), o gateway acrescentou cerca de 7,5 ms no p50 e 2 ms de CPU por requisição de documento, bem menos que as 2 a 4,5 vezes da medição sintética, porque a renderização real da zona domina o tempo e o gateway só repassa. O custo fixo de passar pelo shell, sem renderização, é o do ativo estático (cerca de 2 ms de CPU por requisição), e é o que o caminho rápido paga.
+Como ler: documento e RSC diferem no caminho, no que a zona renderiza e no tamanho da resposta, então nenhum cenário isolou o custo do gateway. A evidência mais limpa é a CPU do shell por requisição: cerca de 2,2 ms a mais por documento do que por RSC com uma conexão e cerca de 1 ms com quatro. A diferença de p50 (25,9 contra 18,4 ms, cerca de 7,5 ms) é só um limite superior, porque inclui a diferença de renderização. A hipótese de que a renderização da zona domina e o gateway só repassa é plausível, mas não foi medida. Os números reais também não são comparáveis com a medição sintética (de 2 a 4,5 vezes), que comparou o gateway com o proxy direto sobre uma zona falsa. O ativo estático, com resposta de 662 bytes, dá só uma ordem de grandeza do piso de CPU por requisição pelo shell (cerca de 2 ms), não um custo fixo.
+
+Sobre o `_rsc`: o Next da zona calcula o valor esperado de `_rsc` a partir dos cabeçalhos da própria requisição RSC (`computeCacheBustingSearchParam` em `base-server.js`), e sem cabeçalhos de roteador o esperado é vazio; qualquer outro valor leva a 307 para `?_rsc`. Por isso o script usa `?_rsc` vazio. Um navegador calcula o valor dos cabeçalhos que ele mesmo envia, então a navegação do cliente deve receber 200, mas isso foi lido no código e não afirmado por teste: o e2e do navegador (`base/verificacao/base.test.mjs`, teste da gestão de acesso fora) só confere que o pedido RSC acontece, não o status. Ponto em aberto: afirmar o 200 da navegação do cliente pelo shell.
 
 ## Adendo 1 (2026-10-07): `x-middleware-rewrite` no caminho rápido
 

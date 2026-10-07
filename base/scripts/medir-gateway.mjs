@@ -66,6 +66,7 @@ try {
 
   const doc = await um('/zona1', { cookie, 'accept-encoding': 'gzip' })
   if (doc.status !== 200) throw new Error(`GET /zona1 devolveu HTTP ${doc.status}`)
+  if (doc.headers['content-encoding'] !== 'gzip') throw new Error(`o documento nao veio comprimido (content-encoding: ${doc.headers['content-encoding'] ?? 'nenhum'})`)
   const html = (doc.headers['content-encoding'] === 'gzip' ? gunzipSync(doc.corpo) : doc.corpo).toString('utf8')
   const ativo = html.match(/\/zona1-static\/[^"'\s)]+\.(?:js|css)/)?.[0]
   if (!ativo) throw new Error('nenhum /zona1-static/ no HTML de /zona1')
@@ -76,7 +77,7 @@ try {
   const cenarios = [
     ['a. documento pelo gateway (GET /zona1)', '/zona1', { cookie }],
     ['b. RSC, caminho rápido (GET /zona1?_rsc, RSC: 1)', '/zona1?_rsc', { cookie, rsc: '1' }],
-    ['c. ativo da zona, caminho rápido (CSS em /zona1-static)', ativo, { cookie }],
+    ['c. ativo da zona, caminho rápido (CSS ou JS de /zona1-static)', ativo, { cookie }],
   ]
   const f = (v, d = 1) => v.toFixed(d).padStart(8)
   console.log(`${SEGUNDOS} s por cenário depois de ${AQUECER_S} s de aquecimento; CPU do shell por requisição em ms`)
