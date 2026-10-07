@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (E3-E5: Tasks 1, 2 e 2b fechadas; Task 3 em revisão)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (E3-E5: Tasks 1 a 3 fechadas; próxima a Task 4)**.
 
 ## Objetivo final
 
@@ -75,7 +75,7 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
 2. ✅ **C1 — fragmentos entre zonas** (#10). Plano: `docs/superpowers/plans/2026-10-06-c1-fragmentos-entre-zonas.md`. Zona 2 `1626fd1` (dona), shell `836ddc4` (recusa), zona 1 `39c4b76` (bloco, `ZONA2_URL`); testes C1a–C1d. **Gate aprovado na iteração 3** (2026-10-06): revisor e challenger APROVAM; auditor vetou duas vezes só por teste (escape, filtro, placeholder) e passou na 3; tag `gate-c1-aprovado`. Menores e limites em `DEFERRED.md` D30.
 2b. ✅ **Núcleo 0.10.4 — `ehHtmlInerte` por lista de permissão** (`DEFERRED.md` D29; decisão do humano, 2026-10-06: logo depois do C1, antes do C3). Plano: `docs/superpowers/plans/2026-10-07-nucleo-0104-html-inerte.md` (4 tasks; mutações M1–M13 declaradas no plano e rodadas pelo worker antes do gate), lockstep nas 4 apps, gate próprio. Feito: núcleo `50a0fea` (15 testes, M1–M13 pegas); apps shell `2f03183`, zona-1 `0a1dcc0`, zona-2 `4184225`, zona-acesso `54741cd`, ponteiros `bbf6a84`; documentos (02-zonas §2.3 e §2.5, ADR-0011 adendo 2, D29 fechado, limites no D30). **Gate aprovado na iteração 1** (2026-10-07): revisor e challenger APROVAM, auditor PASS (61 execuções, 51 pegas, 10 vivas equivalentes ou mais restritivas); tag `gate-d29-aprovado`. Menores em `DEFERRED.md` D30.
 3. ✅ **C3, mapa de zonas vivo e gateway híbrido** (#14). Plano: `docs/superpowers/plans/2026-10-07-c3-mapa-de-zonas.md`; ADR-0015 aceito (pacote recomendado e decisão sobre o `x-middleware-rewrite`, 2026-10-07). Stub `2da6dcb`, zonas `ce8e015`, `f88cce7`, `73a2c19`, shell `d52b5fc`, principal até `4a6fc63`. **Gate aprovado na iteração 2** (2026-10-07): revisor e challenger APROVAM; auditor vetou só por teste (prefixo estático sem a barra) e passou na 2; tag `gate-c3-aprovado`. Fecha o D7. Limites no `DEFERRED.md` D31, menores no D32.
-4. ⏳ **E3, E4 e E5** (#19). Plano: `docs/superpowers/plans/2026-10-07-e3-e4-e5-showcase.md`. Task 1 (`showcase:conferir` nos dois modos, `beb5b95`), Task 2 (`showcase:zona-demo`, `7ea3658` e `1198ab1`) e Task 2b (supportId na página de zona fora do ar pela sonda, shell `d6e48fc`) fechadas; Task 3 (roteiro F1 a F7, `2d1a6df`) em revisão; faltam a Task 4 (`showcase:verificar`) e a Task 5 (verificação final e gate).
+4. ⏳ **E3, E4 e E5** (#19). Plano: `docs/superpowers/plans/2026-10-07-e3-e4-e5-showcase.md`. Task 1 (`showcase:conferir` nos dois modos, `beb5b95`), Task 2 (`showcase:zona-demo`, `7ea3658` e `1198ab1`) e Task 2b (supportId na página de zona fora do ar pela sonda, shell `d6e48fc`) fechadas; Task 3 (roteiro F1 a F7, `2d1a6df` e `8d3428e`) fechada; faltam a Task 4 (`showcase:verificar`) e a Task 5 (verificação final e gate).
 
 **Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente (`docker ps`; `task showcase:checar`); então seguir o plano `docs/superpowers/plans/2026-10-07-e3-e4-e5-showcase.md` (5 tasks) em Subagent-Driven; o ledger diz em que task está (`.superpowers/sdd/2026-10-07-e3-e4-e5-showcase/progress.md`, cópia em `ledger/`). Nada está rodando e nenhum agente está aberto.
 
