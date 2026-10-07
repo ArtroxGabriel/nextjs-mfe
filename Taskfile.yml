@@ -188,6 +188,10 @@ tasks:
     desc: Com o showcase no ar, mostra o que cada ator vê em cada zona e confere infraestrutura e segurança visível
     cmd: node base/showcase/conferir.mjs
 
+  showcase:verificar:
+    desc: "Com o showcase no ar (task showcase ou showcase:oidc), prova as 7 funcionalidades básicas F1 a F7 por HTTP; detecta o modo de login"
+    cmd: node --test --test-timeout=300000 base/verificacao/showcase.test.mjs
+
   showcase:zona-demo:
     desc: "Com o showcase no ar, sobe a zona demo (porta 3009) e a registra; Enter derruba e volta, Ctrl-C remove a rota"
     cmd: node base/showcase/zona-demo.mjs
