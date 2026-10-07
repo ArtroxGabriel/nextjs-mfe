@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (núcleo 0.10.4: Tasks 1–3 feitas; próximo: Task 4, verificação final e gate do D29)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (gate do D29 aprovado na iteração 1; próximo: C3)**.
 
 ## Objetivo final
 
@@ -60,7 +60,7 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | Unidades | contratos 20, núcleo 271, moldura 26, stub 75, shell 108; estática 51/51 | `task test`, `task verificar:estatica` |
 | Pacotes | `@erp/nucleo` **0.10.4**, `@erp/contratos` **0.4.0**, `@erp/moldura` **0.5.0**, só no Verdaccio desta máquina; lockstep ok | `task lockstep` |
 | ADRs | 0013 com adendos 1–3 e 0014 com adendo 1, aceitos | `docs/adr/` |
-| Gates fechados | shell, B1+D1+G3+K, D2, D19-B (2026-10-06, tag `gate-d19b-aprovado`), D7 (2026-10-06, iteração 1, tag `gate-d7-aprovado`), **C1** (2026-10-06, iteração 3, tag `gate-c1-aprovado`) | `GATE_STATUS.md`
+| Gates fechados | shell, B1+D1+G3+K, D2, D19-B (2026-10-06, tag `gate-d19b-aprovado`), D7 (2026-10-06, iteração 1, tag `gate-d7-aprovado`), C1 (2026-10-06, iteração 3, tag `gate-c1-aprovado`), **D29** (2026-10-07, iteração 1, tag `gate-d29-aprovado`) | `GATE_STATUS.md`
 
 ## Próximo passo: núcleo 0.10.4, depois C3 (ordem do humano, 2026-10-06; D7 e C1 ✅)
 
@@ -73,7 +73,7 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
    estourar, o próprio Next escreve o 500 cru (`proxy-request.js`, sem gancho); o D7 entrega `ERP_ZONA_TETO_MS` (10 s, B1) e a
    página de indisponível dentro do teto passa a ser requisito do C3.
 2. ✅ **C1 — fragmentos entre zonas** (#10). Plano: `docs/superpowers/plans/2026-10-06-c1-fragmentos-entre-zonas.md`. Zona 2 `1626fd1` (dona), shell `836ddc4` (recusa), zona 1 `39c4b76` (bloco, `ZONA2_URL`); testes C1a–C1d. **Gate aprovado na iteração 3** (2026-10-06): revisor e challenger APROVAM; auditor vetou duas vezes só por teste (escape, filtro, placeholder) e passou na 3; tag `gate-c1-aprovado`. Menores e limites em `DEFERRED.md` D30.
-2b. ✅ (falta o gate: Task 4) **Núcleo 0.10.4 — `ehHtmlInerte` por lista de permissão** (`DEFERRED.md` D29; decisão do humano, 2026-10-06: logo depois do C1, antes do C3). Plano: `docs/superpowers/plans/2026-10-07-nucleo-0104-html-inerte.md` (4 tasks; mutações M1–M13 declaradas no plano e rodadas pelo worker antes do gate), lockstep nas 4 apps, gate próprio. Feito: núcleo `50a0fea` (15 testes, M1–M13 pegas); apps shell `2f03183`, zona-1 `0a1dcc0`, zona-2 `4184225`, zona-acesso `54741cd`, ponteiros `bbf6a84`; documentos (02-zonas §2.3 e §2.5, ADR-0011 adendo 2, D29 fechado, limites no D30).
+2b. ✅ **Núcleo 0.10.4 — `ehHtmlInerte` por lista de permissão** (`DEFERRED.md` D29; decisão do humano, 2026-10-06: logo depois do C1, antes do C3). Plano: `docs/superpowers/plans/2026-10-07-nucleo-0104-html-inerte.md` (4 tasks; mutações M1–M13 declaradas no plano e rodadas pelo worker antes do gate), lockstep nas 4 apps, gate próprio. Feito: núcleo `50a0fea` (15 testes, M1–M13 pegas); apps shell `2f03183`, zona-1 `0a1dcc0`, zona-2 `4184225`, zona-acesso `54741cd`, ponteiros `bbf6a84`; documentos (02-zonas §2.3 e §2.5, ADR-0011 adendo 2, D29 fechado, limites no D30). **Gate aprovado na iteração 1** (2026-10-07): revisor e challenger APROVAM, auditor PASS (61 execuções, 51 pegas, 10 vivas equivalentes ou mais restritivas); tag `gate-d29-aprovado`. Menores em `DEFERRED.md` D30.
 3. ⬜ **C3 — mapa de zonas pelos manifestos** (#14). Zona nova entra sem editar o `zonas.json` nem republicar o shell.
    **Requisito vindo do D7 (2026-10-06):** o mecanismo escolhido entrega a página de indisponível dentro de `ERP_ZONA_TETO_MS`.
    Do gate do D7: uma página com várias chamadas lentas em sequência, sem mandar bytes, também é cortada no teto (500 cru);
@@ -83,9 +83,9 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
 4. Depois: resto do E3 (`showcase:conferir` no modo OIDC), E4 (roteiro: uma linha por funcionalidade básica) e E5.
 
 **Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente
-(`docker ps`: em 2026-10-07 só o Verdaccio estava no ar → `task showcase:subir` e `task showcase:checar`); então executar a
-**Task 4** do plano do núcleo 0.10.4 (`docs/superpowers/plans/2026-10-07-nucleo-0104-html-inerte.md`): verificação final e
-gate do D29, completo (revisor, challenger, auditor). Tasks 1–3 feitas. Nada está rodando e nenhum agente está aberto.
+(`docker ps`; `task showcase:checar`); então começar o **C3** pelo agente `arquiteto-mfe` (escolher o mecanismo do mapa de
+zonas pelos manifestos, com os requisitos do item 3 acima). Se for estrutural: ADR em `docs/adr/` e pedido em `pedidos/` para
+o humano, e parar até a resposta. Nada está rodando e nenhum agente está aberto.
 
 ## Plano até o objetivo
 
@@ -166,9 +166,9 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 
 ## Ambiente (2026-10-07)
 
-- No ar: só o Verdaccio (4873). **Redis e Keycloak caíram com a máquina**: `task showcase:subir` e `task showcase:checar` antes
-  de qualquer verificação. Portas da base 3000–3003 e 4001–4120 livres; nenhum agente rodando.
-- `@erp/nucleo` 0.10.3 só no Verdaccio desta máquina. Outra máquina: `task pacotes:publicar` e `task pacotes:alinhar-hashes`.
+- No ar (fim do gate do D29): Verdaccio (4873), Redis (6379) e Keycloak (8080), `showcase:checar` ok. Se a máquina reiniciar:
+  `task showcase:subir` e `task showcase:checar`. Portas da base 3000–3003 e 4001–4120 livres; nenhum agente rodando.
+- `@erp/nucleo` 0.10.4 só no Verdaccio desta máquina. Outra máquina: `task pacotes:publicar` e `task pacotes:alinhar-hashes`.
 - Fora de commit, de propósito: `docs/README.md`, `docs/arquitetura/alvo.md`, `docs/arquitetura/infraestrutura-alvo.md`
   (trabalho do humano) e os `pnpm-lock.yaml` de erp-dominio-stub e erp-moldura (hash local, `AMBIENTE.md` §1).
 - A reescrita da `bff-multizone` com push forçado (2026-10-05, JWT local mascarado) e os ambientes anteriores estão no

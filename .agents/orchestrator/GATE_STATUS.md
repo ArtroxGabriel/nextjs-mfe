@@ -386,5 +386,10 @@ Antes do gate (2026-10-07): `task test` verde (contratos 20, núcleo 286, moldur
 |-------|------|---------|--------|-------|
 | revisor_d29_1 | revisor-mfe (sonnet) | **APPROVE** | .agents/revisor_d29_1/handoff.md | sem crítico nem importante; 2 menores (U+202E e U+FEFF aceitos em texto e valor; `id="__next"` é variante do limite `id`/`class` do D30); suspeita de logout por GET descartada pelo orquestrador (`/api/auth/sair` só tem POST) |
 | challenger_d29_1 | simulador-condicoes (sonnet) | **APPROVE** | .agents/challenger_d29_1/handoff.md | 24 fragmentos hostis por uma dona falsa (`ZONA2_URL`): o bloco some do painel da zona 1 em HTML e RSC; controle canônico aparece; dono real 200/204/404, 20 produtores hostis dão 500 sem corpo; `verificar:redis` 123/123; divergências: fragmento direto sem cookie dá 307 ao `/login` (não 204; anterior ao D29), BOM aceito como texto |
-| auditor_d29_1 | general-purpose forense (opus) | em andamento | .agents/auditor_d29_1/handoff.md | |
+| auditor_d29_1 | general-purpose forense (opus) | **PASS** | .agents/auditor_d29_1/handoff.md, mutacoes.txt | 61 execuções (M1–M13 com variantes, 19 novas de boa-fé, 3 de integração), 51 pegas; 10 vivas, nenhuma defeito: 7 equivalentes (M4b, M13b, N3, N4c, N4d, N7, N11) e 3 que só aceitam menos ou lançam e recusam (N6a, N6c, N9); `dist` das zonas idêntico ao build do fonte limpo; fuzz de 600 mil fragmentos sem execução; árvores limpas |
+
+Gate Result: **PASS** (iteração 1). Fecha o **D29**: o HTML de fragmento é validado por lista de permissão no núcleo 0.10.4, em
+lockstep nas 4 apps (`02-zonas.md` §2.3, ADR-0011 adendo 2). Menores e o alcance maior do limite (a) do D30 em `DEFERRED.md` D30.
+Pastas dos verificadores removidas depois do registro; última versão no commit `0be6033`
+(`git show 0be6033:.agents/<nome>/handoff.md`). Tag `gate-d29-aprovado`.
 

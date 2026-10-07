@@ -191,9 +191,17 @@
   opcional: colapsar `/+` e tratar `%2F` antes do regex.
 - **Limites declarados da lista de permissão do 0.10.4 (revisão da Task 1 do D29):** (a) pilha balanceada não é aninhamento
   válido: `<p><ul></ul></p>`, `<a><a></a></a>` e `<li>` fora de lista passam; o parser reestrutura o DOM, sem vetor de
-  execução. (b) `id` e `class` aceitam qualquer valor limpo: DOM clobbering e reuso das classes CSS da consumidora. (c) `href`
+  execução. **Alcance maior (auditor_d29_1):** `<li><div><li>…</li></div></li>` passa e, no parse HTML5 da página, fecha o
+  contêiner e os `div` ancestrais da zona 1 (o bloco "vaza" do contêiner no DOM); fuzz de 600 mil fragmentos sem execução nem
+  captura de conteúdo da página. Fecha de vez com regras de conteúdo por tag (`li` só dentro de `ul`/`ol`, `p` sem bloco).
+  (b) `id` e `class` aceitam qualquer valor limpo: DOM clobbering e reuso das classes CSS da consumidora. (c) `href`
   aceita qualquer caminho da mesma origem, inclusive rota GET com efeito colateral; exige clique do usuário e o domínio decide.
   Fecham quando o primeiro fragmento novo precisar (regra da lista: abrir é commit com teste).
+- **Menores do gate do D29 (2026-10-07):** texto e valor aceitam U+202E (bidi) e U+FEFF (só engano visual; revisor_d29_1 e
+  challenger_d29_1); o `escapar()` da zona 2 não trata controle, e um título com U+0000, U+000B ou U+007F reprova o bloco inteiro
+  (a semente do stub não tem; auditor_d29_1); falta caso positivo de `href` com `%`; `ATRIBUTOS_DA_TAG` deveria ser objeto sem
+  protótipo (hoje inofensivo: `TAGS.has` vem antes); fragmento direto na zona 2 sem cookie dá 307 ao `/login` (proxy), não o
+  204 que o ADR-0011 (decisão 6) e `02-zonas.md` §2 dizem; a consumidora vê ausência igual (challenger_d29_1).
 - **Menores:** o painel pede o fragmento também a quem não tem a zona 2 (um 204 por render); `ZONA2_URL` inválida derruba a
   página na carga; o ADR-0011 (adendo 1) cita o `alvo.md` §6, fora de commit; `atual.md` sem a aresta zona 1 → zona 2; o
   `p:relatorios` do `elementosDoPainel` casa a string exata (falso vermelho com um `title` inocente; usar o `href`); C1a sem o

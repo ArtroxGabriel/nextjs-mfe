@@ -25,3 +25,7 @@ Final review: replaced by the project's full gate (revisor, challenger, auditor;
 Task 4: verification suite running (controller, background), log task-4-verificacao.log
 Task 4: verification green: task test (contratos 20, nucleo 286, moldura 26, stub 75, shell 116), typecheck ok, estatica 51/51, verificar:redis 123/123, verificar:construir 119+4 skipped, oidc 6/6, showcase:checar ok, lockstep 0.10.4
 Task 4: gate D29 iteration 1 dispatched: revisor_d29_1 (revisor-mfe, sonnet) + challenger_d29_1 (simulador-condicoes, sonnet); auditor_d29_1 (opus) after challenger frees ports
+Gate D29 it.1: revisor_d29_1 APPROVE (2 minors: bidi U+202E/U+FEFF accepted in TEXTO/VALOR; id="__next" clobbering variant of D30); logout-by-GET suspicion checked by controller: /api/auth/sair has no GET
+Gate D29 it.1: challenger_d29_1 APPROVE (24 hostile cases vanish, owner 200/204/404/500 ok, verificar:redis 123/123); divergences: direct fragment without cookie gives 307 to /login not 204 (pre-existing, consumer sees absence); BOM accepted as text; ports free. auditor_d29_1 dispatched (opus)
+Gate D29 it.1: auditor_d29_1 PASS (61 runs, 51 caught, 10 live equivalent or tighter); gate approved; minors in DEFERRED D30
+Task 4: complete (verification green, gate approved at iteration 1, tag gate-d29-aprovado)
