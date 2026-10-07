@@ -233,6 +233,8 @@ A duração da sessão é **30 minutos** (decisão do humano); o desenho origina
 | nenhum `<Link>` para fora da própria zona | hoje nenhum `next/link` existe; **sem guarda** que impeça o primeiro |
 | gate de lockstep (`verificar-lockstep.mjs`) | ✅ local, no `pre-push` (ver §6) |
 
+A infraestrutura em volta das aplicações, com os times e os locais de execução, está em [`infraestrutura-alvo.md`](infraestrutura-alvo.md).
+
 Referências: `docs/desenho/mfe/00-arquitetura.md` (solução), `01-operacao.md`
 (roteamento, sessão, falha, deploy), `02-zonas.md` (estrutura e criação de zona),
 `infraestrutura-fora-da-vercel.md` (as limitações que o desenho responde).

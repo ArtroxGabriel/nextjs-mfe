@@ -8,6 +8,7 @@ Três perguntas, três lugares:
 | **quem faz o quê** (BFF de cada MFE, clientes, domínios, pacotes), explicado do zero | [`RESPONSABILIDADES.md`](RESPONSABILIDADES.md) — começa pelo vocabulário | 15 min |
 | **como a base funciona hoje** | [`arquitetura/atual.md`](arquitetura/atual.md) — diagramas de topologia, proxy, login, destinos, acesso, toast, testes e falhas | 10 min |
 | **o que falta e para onde vai** | [`arquitetura/alvo.md`](arquitetura/alvo.md) — a tabela do §6 é a lista do que falta | 10 min |
+| **que infraestrutura o alvo precisa, quem cuida e onde roda** (borda, Redis, OIDC, telemetria, entrega) | [`arquitetura/infraestrutura-alvo.md`](arquitetura/infraestrutura-alvo.md), em camadas, por time e por local de execução; a seção 9 é o que falta | 10 min |
 | **que parâmetro controla o quê** (sessão, timeouts, limites) | [`CONFIGURACAO.md`](CONFIGURACAO.md) — toda variável, com padrão e quem lê | 5 min |
 | **como conferir com as próprias mãos** | [`ROTEIRO-DE-VERIFICACAO.md`](ROTEIRO-DE-VERIFICACAO.md) — 12 passos no navegador | 10 min |
 
@@ -21,6 +22,7 @@ flowchart TB
     subgraph VALE["vale hoje — mantido junto com o código"]
         AT["arquitetura/atual.md<br/>o que existe"]
         AL["arquitetura/alvo.md<br/>o que falta"]
+        IN["arquitetura/infraestrutura-alvo.md<br/>infraestrutura, times e onde roda"]
         RO["ROTEIRO-DE-VERIFICACAO.md<br/>como conferir"]
         ADR["adr/<br/>por que decidimos"]
     end
@@ -29,6 +31,7 @@ flowchart TB
         COM["desenho/bff/<br/>BFF: camadas, núcleo, segurança, testes; manual completo"]
     end
     AT --> AL
+    AL --> IN
     AL -. resume .-> MFE
     ADR -. decide sobre .-> COM
 ```

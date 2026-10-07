@@ -171,7 +171,7 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 - No ar (fim do gate do D29): Verdaccio (4873), Redis (6379) e Keycloak (8080), `showcase:checar` ok. Se a máquina reiniciar:
   `task showcase:subir` e `task showcase:checar`. Portas da base 3000–3003 e 4001–4120 livres; nenhum agente rodando.
 - `@erp/nucleo` 0.10.4 só no Verdaccio desta máquina. Outra máquina: `task pacotes:publicar` e `task pacotes:alinhar-hashes`.
-- Fora de commit, de propósito: `docs/README.md`, `docs/arquitetura/alvo.md`, `docs/arquitetura/infraestrutura-alvo.md`
-  (trabalho do humano) e os `pnpm-lock.yaml` de erp-dominio-stub e erp-moldura (hash local, `AMBIENTE.md` §1).
+- Fora de commit, de propósito: os `pnpm-lock.yaml` de erp-dominio-stub e erp-moldura (hash local, `AMBIENTE.md` §1).
+  A doc de infraestrutura (`docs/arquitetura/infraestrutura-alvo.md`) subiu em 2026-10-07, a pedido do humano.
 - A reescrita da `bff-multizone` com push forçado (2026-10-05, JWT local mascarado) e os ambientes anteriores estão no
   histórico do git deste arquivo e em `AMBIENTE.md`.
