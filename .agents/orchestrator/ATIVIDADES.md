@@ -72,6 +72,10 @@ serão criadas: o trabalho delas está na #17.
 
 Pendente no GitLab: `Entregue (2026-10-06): a zona 1 mostra no painel o bloco "Tarefas pendentes" da zona 2, pedido por fragmento servidor a servidor (ADR-0011, adendo 1; origem em ZONA2_URL). Sem o módulo da zona 2 o bloco não existe; com a zona 2 fora ou travada só o bloco some, dentro de 2 s. O shell responde 404 a /{zona}/_fragmento/ vindo do navegador. Verificações C1a–C1d; gate aprovado na iteração 3 (tag gate-c1-aprovado).`
 
+### #10 — comentário opcional: validação do fragmento por lista de permissão (D29, 2026-10-07)
+
+Pendente no GitLab (opcional; a #10 já está fechada): `Núcleo 0.10.4: a validação do HTML do fragmento passou de lista de bloqueio para lista de permissão (só tags, atributos e href de mesma origem previstos; o resto reprova). Fecha o achado do gate do C1 sobre HTML ativo que a CSP não barra. Fragmento com tag nova reprova até a lista abrir, com teste no mesmo commit (02-zonas §2.3, ADR-0011 adendo 2).`
+
 ### #11 — comentário: zona travada entregue (gate do D7, 2026-10-06)
 
 Pendente no GitLab (opcional; a #11 segue aberta pelo SSE): `Zona travada (D7) entregue: uma zona que não manda nenhum byte é solta pelo shell em ERP_ZONA_TETO_MS (padrão 10 s, documentada em CONFIGURACAO.md), não mais nos 30 s do Next. Verificação ponta a ponta L9; gate aprovado em 2026-10-06 (tag gate-d7-aprovado). A página de indisponível dentro do teto vem com o mapa de zonas (#14). O SSE no shell continua para depois do objetivo.`
@@ -451,3 +455,4 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-10-06 (ordem) | Humano fixa a ordem D7 (#11) → C1 (#10) → C3 (#14); texto da #11 ajustado. Comentários de §3 seguem pendentes |
 | 2026-10-06 (gate D7) | D7 entregue: teto `ERP_ZONA_TETO_MS` no shell, L9; gate aprovado na iteração 1 (tag `gate-d7-aprovado`). #11 segue aberta pelo SSE; comentário opcional em §3; próximo: C1 (#10) |
 | 2026-10-06 (gate C1) | C1 entregue: fragmento da zona 2 no painel da zona 1, recusa no shell; gate aprovado na iteração 3 (dois vetos só por teste). **Fechar #10** com o comentário de §3; próximo: núcleo 0.10.4 (D29), depois C3 (#14) |
+| 2026-10-07 (D29) | Núcleo 0.10.4 e as 4 apps em lockstep: `ehHtmlInerte` por lista de permissão (núcleo `50a0fea`, principal `bbf6a84`); D29 fechado, limites no D30. Comentário opcional em #10 (§3); próximo: gate do D29, depois C3 (#14) |

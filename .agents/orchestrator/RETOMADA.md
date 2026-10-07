@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (núcleo 0.10.4: Task 1 fechada, núcleo `50a0fea`; próximo: Task 2)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (núcleo 0.10.4: Tasks 1–3 feitas; próximo: Task 4, verificação final e gate do D29)**.
 
 ## Objetivo final
 
@@ -58,7 +58,7 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 |---|---|---|
 | Ponta a ponta | `verificar:redis` **118/118**, modo arquivo **114 + 4 pulados**, `verificar:oidc` **6/6** | `GATE_STATUS.md` (D19-B it.2) |
 | Unidades | contratos 20, núcleo 271, moldura 26, stub 75, shell 108; estática 51/51 | `task test`, `task verificar:estatica` |
-| Pacotes | `@erp/nucleo` **0.10.3**, `@erp/contratos` **0.4.0**, `@erp/moldura` **0.5.0**, só no Verdaccio desta máquina; lockstep ok | `task lockstep` |
+| Pacotes | `@erp/nucleo` **0.10.4**, `@erp/contratos` **0.4.0**, `@erp/moldura` **0.5.0**, só no Verdaccio desta máquina; lockstep ok | `task lockstep` |
 | ADRs | 0013 com adendos 1–3 e 0014 com adendo 1, aceitos | `docs/adr/` |
 | Gates fechados | shell, B1+D1+G3+K, D2, D19-B (2026-10-06, tag `gate-d19b-aprovado`), D7 (2026-10-06, iteração 1, tag `gate-d7-aprovado`), **C1** (2026-10-06, iteração 3, tag `gate-c1-aprovado`) | `GATE_STATUS.md`
 
@@ -73,7 +73,7 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
    estourar, o próprio Next escreve o 500 cru (`proxy-request.js`, sem gancho); o D7 entrega `ERP_ZONA_TETO_MS` (10 s, B1) e a
    página de indisponível dentro do teto passa a ser requisito do C3.
 2. ✅ **C1 — fragmentos entre zonas** (#10). Plano: `docs/superpowers/plans/2026-10-06-c1-fragmentos-entre-zonas.md`. Zona 2 `1626fd1` (dona), shell `836ddc4` (recusa), zona 1 `39c4b76` (bloco, `ZONA2_URL`); testes C1a–C1d. **Gate aprovado na iteração 3** (2026-10-06): revisor e challenger APROVAM; auditor vetou duas vezes só por teste (escape, filtro, placeholder) e passou na 3; tag `gate-c1-aprovado`. Menores e limites em `DEFERRED.md` D30.
-2b. ⬜ **Núcleo 0.10.4 — `ehHtmlInerte` por lista de permissão** (`DEFERRED.md` D29; decisão do humano, 2026-10-06: logo depois do C1, antes do C3). Plano: `docs/superpowers/plans/2026-10-07-nucleo-0104-html-inerte.md` (4 tasks; mutações M1–M13 declaradas no plano e rodadas pelo worker antes do gate), lockstep nas 4 apps, gate próprio.
+2b. ✅ (falta o gate: Task 4) **Núcleo 0.10.4 — `ehHtmlInerte` por lista de permissão** (`DEFERRED.md` D29; decisão do humano, 2026-10-06: logo depois do C1, antes do C3). Plano: `docs/superpowers/plans/2026-10-07-nucleo-0104-html-inerte.md` (4 tasks; mutações M1–M13 declaradas no plano e rodadas pelo worker antes do gate), lockstep nas 4 apps, gate próprio. Feito: núcleo `50a0fea` (15 testes, M1–M13 pegas); apps shell `2f03183`, zona-1 `0a1dcc0`, zona-2 `4184225`, zona-acesso `54741cd`, ponteiros `bbf6a84`; documentos (02-zonas §2.3 e §2.5, ADR-0011 adendo 2, D29 fechado, limites no D30).
 3. ⬜ **C3 — mapa de zonas pelos manifestos** (#14). Zona nova entra sem editar o `zonas.json` nem republicar o shell.
    **Requisito vindo do D7 (2026-10-06):** o mecanismo escolhido entrega a página de indisponível dentro de `ERP_ZONA_TETO_MS`.
    Do gate do D7: uma página com várias chamadas lentas em sequência, sem mandar bytes, também é cortada no teto (500 cru);
@@ -84,8 +84,8 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
 
 **Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente
 (`docker ps`: em 2026-10-07 só o Verdaccio estava no ar → `task showcase:subir` e `task showcase:checar`); então executar a
-**Task 2** do plano (Task 1 fechada: núcleo `50a0fea`, revisão limpa, 3 menores no ledger) do núcleo 0.10.4 (`docs/superpowers/plans/2026-10-07-nucleo-0104-html-inerte.md`), modo Subagent-Driven.
-Nada está rodando e nenhum agente está aberto.
+**Task 4** do plano do núcleo 0.10.4 (`docs/superpowers/plans/2026-10-07-nucleo-0104-html-inerte.md`): verificação final e
+gate do D29, completo (revisor, challenger, auditor). Tasks 1–3 feitas. Nada está rodando e nenhum agente está aberto.
 
 ## Plano até o objetivo
 

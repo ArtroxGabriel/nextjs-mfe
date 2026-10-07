@@ -15,6 +15,9 @@
 > (`e1a09f2`, `3576971`); `iniciarLogin` devolve `expiraEm` e o shell não lê mais `ERP_LOGIN_TRANSACAO_S` (`acec0bf`).
 > Os menores do gate do D2 (`server-only` em `cookies.ts`, `SHELL_HOSTS` com espaço no shell e nas zonas, esquema no
 > `sair`, §5 do `CONFIGURACAO.md`, aviso do showcase sem a eva) entraram nas Tasks 3 e 4.
+> **D29** (`ehHtmlInerte` deixava passar HTML ativo) fechou no núcleo **0.10.4** (2026-10-07): validação por lista de
+> permissão (`docs/desenho/mfe/02-zonas.md` §2.3, ADR-0011 adendo 2). Evidência: 15 testes em `erp-nucleo`, mutações M1–M13
+> do plano todas pegas. Commits: núcleo `50a0fea`; apps em lockstep, principal `bbf6a84`. Limites da lista: D30.
 
 ## D7 — Zona travada: teto feito, página com o C3
 
@@ -177,16 +180,6 @@
   exercitada (as zonas declaram 2 s por destino).
 - **Fecha em:** o do C3 e o do C2 com eles; os demais quando o shell ou a verificação forem tocados de novo.
 
-## D29 — `ehHtmlInerte` do núcleo deixa passar HTML ativo (gate do C1, auditor_c1_1)
-
-- **O que é:** `repos/erp-nucleo/src/fabricas/fragmento.ts` testa manipulador com `/\son[a-z]+\s*=/`. Passam como inertes
-  `<img/onerror=…>`, `<svg/onload=…>`, `<body/onload=…>`, atributo colado em aspas, entidades e tab em `javascript:`, e
-  `meta`/`base`/`form`/`link`/`style`. A CSP com nonce das zonas impede script; **não** impede `<meta http-equiv=refresh>`.
-- **Hoje:** o único fragmento (tarefas da zona 2) escapa os títulos; o teste do veto do C1 prova o escape.
-- **Decisão do humano (2026-10-06):** corrigir logo depois do gate do C1, antes do C3: núcleo 0.10.4 (lista de permissão
-  de tags e atributos, não lista de bloqueio), lockstep nas 4 apps, com gate próprio.
-- **Fecha em:** núcleo 0.10.4.
-
 ## D30 — Menores e limites declarados do C1 (tasks e gate, 2026-10-06)
 
 - **O que é:** achados sem defeito de produto das revisões das Tasks 1–3 e do gate do C1 (ledger em
@@ -196,8 +189,11 @@
 - **Grafias no shell (challenger_c1_1):** `//` e barra final dão 308 para a forma canônica (que dá 404); `%2F`, `%20`, `%00` e `;`
   passam pela guarda, mas não casam a rota da zona 2 (307 ao login sem cookie; 404 HTML da zona com cookie). Endurecimento
   opcional: colapsar `/+` e tratar `%2F` antes do regex.
-- **Contrato:** a zona 2 serve o fragmento sem `Accept-Fragmento-Versao` (o núcleo só recusa versão diferente de 1); falta a
-  linha em `02-zonas.md` §2.5 dizendo isso.
+- **Limites declarados da lista de permissão do 0.10.4 (revisão da Task 1 do D29):** (a) pilha balanceada não é aninhamento
+  válido: `<p><ul></ul></p>`, `<a><a></a></a>` e `<li>` fora de lista passam; o parser reestrutura o DOM, sem vetor de
+  execução. (b) `id` e `class` aceitam qualquer valor limpo: DOM clobbering e reuso das classes CSS da consumidora. (c) `href`
+  aceita qualquer caminho da mesma origem, inclusive rota GET com efeito colateral; exige clique do usuário e o domínio decide.
+  Fecham quando o primeiro fragmento novo precisar (regra da lista: abrir é commit com teste).
 - **Menores:** o painel pede o fragmento também a quem não tem a zona 2 (um 204 por render); `ZONA2_URL` inválida derruba a
   página na carga; o ADR-0011 (adendo 1) cita o `alvo.md` §6, fora de commit; `atual.md` sem a aresta zona 1 → zona 2; o
   `p:relatorios` do `elementosDoPainel` casa a string exata (falso vermelho com um `title` inocente; usar o `href`); C1a sem o

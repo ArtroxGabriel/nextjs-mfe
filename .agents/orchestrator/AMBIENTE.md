@@ -29,6 +29,9 @@
 - Ordem de publicação: `erp-contratos` → `erp-nucleo` → `erp-moldura` → consumidores.
 - O pnpm acrescenta sozinho a versão nova em `minimumReleaseAgeExclude` (`pnpm-workspace.yaml` de cada
   app). É esperado: pacote local recém-publicado não tem "idade".
+- **pnpm 12.5.1 tira `tarball: http://localhost:4873/...` das linhas `resolution` dos `@erp/*` no lockfile.** É só formato: o
+  registro vem do `.npmrc` de cada app, e `base/scripts/alinhar-hashes.mjs` lê só o `integrity` e aceita as duas formas. Diff de
+  lockfile com e sem `tarball:` entre máquinas é esperado.
 - **Instalar pacote exige aprovação do humano** (CLAUDE.md dele). Mostre o que muda antes.
 
 ## 2. Submódulos e envio
