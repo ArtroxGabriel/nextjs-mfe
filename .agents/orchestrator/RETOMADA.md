@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (plano do núcleo 0.10.4 escrito; próximo: Task 1 dele)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (núcleo 0.10.4: Task 1 fechada, núcleo `50a0fea`; próximo: Task 2)**.
 
 ## Objetivo final
 
@@ -84,7 +84,7 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
 
 **Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente
 (`docker ps`: em 2026-10-07 só o Verdaccio estava no ar → `task showcase:subir` e `task showcase:checar`); então executar a
-**Task 1** do plano do núcleo 0.10.4 (`docs/superpowers/plans/2026-10-07-nucleo-0104-html-inerte.md`), modo Subagent-Driven.
+**Task 2** do plano (Task 1 fechada: núcleo `50a0fea`, revisão limpa, 3 menores no ledger) do núcleo 0.10.4 (`docs/superpowers/plans/2026-10-07-nucleo-0104-html-inerte.md`), modo Subagent-Driven.
 Nada está rodando e nenhum agente está aberto.
 
 ## Plano até o objetivo
