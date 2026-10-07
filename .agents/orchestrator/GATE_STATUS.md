@@ -393,3 +393,13 @@ lockstep nas 4 apps (`02-zonas.md` §2.3, ADR-0011 adendo 2). Menores e o alcanc
 Pastas dos verificadores removidas depois do registro; última versão no commit `0be6033`
 (`git show 0be6033:.agents/<nome>/handoff.md`). Tag `gate-d29-aprovado`.
 
+## Gate: C3 (mapa de zonas vivo e gateway híbrido), iteração 1, principal `0ea05ec`, shell `0081185`, stub `2da6dcb`, zonas `ce8e015`, `f88cce7`, `73a2c19`
+
+Antes do gate (2026-10-07): `task test` verde (contratos 20, núcleo 286, moldura 26, stub 83, shell 158), `typecheck` ok, `verificar:estatica` 52/52, `scripts:test` 29/29, `verificar:redis` 135/135, `verificar:construir` 130 mais 5 pulados, `verificar:oidc` 6/6, `showcase:checar` ok, lockstep 0.10.4. Mutações declaradas das Tasks 1 a 5 rodadas pelos workers e pegas.
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| revisor_c3_1 | revisor-mfe (sonnet) | em andamento | .agents/revisor_c3_1/handoff.md | |
+| challenger_c3_1 | simulador-condicoes (sonnet) | em andamento | .agents/challenger_c3_1/handoff.md | |
+| auditor_c3_1 | general-purpose forense (opus) | espera o challenger | .agents/auditor_c3_1/handoff.md | |
+

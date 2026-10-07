@@ -46,3 +46,10 @@ Task 5: minor (deferred): atual.md proxy flow diagram cut at page end in PDF (re
 Task 5: fix round 1/5 (5 addressed, 1 open: DEFERRED line 21 L9b 6010 vs 6013; main 897c657..e0474cf); fix round 2 dispatched
 Task 5: fix round 2/5 (1 addressed, 0 open; main e0474cf..07c7c81)
 Task 5: complete (shell 4eb47e2..0081185, main 526d4f8..07c7c81, review clean after 2 fix rounds)
+Task 6: measurement dispatched (Sonnet), main BASE d032754; verification and gate by the controller afterwards
+Task 6: measurement implemented (main d032754..1e8298f): doc via gateway p50 25.9/44.2 ms (conc 1/4), RSC fast 18.4/34.6, CSS 3.3/5.8; review dispatched; verification suite running (controller)
+Task 6 measurement: review Needs fixes: interpretation overclaims (7.5 ms is an upper bound mixing render difference; shell CPU is the clean evidence; synthetic not comparable); "custo fixo" wording; ?_rsc=value 307 must be explained or opened; plus cheap minors (single run noise sentence, script must fail without gzip, CSS label) -> fix round 1 dispatched (no ports: verification running); FIX_BASE 1e8298f
+Task 6 measurement: minor (deferred): non-200 latencies enter p99; pids captured before load
+Task 6 measurement: fix round 1 implemented (1e8298f..0ea05ec); ?_rsc 307 explained (base-server.js:1263-1278), browser 200 not asserted by any e2e: open item, challenger to check; re-review dispatched
+Task 6 measurement: fix round 1/5 (4 addressed, 0 open; 1e8298f..0ea05ec); minor (deferred): dead ternary after gzip throw; table label (CSS) fixed
+Task 6: verification green: test (contratos 20, nucleo 286, moldura 26, stub 83, shell 158), typecheck, estatica 52/52, scripts 29/29, verificar:redis 135/135, construir 130+5 skipped, oidc 6/6, showcase:checar, lockstep 0.10.4. Gate C3 iteration 1 dispatched
