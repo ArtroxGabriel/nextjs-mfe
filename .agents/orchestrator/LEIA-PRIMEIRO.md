@@ -37,6 +37,9 @@ necessário no repositório. Detalhes no fim de `RETOMADA.md`.
 - **Veto só por teste → iteração seguinte só com um auditor novo** (detalhe em "Como um gate funciona").
 - **Verificador interrompido pelo limite não é retomado em outra sessão:** despacha-se um novo com as etapas que faltam.
 
+**Regra de processo (humano, 2026-10-07):**
+- **Mutações declaradas no plano.** Toda task que muda código de produto traz no plano a tabela das mutações que os testes dela precisam pegar. O worker roda essas mutações antes de pedir o gate e registra, no relatório da task, qual teste pegou cada uma; mutação que sobrevive pede um teste novo na mesma task. O auditor do gate reaplica a tabela e procura mutações novas. Primeiro uso: o plano do núcleo 0.10.4, cujo gate fechou na iteração 1 (o do C1 levou 3).
+
 ## Como um gate funciona
 
 ```mermaid

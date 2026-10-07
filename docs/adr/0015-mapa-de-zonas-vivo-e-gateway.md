@@ -1,6 +1,6 @@
 # ADR-0015: mapa de zonas vivo e gateway de zona no shell
 
-**Status:** proposto em 2026-10-07 pelo `arquiteto-mfe`, revisto no mesmo dia depois da medição de custo. Aguarda o humano no pedido [`pedidos/2026-10-07-c3-mapa-de-zonas.md`](../../pedidos/2026-10-07-c3-mapa-de-zonas.md), decisões H1 a H6.
+**Status:** aceito (humano, 2026-10-07), com o pacote recomendado do pedido [`pedidos/2026-10-07-c3-mapa-de-zonas.md`](../../pedidos/2026-10-07-c3-mapa-de-zonas.md): H1 i, H2 h (híbrido), H3 i, H4 i, H5 i, H6 i. Proposto pelo `arquiteto-mfe` e revisto depois da medição de custo.
 
 **Atividade:** C3 (#14).
 
@@ -27,7 +27,7 @@ O manifesto v2 da zona é só `{ id, nome, funcionalidades }` (invariante 17, AD
 | c | proxy reverso na borda (nginx/Traefik dinâmico) | sim | sim (`error_page`) | tira o `proxy.ts` do caminho da zona: caem renovação proativa (invariante 15), sonda, recusa de `_fragmento` (C1b) e `traceparent` |
 | d | mapa lido no boot e reinício do shell | depende de H1 | depende de (a) ou (b) | não atende se "republicar" incluir o rollout do shell |
 
-## Decisão (proposta)
+## Decisão
 
 1. **Híbrido.** O `proxy.ts` lê o mapa vivo e decide por requisição. A navegação de documento (`Sec-Fetch-Dest: document`) vai para o gateway, um route handler interno do shell (`lib/gateway-zona.ts`), que entrega a página da base no estouro do teto. RSC, arquivos estáticos e Server Actions vão por `NextResponse.rewrite` para a origem do mapa, o caminho rápido do Next. Saem o `rewrites()` do `next.config.ts` e o `experimental.proxyTimeout` deixa de ser o teto dos documentos. Uma busca de RSC que falha vira navegação de documento no próprio Next (`fetch-server-response.js:143-148`) e cai no gateway.
 2. **Prefixo por convenção:** `/{id}` (já é a regra em `lib/zonas.ts` e no ADR-0014). Prefixo não se registra.

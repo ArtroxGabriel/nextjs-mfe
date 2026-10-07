@@ -1,6 +1,6 @@
 # Decisões do C3: mapa de zonas vivo
 
-**Estado:** aberto.
+**Estado:** respondido em 2026-10-07.
 **Aberto em:** 2026-10-07.
 **Para:** o humano responsável pela base.
 **O que espera por isto:** o C3 inteiro (#14). Nada do C3 começa antes da resposta. **Proposta completa:** [`docs/adr/0015-mapa-de-zonas-vivo-e-gateway.md`](../docs/adr/0015-mapa-de-zonas-vivo-e-gateway.md).
@@ -117,4 +117,4 @@ Uma linha por decisão, por exemplo `H1: i`, `H2: b`, `H3: i`, `H4: i`, `H5: i`,
 
 ## Resposta
 
-(vazio até o humano preencher)
+Pacote recomendado (humano, 2026-10-07): H1 i, H2 h (híbrido), H3 i, H4 i, H5 i, H6 i. O ADR-0015 passa a aceito.
