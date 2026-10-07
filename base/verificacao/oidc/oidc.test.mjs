@@ -27,7 +27,7 @@ import { describe, test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { subir, SHELL, PORTAS_DE_DOMINIO } from '../../scripts/ambiente.mjs'
-import { pedir, valorDoCookie, keycloakNoAr, KEYCLOAK_EMISSOR, redisCru, monitorarRedis } from '../apoio.mjs'
+import { pedir, valorDoCookie, keycloakNoAr, KEYCLOAK_EMISSOR, redisCru, monitorarRedis, loginNoKeycloak, entrarPeloKeycloak as entrarPeloKeycloakCompartilhado } from '../apoio.mjs'
 
 const RAIZ_KC = new URL(KEYCLOAK_EMISSOR).origin
 const VIDA_S = Number(process.env.VERIFICAR_OIDC_TOKEN_VIDA_S ?? 20)
@@ -87,59 +87,16 @@ async function sessaoNoRedis(id) {
   return JSON.parse(json)
 }
 
-/** Pote de cookies do navegador no Keycloak: guarda o que cada resposta grava e monta o cabeçalho. */
-function poteDoKeycloak() {
-  const jar = new Map()
-  return {
-    guardar(r) {
-      for (const c of r.headers.getSetCookie()) {
-        const [kv] = c.split(';'); const i = kv.indexOf('=')
-        if (/Max-Age=0/i.test(c) || /Expires=Thu, 01[- ]Jan[- ]1970/i.test(c)) jar.delete(kv.slice(0, i))
-        else jar.set(kv.slice(0, i), kv.slice(i + 1))
-      }
-      return r
-    },
-    get cabecalho() { return [...jar].map(([k, v]) => `${k}=${v}`).join('; ') },
-  }
-}
-
 /** A página do Keycloak pede senha? (formulário de login, não o 302 da sessão SSO). */
 const pedeSenha = (status, html) => status === 200 && /name="password"/.test(html)
 
-/**
- * Formulário de login do Keycloak a partir da URL de autorização. Devolve a URL de retorno ao shell e o
- * pote de cookies do Keycloak (a sessão SSO), que o logout precisa para chegar à confirmação.
- */
-async function loginNoKeycloak(urlAutorizacao, usuario) {
-  const pote = poteDoKeycloak()
-  let r = pote.guardar(await fetch(urlAutorizacao, { redirect: 'manual' }))
-  const acao = (await r.text()).match(/action="([^"]+)"/)?.[1]?.replaceAll('&amp;', '&')
-  if (!acao) throw new Error(`Keycloak sem formulario de login (HTTP ${r.status})`)
-  r = pote.guardar(await fetch(acao, {
-    method: 'POST', redirect: 'manual',
-    headers: { cookie: pote.cabecalho, 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ username: usuario, password: usuario }),
-  }))
-  const local = r.headers.get('location')
-  if (r.status !== 302 || !local) throw new Error(`login de ${usuario} no Keycloak recusado (HTTP ${r.status})`)
-  return { retorno: new URL(local), pote }
-}
-
-/** Login completo pelo shell, como o navegador: entrar → Keycloak → retorno. */
+/** Login completo pelo shell (apoio.mjs) com as asserções de PKCE sobre a autorização que o shell montou. */
 async function entrarPeloKeycloak(usuario, de = '/') {
-  const ini = await pedir(`/api/auth/entrar?${new URLSearchParams({ de })}`)
-  const transacao = valorDoCookie(ini.cookies, '__Host-erp-login')
-  assert.ok(transacao, `entrar sem cookie de transacao (HTTP ${ini.status})`)
-  const autorizacao = new URL(ini.local)
-  assert.equal(autorizacao.origin, RAIZ_KC, 'entrar nao mandou ao Keycloak')
-  assert.equal(autorizacao.searchParams.get('code_challenge_method'), 'S256')
-  for (const p of ['state', 'nonce', 'code_challenge']) assert.ok(autorizacao.searchParams.get(p), `${p} ausente na autorizacao`)
-  const { retorno, pote } = await loginNoKeycloak(autorizacao, usuario)
-  assert.equal(retorno.origin + retorno.pathname, `${SHELL}/api/auth/retorno`)
-  const r = await pedir(retorno.pathname + retorno.search, { cookie: `__Host-erp-login=${transacao}` })
-  const id = valorDoCookie(r.cookies, '__Host-session')
-  assert.ok(id, `retorno sem sessao (HTTP ${r.status})`)
-  return { cookie: `__Host-session=${id}`, id, resposta: r, poteKeycloak: pote }
+  const r = await entrarPeloKeycloakCompartilhado(usuario, de)
+  assert.equal(r.autorizacao.origin, RAIZ_KC, 'entrar nao mandou ao Keycloak')
+  assert.equal(r.autorizacao.searchParams.get('code_challenge_method'), 'S256')
+  for (const p of ['state', 'nonce', 'code_challenge']) assert.ok(r.autorizacao.searchParams.get(p), `${p} ausente na autorizacao`)
+  return r
 }
 
 /** A página da zona 1 com os blocos dos dois domínios: só sai assim se o access token da sessão vale. */

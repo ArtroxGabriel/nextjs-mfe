@@ -42,6 +42,75 @@ export async function entrar(usuario, de = '/') {
   return { cookie: `__Host-session=${id}`, id, resposta: r }
 }
 
+/** Pote de cookies do navegador no Keycloak: guarda o que cada resposta grava e monta o cabeçalho. */
+export function poteDoKeycloak() {
+  const jar = new Map()
+  return {
+    guardar(r) {
+      for (const c of r.headers.getSetCookie()) {
+        const [kv] = c.split(';'); const i = kv.indexOf('=')
+        if (/Max-Age=0/i.test(c) || /Expires=Thu, 01[- ]Jan[- ]1970/i.test(c)) jar.delete(kv.slice(0, i))
+        else jar.set(kv.slice(0, i), kv.slice(i + 1))
+      }
+      return r
+    },
+    get cabecalho() { return [...jar].map(([k, v]) => `${k}=${v}`).join('; ') },
+  }
+}
+
+/**
+ * Formulário de login do Keycloak a partir da URL de autorização. Devolve a URL de retorno ao shell e o
+ * pote de cookies do Keycloak (a sessão SSO), que o logout precisa para chegar à confirmação.
+ */
+export async function loginNoKeycloak(urlAutorizacao, usuario) {
+  const pote = poteDoKeycloak()
+  let r = pote.guardar(await fetch(urlAutorizacao, { redirect: 'manual' }))
+  const acao = (await r.text()).match(/action="([^"]+)"/)?.[1]?.replaceAll('&amp;', '&')
+  if (!acao) throw new Error(`Keycloak sem formulario de login (HTTP ${r.status})`)
+  r = pote.guardar(await fetch(acao, {
+    method: 'POST', redirect: 'manual',
+    headers: { cookie: pote.cabecalho, 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ username: usuario, password: usuario }),
+  }))
+  const local = r.headers.get('location')
+  if (r.status !== 302 || !local) throw new Error(`login de ${usuario} no Keycloak recusado (HTTP ${r.status})`)
+  return { retorno: new URL(local), pote }
+}
+
+/**
+ * Login completo pelo shell no modo OIDC, como o navegador: entrar → Keycloak → retorno.
+ * `autorizacao` é a URL que o shell montou (quem testa PKCE a inspeciona).
+ */
+export async function entrarPeloKeycloak(usuario, de = '/') {
+  const ini = await pedir(`/api/auth/entrar?${new URLSearchParams({ de })}`)
+  const transacao = valorDoCookie(ini.cookies, '__Host-erp-login')
+  if (!transacao || !ini.local) throw new Error(`entrar sem cookie de transacao (HTTP ${ini.status})`)
+  const autorizacao = new URL(ini.local)
+  const { retorno, pote } = await loginNoKeycloak(autorizacao, usuario)
+  if (retorno.origin + retorno.pathname !== `${SHELL}/api/auth/retorno`) throw new Error(`retorno inesperado: ${retorno.origin}${retorno.pathname}`)
+  const r = await pedir(retorno.pathname + retorno.search, { cookie: `__Host-erp-login=${transacao}` })
+  const id = valorDoCookie(r.cookies, '__Host-session')
+  if (!id) throw new Error(`retorno sem sessao (HTTP ${r.status})`)
+  return { cookie: `__Host-session=${id}`, id, resposta: r, poteKeycloak: pote, autorizacao }
+}
+
+/** 'oidc' quando o "Entrar" do shell manda ao Keycloak; 'dev' quando manda a /login/dev. Decide pelo Location de GET /api/auth/entrar. */
+export async function modoDeLogin() {
+  const ini = await pedir('/api/auth/entrar?de=%2F')
+  if (!ini.local) throw new Error(`entrar sem Location (HTTP ${ini.status})`)
+  const alvo = new URL(ini.local, SHELL)
+  if (alvo.origin === new URL(KEYCLOAK_EMISSOR).origin) return 'oidc'
+  if (alvo.pathname === '/login/dev') return 'dev'
+  throw new Error(`entrar mandou a destino desconhecido: ${alvo.origin}${alvo.pathname}`)
+}
+
+/** Login completo pelo shell no modo dado (ou detectado); devolve { cookie, id }. */
+export async function entrarComo(usuario, { modo, de = '/' } = {}) {
+  const m = modo ?? await modoDeLogin()
+  const r = m === 'oidc' ? await entrarPeloKeycloak(usuario, de) : await entrar(usuario, de)
+  return { cookie: r.cookie, id: r.id }
+}
+
 /** Links do menu da moldura, na ordem, e qual está marcado como atual. */
 export function menu(html) {
   const nav = html.match(/<nav[^>]*aria-label="Módulos"[^>]*>([\s\S]*?)<\/nav>/)?.[1] ?? ''
