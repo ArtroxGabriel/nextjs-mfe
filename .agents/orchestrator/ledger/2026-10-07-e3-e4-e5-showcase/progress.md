@@ -32,3 +32,4 @@ Task 5: quick checks green (test 20/26/83/161/286, typecheck, estatica 52, scrip
 Task 5: REGRESSION found by orchestrator: verificar:redis (glob base/verificacao/*.test.mjs) now picks showcase.test.mjs, which needs the showcase up -> 135 + 1 fail; fix: move suite to base/verificacao/showcase/ (like oidc/), challenger held until fixed
 Gate e3e5 it.1: revisor_e3e5_1 APPROVE (4b71d68), 2 minors: modoDeLogin fixed Keycloak origin; TTL NaN in suite -> fixed together with the regression
 Task 5: regression fixed in a63710b (suite in base/verificacao/showcase/, plus reviewer minors); rerun: redis 135/135, oidc 6/6, showcase:verificar 7/7 dev and oidc, conferir ok both; challenger dispatched
+Gate e3e5 it.1: challenger_e3e5_1 REJECT (3d9c3d4): roadmap A3/A8/A9/A10/A15 differ from the real UI; zona-demo raw stack on EADDRINUSE and unreachable access mgmt; minors. Auditor not dispatched. Fix -> worker_e3e5_1
