@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (C3 começou: `arquiteto-mfe` despachado para escolher o mecanismo)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (C3: ADR-0015 proposto; parado esperando o humano no pedido `2026-10-07-c3-mapa-de-zonas.md`)**.
 
 ## Objetivo final
 
@@ -82,10 +82,12 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
    ADR e pedido em `pedidos/` para o humano.
 4. Depois: resto do E3 (`showcase:conferir` no modo OIDC), E4 (roteiro: uma linha por funcionalidade básica) e E5.
 
-**Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente
-(`docker ps`; `task showcase:checar`); então começar o **C3** pelo agente `arquiteto-mfe` (escolher o mecanismo do mapa de
-zonas pelos manifestos, com os requisitos do item 3 acima). Se for estrutural: ADR em `docs/adr/` e pedido em `pedidos/` para
-o humano, e parar até a resposta. Nada está rodando e nenhum agente está aberto.
+**Para retomar (passo exato):** o C3 está **parado esperando o humano**: pedido
+[`pedidos/2026-10-07-c3-mapa-de-zonas.md`](../../pedidos/2026-10-07-c3-mapa-de-zonas.md) (decisões H1–H6) e
+`docs/adr/0015-mapa-de-zonas-vivo-e-gateway.md` (proposto pelo `arquiteto-mfe`: gateway de zona no shell, mapa vivo lido da
+gestão de acesso, origem por registro de rota no deploy). Com a resposta: marcar o ADR como aceito (ou ajustá-lo), escrever o
+plano em `docs/superpowers/plans/` a partir das fatias do ADR e seguir em Subagent-Driven. Antes: `git fetch`, ambiente
+(`docker ps`; `task showcase:checar`). Nada está rodando e nenhum agente está aberto.
 
 ## Plano até o objetivo
 
