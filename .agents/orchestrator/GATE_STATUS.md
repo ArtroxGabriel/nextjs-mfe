@@ -415,12 +415,12 @@ Gate Result: **VETO (só por teste)**. Correção: teste em `test/mapa-zonas.tes
 Gate Result: **PASS** (iteração 2). Fecha o **C3** (#14): zona nova entra registrando a própria rota no deploy, sem editar arquivo do shell nem reiniciá-lo; zona travada devolve ao documento a página da base com `supportId` dentro de `ERP_ZONA_TETO_MS` (fecha o D7). Menores e observações no `DEFERRED.md` D32; limites no D31. Pastas dos verificadores e do worker removidas depois do registro; última versão no commit `91fcefc` (`git show 91fcefc:.agents/<nome>/handoff.md`). Tag `gate-c3-aprovado`.
 
 
-## Gate: E3, E4 e E5 (showcase nos dois modos, zona de demonstração, roteiro F1 a F7, `showcase:verificar`), iteração 1, principal `d625731`, shell `d6e48fc`
+## Gate: E3, E4 e E5 (showcase nos dois modos, zona de demonstração, roteiro F1 a F7, `showcase:verificar`), iteração 1, principal `a63710b`, shell `d6e48fc`
 
-Antes do gate (2026-10-07): `task test` verde (contratos 20, moldura 26, stub 83, shell 161, núcleo 286), `typecheck` ok, `verificar:estatica` 52/52, `scripts:test` 29/29, lockstep 0.10.4, `showcase:checar` ok; `verificar:redis`, `verificar:oidc` e `showcase:verificar` nos dois modos rodando (orquestrador). Mutações declaradas das Tasks 1, 2 e 4 rodadas pelos workers e pegas (ledger `ledger/2026-10-07-e3-e4-e5-showcase/`).
+Antes do gate (2026-10-07): `task test` verde (contratos 20, moldura 26, stub 83, shell 161, núcleo 286), `typecheck` ok, `verificar:estatica` 52/52, `scripts:test` 29/29, lockstep 0.10.4, `showcase:checar` ok; `verificar:oidc` 6/6, `showcase:verificar` 7/7 e `showcase:conferir` ok nos dois modos (showcase reconstruído). A primeira rodada de `verificar:redis` deu 135 mais 1 falha: o glob `base/verificacao/*.test.mjs` pegava a suíte do showcase, que exige o showcase no ar; corrigido pelo orquestrador em `a63710b` (suíte em `base/verificacao/showcase/`, junto com os 2 menores do revisor), e tudo rodado de novo: `verificar:redis` 135/135, `verificar:oidc` 6/6, `showcase:verificar` 7/7 nos dois modos. Mutações declaradas das Tasks 1, 2 e 4 rodadas pelos workers e pegas (ledger `ledger/2026-10-07-e3-e4-e5-showcase/`).
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
-| revisor_e3e5_1 | revisor-mfe (sonnet) | em andamento | .agents/revisor_e3e5_1/handoff.md | despachado |
-| challenger_e3e5_1 | simulador-condicoes (sonnet) | aguardando portas | .agents/challenger_e3e5_1/handoff.md | segue o roteiro inteiro nos dois modos |
+| revisor_e3e5_1 | revisor-mfe (sonnet) | **APPROVE** | .agents/revisor_e3e5_1/handoff.md | leu até `d625731`; sem crítico nem importante; 2 menores (`modoDeLogin` presa ao host do emissor; TTL inválido vira NaN), corrigidos em `a63710b` |
+| challenger_e3e5_1 | simulador-condicoes (sonnet) | em andamento | .agents/challenger_e3e5_1/handoff.md | segue o roteiro inteiro nos dois modos |
 | auditor_e3e5_1 | general-purpose forense (opus) | aguardando challenger | .agents/auditor_e3e5_1/handoff.md | tabelas de mutação das Tasks 1, 2 e 4 |
