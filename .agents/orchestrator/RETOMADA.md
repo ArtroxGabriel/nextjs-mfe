@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06 (gate do C1 aprovado na iteração 3; próximo: núcleo 0.10.4, D29)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (plano do núcleo 0.10.4 escrito; próximo: Task 1 dele)**.
 
 ## Objetivo final
 
@@ -73,7 +73,7 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
    estourar, o próprio Next escreve o 500 cru (`proxy-request.js`, sem gancho); o D7 entrega `ERP_ZONA_TETO_MS` (10 s, B1) e a
    página de indisponível dentro do teto passa a ser requisito do C3.
 2. ✅ **C1 — fragmentos entre zonas** (#10). Plano: `docs/superpowers/plans/2026-10-06-c1-fragmentos-entre-zonas.md`. Zona 2 `1626fd1` (dona), shell `836ddc4` (recusa), zona 1 `39c4b76` (bloco, `ZONA2_URL`); testes C1a–C1d. **Gate aprovado na iteração 3** (2026-10-06): revisor e challenger APROVAM; auditor vetou duas vezes só por teste (escape, filtro, placeholder) e passou na 3; tag `gate-c1-aprovado`. Menores e limites em `DEFERRED.md` D30.
-2b. ⬜ **Núcleo 0.10.4 — `ehHtmlInerte` por lista de permissão** (`DEFERRED.md` D29; decisão do humano, 2026-10-06: logo depois do C1, antes do C3). Plano em `docs/superpowers/plans/`, lockstep nas 4 apps, gate próprio.
+2b. ⬜ **Núcleo 0.10.4 — `ehHtmlInerte` por lista de permissão** (`DEFERRED.md` D29; decisão do humano, 2026-10-06: logo depois do C1, antes do C3). Plano: `docs/superpowers/plans/2026-10-07-nucleo-0104-html-inerte.md` (4 tasks; mutações M1–M13 declaradas no plano e rodadas pelo worker antes do gate), lockstep nas 4 apps, gate próprio.
 3. ⬜ **C3 — mapa de zonas pelos manifestos** (#14). Zona nova entra sem editar o `zonas.json` nem republicar o shell.
    **Requisito vindo do D7 (2026-10-06):** o mecanismo escolhido entrega a página de indisponível dentro de `ERP_ZONA_TETO_MS`.
    Do gate do D7: uma página com várias chamadas lentas em sequência, sem mandar bytes, também é cortada no teto (500 cru);
@@ -83,8 +83,9 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
 4. Depois: resto do E3 (`showcase:conferir` no modo OIDC), E4 (roteiro: uma linha por funcionalidade básica) e E5.
 
 **Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente
-(`docker ps`: Redis e Keycloak podem ter caído com a máquina → `task showcase:subir` e `task showcase:checar`); então
-escrever o plano do **núcleo 0.10.4** (`DEFERRED.md` D29: `ehHtmlInerte` por lista de permissão de tags e atributos; lockstep nas 4 apps) em `docs/superpowers/plans/` e seguir task a task. Nada está rodando e nenhum agente está aberto.
+(`docker ps`: em 2026-10-07 só o Verdaccio estava no ar → `task showcase:subir` e `task showcase:checar`); então executar a
+**Task 1** do plano do núcleo 0.10.4 (`docs/superpowers/plans/2026-10-07-nucleo-0104-html-inerte.md`), modo Subagent-Driven.
+Nada está rodando e nenhum agente está aberto.
 
 ## Plano até o objetivo
 
