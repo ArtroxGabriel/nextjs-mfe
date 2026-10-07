@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (E3-E5: Tasks 1 a 3 fechadas; Task 4 com o worker)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (E3-E5: Tasks 1 a 3 fechadas; Task 4 (`4f7c562`) em revisão)**.
 
 ## Objetivo final
 

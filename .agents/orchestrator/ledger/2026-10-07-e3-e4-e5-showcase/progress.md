@@ -22,3 +22,4 @@ Task 3: implemented (main 1198ab1..2d1a6df), docs only; concerns: F-test names f
 Task 3: review Needs fixes (F4 said bruno for /zona1/relatorios, seed gives him relatorios.ver; zone-down wording ignored ERP_SONDA_TTL_MS; 'registro do shell' ambiguous) -> fixed by orchestrator in 8d3428e (text only, facts checked in A4, rotas-auth.ts:72, CONFIGURACAO.md:49)
 Task 3: complete (main 1198ab1..8d3428e)
 Task 4: dispatched (Sonnet), main BASE 6923818
+Task 4: implemented (main 3bc9b10..4f7c562), dev 7/7 92.5 s, oidc 7/7 93.2 s, M1-M5 caught; concerns: roadmap F7 said 412, domain answers 409 (fixed in table); F7 bumps t-4 version each run; review dispatched
