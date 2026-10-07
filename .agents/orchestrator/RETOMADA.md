@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (gate do C3 aprovado na iteração 2; próximo: resto do E3, E4 e E5)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (plano do E3, E4 e E5 escrito; execução começou pela Task 1)**.
 
 ## Objetivo final
 
@@ -77,7 +77,7 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
 3. ✅ **C3, mapa de zonas vivo e gateway híbrido** (#14). Plano: `docs/superpowers/plans/2026-10-07-c3-mapa-de-zonas.md`; ADR-0015 aceito (pacote recomendado e decisão sobre o `x-middleware-rewrite`, 2026-10-07). Stub `2da6dcb`, zonas `ce8e015`, `f88cce7`, `73a2c19`, shell `d52b5fc`, principal até `4a6fc63`. **Gate aprovado na iteração 2** (2026-10-07): revisor e challenger APROVAM; auditor vetou só por teste (prefixo estático sem a barra) e passou na 2; tag `gate-c3-aprovado`. Fecha o D7. Limites no `DEFERRED.md` D31, menores no D32.
 4. Depois: resto do E3 (`showcase:conferir` no modo OIDC), E4 (roteiro: uma linha por funcionalidade básica) e E5.
 
-**Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente (`docker ps`; `task showcase:checar`); então o item 4: resto do E3 (`showcase:conferir` no modo OIDC), E4 (roteiro do showcase, uma linha por funcionalidade básica) e E5 (verificação ponta a ponta contra o showcase), cada um com plano em `docs/superpowers/plans/` e mutações declaradas nas tasks de código. Nada está rodando e nenhum agente está aberto.
+**Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente (`docker ps`; `task showcase:checar`); então seguir o plano `docs/superpowers/plans/2026-10-07-e3-e4-e5-showcase.md` (5 tasks) em Subagent-Driven; o ledger diz em que task está (`.superpowers/sdd/2026-10-07-e3-e4-e5-showcase/progress.md`, cópia em `ledger/`). Nada está rodando e nenhum agente está aberto.
 
 ## Plano até o objetivo
 
