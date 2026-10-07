@@ -26,3 +26,15 @@ Task 3: fix round 1 implemented (shell aa128c7..c7a08d9, main db9655a..9db50d5),
 Task 3: fix round 1/5 (2 addressed, 0 open; shell aa128c7..c7a08d9, main db9655a..9db50d5)
 Task 3: minor (deferred): test title typo "fonte fora da mapa vazio"; explicit undefined key would override shell default (improbable)
 Task 3: complete (shell 2f03183..c7a08d9, main ..9db50d5, review clean after fix round 1)
+Task 4: dispatched (Opus), shell BASE c7a08d9, main BASE a515aec; carried items: lazy map + start-up check, short retry with empty map, e2e coverage of map read/refusal/guard
+Task 4: worker 1 (Opus) died at session limit mid-step (N8 exception). Tree state: shell unit 157/157, tsc clean, estatica 52/52; e2e, mutations, commits pending. WIP patches saved (task-4-wip-*.patch). Dispatching worker 2 (Opus) for the remaining steps
+Task 4: implemented by worker 2 (shell c7a08d9..4eb47e2, main a515aec..5700aaf), verificar:redis 134/134, construir 129+5 skipped, oidc 6/6, shell 157/157, M1-M11 + carried caught; L9 6012 ms, L9b 6010 ms, L9c cut 3004 ms after headers; concerns: x-middleware-rewrite leaks internal zone origin on fast path; skipProxyUrlNormalize; x-forwarded-proto from browser forwarded; pushes pending (GitHub 500); review dispatched (opus)
+Task 4: review (opus): spec ✅, Approved; 1 Important plan-mandated (decisão do humano): fast path sends x-middleware-rewrite with the zone's internal origin to the browser (Next resolve-routes.js:466-469, router-server.js:395-397; no config removes it; L10 asserts on that header); options a (declare), b (strip at the edge proxy), c (custom server), d (all through gateway), e (internal names)
+Task 4: minor (deferred): skipProxyUrlNormalize: /_next/data/<id>/_gateway/zona1.json with cookie reaches the gateway route (404 by reading); add e2e and optional per-process marker header
+Task 4: minor (deferred): x-forwarded-proto from browser wins in the gateway (pre-existing on fast path; nothing reads it)
+Task 4: minor (deferred): L10 accepts 2*TTL+1s; tighten to TTL+1s and declare "TTL plus one refresh"
+Task 4: minor (deferred): locationRelativo turns //host into protocol-relative open redirect; collapse leading // and /\ ; add test
+Task 4: minor (deferred): ERP_ZONA_OCIOSIDADE_MS lacks the "greater than ERP_DESTINO_TIMEOUT_MS" rule; verification runs 3000 < 5000
+Task 4: minor (deferred): ADR-0015 decision 1 says Sec-Fetch-Dest; align with GET/HEAD without RSC and Next-Action (Task 5)
+Task 4: human decision (2026-10-07) on x-middleware-rewrite leak: option b+a, the edge proxy strips x-middleware-* in production; declared limit on the local machine; ADR-0015 addendum, DEFERRED and infra doc in Task 5
+Task 4: complete (shell c7a08d9..4eb47e2, main a515aec..5700aaf, review Approved; Important resolved by human decision; code minors Location //, ociosidade rule, L10 tightening and /_next/data e2e carried into Task 5)
