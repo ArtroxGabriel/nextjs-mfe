@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (C3: pacote recomendado aceito, ADR-0015 aceito; próximo: plano do C3)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (C3: plano escrito, 6 tasks; execução começou pela Task 1)**.
 
 ## Objetivo final
 
@@ -82,7 +82,7 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
    ADR e pedido em `pedidos/` para o humano.
 4. Depois: resto do E3 (`showcase:conferir` no modo OIDC), E4 (roteiro: uma linha por funcionalidade básica) e E5.
 
-**Para retomar (passo exato):** o humano aceitou o pacote recomendado do C3 (2026-10-07: H1 i, H2 h híbrido, H3 i, H4 i, H5 i, H6 i) e o ADR-0015 está aceito. Próximo: o plano do C3 em `docs/superpowers/plans/`, a partir das fatias do ADR-0015, com a tabela de mutações declaradas em cada task de código (regra de 2026-10-07, `LEIA-PRIMEIRO.md`), e seguir em Subagent-Driven. Antes: `git fetch`, ambiente (`docker ps`; `task showcase:checar`).
+**Para retomar (passo exato):** o humano aceitou o pacote recomendado do C3 (2026-10-07: H1 i, H2 h híbrido, H3 i, H4 i, H5 i, H6 i) e o ADR-0015 está aceito. Plano: `docs/superpowers/plans/2026-10-07-c3-mapa-de-zonas.md` (6 tasks, mutações declaradas em cada task de código), em Subagent-Driven; o ledger diz em que task está (`.superpowers/sdd/2026-10-07-c3-mapa-de-zonas/progress.md`, cópia em `ledger/`). Antes: `git fetch`, ambiente (`docker ps`; `task showcase:checar`).
 
 ## Plano até o objetivo
 
