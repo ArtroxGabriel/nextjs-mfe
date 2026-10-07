@@ -21,3 +21,4 @@ Task 2: complete (main 076588c..1198ab1, review clean)
 Task 3: implemented (main 1198ab1..2d1a6df), docs only; concerns: F-test names future (Task 4), A15 log claim from code not run; review dispatched
 Task 3: review Needs fixes (F4 said bruno for /zona1/relatorios, seed gives him relatorios.ver; zone-down wording ignored ERP_SONDA_TTL_MS; 'registro do shell' ambiguous) -> fixed by orchestrator in 8d3428e (text only, facts checked in A4, rotas-auth.ts:72, CONFIGURACAO.md:49)
 Task 3: complete (main 1198ab1..8d3428e)
+Task 4: dispatched (Sonnet), main BASE 6923818
