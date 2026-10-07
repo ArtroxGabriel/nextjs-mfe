@@ -39,6 +39,7 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 | Variável | Padrão | Significado | Quem lê | Estado |
 |---|---|---|---|---|
 | `DOMINIO_A_URL`, `DOMINIO_B_URL`, `DOMINIO_C_URL`, `DOMINIO_PLATAFORMA_URL` | `http://127.0.0.1:400x` | Origem de cada domínio no registro de destinos | apps | ✅ |
+| `ZONA2_URL` | `http://127.0.0.1:3002` | Origem interna da zona 2 para os fragmentos que a zona 1 pede (ADR-0011, decisão 4). Só origem, sem caminho; rede interna, nunca o endereço do shell | zona 1 (`lib/fragmentos.ts`) | ✅ (C1) |
 | `ACESSO_URL` | `http://127.0.0.1:4020` | Gestão de acesso v2 (`GET /v2/eu`; manifesto em `/v2/modulos/manifesto`). Sem volta para a v1 (ADR-0014, adendo 1) | apps, `registrar-manifesto` das zonas 1 e 2 | ✅ (núcleo 0.9.0) |
 | `ERP_TOKEN_SERVICO` | dev | Token de serviço para registrar o manifesto | `registrar-manifesto` | ✅ |
 | `SHELL_HOSTS` | `localhost:3000` | Hosts aceitos como origem do shell, separados por vírgula; espaço em volta de cada host é ignorado (`a.exemplo, b.exemplo:8443`) e item vazio some. No shell: páginas e `POST /api/auth/sair`; nas zonas: páginas (`hostsPermitidos`) e Server Actions (`allowedOrigins` do `next.config.ts`). Uma leitura só por app (`lerHostsDoShell`). Atrás de um proxy que termina TLS, ver a nota sobre `X-Forwarded-Proto` abaixo da tabela | shell (`lib/configuracao.ts`); zonas (`lib/hosts-do-shell.ts`) | ✅ (espaço aceito no shell e nas zonas desde a D19-B) |

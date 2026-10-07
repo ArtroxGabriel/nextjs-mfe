@@ -903,6 +903,50 @@ test('C1b (ADR-0011, decisao 8): o navegador nao alcanca _fragmento pelo shell, 
   assert.equal((await pedir('/zona2', { cookie: ana })).status, 200)
 })
 
+test('C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos', async () => {
+  const r = await pedir('/zona1', { cookie: (await entrar('ana')).cookie })
+  assert.equal(r.status, 200)
+  assert.match(r.html, BLOCO_TAREFAS, 'ana (zona 1 e zona 2) nao viu o bloco')
+  assert.match(r.html, /Tarefas pendentes \(zona 2\)/)
+  for (const u of ['bruno', 'davi']) {
+    const s = await pedir('/zona1', { cookie: (await entrar(u)).cookie })
+    assert.equal(s.status, 200, u)
+    assert.doesNotMatch(s.html, BLOCO_TAREFAS, `${u} (so zona 1) viu o bloco`)
+    assert.doesNotMatch(s.html, /Tarefas pendentes/, `${u}: titulo do bloco sem o bloco`)
+    assert.ok(!/sem acesso|não autorizado|acesso negado/i.test(s.html), `placeholder de sem acesso para ${u} (invariante 8)`)
+  }
+})
+
+test('C1d: zona 2 travada ou fora apaga so o bloco dela no painel da zona 1, dentro do timeout do fragmento', { timeout: 90_000 }, async () => {
+  const ana = (await entrar('ana')).cookie
+  const limite = (Number(process.env.ERP_FRAGMENTO_TIMEOUT_MS) || 2_000) + 2_000
+  const semBloco = (r, quando) => {
+    assert.equal(r.status, 200, quando)
+    assert.match(r.html, /Painel da zona 1/, quando)
+    assert.doesNotMatch(r.html, BLOCO_TAREFAS, quando)
+  }
+  ambiente.congelarApp('erp-zona-2')
+  try {
+    const t0 = Date.now()
+    const r = await pedir('/zona1', { cookie: ana })
+    const ms = Date.now() - t0
+    semBloco(r, 'zona 2 travada')
+    assert.ok(ms < limite, `painel levou ${ms} ms com a zona 2 travada (limite ${limite} ms)`)
+  } finally { ambiente.descongelarApp('erp-zona-2') }
+  await ambiente.derrubarApp('erp-zona-2')
+  try {
+    semBloco(await pedir('/zona1', { cookie: ana }), 'zona 2 fora')
+  } finally { await ambiente.subirApp('erp-zona-2') }
+  // o bloco volta sozinho quando a zona 2 volta
+  const t0 = Date.now()
+  let html = ''
+  while (Date.now() - t0 < 10_000 && !BLOCO_TAREFAS.test(html)) {
+    html = (await pedir('/zona1', { cookie: ana })).html
+    if (!BLOCO_TAREFAS.test(html)) await new Promise((r) => setTimeout(r, 200))
+  }
+  assert.match(html, BLOCO_TAREFAS, 'o bloco nao voltou em 10 s depois de a zona 2 voltar')
+})
+
 test('L8 (auditor_shell_3/4): o nonce da CSP e novo e imprevisivel a cada requisicao, no shell, na rota publica e nas zonas', async () => {
   // as zonas tem nonce proprio (criarProxy do nucleo): so o shell nao pegava nonce fixo nelas
   const { cookie } = await entrar('ana')

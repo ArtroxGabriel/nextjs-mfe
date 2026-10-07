@@ -37,7 +37,7 @@ app/
     layout.tsx
     page.tsx
     [id]/page.tsx
-    _fragmento/                   ← o que esta zona expõe a outras      ← NOVO
+    %5Ffragmento/                 ← o que esta zona expõe a outras      ← NOVO
       {nome}/[id]/route.ts
     api/bff/                      ← NUNCA app/api/bff                   ← MUDA
     error.tsx

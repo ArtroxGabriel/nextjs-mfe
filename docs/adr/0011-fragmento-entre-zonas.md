@@ -53,3 +53,13 @@ Decisão preparada pelo `arquiteto-mfe` em 2026-09-21.
 - A primeira ligação real (zona 1 consumindo um bloco da zona 2) e o bloqueio no shell vêm depois
   do gate do shell, que está em andamento.
 - Versão do contrato: só a 1 existe. Pedido de outra versão recebe 204.
+
+## Adendo 1 (2026-10-06): a pasta é `%5Ffragmento`; primeiro uso
+
+- No App Router, pasta que começa com `_` é privada e fica fora do roteamento. A rota dona mora em
+  `app/{zona}/%5Ffragmento/{nome}/[id]/route.ts`; a URL continua `/{zona}/_fragmento/{nome}/{id}`. A decisão 5 vale
+  com esse nome de pasta.
+- Primeiro uso (C1): a zona 2 serve `tarefas/pendentes` (o bloco "Tarefas pendentes") e a zona 1 o embute no painel,
+  com a origem da zona 2 em `ZONA2_URL`. O shell responde 404 a `/{zona}/_fragmento/...` vindo do navegador, antes da
+  sonda e do cookie (decisão 8). Verificações C1a–C1d em `base/verificacao/base.test.mjs`.
+- Continua fora: circuit breaker e `<Suspense>` em volta do bloco (`alvo.md` §6); hoje o limite é o timeout de 2 s.
