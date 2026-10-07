@@ -1,4 +1,0 @@
-ausente null
-bom "<section><p>bom</p></section></div><button type=\"button\">Avi"
-bommeio "<section><p>a﻿b</p></section></div><button type=\"button\">Avi"
-bom2 "<section><p>bom2</p></section></div><button type=\"button\">Av"
