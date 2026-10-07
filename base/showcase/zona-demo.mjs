@@ -31,39 +31,48 @@ export async function subirZonaDemo({ id = 'demo', porta = 3009, hosts = ['127.0
     },
     async remover() {
       // a rota sai primeiro: o mapa nunca fica com uma zona sem dono, mesmo se o fechamento falhar
-      try { await zona.remover() } finally { if (no_ar) { no_ar = false; await zona.fechar() } }
+      try {
+        const status = await zona.remover()
+        if (status >= 300 && status !== 404) throw new Error(`a gestão de acesso recusou remover a rota de ${id} (status ${status})`)
+      } finally { if (no_ar) { no_ar = false; await zona.fechar() } }
     },
   }
 }
 
 async function principal() {
-  const ttl = Number(process.env.ERP_MAPA_ZONAS_TTL_MS ?? 30000) / 1000
+  const ms = Number(process.env.ERP_MAPA_ZONAS_TTL_MS ?? 30000)
+  const prazo = `em até um TTL do mapa mais uma releitura${Number.isFinite(ms) && ms > 0 ? ` (TTL de ${ms / 1000} s)` : ''}`
   const demo = await subirZonaDemo()
   let saindo = false
   const sair = async (codigo) => {
     if (saindo) return
     saindo = true
-    try { await demo.remover(); console.log('\nRota removida. A página volta a 404 em até um intervalo do mapa mais uma releitura.') }
-    catch (e) { console.error(`\nNão consegui remover a rota: ${e.message}`); codigo = 1 }
+    try { await demo.remover(); console.log(`\nRota removida. A página volta a 404 ${prazo}.`) }
+    catch (e) {
+      console.error(`\nNão consegui remover a rota: ${e.message}\nRemova à mão: DELETE ${process.env.ACESSO_URL ?? 'http://127.0.0.1:4020'}/v2/zonas/demo/rota com o cabeçalho Authorization: Bearer svc.demo`)
+      codigo = 1
+    }
     process.exit(codigo)
   }
   process.on('SIGINT', () => sair(0))
   process.on('SIGTERM', () => sair(0))
+  process.on('SIGHUP', () => sair(0))
   process.on('uncaughtException', (e) => { console.error(e.message); sair(1) })
+  process.on('unhandledRejection', (e) => { console.error(e?.message ?? e); sair(1) })
 
   console.log(`Zona demo no ar na porta 3009, rota registrada.
-O shell relê o mapa a cada ${ttl} s (ERP_MAPA_ZONAS_TTL_MS): cada mudança aparece em até ${ttl} s mais uma releitura, sem reiniciar o shell.
+O shell relê o mapa de zonas de tempos em tempos (ERP_MAPA_ZONAS_TTL_MS), sem reiniciar.
 
-1. Entre no showcase com qualquer ator e abra ${demo.url}
-2. Enter: derruba a zona. A rota continua registrada e o shell mostra a página de zona fora do ar.
-3. Enter de novo: a zona volta.
-4. Ctrl-C: remove a rota e sai. A página volta a 404.
+1. Entre no showcase com qualquer ator e abra ${demo.url}. A página aparece ${prazo}.
+2. Enter: derruba a zona. A rota continua no mapa, então a queda é imediata: recarregue a página e veja a página de zona fora do ar.
+3. Enter de novo: a zona volta. Recarregue a página.
+4. Ctrl-C: remove a rota e sai. A página volta a 404 ${prazo}.
 `)
   const rl = createInterface({ input: process.stdin })
   let no_ar = true
   for await (const _ of rl) {
     try {
-      if (no_ar) { await demo.derrubar(); console.log('Zona derrubada, rota mantida. Espere o mapa reler e recarregue a página.') }
+      if (no_ar) { await demo.derrubar(); console.log('Zona derrubada, rota mantida. Recarregue a página.') }
       else { await demo.voltar(); console.log('Zona de volta. Recarregue a página.') }
       no_ar = !no_ar
     } catch (e) { console.error(e.message); return sair(1) }
