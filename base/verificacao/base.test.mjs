@@ -857,9 +857,34 @@ const BLOCO_TAREFAS = /data-fragmento="zona2\/tarefas"/
 // semente do dominio C: t-3 pendente com titulo hostil, t-4 concluida (auditor_c1_1, E-Z4 e E-Z6)
 const T3_ESCAPADO = 'Conferir &quot;lote&quot; &lt;A&amp;B&gt;'
 const tarefasDoBloco = (html, quem) => {
-  assert.ok(html.includes(T3_ESCAPADO), `${quem}: pendente t-3 ausente ou sem escape`)
+  // dentro de <li>: a lista inteira escapada como texto (auditor_c1_2, V-Z4e) tambem traz o titulo escapado
+  assert.ok(html.includes(`<li>${T3_ESCAPADO}</li>`), `${quem}: pendente t-3 ausente, sem escape ou fora de <li>`)
   assert.ok(!html.includes('<A&B>'), `${quem}: titulo da tarefa chegou cru, sem escape`)
   assert.doesNotMatch(html, /Arquivar relatório antigo/, `${quem}: tarefa concluida no bloco de pendentes`)
+}
+// Invariante 8 pela estrutura, nao pelo texto (auditor_c1_2: V-U1c, V-U1d, V-U1f): a sequencia de elementos de
+// primeiro nivel do <main> do painel, com texto solto no nivel 0 tambem contado. Qualquer coisa no lugar do bloco
+// ausente (paragrafo, secao vazia, texto) muda a sequencia. Bloco novo legitimo no painel muda a lista esperada aqui.
+const VAZIOS = new Set(['area', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'])
+const elementosDoPainel = (html) => {
+  const ini = html.indexOf('>', html.indexOf('<main')) + 1
+  const corpo = html.slice(ini, html.indexOf('</main>', ini)).replace(/<!--[\s\S]*?-->/g, '')
+  const seq = []
+  let nivel = 0, fim = 0
+  for (const m of corpo.matchAll(/<(\/?)([a-z][a-z0-9-]*)\b([^>]*)>/gi)) {
+    if (nivel === 0 && corpo.slice(fim, m.index).trim()) seq.push(`texto:${corpo.slice(fim, m.index).trim()}`)
+    fim = m.index + m[0].length
+    const [, fecha, tag, attrs] = m
+    if (fecha) { nivel--; continue }
+    if (nivel === 0) {
+      const rotulo = attrs.match(/aria-labelledby="([^"]*)"/)?.[1]
+      const relatorios = tag === 'p' && corpo.startsWith('<a href="/zona1/relatorios">Relatórios</a></p>', fim)
+      seq.push(relatorios ? 'p:relatorios' : rotulo ? `${tag}:${rotulo}` : tag)
+    }
+    if (!VAZIOS.has(tag.toLowerCase()) && !attrs.trim().endsWith('/')) nivel++
+  }
+  if (corpo.slice(fim).trim()) seq.push(`texto:${corpo.slice(fim).trim()}`)
+  return seq
 }
 const pedirFragmento = (caminho, { cookie, cabecalhos = {} } = {}) => fetch(`${ZONA2_DIRETO}${caminho}`, {
   headers: { accept: 'text/html', ...(cookie ? { cookie } : {}), ...cabecalhos }, redirect: 'manual',
@@ -923,6 +948,9 @@ test('C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem t
     assert.doesNotMatch(s.html, BLOCO_TAREFAS, `${u} (so zona 1) viu o bloco`)
     assert.doesNotMatch(s.html, /Tarefas pendentes/, `${u}: titulo do bloco sem o bloco`)
     assert.ok(!/sem acesso|não autorizado|acesso negado/i.test(s.html), `placeholder de sem acesso para ${u} (invariante 8)`)
+    // nada no lugar do bloco, com qualquer texto: so os blocos da zona 1 (o link de relatorios depende do usuario)
+    assert.deepEqual(elementosDoPainel(s.html).filter((e) => e !== 'p:relatorios'),
+      ['h1', 'section:indicadores', 'section:recursos', 'button'], `${u}: elemento no lugar do bloco da zona 2 (invariante 8)`)
     // nenhum rastro do bloco, nem placeholder de indisponivel (invariante 8; E-U1b)
     assert.doesNotMatch(s.html, /tarefa|zona 2/i, `${u}: rastro do bloco da zona 2 sem o modulo`)
   }
