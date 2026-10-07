@@ -131,6 +131,9 @@
 - **Evidência bruta de verificador pode levar token.** Em 2026-10-05 o parcial do challenger_d2_1 (`793f519`, hoje `e52414e` depois da reescrita) subiu com um JWT do
   Keycloak local em `out-t2c.txt`. Antes de commitar pasta de verificador: `grep -rlE "eyJ[A-Za-z0-9_-]{20,}" .agents/<nome>` e
   mascarar (`<jwt-mascarado>`); no despacho, pedir que o próprio agente mascare antes de salvar.
+  A `bff-multizone` foi reescrita com push forçado de `793f519` em diante (8 commits, `72ca361` → `f5664bc`); quem baixou
+  antes: `git fetch` e `git reset --hard origin/bff-multizone` (ou `--mixed`). SHAs do principal entre `793f519` e `72ca361`
+  citados no ledger e em handoffs são os antigos.
 - **PUT do realm no Keycloak mescla atributos.** Para devolver a vida do token ao padrão, gravar o atributo com `''`
   (`access.token.lifespan: ''`); omitir o atributo deixa o valor curto e `task showcase:checar` reprova (`12 !== 300`).
   Script que recebe o valor por `process.argv[2]` não serve para isso: `''` é falso em JS e o script não grava nada

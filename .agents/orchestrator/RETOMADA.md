@@ -62,7 +62,7 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | ADRs | 0013 com adendos 1–3 e 0014 com adendo 1, aceitos | `docs/adr/` |
 | Gates fechados | shell, B1+D1+G3+K, D2, D19-B (2026-10-06, tag `gate-d19b-aprovado`), D7 (2026-10-06, iteração 1, tag `gate-d7-aprovado`), **C1** (2026-10-06, iteração 3, tag `gate-c1-aprovado`) | `GATE_STATUS.md`
 
-## Próximo passo: C1, depois C3 (ordem do humano, 2026-10-06; D7 ✅)
+## Próximo passo: núcleo 0.10.4, depois C3 (ordem do humano, 2026-10-06; D7 e C1 ✅)
 
 Sessão e identidade estão fechadas (D1, D2, D19-B). Os menores do D2 estão em `DEFERRED.md` D27; os de arquitetura em
 D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com plano em `docs/superpowers/plans/`
@@ -74,8 +74,6 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
    página de indisponível dentro do teto passa a ser requisito do C3.
 2. ✅ **C1 — fragmentos entre zonas** (#10). Plano: `docs/superpowers/plans/2026-10-06-c1-fragmentos-entre-zonas.md`. Zona 2 `1626fd1` (dona), shell `836ddc4` (recusa), zona 1 `39c4b76` (bloco, `ZONA2_URL`); testes C1a–C1d. **Gate aprovado na iteração 3** (2026-10-06): revisor e challenger APROVAM; auditor vetou duas vezes só por teste (escape, filtro, placeholder) e passou na 3; tag `gate-c1-aprovado`. Menores e limites em `DEFERRED.md` D30.
 2b. ⬜ **Núcleo 0.10.4 — `ehHtmlInerte` por lista de permissão** (`DEFERRED.md` D29; decisão do humano, 2026-10-06: logo depois do C1, antes do C3). Plano em `docs/superpowers/plans/`, lockstep nas 4 apps, gate próprio.
-   Falta: rota `_fragmento` na zona 2, bloco dela na zona 1, o shell recusa `/{zona}/_fragmento/` vindo do navegador, e
-   o teste ponta a ponta.
 3. ⬜ **C3 — mapa de zonas pelos manifestos** (#14). Zona nova entra sem editar o `zonas.json` nem republicar o shell.
    **Requisito vindo do D7 (2026-10-06):** o mecanismo escolhido entrega a página de indisponível dentro de `ERP_ZONA_TETO_MS`.
    Do gate do D7: uma página com várias chamadas lentas em sequência, sem mandar bytes, também é cortada no teto (500 cru);
@@ -165,18 +163,12 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 6. Aplicar no GitLab o que estiver "pendente" em `ATIVIDADES.md` §2 (hoje só comentários opcionais).
 7. ✅ **Modo OIDC na máquina local** (2026-10-03): opção (a), ver "Decisões do humano" acima.
 
-## Ambiente (2026-10-06, fim do gate do D7)
+## Ambiente (2026-10-07)
 
-- No ar: Verdaccio (4873), Redis (6379) e Keycloak (8080), `showcase:checar` ok. Portas da base 3000–3003 e 4001–4120 livres;
-  nenhum agente rodando.
+- No ar: só o Verdaccio (4873). **Redis e Keycloak caíram com a máquina**: `task showcase:subir` e `task showcase:checar` antes
+  de qualquer verificação. Portas da base 3000–3003 e 4001–4120 livres; nenhum agente rodando.
 - `@erp/nucleo` 0.10.3 só no Verdaccio desta máquina. Outra máquina: `task pacotes:publicar` e `task pacotes:alinhar-hashes`.
 - Fora de commit, de propósito: `docs/README.md`, `docs/arquitetura/alvo.md`, `docs/arquitetura/infraestrutura-alvo.md`
   (trabalho do humano) e os `pnpm-lock.yaml` de erp-dominio-stub e erp-moldura (hash local, `AMBIENTE.md` §1).
-- Ambientes anteriores (2026-09-28 a 2026-10-05) no histórico do git deste arquivo.
-
-## Ambiente (reescrita de 2026-10-05)
-
-- Em 2026-10-05 a `bff-multizone` foi **reescrita com push forçado** de `793f519` em diante (8 commits, `72ca361` → `f5664bc`) só
-  para mascarar um JWT do Keycloak local em `.agents/challenger_d2_1/out-t1b.txt` e `out-t2c.txt`; o conteúdo do resto é o mesmo.
-  Os submódulos não mudaram. **Quem baixou antes:** `git fetch` e `git reset --hard origin/bff-multizone` (ou `reset --mixed` para
-  manter a árvore). Os SHAs do principal citados no ledger e em handoffs entre `793f519` e `72ca361` são os antigos.
+- A reescrita da `bff-multizone` com push forçado (2026-10-05, JWT local mascarado) e os ambientes anteriores estão no
+  histórico do git deste arquivo e em `AMBIENTE.md`.
