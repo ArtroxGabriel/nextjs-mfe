@@ -190,7 +190,7 @@ tasks:
 
   showcase:verificar:
     desc: "Com o showcase no ar (task showcase ou showcase:oidc), prova as 7 funcionalidades básicas F1 a F7 por HTTP; detecta o modo de login"
-    cmd: node --test --test-timeout=300000 base/verificacao/showcase.test.mjs
+    cmd: node --test --test-timeout=300000 base/verificacao/showcase/showcase.test.mjs
 
   showcase:zona-demo:
     desc: "Com o showcase no ar, sobe a zona demo (porta 3009) e a registra; Enter derruba e volta, Ctrl-C remove a rota"

@@ -99,8 +99,9 @@ export async function modoDeLogin() {
   const ini = await pedir('/api/auth/entrar?de=%2F')
   if (!ini.local) throw new Error(`entrar sem Location (HTTP ${ini.status})`)
   const alvo = new URL(ini.local, SHELL)
-  if (alvo.origin === new URL(KEYCLOAK_EMISSOR).origin) return 'oidc'
-  if (alvo.pathname === '/login/dev') return 'dev'
+  if (alvo.origin === new URL(SHELL).origin && alvo.pathname === '/login/dev') return 'dev'
+  // fora da origem do shell só pode ser o IdP, qualquer que seja o host do emissor configurado
+  if (alvo.origin !== new URL(SHELL).origin) return 'oidc'
   throw new Error(`entrar mandou a destino desconhecido: ${alvo.origin}${alvo.pathname}`)
 }
 

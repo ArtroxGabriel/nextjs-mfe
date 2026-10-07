@@ -8,14 +8,15 @@ import { test, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { RAIZ } from '../scripts/ambiente.mjs'
+import { RAIZ } from '../../scripts/ambiente.mjs'
 import { randomUUID } from 'node:crypto'
-import { pedir, entrarComo, modoDeLogin, menu, formularios, acaoPeloCliente, tokenDoKeycloak } from './apoio.mjs'
-import { subirZonaDemo } from '../showcase/zona-demo.mjs'
+import { pedir, entrarComo, modoDeLogin, menu, formularios, acaoPeloCliente, tokenDoKeycloak } from '../apoio.mjs'
+import { subirZonaDemo } from '../../showcase/zona-demo.mjs'
 
 const DOMINIO_C_URL = process.env.DOMINIO_C_URL ?? 'http://127.0.0.1:4003'
 const ACESSO_URL = process.env.ACESSO_URL ?? 'http://127.0.0.1:4020'
-const TTL_MAPA_MS = Number(process.env.ERP_MAPA_ZONAS_TTL_MS ?? 30_000)
+const TTL_LIDO = Number(process.env.ERP_MAPA_ZONAS_TTL_MS)
+const TTL_MAPA_MS = Number.isFinite(TTL_LIDO) && TTL_LIDO > 0 ? TTL_LIDO : 30_000
 // entrada e saída da demo: um TTL do mapa mais uma releitura, com folga
 const PRAZO_DO_MAPA_MS = 2 * TTL_MAPA_MS + 15_000
 const PRAZO_DA_SONDA_MS = 15_000
