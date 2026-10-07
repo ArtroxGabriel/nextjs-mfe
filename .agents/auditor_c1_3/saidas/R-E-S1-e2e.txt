@@ -1,0 +1,33 @@
+✔ L2/V3/C1: zona fora da 503 proprio, em qualquer caixa; as outras seguem; ela volta (19314.074446ms)
+✔ C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache (214.735166ms)
+✖ C1b (ADR-0011, decisao 8): o navegador nao alcanca _fragmento pelo shell, em nenhuma grafia, com ou sem cookie (40.69322ms)
+✔ C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos (155.346325ms)
+✔ C1d: zona 2 travada ou fora apaga so o bloco dela no painel da zona 1, dentro do timeout do fragmento (2863.992669ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 23073.19847
+
+✖ failing tests:
+
+test at base/verificacao/base.test.mjs:924:1
+✖ C1b (ADR-0011, decisao 8): o navegador nao alcanca _fragmento pelo shell, em nenhuma grafia, com ou sem cookie (40.69322ms)
+  AssertionError [ERR_ASSERTION]: /zona2/_fragmento/tarefas/pendentes com cookie
+  
+  200 !== 404
+  
+      at TestContext.<anonymous> (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/verificacao/base.test.mjs:930:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 404,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

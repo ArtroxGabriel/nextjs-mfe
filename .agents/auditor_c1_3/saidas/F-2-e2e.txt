@@ -1,0 +1,13 @@
+✔ L2/V3/C1: zona fora da 503 proprio, em qualquer caixa; as outras seguem; ela volta (11303.147992ms)
+✔ C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache (216.872512ms)
+✔ C1b (ADR-0011, decisao 8): o navegador nao alcanca _fragmento pelo shell, em nenhuma grafia, com ou sem cookie (77.598695ms)
+✔ C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos (165.433447ms)
+✔ C1d: zona 2 travada ou fora apaga so o bloco dela no painel da zona 1, dentro do timeout do fragmento (2876.360627ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15124.641865

@@ -1,0 +1,40 @@
+✔ L2/V3/C1: zona fora da 503 proprio, em qualquer caixa; as outras seguem; ela volta (11223.233272ms)
+✔ C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache (212.873242ms)
+✔ C1b (ADR-0011, decisao 8): o navegador nao alcanca _fragmento pelo shell, em nenhuma grafia, com ou sem cookie (81.129054ms)
+✖ C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos (110.76834ms)
+✔ C1d: zona 2 travada ou fora apaga so o bloco dela no painel da zona 1, dentro do timeout do fragmento (2869.858369ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15002.285148
+
+✖ failing tests:
+
+test at base/verificacao/base.test.mjs:939:1
+✖ C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos (110.76834ms)
+  AssertionError [ERR_ASSERTION]: bruno: elemento no lugar do bloco da zona 2 (invariante 8)
+  + actual - expected
+  
+    [
+      'h1',
+      'section:indicadores',
+      'section:recursos',
+  +   'a',
+      'button'
+    ]
+  
+      at TestContext.<anonymous> (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/verificacao/base.test.mjs:952:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [ 'h1', 'section:indicadores', 'section:recursos', 'a', 'button' ],
+    expected: [ 'h1', 'section:indicadores', 'section:recursos', 'button' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

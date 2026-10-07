@@ -1,0 +1,47 @@
+
+[V-U1c] repos/erp-zona-1/app/zona1/page.tsx:36  (variante: placeholder "Bloco indisponivel no momento.")
+  antes : '{tarefas && <div dangerouslySetInnerHTML={{ __html: tarefas }} />}'
+  depois: '{tarefas ? <div dangerouslySetInnerHTML={{ __html: tarefas }} /> : <p>Bloco indisponível no momento.</p>}'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (1 falhas): C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [15s]
+
+
+[V-U1d] repos/erp-zona-1/app/zona1/page.tsx:36  (variante: placeholder travessao)
+  antes : '{tarefas && <div dangerouslySetInnerHTML={{ __html: tarefas }} />}'
+  depois: '{tarefas ? <div dangerouslySetInnerHTML={{ __html: tarefas }} /> : <p>—</p>}'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (1 falhas): C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [15s]
+
+
+[V-U1f] repos/erp-zona-1/app/zona1/page.tsx:36  (variante: section vazia com titulo "Pendências")
+  antes : '{tarefas && <div dangerouslySetInnerHTML={{ __html: tarefas }} />}'
+  depois: '{tarefas ? <div dangerouslySetInnerHTML={{ __html: tarefas }} /> : <section aria-labelledby="pendencias"><h2 id="pendencias">Pendências</h2></section>}'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (1 falhas): C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [15s]
+
+
+[V-Z4e] repos/erp-zona-2/lib/fragmento-tarefas.ts:15  (variante: escape na lista inteira (corpo), nao no titulo)
+  antes : '<li>${escapar(t.titulo)}</li>'
+  depois: '<li>${t.titulo}</li>'
+  antes+: '  const corpo = pendentes.length'
+  depois+: '  const corpo = escapar(pendentes.length'
+  antes+: "'<p>Nenhuma tarefa pendente.</p>'\n"
+  depois+: "'<p>Nenhuma tarefa pendente.</p>')\n"
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (2 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache; C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [22s]
+
+
+[E-U1b] repos/erp-zona-1/app/zona1/page.tsx:36  (veto: placeholder no lugar da ausencia)
+  antes : '{tarefas && <div dangerouslySetInnerHTML={{ __html: tarefas }} />}'
+  depois: '{tarefas ? <div dangerouslySetInnerHTML={{ __html: tarefas }} /> : <p>Tarefas indisponíveis no momento.</p>}'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (1 falhas): C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [22s]
+
+
+[V-U1h] repos/erp-zona-1/app/zona1/page.tsx:36  (controle (equivalente): embrulho "Zona 2" dentro do condicional)
+  antes : '{tarefas && <div dangerouslySetInnerHTML={{ __html: tarefas }} />}'
+  depois: '{tarefas && <section aria-labelledby="zona2"><h2 id="zona2">Zona 2</h2><div dangerouslySetInnerHTML={{ __html: tarefas }} /></section>}'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: VIVA (5 testes verdes) [15s]
+
+fim
