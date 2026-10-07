@@ -18,12 +18,7 @@
 > **D29** (`ehHtmlInerte` deixava passar HTML ativo) fechou no núcleo **0.10.4** (2026-10-07): validação por lista de
 > permissão (`docs/desenho/mfe/02-zonas.md` §2.3, ADR-0011 adendo 2). Evidência: 15 testes em `erp-nucleo`, mutações M1–M13
 > do plano todas pegas. Commits: núcleo `50a0fea`; apps em lockstep, principal `bbf6a84`. Limites da lista: D30.
-> **D7** (zona travada: página da base dentro do teto) fechou no C3 (2026-10-07, ADR-0015): o documento passa pelo gateway do
-> shell, que conta `ERP_ZONA_TETO_MS` até os cabeçalhos e responde 503 com a página e o `supportId`. Evidência (`task
-> verificar:redis`): L9 6012 ms com o teto em 6 s (antes, 500 cru em 6 s), L9b (três chamadas lentas de 2,5 s em sequência,
-> sem byte) 6010 ms, L9c (cabeçalhos mandados e zona parada) corte por ociosidade no prazo declarado. Commits: shell `c7a08d9`
-> (mapa) e `4eb47e2` (gateway e proxy híbrido); principal `5700aaf`. Os itens de roteamento do D28 fecharam junto; ficam nele
-> só os demais. Limites novos do C3: D31.
+> **D7** (zona travada: página da base dentro do teto) fechou no C3 (2026-10-07, ADR-0015): o documento passa pelo gateway do shell, que conta `ERP_ZONA_TETO_MS` até os cabeçalhos e responde 503 com a página e o `supportId`. Evidência (`task verificar:redis`): L9 6011 ms com o teto em 6 s (antes, 500 cru em 6 s), L9b (três chamadas lentas de 2,5 s em sequência, sem byte) 6010 ms, L9c (cabeçalhos mandados e zona parada) corte 7005 ms depois dos cabeçalhos com a ociosidade em 7 s (todos os números, L10 inclusive, de uma só rodada de `verificar:redis`). Commits: shell `c7a08d9` (mapa) e `4eb47e2` (gateway e proxy híbrido); principal `5700aaf`. Os itens de roteamento do D28 fecharam junto; ficam nele só os demais. Limites novos do C3: D31.
 
 ## D12 — Menores do núcleo (fatia 1)
 
@@ -209,7 +204,7 @@
 - **O que é:** limites aceitos do roteamento híbrido; nenhum é defeito de produto. Evidência em `.superpowers/sdd/2026-10-07-c3-mapa-de-zonas/` (relatórios das tarefas 4 e 5).
 - **Corte sem página depois do primeiro byte.** Se a zona manda os cabeçalhos e para no meio, o gateway corta a conexão ao fim de `ERP_ZONA_OCIOSIDADE_MS` e o navegador vê a resposta truncada: o status já saiu e não há como trocá-lo pela página da base. Vale para qualquer repasse com streaming (L9c).
 - **Server Action em zona travada.** A Server Action vai pelo caminho rápido (`NextResponse.rewrite`), e no estouro do `proxyTimeout` quem responde é o Next, com o erro cru. Só a navegação de documento tem a página da base.
-- **Zona nova entra em instâncias do shell em momentos diferentes.** Cada instância relê o mapa pelo próprio TTL, sem coordenação: uma zona recém-registrada pode responder numa instância e dar 404 em outra por até um TTL mais uma releitura (a releitura não bloqueia quem chega). A zona removida some do mesmo modo. Medido numa instância: 2077 a 2207 ms com TTL de 2 s (L10).
+- **Zona nova entra em instâncias do shell em momentos diferentes.** Cada instância relê o mapa pelo próprio TTL, sem coordenação: uma zona recém-registrada pode responder numa instância e dar 404 em outra por até um TTL mais uma releitura (a releitura não bloqueia quem chega). A zona removida some do mesmo modo. Medido numa instância com TTL de 2 s: zona nova roteada em 2217 ms e removida em 2002 ms (L10, mesma rodada de `verificar:redis` dos demais números).
 - **`x-middleware-rewrite` no caminho rápido (decisão do humano, 2026-10-07).** No RSC, nos estáticos e nas Server Actions, o Next anota na resposta ao navegador `x-middleware-rewrite` com a origem interna da zona (`resolve-routes.js:466-469`, `router-server.js:395-397`; nenhuma configuração o remove). Vaza topologia interna, não credencial. Decisão: em produção a borda na frente do shell tira os cabeçalhos `x-middleware-*` da resposta (`docs/arquitetura/infraestrutura-alvo.md`, seções 1, 5 e 8; ADR-0015, adendo); na máquina local é um limite declarado, e a verificação (`base.test.mjs`) só confere que o documento pelo gateway mostra apenas o caminho relativo `/_gateway/...`.
 - **`x-forwarded-proto` do navegador é repassado.** O gateway repassa o `x-forwarded-proto` que vier, como o caminho rápido já fazia; o balanceador tem de sobrescrevê-lo (`docs/CONFIGURACAO.md`, nota do `X-Forwarded-Proto`).
 - **Fecha em:** a borda de produção (a regra de `x-middleware-*` vira configuração do balanceador); os demais ficam como limites do desenho.

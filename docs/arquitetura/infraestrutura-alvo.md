@@ -178,7 +178,7 @@ sequenceDiagram
 
 O navegador nunca vê o token de acesso, o refresh token, nem o endereço do domínio ou do Redis. O endereço da zona também não chega a ele, com uma condição: o balanceador tira os cabeçalhos `x-middleware-*` da resposta (regra da seção 8). Sem essa regra, o caminho rápido do shell (RSC, arquivos estáticos e Server Actions) devolve `x-middleware-rewrite` com a origem interna da zona, e nenhuma configuração do Next o remove.
 
-O shell encaminha para a zona por um mapa lido em tempo de execução da gestão de acesso, que cada zona alimenta no deploy com o registro da sua rota ([ADR-0015](../adr/0015-mapa-de-zonas-vivo-e-gateway.md)). A navegação de documento passa pelo gateway interno do shell, que entrega a página de indisponível no estouro do teto; RSC, estáticos e Server Actions vão por rewrite. O passo "encaminha pelo mapa de zonas" do diagrama não depende de build: zona nova entra em até um TTL do mapa, sem republicar o shell.
+O shell encaminha para a zona por um mapa lido em tempo de execução da gestão de acesso, que cada zona alimenta no deploy com o registro da sua rota ([ADR-0015](../adr/0015-mapa-de-zonas-vivo-e-gateway.md)). A navegação de documento passa pelo gateway interno do shell, que entrega a página de indisponível no estouro do teto; RSC, estáticos e Server Actions vão por rewrite. O passo "encaminha pelo mapa de zonas" do diagrama não depende de build: zona nova entra em até um TTL do mapa mais uma releitura, sem republicar o shell.
 
 ## 5. Cada serviço e o que acontece se ele cair
 

@@ -20,19 +20,7 @@ pacotes ou em `base/verificacao/`.
 2. **NUNCA** passe DTO sensível como prop para componente `'use client'`. O objeto inteiro
    é serializado no payload RSC, inclusive campos não renderizados.
 3. **SEMPRE** inclua `import 'server-only'` em módulo que toque credencial ou sessão.
-4. **SEMPRE** chame domínio por um destino do **registro de destinos** do núcleo
-   (`nucleo.destino(nome)`), nunca com `fetch` direto. A zona escolhe o modelo de caminho
-   declarado e preenche parâmetros; origem, método e credencial são do registro — RFC 10017.
-   Ver ADR-0009. Primeira exceção: os scripts de deploy `scripts/registrar-manifesto.ts` e `scripts/registrar-rota.ts`, que rodam
-   fora do Next e usam `fetch` com origem fixa, `redirect: 'manual'` e timeout.
-   Segunda exceção: a sonda de saúde do shell (`erp-shell/lib/saude-zonas.ts`), que só chama
-   as origens do mapa de zonas validado (nunca a requisição). Terceira exceção: o gateway de documento
-   do shell (`erp-shell/lib/gateway-zona.ts`, ADR-0015), que só usa `node:http` e `node:https` e só
-   chama a origem do mapa validado mais o caminho que casou o prefixo da zona. A checagem N8 (`base/verificacao/saida-de-rede.mjs`) lê a estrutura
-   do código e só aceita as exceções listadas lá, cada uma com o motivo.
-   O IdP não é destino do registro: discovery, token e logout só passam pelo adaptador
-   `identidadeOidc` de `@erp/nucleo/shell` (ADR-0013, decisão 5); app nenhuma importa
-   `openid-client` (a N8 recusa todo pacote fora da lista dela).
+4. **SEMPRE** chame domínio por um destino do **registro de destinos** do núcleo (`nucleo.destino(nome)`), nunca com `fetch` direto. A zona escolhe o modelo de caminho declarado e preenche parâmetros; origem, método e credencial são do registro (RFC 10017). Ver ADR-0009. Primeira exceção: os scripts de deploy `scripts/registrar-manifesto.ts` e `scripts/registrar-rota.ts`, que rodam fora do Next e usam `fetch` com origem fixa, `redirect: 'manual'` e timeout. Segunda exceção: a sonda de saúde do shell (`erp-shell/lib/saude-zonas.ts`), que só chama as origens do mapa de zonas validado (nunca a requisição). Terceira exceção: o gateway de documento do shell (`erp-shell/lib/gateway-zona.ts`, ADR-0015), que só usa `node:http` e `node:https` e só chama a origem do mapa validado mais o caminho que casou o prefixo da zona. A checagem N8 (`base/verificacao/saida-de-rede.mjs`) lê a estrutura do código e só aceita as exceções listadas lá, cada uma com o motivo. O IdP não é destino do registro: discovery, token e logout só passam pelo adaptador `identidadeOidc` de `@erp/nucleo/shell` (ADR-0013, decisão 5); app nenhuma importa `openid-client` (a N8 recusa todo pacote fora da lista dela).
 5. **SEMPRE** revalide sessão no primeiro bloco de toda Server Action. Ela é endpoint público.
 6. **SEMPRE** use `If-Match` em mutação de recurso versionado, com a versão que o cliente
    conhece. O núcleo recusa PUT/PATCH/DELETE sem ela; POST que só define um valor

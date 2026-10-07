@@ -131,7 +131,7 @@ A verificação manual, item a item, está em
    com os destinos que a zona pode chamar, e `<Moldura>` no layout.
 2. **Manifesto** `acesso.manifesto.ts`: módulos, perfis e concessões com o prefixo da zona.
    Registre com `pnpm registrar`.
-3. **Rota**: rode `pnpm registrar-rota` no deploy da zona (`scripts/registrar-rota.ts`, com `ERP_ZONA_ORIGEM_INTERNA`). O shell não se edita nem se republica: o mapa vivo, a sonda de saúde e o 503 passam a incluir a zona em até um TTL (`ERP_MAPA_ZONAS_TTL_MS`).
+3. **Rota**: rode `pnpm registrar-rota` no deploy da zona (`scripts/registrar-rota.ts`, com `ERP_ZONA_ORIGEM_INTERNA`). O shell não se edita nem se republica: o mapa vivo, a sonda de saúde e o 503 passam a incluir a zona em até um TTL mais uma releitura (`ERP_MAPA_ZONAS_TTL_MS`).
 4. **Submódulo e verificação**: registre o repositório em `.gitmodules` e inclua a app em
    `base/scripts/ambiente.mjs` e nas listas de `base/verificacao/base.test.mjs`.
 

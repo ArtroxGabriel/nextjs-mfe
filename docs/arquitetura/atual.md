@@ -51,7 +51,7 @@ requisição com cabeçalho de navegador (`Origin`, `Sec-Fetch-*`).
 ### 1.1 O que o `proxy.ts` do shell decide, em ordem
 
 `repos/erp-shell/lib/decisao-proxy.ts` é uma função pura, testada sem o Next; o `proxy.ts` só a
-traduz para `NextResponse`. Não há mais `rewrites()` em `next.config.ts` nem `zonas.json`: a decisão de qual zona atende o prefixo e a sonda leem o mesmo mapa vivo (`lib/mapa-zonas.ts`), então uma zona registrada entra nos dois de uma vez, em até um TTL.
+traduz para `NextResponse`. Não há mais `rewrites()` em `next.config.ts` nem `zonas.json`: a decisão de qual zona atende o prefixo e a sonda leem o mesmo mapa vivo (`lib/mapa-zonas.ts`), então uma zona registrada entra nos dois de uma vez, em até um TTL mais uma releitura.
 
 ```mermaid
 flowchart TD
