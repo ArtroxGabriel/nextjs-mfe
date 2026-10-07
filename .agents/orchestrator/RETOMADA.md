@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (C3: Tasks 1 a 4 fechadas; decisão do humano sobre o `x-middleware-rewrite`: a borda tira em produção, limite declarado no local; próximo: Task 5)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (gate do C3 aprovado na iteração 2; próximo: resto do E3, E4 e E5)**.
 
 ## Objetivo final
 
@@ -60,7 +60,7 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | Unidades | contratos 20, núcleo 271, moldura 26, stub 75, shell 108; estática 51/51 | `task test`, `task verificar:estatica` |
 | Pacotes | `@erp/nucleo` **0.10.4**, `@erp/contratos` **0.4.0**, `@erp/moldura` **0.5.0**, só no Verdaccio desta máquina; lockstep ok | `task lockstep` |
 | ADRs | 0013 com adendos 1–3 e 0014 com adendo 1, aceitos | `docs/adr/` |
-| Gates fechados | shell, B1+D1+G3+K, D2, D19-B (2026-10-06, tag `gate-d19b-aprovado`), D7 (2026-10-06, iteração 1, tag `gate-d7-aprovado`), C1 (2026-10-06, iteração 3, tag `gate-c1-aprovado`), **D29** (2026-10-07, iteração 1, tag `gate-d29-aprovado`) | `GATE_STATUS.md`
+| Gates fechados | shell, B1+D1+G3+K, D2, D19-B (2026-10-06, tag `gate-d19b-aprovado`), D7 (2026-10-06, iteração 1, tag `gate-d7-aprovado`), C1 (2026-10-06, iteração 3, tag `gate-c1-aprovado`), D29 (2026-10-07, iteração 1, tag `gate-d29-aprovado`), **C3** (2026-10-07, iteração 2, tag `gate-c3-aprovado`) | `GATE_STATUS.md`
 
 ## Próximo passo: núcleo 0.10.4, depois C3 (ordem do humano, 2026-10-06; D7 e C1 ✅)
 
@@ -74,15 +74,10 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
    página de indisponível dentro do teto passa a ser requisito do C3.
 2. ✅ **C1 — fragmentos entre zonas** (#10). Plano: `docs/superpowers/plans/2026-10-06-c1-fragmentos-entre-zonas.md`. Zona 2 `1626fd1` (dona), shell `836ddc4` (recusa), zona 1 `39c4b76` (bloco, `ZONA2_URL`); testes C1a–C1d. **Gate aprovado na iteração 3** (2026-10-06): revisor e challenger APROVAM; auditor vetou duas vezes só por teste (escape, filtro, placeholder) e passou na 3; tag `gate-c1-aprovado`. Menores e limites em `DEFERRED.md` D30.
 2b. ✅ **Núcleo 0.10.4 — `ehHtmlInerte` por lista de permissão** (`DEFERRED.md` D29; decisão do humano, 2026-10-06: logo depois do C1, antes do C3). Plano: `docs/superpowers/plans/2026-10-07-nucleo-0104-html-inerte.md` (4 tasks; mutações M1–M13 declaradas no plano e rodadas pelo worker antes do gate), lockstep nas 4 apps, gate próprio. Feito: núcleo `50a0fea` (15 testes, M1–M13 pegas); apps shell `2f03183`, zona-1 `0a1dcc0`, zona-2 `4184225`, zona-acesso `54741cd`, ponteiros `bbf6a84`; documentos (02-zonas §2.3 e §2.5, ADR-0011 adendo 2, D29 fechado, limites no D30). **Gate aprovado na iteração 1** (2026-10-07): revisor e challenger APROVAM, auditor PASS (61 execuções, 51 pegas, 10 vivas equivalentes ou mais restritivas); tag `gate-d29-aprovado`. Menores em `DEFERRED.md` D30.
-3. ⬜ **C3 — mapa de zonas pelos manifestos** (#14). Zona nova entra sem editar o `zonas.json` nem republicar o shell.
-   **Requisito vindo do D7 (2026-10-06):** o mecanismo escolhido entrega a página de indisponível dentro de `ERP_ZONA_TETO_MS`.
-   Do gate do D7: uma página com várias chamadas lentas em sequência, sem mandar bytes, também é cortada no teto (500 cru);
-   e a zona com um domínio congelado devolve a página genérica do Next, sem `supportId` (`DEFERRED.md` D28).
-   **Começa pelo `arquiteto-mfe`** (os rewrites do Next são fixados na subida; escolher o mecanismo); se for estrutural,
-   ADR e pedido em `pedidos/` para o humano.
+3. ✅ **C3, mapa de zonas vivo e gateway híbrido** (#14). Plano: `docs/superpowers/plans/2026-10-07-c3-mapa-de-zonas.md`; ADR-0015 aceito (pacote recomendado e decisão sobre o `x-middleware-rewrite`, 2026-10-07). Stub `2da6dcb`, zonas `ce8e015`, `f88cce7`, `73a2c19`, shell `d52b5fc`, principal até `4a6fc63`. **Gate aprovado na iteração 2** (2026-10-07): revisor e challenger APROVAM; auditor vetou só por teste (prefixo estático sem a barra) e passou na 2; tag `gate-c3-aprovado`. Fecha o D7. Limites no `DEFERRED.md` D31, menores no D32.
 4. Depois: resto do E3 (`showcase:conferir` no modo OIDC), E4 (roteiro: uma linha por funcionalidade básica) e E5.
 
-**Para retomar (passo exato):** o humano aceitou o pacote recomendado do C3 (2026-10-07: H1 i, H2 h híbrido, H3 i, H4 i, H5 i, H6 i) e o ADR-0015 está aceito. Plano: `docs/superpowers/plans/2026-10-07-c3-mapa-de-zonas.md` (6 tasks, mutações declaradas em cada task de código), em Subagent-Driven; o ledger diz em que task está (`.superpowers/sdd/2026-10-07-c3-mapa-de-zonas/progress.md`, cópia em `ledger/`). Antes: `git fetch`, ambiente (`docker ps`; `task showcase:checar`).
+**Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente (`docker ps`; `task showcase:checar`); então o item 4: resto do E3 (`showcase:conferir` no modo OIDC), E4 (roteiro do showcase, uma linha por funcionalidade básica) e E5 (verificação ponta a ponta contra o showcase), cada um com plano em `docs/superpowers/plans/` e mutações declaradas nas tasks de código. Nada está rodando e nenhum agente está aberto.
 
 ## Plano até o objetivo
 
@@ -100,8 +95,8 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · ⏸️ depois do objeti
 | | B4/B6 verificações estáticas de segurança | ✅ 48 testes; limites em D14, lacunas em D15 (K6) | #20 | — |
 | **C. Funcionalidades** | C1 fragmentos entre zonas | ✅ gate aprovado (2026-10-06, iteração 3) | #10 | B1 |
 | | C2 SSE no shell (`/api/stream` + `SharedWorker`) | ⏸️ depois do objetivo (humano, 2026-10-06) | #11 | B1; decisão B ok |
-| | **D7** zona travada segura a requisição ~30 s e devolve 500 cru (separado do C2) | ✅ teto; gate aprovado (2026-10-06); página com o C3 | #11 | — |
-| | C3 mapa de zonas vindo dos manifestos | ⬜ básico (humano, 2026-10-06) | #14 | B1 |
+| | **D7** zona travada segura a requisição ~30 s e devolve 500 cru (separado do C2) | ✅ teto (2026-10-06) e página no teto com o C3 (2026-10-07) | #11 | — |
+| | C3 mapa de zonas vindo dos manifestos | ✅ gate aprovado (2026-10-07, iteração 2) | #14 | B1 |
 | **D. Sessão e identidade reais** | D1 sessão no Redis (shell grava com senha, zonas leem com ACL só de leitura) | ✅ gate B1+D1+G3+K aprovado (ambiente por lista de inclusão) | #9 | — |
 | | D2 OIDC + PKCE e renovação proativa com lock (**ADR-0013 aceito**; pessoa por `sub`) | ✅ gate do D2 aprovado (iteração 3, 2026-10-05); D19-B aprovada (2026-10-06) | #9 | — |
 | **E. Showcase** | E1 domínios mock com dados em JSON | ✅ | #19 | — |

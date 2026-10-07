@@ -410,5 +410,7 @@ Gate Result: **VETO (só por teste)**. Correção: teste em `test/mapa-zonas.tes
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
 | worker_c3_1 | correção do veto (sonnet) | — | .agents/worker_c3_1/handoff.md | só teste: prefixo estático com fronteira de segmento (`zona1` e `zona1-staticx`) e página de erro sem ecoar id hostil; N06 e N13 reprovam; shell 160/160 |
-| auditor_c3_2 | general-purpose forense (opus) | em andamento | .agents/auditor_c3_2/handoff.md | |
+| auditor_c3_2 | general-purpose forense (opus) | **PASS** | .agents/auditor_c3_2/handoff.md, mutacoes.txt | correção só de teste confirmada; N06 e N13 pegas pelos testes novos; 21 mutações, 17 pegas, 4 vivas equivalentes (ordem de casamento e validação do `supportId` contra o id da zona, hoje sem chamador hostil); regressão por família verde (shell 160, stub 83, scripts 29, estática 52, `verificar:redis` 135/135); árvores limpas |
+
+Gate Result: **PASS** (iteração 2). Fecha o **C3** (#14): zona nova entra registrando a própria rota no deploy, sem editar arquivo do shell nem reiniciá-lo; zona travada devolve ao documento a página da base com `supportId` dentro de `ERP_ZONA_TETO_MS` (fecha o D7). Menores e observações no `DEFERRED.md` D32; limites no D31. Pastas dos verificadores e do worker removidas depois do registro; última versão no commit `91fcefc` (`git show 91fcefc:.agents/<nome>/handoff.md`). Tag `gate-c3-aprovado`.
 
