@@ -35,3 +35,4 @@ Task 5: regression fixed in a63710b (suite in base/verificacao/showcase/, plus r
 Gate e3e5 it.1: challenger_e3e5_1 REJECT (3d9c3d4): roadmap A3/A8/A9/A10/A15 differ from the real UI; zona-demo raw stack on EADDRINUSE and unreachable access mgmt; minors. Auditor not dispatched. Fix -> worker_e3e5_1
 Gate e3e5 it.2: worker_e3e5_1 fixed (af8239c, handoff 8a1f3cb); revisor_e3e5_2 and challenger_e3e5_2 dispatched
 Gate e3e5 it.2: revisor_e3e5_2 APPROVE (2f232e2), 4 minors -> D33
+Gate e3e5 it.2: challenger_e3e5_2 APPROVE (99ab8e8); auditor_e3e5_1 dispatched (opus)
