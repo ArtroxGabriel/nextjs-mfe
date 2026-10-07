@@ -1,0 +1,84 @@
+
+[R-S1] repos/erp-shell/lib/decisao-proxy.ts:120  (familia guarda do shell (unidade))
+  antes : "    if (ehFragmento(caminho)) return { acao: 'nao-encontrado' }\n"
+  depois: ''
+  comando: pnpm test
+  resultado: unit: REPROVOU (1 falhas): C1: /{zona}/_fragmento/ e 404 no shell, com ou sem cookie, em qualquer grafia, sem consultar a sonda [1s]
+
+
+[R-S2] repos/erp-shell/lib/decisao-proxy.ts:49  (familia guarda do shell (unidade): sem /i)
+  antes : 'const FRAGMENTO = /^\\/[^/]+\\/_fragmento(?:\\/|$)/i'
+  depois: 'const FRAGMENTO = /^\\/[^/]+\\/_fragmento(?:\\/|$)/'
+  comando: pnpm test
+  resultado: unit: REPROVOU (1 falhas): C1: /{zona}/_fragmento/ e 404 no shell, com ou sem cookie, em qualquer grafia, sem consultar a sonda [1s]
+
+
+[R-E-S1] repos/erp-shell/lib/decisao-proxy.ts:120  (familia guarda do shell (ponta a ponta))
+  antes : "    if (ehFragmento(caminho)) return { acao: 'nao-encontrado' }\n"
+  depois: ''
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (1 falhas): C1b (ADR-0011, decisao 8): o navegador nao alcanca _fragmento pelo shell, em nenhuma grafia, com ou sem cookie [23s]
+
+
+[R-E-P3] repos/erp-shell/proxy.ts:29  (familia guarda do shell: nao-encontrado segue para a zona)
+  antes : "return new NextResponse(null, { status: 404, headers: { 'cache-control': 'no-store' } })"
+  depois: 'return NextResponse.next()'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (1 falhas): C1b (ADR-0011, decisao 8): o navegador nao alcanca _fragmento pelo shell, em nenhuma grafia, com ou sem cookie [17s]
+
+
+[R-E-Z1] repos/erp-zona-2/app/zona2/%5Ffragmento/tarefas/[id]/route.ts:14  (familia exigirModulo: removido)
+  antes : "    await nucleo.acesso.exigirModulo('zona2', 'tarefas.ver')\n"
+  depois: ''
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (2 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache; C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [23s]
+
+
+[R-E-Z2] repos/erp-zona-2/app/zona2/%5Ffragmento/tarefas/[id]/route.ts:14  (familia exigirModulo: funcionalidade trocada)
+  antes : "'tarefas.ver'"
+  depois: "'tarefas.concluir'"
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (1 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache [15s]
+
+
+[R-E-Z3] repos/erp-zona-2/app/zona2/%5Ffragmento/tarefas/[id]/route.ts:16  (familia chave pendentes: filtro removido)
+  antes : "    if (id !== 'pendentes') return null\n"
+  depois: ''
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (1 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache [15s]
+
+
+[R-E-Z5] repos/erp-zona-2/lib/fragmento-tarefas.ts:18  (familia <script> no bloco)
+  antes : "+ '<h2 id="
+  depois: "+ '<script>1</script><h2 id="
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (3 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache; C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos; C1d: zona 2 travada ou fora apaga so o bloco dela no painel da zona 1, dentro do timeout do fragmento [25s]
+
+
+[R-E-U2] repos/erp-zona-1/lib/fragmentos.ts:14  (familia zona 1: cookie nao repassado)
+  antes : "lerCookieDeSessao: async () => (await cookies()).get('__Host-session')?.value"
+  depois: 'lerCookieDeSessao: async () => { await cookies(); return undefined }'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (2 falhas): C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos; C1d: zona 2 travada ou fora apaga so o bloco dela no painel da zona 1, dentro do timeout do fragmento [30s]
+
+
+[R-T-A5] (principal)/base/scripts/ambiente.mjs:64  (familia ZONA2_URL fora da lista)
+  antes : "'DOMINIO_C_URL', 'ZONA2_URL',"
+  depois: "'DOMINIO_C_URL',"
+  comando: node --test base/scripts/ambiente.test.mjs
+  resultado: scripts: REPROVOU (1 falhas): V1: a lista de inclusao cobre toda variavel que zona e dominio leem (variavel nova nao some calada) [1s]
+
+
+[R-T-U4] repos/erp-zona-1/app/zona1/page.tsx:17  (familia fetch direto no painel (N8))
+  antes : "fragmentos.buscar('zona2', 'tarefas', 'pendentes'),"
+  depois: "fetch('http://127.0.0.1:3002/zona2/_fragmento/tarefas/pendentes').then((r) => r.text(), () => null),"
+  comando: node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs
+  resultado: estatica: REPROVOU (1 falhas): as quatro aplicacoes reais nao tem saida de rede fora do registro (fora as excecoes declaradas) [8s]
+
+
+[R-T-U4b] repos/erp-zona-1/app/zona1/page.tsx:17  (familia fetch direto no painel (N8): globalThis.fetch)
+  antes : "fragmentos.buscar('zona2', 'tarefas', 'pendentes'),"
+  depois: "globalThis.fetch('http://127.0.0.1:3002/zona2/_fragmento/tarefas/pendentes').then((r) => r.text(), () => null),"
+  comando: node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs
+  resultado: estatica: REPROVOU (1 falhas): as quatro aplicacoes reais nao tem saida de rede fora do registro (fora as excecoes declaradas) [8s]
+

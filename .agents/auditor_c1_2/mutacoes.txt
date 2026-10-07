@@ -1,0 +1,188 @@
+
+[E-Z4] repos/erp-zona-2/lib/fragmento-tarefas.ts:15  (veto: remover escapar)
+  antes : '<li>${escapar(t.titulo)}</li>'
+  depois: '<li>${t.titulo}</li>'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (2 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache; C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [15s]
+
+[E-Z4b] repos/erp-zona-2/lib/fragmento-tarefas.ts:6  (veto: escapar sem < e >)
+  antes : 'texto.replace(/[&<>"\']/g'
+  depois: 'texto.replace(/[&"\']/g'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (2 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache; C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [15s]
+
+[E-Z6] repos/erp-zona-2/lib/fragmento-tarefas.ts:13  (veto: filtro !concluida removido)
+  antes : 'tarefas.filter((t) => !t.concluida)'
+  depois: 'tarefas'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (2 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache; C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [15s]
+
+[E-Z6b] repos/erp-zona-2/lib/fragmento-tarefas.ts:13  (veto: filtro invertido)
+  antes : 'tarefas.filter((t) => !t.concluida)'
+  depois: 'tarefas.filter((t) => t.concluida)'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (2 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache; C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [15s]
+
+[E-U1b] repos/erp-zona-1/app/zona1/page.tsx:36  (veto: placeholder no lugar da ausencia)
+  antes : '{tarefas && <div dangerouslySetInnerHTML={{ __html: tarefas }} />}'
+  depois: '{tarefas ? <div dangerouslySetInnerHTML={{ __html: tarefas }} /> : <p>Tarefas indisponíveis no momento.</p>}'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (1 falhas): C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [22s]
+
+[V-Z4c] repos/erp-zona-2/lib/fragmento-tarefas.ts:6  (variante: escape so de & e <)
+  antes : 'texto.replace(/[&<>"\']/g'
+  depois: 'texto.replace(/[&<]/g'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (2 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache; C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [22s]
+
+[V-Z4d] repos/erp-zona-2/lib/fragmento-tarefas.ts:15  (variante: escape no HTML inteiro do bloco, nao no titulo)
+  antes : '<li>${escapar(t.titulo)}</li>'
+  depois: '<li>${t.titulo}</li>'
+  antes+: "  return '<section data-fragmento"
+  depois+: "  return escapar('<section data-fragmento"
+  antes+: '</a></p></section>`'
+  depois+: '</a></p></section>`)'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (3 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache; C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos; C1d: zona 2 travada ou fora apaga so o bloco dela no painel da zona 1, dentro do timeout do fragmento [25s]
+
+[V-Z4e] repos/erp-zona-2/lib/fragmento-tarefas.ts:15  (variante: escape na lista inteira (corpo), nao no titulo)
+  antes : '<li>${escapar(t.titulo)}</li>'
+  depois: '<li>${t.titulo}</li>'
+  antes+: '  const corpo = pendentes.length'
+  depois+: '  const corpo = escapar(pendentes.length'
+  antes+: "'<p>Nenhuma tarefa pendente.</p>'\n"
+  depois+: "'<p>Nenhuma tarefa pendente.</p>')\n"
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: VIVA (5 testes verdes) [15s]
+
+[V-Z4f] repos/erp-zona-2/lib/fragmento-tarefas.ts:6  (variante: escape sem aspas (so & < >))
+  antes : 'texto.replace(/[&<>"\']/g'
+  depois: 'texto.replace(/[&<>]/g'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (2 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache; C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [15s]
+
+[V-Z6c] repos/erp-zona-2/lib/fragmento-tarefas.ts:13  (variante: filtro mostra so concluidas (=== true))
+  antes : 'tarefas.filter((t) => !t.concluida)'
+  depois: 'tarefas.filter((t) => t.concluida === true)'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (2 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache; C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [15s]
+
+[V-Z6d] repos/erp-zona-2/lib/fragmento-tarefas.ts:13  (variante: filtro por versao (versao === 1) no lugar de concluida)
+  antes : 'tarefas.filter((t) => !t.concluida)'
+  depois: 'tarefas.filter((t) => (t as unknown as { versao: number }).versao === 1)'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: VIVA (5 testes verdes) [15s]
+
+[V-Z6e] repos/erp-zona-2/lib/fragmento-tarefas.ts:13  (variante: filtro por versao (versao < 3) no lugar de concluida)
+  antes : 'tarefas.filter((t) => !t.concluida)'
+  depois: 'tarefas.filter((t) => (t as unknown as { versao: number }).versao < 3)'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (2 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache; C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [15s]
+
+[V-U1c] repos/erp-zona-1/app/zona1/page.tsx:36  (variante: placeholder "Bloco indisponivel no momento.")
+  antes : '{tarefas && <div dangerouslySetInnerHTML={{ __html: tarefas }} />}'
+  depois: '{tarefas ? <div dangerouslySetInnerHTML={{ __html: tarefas }} /> : <p>Bloco indisponível no momento.</p>}'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: VIVA (5 testes verdes) [22s]
+
+[V-U1d] repos/erp-zona-1/app/zona1/page.tsx:36  (variante: placeholder travessao)
+  antes : '{tarefas && <div dangerouslySetInnerHTML={{ __html: tarefas }} />}'
+  depois: '{tarefas ? <div dangerouslySetInnerHTML={{ __html: tarefas }} /> : <p>—</p>}'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: VIVA (5 testes verdes) [15s]
+
+[V-U1e] repos/erp-zona-1/app/zona1/page.tsx:36  (variante: section vazia com titulo "Tarefas (zona 2)")
+  antes : '{tarefas && <div dangerouslySetInnerHTML={{ __html: tarefas }} />}'
+  depois: '{tarefas ? <div dangerouslySetInnerHTML={{ __html: tarefas }} /> : <section aria-labelledby="tarefas"><h2 id="tarefas">Tarefas (zona 2)</h2></section>}'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (1 falhas): C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [15s]
+
+[V-U1f] repos/erp-zona-1/app/zona1/page.tsx:36  (variante: section vazia com titulo "Pendências")
+  antes : '{tarefas && <div dangerouslySetInnerHTML={{ __html: tarefas }} />}'
+  depois: '{tarefas ? <div dangerouslySetInnerHTML={{ __html: tarefas }} /> : <section aria-labelledby="pendencias"><h2 id="pendencias">Pendências</h2></section>}'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: VIVA (5 testes verdes) [15s]
+
+[V-U1g] repos/erp-zona-1/app/zona1/page.tsx:36  (variante: fragmento embrulhado em titulo "Zona 2" fora do condicional)
+  antes : '{tarefas && <div dangerouslySetInnerHTML={{ __html: tarefas }} />}'
+  depois: '<section aria-labelledby="zona2"><h2 id="zona2">Zona 2</h2>{tarefas && <div dangerouslySetInnerHTML={{ __html: tarefas }} />}</section>'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (1 falhas): C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [15s]
+
+[V-U1h] repos/erp-zona-1/app/zona1/page.tsx:36  (controle (equivalente): embrulho "Zona 2" dentro do condicional)
+  antes : '{tarefas && <div dangerouslySetInnerHTML={{ __html: tarefas }} />}'
+  depois: '{tarefas && <section aria-labelledby="zona2"><h2 id="zona2">Zona 2</h2><div dangerouslySetInnerHTML={{ __html: tarefas }} /></section>}'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: VIVA (5 testes verdes) [15s]
+
+[R-S1] repos/erp-shell/lib/decisao-proxy.ts:120  (familia guarda do shell (unidade))
+  antes : "    if (ehFragmento(caminho)) return { acao: 'nao-encontrado' }\n"
+  depois: ''
+  comando: pnpm test
+  resultado: unit: REPROVOU (1 falhas): C1: /{zona}/_fragmento/ e 404 no shell, com ou sem cookie, em qualquer grafia, sem consultar a sonda [1s]
+
+[R-S2] repos/erp-shell/lib/decisao-proxy.ts:49  (familia guarda do shell (unidade): sem /i)
+  antes : 'const FRAGMENTO = /^\\/[^/]+\\/_fragmento(?:\\/|$)/i'
+  depois: 'const FRAGMENTO = /^\\/[^/]+\\/_fragmento(?:\\/|$)/'
+  comando: pnpm test
+  resultado: unit: REPROVOU (1 falhas): C1: /{zona}/_fragmento/ e 404 no shell, com ou sem cookie, em qualquer grafia, sem consultar a sonda [1s]
+
+[R-E-S1] repos/erp-shell/lib/decisao-proxy.ts:120  (familia guarda do shell (ponta a ponta))
+  antes : "    if (ehFragmento(caminho)) return { acao: 'nao-encontrado' }\n"
+  depois: ''
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (1 falhas): C1b (ADR-0011, decisao 8): o navegador nao alcanca _fragmento pelo shell, em nenhuma grafia, com ou sem cookie [23s]
+
+[R-E-P3] repos/erp-shell/proxy.ts:29  (familia guarda do shell: nao-encontrado segue para a zona)
+  antes : "return new NextResponse(null, { status: 404, headers: { 'cache-control': 'no-store' } })"
+  depois: 'return NextResponse.next()'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (1 falhas): C1b (ADR-0011, decisao 8): o navegador nao alcanca _fragmento pelo shell, em nenhuma grafia, com ou sem cookie [17s]
+
+[R-E-Z1] repos/erp-zona-2/app/zona2/%5Ffragmento/tarefas/[id]/route.ts:14  (familia exigirModulo: removido)
+  antes : "    await nucleo.acesso.exigirModulo('zona2', 'tarefas.ver')\n"
+  depois: ''
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (2 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache; C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos [23s]
+
+[R-E-Z2] repos/erp-zona-2/app/zona2/%5Ffragmento/tarefas/[id]/route.ts:14  (familia exigirModulo: funcionalidade trocada)
+  antes : "'tarefas.ver'"
+  depois: "'tarefas.concluir'"
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (1 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache [15s]
+
+[R-E-Z3] repos/erp-zona-2/app/zona2/%5Ffragmento/tarefas/[id]/route.ts:16  (familia chave pendentes: filtro removido)
+  antes : "    if (id !== 'pendentes') return null\n"
+  depois: ''
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (1 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache [15s]
+
+[R-E-Z5] repos/erp-zona-2/lib/fragmento-tarefas.ts:18  (familia <script> no bloco)
+  antes : "+ '<h2 id="
+  depois: "+ '<script>1</script><h2 id="
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (3 falhas): C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache; C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos; C1d: zona 2 travada ou fora apaga so o bloco dela no painel da zona 1, dentro do timeout do fragmento [25s]
+
+[R-E-U2] repos/erp-zona-1/lib/fragmentos.ts:14  (familia zona 1: cookie nao repassado)
+  antes : "lerCookieDeSessao: async () => (await cookies()).get('__Host-session')?.value"
+  depois: 'lerCookieDeSessao: async () => { await cookies(); return undefined }'
+  comando: CONSTRUIR=1 node --test --test-name-pattern='C1' base/verificacao/base.test.mjs
+  resultado: e2e: REPROVOU (2 falhas): C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos; C1d: zona 2 travada ou fora apaga so o bloco dela no painel da zona 1, dentro do timeout do fragmento [30s]
+
+[R-T-A5] (principal)/base/scripts/ambiente.mjs:64  (familia ZONA2_URL fora da lista)
+  antes : "'DOMINIO_C_URL', 'ZONA2_URL',"
+  depois: "'DOMINIO_C_URL',"
+  comando: node --test base/scripts/ambiente.test.mjs
+  resultado: scripts: REPROVOU (1 falhas): V1: a lista de inclusao cobre toda variavel que zona e dominio leem (variavel nova nao some calada) [1s]
+
+[R-T-U4] repos/erp-zona-1/app/zona1/page.tsx:17  (familia fetch direto no painel (N8))
+  antes : "fragmentos.buscar('zona2', 'tarefas', 'pendentes'),"
+  depois: "fetch('http://127.0.0.1:3002/zona2/_fragmento/tarefas/pendentes').then((r) => r.text(), () => null),"
+  comando: node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs
+  resultado: estatica: REPROVOU (1 falhas): as quatro aplicacoes reais nao tem saida de rede fora do registro (fora as excecoes declaradas) [8s]
+
+[R-T-U4b] repos/erp-zona-1/app/zona1/page.tsx:17  (familia fetch direto no painel (N8): globalThis.fetch)
+  antes : "fragmentos.buscar('zona2', 'tarefas', 'pendentes'),"
+  depois: "globalThis.fetch('http://127.0.0.1:3002/zona2/_fragmento/tarefas/pendentes').then((r) => r.text(), () => null),"
+  comando: node --test base/verificacao/saida-de-rede.test.mjs base/verificacao/seguranca-estatica.test.mjs
+  resultado: estatica: REPROVOU (1 falhas): as quatro aplicacoes reais nao tem saida de rede fora do registro (fora as excecoes declaradas) [8s]

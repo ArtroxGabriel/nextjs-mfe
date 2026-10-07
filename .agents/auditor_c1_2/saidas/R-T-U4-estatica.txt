@@ -1,0 +1,86 @@
+✔ pega toda forma de chamar fetch que conheco, inclusive as que contornavam o regex (19.52994ms)
+✔ pega modulos de rede, estaticos e dinamicos, e as outras globais de rede (3.867567ms)
+✔ pega eval e Function, que montariam qualquer uma das anteriores em tempo de execucao (0.679098ms)
+✔ nao acusa o uso normal da base (7.036875ms)
+✔ tipos que citam fetch nao sao chamada (1.516994ms)
+✖ as quatro aplicacoes reais nao tem saida de rede fora do registro (fora as excecoes declaradas) (117.798516ms)
+✔ as excecoes sao exatamente estas, cada uma com motivo e com o que permite; e cada uma e necessaria (8.935381ms)
+✔ XR15 (V6): a excecao vale so para o que ela permite, nao para o arquivo (0.833013ms)
+✔ XR08-XR12 (V6): apelido da global, getBuiltinModule, dns, biblioteca HTTP fora da lista, construtor de funcao (2.562488ms)
+✔ XR16 (V6): a varredura cobre a app inteira, inclusive pasta fora de app/ e lib/ (2.60358ms)
+✔ R01-R07 (auditor_b1_d1_2, V8): clientes de banco, global entregue a funcao, createRequire e child_process (1.653754ms)
+✔ toda excecao de store de sessao e mesmo o cliente Redis (a excecao nao sobra) (5.964858ms)
+✔ V4 (XR20p): parametro fetch em uma funcao nao mascara fetch global em outra funcao (0.505646ms)
+✔ V4 (XR23p): subpaths proibidos de next (ex: next/dist/compiled/ws) sao recusados (0.521304ms)
+✔ V4 (XR38p): chave calculada montada por concatenacao para acessar constructor/binding e pega (0.675245ms)
+✔ V2: parametro ou variavel de constructor, get/set, catch, for e bloco nao mascara a global fora dali (7.373508ms)
+✔ V2: dentes: dentro do proprio escopo o nome e local e passa (constructor, set, catch, for-of) (1.227612ms)
+✔ V2 (injecao de dependencia, XR20q4): classe com constructor(fetch) e fetch direto noutra funcao do arquivo (0.54919ms)
+✔ global por chave vinda de parametro ou de constante sombreada e chave calculada, e reprova (1.664857ms)
+✔ D15 (XR20k2-k5, XR20l/m): declare const, function ou class nao mascara a global de rede (1.227644ms)
+✔ LE (auditor_b1_d1_9, SK8): let constante nao e aceito como chave segura na global (dentes contra aceitar let) (0.470204ms)
+✔ P0-server-only: reprova import de server-only ou servidor dentro de "use client" (59.800925ms)
+✔ P0-server-only: permite uso normal de server-only em arquivos de servidor (15.574212ms)
+✔ P0-dto-sensivel: reprova passagem de campo sensivel como prop em JSX (15.870647ms)
+✔ P0-dto-sensivel: permite props comuns e nao sensiveis (10.788368ms)
+✔ P1-link-entre-zonas: reprova <Link> apontando para prefixo de outra zona (12.354005ms)
+✔ P1-link-entre-zonas: permite <Link> dentro da propria zona e <a href> para fora (8.946552ms)
+✔ P2-next-public: reprova variaveis NEXT_PUBLIC_ com termos sensiveis (12.090042ms)
+✔ P2-next-public: so as NEXT_PUBLIC_ da lista permitida passam (19.922185ms)
+✔ E01-E06: a diretiva e o import de servidor nao se contornam (31.509923ms)
+✔ E03 transitivo: ilha que importa modulo local que chega ao servidor (10.234257ms)
+✔ E07-E10: DTO nao chega a ilha por spread, objeto inteiro ou nome parecido (22.985268ms)
+✔ E12-E18: <Link> so com href literal da propria zona, com qualquer nome e tambem no shell (20.454956ms)
+✔ E19-E22: NEXT_PUBLIC_ sensivel escrito de qualquer forma (11.906051ms)
+✔ as quatro aplicacoes reais passam 100% nas regras estaticas de seguranca (6758.813235ms)
+✔ XE23-XE31/E10b/E10c (V4): so valor escalar vai para a ilha (44.190921ms)
+✔ XE32/XE33 (L6): ilha nao chega ao servidor por import = require nem pelo redis (3.609949ms)
+✔ V3 (E02, E02b, E02c): fora de app/, modulo que chega ao servidor declara server-only (pela arvore) (12.681982ms)
+✔ XE34-XE37 (L5): <Link> e navegacao de cliente para outra zona, por barril, namespace, apelido e router (10.235864ms)
+✔ XE38/XE40 (V7): next.config nao embute valor do servidor no bundle (8.951968ms)
+✔ V6/V7 (XR16, XE41): a varredura cobre a app inteira, nao so app/ e lib/ (0.577809ms)
+✔ V3 (auditor_b1_d1_8, XR38p/SR3): so o test/ da raiz da app fica fora; test/ aninhado e varrido (0.47688ms)
+✔ V5 (P09): Server Action comeca pela verificacao e so toca o nucleo dentro dela (10.856619ms)
+✔ V3 (E10d, XE26): reprova campos complexos e objetos aninhados passados a ilhas (6.030662ms)
+✔ V5 (XN01p): reprova atribuicao a .env no next.config e process.env fora da allowlist em use client (8.478323ms)
+✔ XN09 (K4-4): assetPrefix e basePath do next.config so com texto literal (5.296087ms)
+✔ L3 (auditor_b1_d1_8, XN09a/b): assetPrefix e basePath abreviados ou atribuidos depois tambem reprovam (7.021947ms)
+✔ LF (auditor_b1_d1_9, XN09h/i/j/n): assetPrefix por ??=, ||=, += ou defineProperty no next.config reprovam (10.789781ms)
+✔ V3 (K4, auditor_b1_d1_4): com o programa da app, o tipo decide o que vai a ilha, nao o nome do campo (228.356228ms)
+✔ L1 (TA1): uniao com objeto e objeto opcional nao sao escalares (185.928032ms)
+✔ L1 (TA4, TA5, TA9): a varredura das apps usa o programa, com todo arquivo varrido e JavaScript incluso (193.733667ms)
+ℹ tests 51
+ℹ suites 0
+ℹ pass 50
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8238.119103
+
+✖ failing tests:
+
+test at base/verificacao/saida-de-rede.test.mjs:62:1
+✖ as quatro aplicacoes reais nao tem saida de rede fora do registro (fora as excecoes declaradas) (117.798516ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   "erp-zona-1/app/zona1/page.tsx:17 usa a global de rede 'fetch'"
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/verificacao/saida-de-rede.test.mjs:63:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ "erp-zona-1/app/zona1/page.tsx:17 usa a global de rede 'fetch'" ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,33 @@
+✔ L2/V3/C1: zona fora da 503 proprio, em qualquer caixa; as outras seguem; ela volta (11380.946682ms)
+✖ C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache (113.090081ms)
+✔ C1b (ADR-0011, decisao 8): o navegador nao alcanca _fragmento pelo shell, em nenhuma grafia, com ou sem cookie (70.70551ms)
+✔ C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos (180.265526ms)
+✔ C1d: zona 2 travada ou fora apaga so o bloco dela no painel da zona 1, dentro do timeout do fragmento (2881.67882ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15134.231259
+
+✖ failing tests:
+
+test at base/verificacao/base.test.mjs:868:1
+✖ C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache (113.090081ms)
+  AssertionError [ERR_ASSERTION]: eva
+  
+  204 !== 200
+  
+      at TestContext.<anonymous> (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/verificacao/base.test.mjs:871:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 204,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
