@@ -375,3 +375,16 @@ o shell recusa `_fragmento` do navegador, e a zona 2 fora ou travada apaga só o
 shell 116), `task verificar` 119 + 4 pulados, `verificar:redis` 123/123, `verificar:estatica` 51/51, árvores limpas, portas
 livres. Pastas dos verificadores e workers removidas depois do registro; última versão no commit `b091977`
 (`git show b091977:.agents/<nome>/handoff.md`). Tag `gate-c1-aprovado`.
+
+## Gate — D29 (núcleo 0.10.4: `ehHtmlInerte` por lista de permissão), iteração 1, principal `806c43c`, núcleo `50a0fea`, apps em 0.10.4 (`bbf6a84`)
+
+Antes do gate (2026-10-07): `task test` verde (contratos 20, núcleo 286, moldura 26, stub 75, shell 116), `typecheck` ok,
+`verificar:estatica` 51/51, `verificar:redis` 123/123, `verificar:construir` 119 + 4 pulados, `verificar:oidc` 6/6,
+`showcase:checar` ok, lockstep 0.10.4. Mutações M1–M13 do plano rodadas pelo worker e pegas (Task 1).
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| revisor_d29_1 | revisor-mfe (sonnet) | em andamento | .agents/revisor_d29_1/handoff.md | |
+| challenger_d29_1 | simulador-condicoes (sonnet) | em andamento | .agents/challenger_d29_1/handoff.md | |
+| auditor_d29_1 | general-purpose forense (opus) | espera o challenger | .agents/auditor_d29_1/handoff.md | |
+

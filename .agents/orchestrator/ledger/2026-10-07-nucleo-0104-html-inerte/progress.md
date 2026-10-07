@@ -22,3 +22,6 @@ Task 3: minor (deferred): ADR-0011 addendum 2 says "atributos e esquemas"; shoul
 Task 3: fix round 1/5 (2 addressed, 0 open; commits a503458..33da07b)
 Task 3: complete (main bbf6a84..33da07b, review clean after fix round 1)
 Final review: replaced by the project's full gate (revisor, challenger, auditor; LEIA-PRIMEIRO), Task 4
+Task 4: verification suite running (controller, background), log task-4-verificacao.log
+Task 4: verification green: task test (contratos 20, nucleo 286, moldura 26, stub 75, shell 116), typecheck ok, estatica 51/51, verificar:redis 123/123, verificar:construir 119+4 skipped, oidc 6/6, showcase:checar ok, lockstep 0.10.4
+Task 4: gate D29 iteration 1 dispatched: revisor_d29_1 (revisor-mfe, sonnet) + challenger_d29_1 (simulador-condicoes, sonnet); auditor_d29_1 (opus) after challenger frees ports
