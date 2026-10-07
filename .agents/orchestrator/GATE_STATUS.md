@@ -437,3 +437,10 @@ Gate Result: **REJECT** (challenger, pelo roteiro e pela mensagem de erro do `zo
 | auditor_e3e5_1 | general-purpose forense (opus) | **VETO (só por teste)** | .agents/auditor_e3e5_1/handoff.md, mutacoes.txt | 27 mutações em 31 rodadas, 22 pegas (tabelas das Tasks 1, 2 e 4 e os extras dos workers pegos; sonda do shell, glob da base, lockstep e moldura pegos); 5 vivas de boa-fé, todas no `zona-demo` sem teste: ZD1 e ZD2 (porta ocupada e gestão de acesso fora voltam à stack crua), ZD3 (registro recusado vira "no ar"), ZD4 (DELETE com erro vira "Rota removida"), ZD6 (`derrubar` removendo a rota passa no F4); regressão por família verde; árvores limpas |
 
 Gate Result: **VETO (só por teste)**. Correção com worker_e3e5_2: teste do `zona-demo` como processo filho contra uma gestão de acesso falsa em `base/scripts/zona-demo.test.mjs` (fora do glob da base) e, no F4, a rota `demo` conferida no mapa depois de `derrubar`. Iteração 3: só um auditor novo (regra do humano, 2026-10-06).
+
+## Gate: E3, E4 e E5, iteração 3 (só auditor: veto só por teste), principal `7e1730a`
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| worker_e3e5_2 | correção do veto (sonnet) | — | .agents/worker_e3e5_2/handoff.md | só teste: `base/scripts/zona-demo.test.mjs` (6 testes, processo filho contra gestão de acesso falsa) e F4 com a rota no mapa depois de derrubar; ZD1 a ZD6 reprovam; `scripts:test` 35/35, `showcase:verificar` 7/7 |
+| auditor_e3e5_2 | general-purpose forense (opus) | em andamento | .agents/auditor_e3e5_2/handoff.md, mutacoes.txt | |

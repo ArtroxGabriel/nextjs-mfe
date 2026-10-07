@@ -37,3 +37,4 @@ Gate e3e5 it.2: worker_e3e5_1 fixed (af8239c, handoff 8a1f3cb); revisor_e3e5_2 a
 Gate e3e5 it.2: revisor_e3e5_2 APPROVE (2f232e2), 4 minors -> D33
 Gate e3e5 it.2: challenger_e3e5_2 APPROVE (99ab8e8); auditor_e3e5_1 dispatched (opus)
 Gate e3e5 it.2: auditor_e3e5_1 VETO only by test (0273cd7): 5 live in zona-demo (ZD1-4, ZD6); fix -> worker_e3e5_2 (test only)
+Gate e3e5 it.3: worker_e3e5_2 fixed (7e1730a tests only, handoff 5184b6b), scripts:test 35/35; auditor_e3e5_2 dispatched
