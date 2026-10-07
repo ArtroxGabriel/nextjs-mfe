@@ -2,6 +2,10 @@
 
 **Status:** proposto (2026-10-07, `arquiteto-mfe`), **aguardando o humano**:
 [`pedidos/2026-10-07-c3-mapa-de-zonas.md`](../../pedidos/2026-10-07-c3-mapa-de-zonas.md), decisões H1–H6.
+**Revisão (2026-10-07, depois da medição no pedido):** a recomendação passa a ser o **híbrido**. A navegação de documento
+vai pelo gateway; RSC, assets e Server Actions vão pelo `NextResponse.rewrite` do `proxy.ts`, com o mapa vivo. O gateway usa
+`node:http` e repassa o gzip, porque com `fetch` o HTML chegava sem compressão. As decisões 1 e 7 abaixo ficam ajustadas pelo
+pedido até a resposta do humano.
 **Atividade:** C3 (#14). **Fecha, se aceito:** `DEFERRED.md` D7 e os itens de roteamento do D28.
 
 ## Contexto
