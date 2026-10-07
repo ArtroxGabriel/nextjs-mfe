@@ -29,7 +29,7 @@ test('mudanca so no package.json (versao de pacote) tambem conta', () => {
 
 // --- auditor_b1_d1_3 (L4: AM1-AM3) ---
 test('AM1/AM2: cada entrada do build, mudada sozinha, pede reconstrucao', () => {
-  for (const entrada of ['app/zona/page.tsx', 'lib/a.ts', 'proxy.ts', 'next.config.ts', 'package.json', 'pnpm-lock.yaml', 'zonas.json', 'acesso.manifesto.ts']) {
+  for (const entrada of ['app/zona/page.tsx', 'lib/a.ts', 'proxy.ts', 'next.config.ts', 'package.json', 'pnpm-lock.yaml', 'instrumentation.ts', 'acesso.manifesto.ts']) {
     const d = app({ build: 200, fonte: 100 })
     const f = join(d, entrada)
     mkdirSync(join(f, '..'), { recursive: true }); writeFileSync(f, 'x')

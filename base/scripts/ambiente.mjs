@@ -25,7 +25,7 @@ export const PORTAS_SOB_DEMANDA = { 'gestao-acesso': 4010 }
 const PORTA = { ...PORTAS_DE_DOMINIO, ...PORTAS_SOB_DEMANDA }
 
 /** O que entra no build de uma aplicação: fonte, configuração e as versões de pacote travadas. */
-const ENTRADAS_DO_BUILD = ['app', 'lib', 'proxy.ts', 'next.config.ts', 'package.json', 'pnpm-lock.yaml', 'zonas.json', 'acesso.manifesto.ts']
+const ENTRADAS_DO_BUILD = ['app', 'lib', 'proxy.ts', 'instrumentation.ts', 'next.config.ts', 'package.json', 'pnpm-lock.yaml', 'acesso.manifesto.ts']
 
 function maisRecente(caminho) {
   if (!existsSync(caminho)) return 0

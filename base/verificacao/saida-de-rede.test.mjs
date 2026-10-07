@@ -67,7 +67,8 @@ test('as excecoes sao exatamente estas, cada uma com motivo e com o que permite;
   // XR17 (auditor_b1_d1_3): exceção nova passava só com um motivo longo. Agora a lista é fixa aqui:
   // acrescentar uma exige mudar este teste, e a revisão vê as duas coisas juntas.
   assert.deepEqual(Object.keys(EXCECOES).sort(), [
-    'erp-shell/lib/redis.ts', 'erp-shell/lib/saude-zonas.ts', 'erp-zona-1/lib/redis.ts', 'erp-zona-1/scripts/registrar-manifesto.ts',
+    'erp-shell/lib/gateway-zona.ts', 'erp-shell/lib/redis.ts', 'erp-shell/lib/saude-zonas.ts', 'erp-zona-1/lib/redis.ts',
+    'erp-zona-1/scripts/registrar-manifesto.ts',
     'erp-zona-1/scripts/registrar-rota.ts',
     'erp-zona-2/lib/redis.ts', 'erp-zona-2/scripts/registrar-manifesto.ts', 'erp-zona-2/scripts/registrar-rota.ts',
     'erp-zona-acesso/lib/redis.ts', 'erp-zona-acesso/scripts/registrar-rota.ts',
@@ -75,9 +76,12 @@ test('as excecoes sao exatamente estas, cada uma com motivo e com o que permite;
   const { readFileSync } = require_('node:fs')
   for (const [arq, { motivo, permite }] of Object.entries(EXCECOES)) {
     assert.ok(motivo.length > 40, `${arq} sem motivo`)
-    assert.ok(permite.length === 1 && ['fetch', 'redis'].includes(permite[0]), `${arq} permite ${permite}`)
+    // o gateway de documento (C3) é a única exceção com dois módulos, os dois clientes HTTP do Node
+    const esperado = arq === 'erp-shell/lib/gateway-zona.ts' ? ['node:http', 'node:https'] : null
+    if (esperado) assert.deepEqual(permite, esperado, `${arq} permite ${permite}`)
+    else assert.ok(permite.length === 1 && ['fetch', 'redis'].includes(permite[0]), `${arq} permite ${permite}`)
     const achados = analisar(readFileSync(new URL(`../../repos/${arq}`, import.meta.url), 'utf8'), arq)
-    assert.ok(achados.some((a) => a.coisa === permite[0]), `${arq}: a excecao nao e necessaria, remova-a de EXCECOES`)
+    for (const p of permite) assert.ok(achados.some((a) => a.coisa === p), `${arq}: a excecao de ${p} nao e necessaria, remova-a de EXCECOES`)
   }
 })
 
@@ -205,4 +209,11 @@ test('D15 (XR20k2-k5, XR20l/m): declare const, function ou class nao mascara a g
 
 test('LE (auditor_b1_d1_9, SK8): let constante nao e aceito como chave segura na global (dentes contra aceitar let)', () => {
   pega("let k = 'toString'\nexport const f = () => globalThis[k]()")
+})
+
+test('C3: a excecao do gateway vale so para node:http e node:https, nao para fetch nem outro modulo de rede', () => {
+  const achados = analisar("import http from 'node:http'\nimport net from 'node:net'\nawait fetch('http://fora')", 'lib/gateway-zona.ts')
+  const sobra = achados.filter((a) => !EXCECOES['erp-shell/lib/gateway-zona.ts'].permite.includes(a.coisa))
+  assert.ok(sobra.some((a) => /fetch/.test(a.motivo)), 'o fetch dentro do gateway passou pela excecao')
+  assert.ok(sobra.some((a) => /node:net/.test(a.motivo)), 'node:net dentro do gateway passou pela excecao')
 })

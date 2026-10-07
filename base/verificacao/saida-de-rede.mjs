@@ -61,8 +61,14 @@ const DEPLOY_ROTA = 'registro da rota da zona no deploy (AGENTS.md, invariante 4
 export const EXCECOES = {
   'erp-shell/lib/saude-zonas.ts': {
     permite: ['fetch'],
-    motivo: 'sonda de saúde das zonas: o alvo vem só de zonas.json (nunca da requisição), sem seguir ' +
-      'redirecionamento, timeout de 500 ms; não é chamada a domínio',
+    motivo: 'sonda de saúde das zonas: o alvo vem só do mapa de zonas validado pelo shell (nunca da requisição), ' +
+      'sem seguir redirecionamento, timeout de 500 ms; não é chamada a domínio',
+  },
+  'erp-shell/lib/gateway-zona.ts': {
+    permite: ['node:http', 'node:https'],
+    motivo: 'gateway de documento das zonas (ADR-0015): o alvo é a origem do mapa de zonas validado pelo shell mais ' +
+      'o caminho que casou o prefixo da zona, nunca cabeçalho da requisição; node:http porque o fetch descomprime o ' +
+      'corpo; não segue redirecionamento (repassa o 3xx), teto até os cabeçalhos e ociosidade depois',
   },
   'erp-shell/lib/redis.ts': { permite: ['redis'], motivo: STORE_DE_SESSAO },
   'erp-zona-1/lib/redis.ts': { permite: ['redis'], motivo: STORE_DE_SESSAO },

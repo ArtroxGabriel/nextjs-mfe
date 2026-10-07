@@ -13,8 +13,11 @@ import { subir, RAIZ, SHELL as SHELL_URL, APPS, ambienteDoPapel } from '../scrip
 import { pedir, entrar, iniciarLogin, menu, formularios, valorDoCookie, acaoPeloCliente, keycloakNoAr, tokenDoKeycloak, KEYCLOAK_EMISSOR, redisCru } from './apoio.mjs'
 import { abrirNavegador, acharChrome, COMO_CONSEGUIR_UM_NAVEGADOR } from './navegador.mjs'
 import { varrerAplicacoes } from './saida-de-rede.mjs'
+import { subirZonaDeTeste } from './zona-de-teste.mjs'
 
 let ambiente
+// zona de teste do C3 (L9b, L9c, L10, L11), subida sob demanda por `zona9DeTeste()`
+let zona9
 // Coletor OTLP falso: prova que o gateway de telemetria do shell só repassa lote de quem tem sessão.
 let coletor
 const lotesNoColetor = []
@@ -28,10 +31,13 @@ before(async () => {
   // teto da zona (D7) diferente do padrão de 10 s: o L9 prova que o shell lê a variável. Maior que ERP_DESTINO_TIMEOUT_MS
   // (5 s), senão o shell recusa subir
   process.env.ERP_ZONA_TETO_MS ??= '6000'
+  // C3: ociosidade do gateway (L9c) e TTL do mapa vivo (L10, L11) curtos, para a verificação não esperar os padrões
+  process.env.ERP_ZONA_OCIOSIDADE_MS ??= '3000'
+  process.env.ERP_MAPA_ZONAS_TTL_MS ??= '2000'
   // CONSTRUIR=1 reconstrói só as apps com fonte mais novo que o build; CONSTRUIR=tudo, todas
   ambiente = await subir({ construir: process.env.CONSTRUIR === 'tudo' ? 'tudo' : process.env.CONSTRUIR === '1' })
 }, { timeout: 600_000 })
-after(() => { ambiente?.derrubar(); coletor?.close() })
+after(async () => { ambiente?.derrubar(); coletor?.close(); await zona9?.fechar() })
 
 const TOKEN = /dev\.(ana|bruno|carla|davi|eva)\.[0-9a-f-]{36}/
 
@@ -65,6 +71,45 @@ test('C3: depois da subida, cada zona registrou a propria rota na gestao de aces
     zonas.map(({ id, origem }) => ({ id, origem })).sort((a, b) => a.id.localeCompare(b.id)),
     [{ id: 'acesso', origem: 'http://127.0.0.1:3003' }, { id: 'zona1', origem: 'http://127.0.0.1:3001' }, { id: 'zona2', origem: 'http://127.0.0.1:3002' }],
   )
+})
+
+test('C3: o mapa so se le com svc.shell; token de zona ou nenhum token nao leem', async () => {
+  for (const [quem, auth] of [['svc.zona1', 'Bearer svc.zona1'], ['svc.acesso', 'Bearer svc.acesso'], ['sem token', null], ['usuario', 'Bearer dev.ana.00000000-0000-0000-0000-000000000000']]) {
+    const r = await fetch('http://127.0.0.1:4020/v2/zonas', { headers: auth ? { authorization: auth } : {}, redirect: 'manual' })
+    assert.ok([401, 404].includes(r.status), `${quem}: HTTP ${r.status}`)
+    assert.doesNotMatch(await r.text(), /127\.0\.0\.1:300/, `${quem}: o corpo trouxe origem de zona`)
+  }
+})
+
+test('C3: guarda do mapa no Redis: o shell grava erp:mapa-zonas com validade, e um shell novo com a fonte fora roteia por ela', {
+  skip: !process.env.REDIS_URL && 'so no modo Redis (task verificar:redis)', timeout: 120_000,
+}, async () => {
+  const ana = (await entrar('ana')).cookie
+  // sem a chave de rodadas anteriores (validade de um dia): so conta o que este shell gravar agora
+  await redisCru(process.env.REDIS_URL, [['DEL', 'erp:mapa-zonas']])
+  const ttl = Number(process.env.ERP_MAPA_ZONAS_TTL_MS)
+  const t0 = Date.now()
+  let resp = ''
+  let json
+  while (!json && Date.now() - t0 < 3 * ttl + 2_000) {
+    assert.equal((await pedir('/zona1', { cookie: ana })).status, 200)   // cada releitura boa do mapa grava a guarda
+    resp = await redisCru(process.env.REDIS_URL, [['GET', 'erp:mapa-zonas'], ['PTTL', 'erp:mapa-zonas']])
+    json = resp.match(/^\$\d+\r\n(\[.*\])\r\n/m)?.[1]
+    if (!json) await new Promise((ok) => setTimeout(ok, 250))
+  }
+  assert.ok(json, `o shell nao gravou a guarda em ${3 * ttl + 2_000} ms: ${resp.slice(0, 200)}`)
+  assert.deepEqual(JSON.parse(json).map((z) => z.id).filter((id) => ['acesso', 'zona1', 'zona2'].includes(id)).sort(), ['acesso', 'zona1', 'zona2'])
+  const pttl = Number(resp.match(/^:(-?\d+)\r$/m)?.[1])
+  const validade = Number(process.env.ERP_MAPA_ZONAS_GUARDA_S ?? 86_400) * 1000
+  assert.ok(pttl > validade - 120_000 && pttl <= validade, `PTTL ${pttl}; validade ${validade}`)
+
+  // ida e volta: outro shell, com a gestão de acesso inalcançável, sobe frio e roteia pelo mapa da guarda
+  const derrubar = await ambiente.subirAppAvulsa('erp-shell', { porta: 3010, envExtra: { ACESSO_URL: 'http://127.0.0.1:4119' }, caminho: '/login' })
+  try {
+    const r = await fetch('http://localhost:3010/zona1', { headers: { cookie: ana }, redirect: 'manual' })
+    assert.equal(r.status, 200, 'o shell frio sem a fonte nao roteou pela guarda')
+    assert.match(await r.text(), /<nav[^>]*aria-label="Módulos"/)
+  } finally { await derrubar() }
 })
 
 test('camada 1: sem cookie, shell e zonas mandam para o login do shell, com Location relativo', async () => {
@@ -849,15 +894,206 @@ test('L9 (D7): zona que trava com a sonda ainda valida solta a requisicao no tet
         .catch((e) => ({ status: `sem resposta (${e.name})` }))
       const ms = Date.now() - t0
       ambiente.descongelarApp('erp-zona-2')
-      if (ms >= 2_000) segurada = { status: r.status, ms }
+      if (ms >= 2_000) segurada = { status: r.status, ms, html: r.text ? await r.text() : '', cache: r.headers?.get('cache-control') }
     }
   } finally { ambiente.descongelarApp('erp-zona-2') }
   await zonaVolta()
   assert.ok(segurada, 'em 3 tentativas nenhuma requisicao chegou a zona congelada com a sonda ainda valida')
-  // 500 cru do Next ate o C3 trazer a pagina dentro do teto (DEFERRED.md D7)
-  assert.equal(segurada.status, 500, `status ${segurada.status} em ${segurada.ms} ms`)
+  // C3 (ADR-0015, decisão 7): o documento vai pelo gateway, que no teto responde a página da base com supportId
+  assert.equal(segurada.status, 503, `status ${segurada.status} em ${segurada.ms} ms`)
+  assert.match(segurada.html, /Zona temporariamente indisponível/)
+  assert.match(segurada.html, /data-support-id="[0-9a-f-]{36}"/, 'a pagina da base sem supportId')
+  assert.equal(segurada.cache, 'no-store')
   assert.ok(segurada.ms >= teto - 500, `soltou em ${segurada.ms} ms, antes do teto de ${teto} ms`)
   assert.ok(segurada.ms < teto + 2_000, `soltou em ${segurada.ms} ms; teto ${teto} ms (sem o D7 seriam ~30 s)`)
+  console.log(`# L9: pagina da base em ${segurada.ms} ms (teto ${teto} ms)`)
+})
+
+/** A zona 9 de teste no ar, com a rota registrada e já roteada pelo shell (espera até 3 TTLs do mapa). */
+async function zona9DeTeste(cookie) {
+  zona9 ??= await subirZonaDeTeste({ id: 'zona9', porta: 3009, hosts: ['127.0.0.1', '127.0.0.2'] })
+  assert.equal(await zona9.registrar('zona9'), 200)
+  const ttl = Number(process.env.ERP_MAPA_ZONAS_TTL_MS)
+  const t0 = Date.now()
+  let r
+  while (Date.now() - t0 < 3 * ttl + 2_000) {
+    r = await pedir('/zona9', { cookie })
+    if (r.status === 200 && r.html.includes(zona9.marca)) return { ms: Date.now() - t0 }
+    await new Promise((ok) => setTimeout(ok, 100))
+  }
+  assert.fail(`a zona 9 nao passou a responder pelo shell em ${3 * ttl + 2_000} ms (ultimo status ${r?.status})`)
+}
+
+test('L9b (C3): pagina com varias chamadas lentas em sequencia, sem mandar bytes, recebe a pagina da base no teto', { timeout: 60_000 }, async () => {
+  const teto = Number(process.env.ERP_ZONA_TETO_MS)
+  const ana = (await entrar('ana')).cookie
+  await zona9DeTeste(ana)
+  // 3 chamadas de 2,5 s: cada uma abaixo do timeout de destino (5 s), a soma (7,5 s) acima do teto (6 s)
+  const caminho = '/zona9/lenta-em-sequencia?passos=3&ms=2500'
+  const t0 = Date.now()
+  const r = await fetch(`${SHELL_URL}${caminho}`, { headers: { cookie: ana }, redirect: 'manual', signal: AbortSignal.timeout(teto + 10_000) })
+  const ms = Date.now() - t0
+  const html = await r.text()
+  assert.equal(r.status, 503, `status ${r.status} em ${ms} ms`)
+  assert.match(html, /data-support-id="[0-9a-f-]{36}"/)
+  assert.equal(r.headers.get('cache-control'), 'no-store')
+  assert.ok(ms >= teto - 500 && ms < teto + 2_000, `pagina em ${ms} ms; teto ${teto} ms`)
+  // o gateway soltou a conexao com a zona no teto, nao quando a pagina lenta terminou
+  const reg = zona9.recebidas.findLast((x) => x.caminho === '/zona9/lenta-em-sequencia')
+  assert.ok(reg, 'a zona nao recebeu o pedido')
+  await new Promise((ok) => setTimeout(ok, 300))
+  assert.ok(reg.fechouEm !== null && reg.fechouEm - reg.inicio < teto + 1_000, `a conexao com a zona ficou aberta (${reg.fechouEm && reg.fechouEm - reg.inicio} ms)`)
+  console.log(`# L9b: pagina da base em ${ms} ms (teto ${teto} ms)`)
+})
+
+test('L9c (C3): zona que manda os cabecalhos e trava no meio e cortada por ociosidade (ERP_ZONA_OCIOSIDADE_MS)', { timeout: 60_000 }, async () => {
+  const ocio = Number(process.env.ERP_ZONA_OCIOSIDADE_MS)
+  const ana = (await entrar('ana')).cookie
+  await zona9DeTeste(ana)
+  const t0 = Date.now()
+  const r = await fetch(`${SHELL_URL}/zona9/trava-no-meio`, { headers: { cookie: ana }, redirect: 'manual', signal: AbortSignal.timeout(ocio + 20_000) })
+  const cabecalhosEm = Date.now() - t0
+  assert.equal(r.status, 200, 'o status da zona ja saiu com os cabecalhos')
+  const leitor = r.body.getReader()
+  const dec = new TextDecoder()
+  let corpo = ''
+  let erro = null
+  try {
+    for (;;) { const { done, value } = await leitor.read(); if (done) break; corpo += dec.decode(value, { stream: true }) }
+  } catch (e) { erro = e }
+  const cortadoEm = Date.now() - t0
+  assert.ok(erro, 'a resposta parada terminou como se estivesse completa')
+  assert.match(corpo, /primeiro pedaco/, 'o primeiro pedaco nao chegou ao navegador')
+  assert.doesNotMatch(corpo, /indispon/i, 'pagina da base depois do status: nao ha como')
+  const parada = cortadoEm - cabecalhosEm
+  assert.ok(parada >= ocio - 500 && parada < ocio + 3_000, `cortou ${parada} ms depois dos cabecalhos; ociosidade ${ocio} ms`)
+  const reg = zona9.recebidas.findLast((x) => x.caminho === '/zona9/trava-no-meio')
+  await new Promise((ok) => setTimeout(ok, 300))
+  assert.ok(reg?.fechouEm, 'a conexao com a zona ficou aberta depois do corte')
+  console.log(`# L9c: cabecalhos em ${cabecalhosEm} ms; corte por ociosidade ${parada} ms depois (ERP_ZONA_OCIOSIDADE_MS ${ocio})`)
+})
+
+test('L10 (C3): zona nova registrada passa a responder pelo shell em ate um TTL, sem reiniciar; removida, volta a 404', { timeout: 60_000 }, async () => {
+  const ttl = Number(process.env.ERP_MAPA_ZONAS_TTL_MS)
+  const ana = (await entrar('ana')).cookie
+  zona9 ??= await subirZonaDeTeste({ id: 'zona9', porta: 3009, hosts: ['127.0.0.1', '127.0.0.2'] })
+  // estado inicial conhecido: sem a rota, e o shell ja sabe disso
+  // a releitura nao bloqueia: a primeira requisicao depois do TTL ainda ve o mapa antigo, entao espera o 404
+  await zona9.remover('zona9')
+  const ate404 = async () => {
+    const t = Date.now()
+    let st = 200
+    while (Date.now() - t < 2 * ttl + 2_000 && st !== 404) {
+      st = (await pedir('/zona9', { cookie: ana })).status
+      if (st !== 404) await new Promise((ok) => setTimeout(ok, 100))
+    }
+    return { st, ms: Date.now() - t }
+  }
+  assert.equal((await ate404()).st, 404, 'zona sem rota registrada respondeu')
+  const pid = ambiente.apps.get('erp-shell').pid
+
+  const { ms } = await zona9DeTeste(ana)
+  // releitura sem bloquear: a primeira requisição depois do TTL ainda usa o mapa antigo e dispara a releitura
+  assert.ok(ms < 2 * ttl + 1_000, `a zona nova levou ${ms} ms para responder; TTL ${ttl} ms`)
+  const doc = await pedir('/zona9/pagina?x=1', { cookie: ana })
+  assert.equal(doc.status, 200)
+  assert.match(doc.html, /zona9\/pagina/)
+  // assets e RSC da zona nova tambem roteiam (caminho rapido)
+  const rsc = await fetch(`${SHELL_URL}/zona9/pagina?_rsc=abc12`, { headers: { cookie: ana, rsc: '1' }, redirect: 'manual' })
+  assert.equal(rsc.status, 200)
+  // o RSC vai pelo caminho rapido, nao pelo gateway: o Next tira os cabecalhos de voo do proxy.ts sem
+  // `skipProxyUrlNormalize`, e a busca de RSC pareceria documento (o Next anota a reescrita na resposta)
+  assert.doesNotMatch(rsc.headers.get('x-middleware-rewrite') ?? '', /_gateway/, 'RSC foi ao gateway')
+  assert.match(rsc.headers.get('x-middleware-rewrite') ?? '', /_rsc=abc12/, 'o ?_rsc nao seguiu para a zona')
+  assert.equal(ambiente.apps.get('erp-shell').pid, pid, 'o shell foi reiniciado')
+
+  assert.equal(await zona9.remover('zona9'), 204)
+  const fim = await ate404()
+  assert.equal(fim.st, 404, 'rota removida e a zona continuou respondendo pelo shell')
+  assert.ok(fim.ms < 2 * ttl + 1_000, `a zona removida levou ${fim.ms} ms para sair; TTL ${ttl} ms`)
+  console.log(`# L10: zona nova roteada em ${ms} ms; removida, 404 em ${fim.ms} ms (TTL ${ttl} ms)`)
+})
+
+test('L11 (C3): origem registrada fora de ERP_ZONAS_ORIGENS_PERMITIDAS nao roteia', { timeout: 60_000 }, async () => {
+  const ttl = Number(process.env.ERP_MAPA_ZONAS_TTL_MS)
+  const ana = (await entrar('ana')).cookie
+  zona9 ??= await subirZonaDeTeste({ id: 'zona9', porta: 3009, hosts: ['127.0.0.1', '127.0.0.2'] })
+  // 127.0.0.2 é loopback de verdade (a zona de teste ouve lá), mas fora de `127.0.0.1:*,localhost:*`
+  const direto = await fetch('http://127.0.0.2:3009/zona8', { redirect: 'manual' })
+  assert.equal(direto.status, 200, 'dentes: a origem fora da lista responde quando chamada direto')
+  assert.equal(await zona9.registrar('zona8', 'http://127.0.0.2:3009'), 200)
+  try {
+    await new Promise((ok) => setTimeout(ok, 2 * ttl + 500))
+    const antes = zona9.recebidas.length
+    for (let i = 0; i < 3; i++) {
+      const r = await pedir('/zona8', { cookie: ana })
+      assert.equal(r.status, 404, `origem fora da lista roteou (status ${r.status})`)
+      assert.doesNotMatch(r.html, /zona de teste/)
+      await new Promise((ok) => setTimeout(ok, ttl / 2))
+    }
+    assert.equal(zona9.recebidas.slice(antes).filter((x) => x.caminho.startsWith('/zona8')).length, 0, 'o shell chamou a origem fora da lista')
+  } finally {
+    await zona9.remover('zona8')
+  }
+})
+
+test('C3: /_gateway direto do navegador da 404, com e sem cookie, em qualquer grafia', async () => {
+  const ana = (await entrar('ana')).cookie
+  for (const c of ['/_gateway/zona1', '/_gateway/zona1/relatorios', '/%5Fgateway/zona1', '/_GATEWAY/zona1', '/_gateway']) {
+    for (const cookie of [ana, undefined]) {
+      const r = await pedir(c, { cookie })
+      assert.equal(r.status, 404, `${c} cookie=${!!cookie}`)
+      assert.doesNotMatch(r.html, /Painel|zona1/i, `${c}: conteudo de zona pelo gateway`)
+    }
+  }
+  // dentes: o mesmo documento pelo caminho de verdade chega
+  assert.equal((await pedir('/zona1', { cookie: ana })).status, 200)
+})
+
+test('C3: documento pelo gateway chega comprimido como a zona mandou, sem o caminho interno nos cabecalhos', async () => {
+  const ana = (await entrar('ana')).cookie
+  const { request } = await import('node:http')
+  const { gunzipSync } = await import('node:zlib')
+  const cru = await new Promise((ok, falha) => {
+    const r = request(`${SHELL_URL}/zona1`, { headers: { cookie: ana, 'accept-encoding': 'gzip' } }, (res) => {
+      const partes = []
+      res.on('data', (p) => partes.push(p))
+      res.on('end', () => ok({ status: res.statusCode, headers: res.headers, corpo: Buffer.concat(partes) }))
+    })
+    r.on('error', falha)
+    r.end()
+  })
+  assert.equal(cru.status, 200)
+  assert.equal(cru.headers['content-encoding'], 'gzip')
+  const html = gunzipSync(cru.corpo).toString()
+  assert.match(html, /<html/)
+  assert.ok(cru.corpo.length < html.length / 2, `corpo de ${cru.corpo.length} bytes para ${html.length} de HTML: nao veio comprimido`)
+  // o Next anota toda reescrita do proxy.ts na resposta (`x-middleware-rewrite`, `x-nextjs-rewritten-path`): aqui
+  // so o caminho relativo `/_gateway/...`, que do navegador da 404; nenhum cabecalho traz a origem interna da zona
+  for (const [k, v] of Object.entries(cru.headers)) {
+    assert.doesNotMatch(`${k}: ${v}`, /127\.0\.0\.1:300|localhost:300[1-9]/, 'cabecalho com origem interna')
+    if (!['x-middleware-rewrite', 'x-nextjs-rewritten-path'].includes(k)) assert.doesNotMatch(`${k}: ${v}`, /_gateway/, 'cabecalho com caminho interno')
+  }
+})
+
+test('C3 (item da revisao da Task 3): shell de producao sem ERP_ZONAS_ORIGENS_PERMITIDAS ou ERP_TOKEN_SERVICO nao sobe', { timeout: 60_000 }, async () => {
+  for (const falta of ['ERP_ZONAS_ORIGENS_PERMITIDAS', 'ERP_TOKEN_SERVICO']) {
+    const env = { ...ambienteDoPapel('shell', process.env), SESSAO_DIR: ambiente.sessaoDir, ERP_PERMITIR_IDENTIDADE_DEV: '1' }
+    delete env[falta]
+    // o `next` direto, sem o `pnpm` no meio: no estouro o SIGKILL tem de pegar o servidor, senao ele fica orfao na porta
+    // segurando o pipe e a verificacao inteira nao termina
+    const p = spawn(process.execPath, [join(RAIZ, 'erp-shell', 'node_modules', 'next', 'dist', 'bin', 'next'), 'start', '-p', '3011'], {
+      cwd: join(RAIZ, 'erp-shell'), env: { ...env, NODE_ENV: 'production' }, stdio: ['ignore', 'ignore', 'pipe'],
+    })
+    let erro = ''
+    p.stderr.on('data', (d) => { erro += d })
+    const codigo = await new Promise((ok) => {
+      const t = setTimeout(() => { p.kill('SIGKILL'); ok('nao saiu em 30 s') }, 30_000)
+      p.once('exit', (c) => { clearTimeout(t); ok(c) })
+    })
+    assert.equal(codigo, 1, `sem ${falta}: ${codigo}`)
+    assert.match(erro, new RegExp(falta), `sem ${falta}: o erro nao diz o que falta`)
+  }
 })
 
 // C1 (ADR-0011): a zona 1 embute um bloco da zona 2. O fragmento é servidor→servidor, direto na origem interna da zona.
