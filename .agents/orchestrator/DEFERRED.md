@@ -176,3 +176,13 @@
   defasadas; sonda 800 ms em `01-operacao.md` contra 500 ms de padrão em `CONFIGURACAO.md`; espera de domínio entre 5 e 10 s não
   exercitada (as zonas declaram 2 s por destino).
 - **Fecha em:** o do C3 e o do C2 com eles; os demais quando o shell ou a verificação forem tocados de novo.
+
+## D29 — `ehHtmlInerte` do núcleo deixa passar HTML ativo (gate do C1, auditor_c1_1)
+
+- **O que é:** `repos/erp-nucleo/src/fabricas/fragmento.ts` testa manipulador com `/\son[a-z]+\s*=/`. Passam como inertes
+  `<img/onerror=…>`, `<svg/onload=…>`, `<body/onload=…>`, atributo colado em aspas, entidades e tab em `javascript:`, e
+  `meta`/`base`/`form`/`link`/`style`. A CSP com nonce das zonas impede script; **não** impede `<meta http-equiv=refresh>`.
+- **Hoje:** o único fragmento (tarefas da zona 2) escapa os títulos; o teste do veto do C1 prova o escape.
+- **Decisão do humano (2026-10-06):** corrigir logo depois do gate do C1, antes do C3: núcleo 0.10.4 (lista de permissão
+  de tags e atributos, não lista de bloqueio), lockstep nas 4 apps, com gate próprio.
+- **Fecha em:** núcleo 0.10.4.

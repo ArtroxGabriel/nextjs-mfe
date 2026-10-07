@@ -341,3 +341,14 @@ Gate Result: **PASS**. Fecha o **D7** na parte do teto (`DEFERRED.md` D7): a zon
 auditor: shell 114/114, `task verificar` 115 + 4 pulados, `verificar:redis` 119/119, árvores restauradas, portas livres. Pastas dos
 verificadores removidas depois do registro; última versão no commit `aa26ba2` (`git show aa26ba2:.agents/<nome>/handoff.md`).
 Tag `gate-d7-aprovado`.
+
+## Gate — C1 (fragmentos entre zonas), iteração 1, principal `8182e2f`, shell `836ddc4`, zona 1 `39c4b76`, zona 2 `1626fd1`
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| revisor_c1_1 | revisor-mfe (sonnet) | **APPROVE** | .agents/revisor_c1_1/handoff.md | sem crítico nem importante; 6 menores (guarda sem colapsar `//`; `ehHtmlInerte` e `<img/onerror=`; 204 inútil para quem não tem a zona 2; `ZONA2_URL` inválida derruba a página; C1a/C1c sem título real; ADR cita `alvo.md`) |
+| challenger_c1_1 | simulador-condicoes (sonnet) | **APPROVE** | .agents/challenger_c1_1/handoff.md | 50 grafias pelo shell, nenhuma alcança a rota (`//` e barra final: 308 para a canônica, que dá 404); dono conforme por ator, versão, chave e `Sec-Fetch-Dest`; nada vaza a bruno/davi/carla no HTML nem no RSC; painel 2,03 s com a zona 2 ou o domínio C congelados; `verificar` 119 + 4, `verificar:redis` 123/123 |
+| auditor_c1_1 | general-purpose forense (opus) | **VETO (só por teste)** | .agents/auditor_c1_1/handoff.md, mutacoes.txt | 39 mutações, 30 pegas; vivas de boa-fé: E-Z4/E-Z4b (`escapar` removido), E-U1b (placeholder "indisponíveis" no painel, invariante 8), E-Z6/E-Z6b (filtro de pendentes); `ehHtmlInerte` confirmado frouxo (defeito do núcleo, `DEFERRED.md` D29) |
+
+Gate Result: **VETO (só por teste)**. Correção: tarefas com título hostil e uma concluída na semente do domínio C (decisão do
+humano: conta como teste) e asserções de título, escape e ausência em C1a/C1c. Iteração 2: só um auditor novo.

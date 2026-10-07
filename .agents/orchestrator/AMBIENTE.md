@@ -141,5 +141,7 @@
   só o Verdaccio voltou; Redis e Keycloak estavam parados, ao contrário do `RETOMADA.md`. `docker ps`, depois
   `task showcase:subir` e esperar o Keycloak responder (`/realms/erp/.well-known/openid-configuration`) antes de
   `task showcase:checar` — logo depois do `up` ele reprova por ainda estar subindo.
+- **Não canalizar para `head` um script que sobe a base** (auditor_c1_1, 2026-10-06): o `head` fecha o pipe, o script morre
+  por SIGPIPE antes do `derrubar()` e a base fica de pé, com a mutação aplicada. Gravar a saída em arquivo e ler depois.
 - **Agente de outra sessão não existe mais:** `SendMessage` para um verificador da sessão anterior não funciona; despachar
   um novo com as etapas que faltam.
