@@ -854,6 +854,13 @@ test('L9 (D7): zona que trava com a sonda ainda valida solta a requisicao no tet
 const ZONA2_DIRETO = `http://127.0.0.1:${APPS.find((a) => a.dir === 'erp-zona-2').porta}`
 const FRAGMENTO_TAREFAS = '/zona2/_fragmento/tarefas/pendentes'
 const BLOCO_TAREFAS = /data-fragmento="zona2\/tarefas"/
+// semente do dominio C: t-3 pendente com titulo hostil, t-4 concluida (auditor_c1_1, E-Z4 e E-Z6)
+const T3_ESCAPADO = 'Conferir &quot;lote&quot; &lt;A&amp;B&gt;'
+const tarefasDoBloco = (html, quem) => {
+  assert.ok(html.includes(T3_ESCAPADO), `${quem}: pendente t-3 ausente ou sem escape`)
+  assert.ok(!html.includes('<A&B>'), `${quem}: titulo da tarefa chegou cru, sem escape`)
+  assert.doesNotMatch(html, /Arquivar relatório antigo/, `${quem}: tarefa concluida no bloco de pendentes`)
+}
 const pedirFragmento = (caminho, { cookie, cabecalhos = {} } = {}) => fetch(`${ZONA2_DIRETO}${caminho}`, {
   headers: { accept: 'text/html', ...(cookie ? { cookie } : {}), ...cabecalhos }, redirect: 'manual',
 })
@@ -868,6 +875,7 @@ test('C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefa
     assert.match(html, BLOCO_TAREFAS, u)
     assert.match(html, /Tarefas pendentes \(zona 2\)/, u)
     assert.doesNotMatch(html, /<script|<html|<body|\son[a-z]+\s*=|javascript:/i, `fragmento ativo ou documento inteiro para ${u}`)
+    tarefasDoBloco(html, u)
   }
   // sem o modulo da zona 2: ausencia, sem corpo (invariante 8; ADR-0011, decisao 6)
   for (const u of ['bruno', 'davi']) {
@@ -908,12 +916,15 @@ test('C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem t
   assert.equal(r.status, 200)
   assert.match(r.html, BLOCO_TAREFAS, 'ana (zona 1 e zona 2) nao viu o bloco')
   assert.match(r.html, /Tarefas pendentes \(zona 2\)/)
+  tarefasDoBloco(r.html, 'ana no painel')
   for (const u of ['bruno', 'davi']) {
     const s = await pedir('/zona1', { cookie: (await entrar(u)).cookie })
     assert.equal(s.status, 200, u)
     assert.doesNotMatch(s.html, BLOCO_TAREFAS, `${u} (so zona 1) viu o bloco`)
     assert.doesNotMatch(s.html, /Tarefas pendentes/, `${u}: titulo do bloco sem o bloco`)
     assert.ok(!/sem acesso|não autorizado|acesso negado/i.test(s.html), `placeholder de sem acesso para ${u} (invariante 8)`)
+    // nenhum rastro do bloco, nem placeholder de indisponivel (invariante 8; E-U1b)
+    assert.doesNotMatch(s.html, /tarefa|zona 2/i, `${u}: rastro do bloco da zona 2 sem o modulo`)
   }
 })
 
