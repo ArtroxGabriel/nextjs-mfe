@@ -426,3 +426,12 @@ Antes do gate (2026-10-07): `task test` verde (contratos 20, moldura 26, stub 83
 | auditor_e3e5_1 | general-purpose forense (opus) | não despachado (challenger reprovou) | .agents/auditor_e3e5_1/handoff.md | tabelas de mutação das Tasks 1, 2 e 4 |
 
 Gate Result: **REJECT** (challenger, pelo roteiro e pela mensagem de erro do `zona-demo`; nenhum defeito de produto). Correção com worker_e3e5_1; iteração 2 completa (revisor, challenger e auditor novos), porque a correção toca o comando `zona-demo` e o roteiro que o challenger segue.
+
+## Gate: E3, E4 e E5, iteração 2 (completa: a correção toca o roteiro e o `zona-demo`), principal `af8239c`, shell `d6e48fc`
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| worker_e3e5_1 | correção do veto (sonnet) | — | .agents/worker_e3e5_1/handoff.md | A3, A8 a A10, A14, A15 e a nota da suíte reescritos pela tela real e seguidos por HTTP; `zona-demo` com mensagem clara e exit 1 para porta ocupada e gestão de acesso fora, sem rota nem porta órfã; eva no `conferir`; `conferir` 0, `verificar` 7/7 |
+| revisor_e3e5_2 | revisor-mfe (sonnet) | em andamento | .agents/revisor_e3e5_2/handoff.md | |
+| challenger_e3e5_2 | simulador-condicoes (sonnet) | em andamento | .agents/challenger_e3e5_2/handoff.md | |
+| auditor_e3e5_1 | general-purpose forense (opus) | aguardando challenger | .agents/auditor_e3e5_1/handoff.md | |
