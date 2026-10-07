@@ -10,7 +10,7 @@ Três perguntas, três lugares:
 | **o que falta e para onde vai** | [`arquitetura/alvo.md`](arquitetura/alvo.md) — a tabela do §6 é a lista do que falta | 10 min |
 | **que infraestrutura o alvo precisa, quem cuida e onde roda** (borda, Redis, OIDC, telemetria, entrega) | [`arquitetura/infraestrutura-alvo.md`](arquitetura/infraestrutura-alvo.md), em camadas, por time e por local de execução; a seção 9 é o que falta | 10 min |
 | **que parâmetro controla o quê** (sessão, timeouts, limites) | [`CONFIGURACAO.md`](CONFIGURACAO.md) — toda variável, com padrão e quem lê | 5 min |
-| **como conferir com as próprias mãos** | [`ROTEIRO-DE-VERIFICACAO.md`](ROTEIRO-DE-VERIFICACAO.md) — 12 passos no navegador | 10 min |
+| **como conferir com as próprias mãos** | [`ROTEIRO-DE-VERIFICACAO.md`](ROTEIRO-DE-VERIFICACAO.md): uma linha por funcionalidade básica e 15 passos no navegador | 10 min |
 
 Para rodar a base: [`../README.md`](../README.md). Para retomar o trabalho em andamento:
 [`../.agents/orchestrator/LEIA-PRIMEIRO.md`](../.agents/orchestrator/LEIA-PRIMEIRO.md).

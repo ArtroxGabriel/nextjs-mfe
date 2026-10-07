@@ -52,11 +52,12 @@ task base          # sobe tudo em http://localhost:3000 (Ctrl-C derruba)
 ```bash
 task showcase            # Redis + Keycloak + domínios com dados gravados + shell e 3 zonas; Ctrl-C derruba
 task showcase:conferir   # noutro terminal: o que cada ator vê em cada zona, infraestrutura e segurança visível
+task showcase:zona-demo  # noutro terminal: uma zona nova entra, cai, volta e sai sem reiniciar o shell
 task showcase:oidc       # o mesmo com login pelo Keycloak (OIDC + PKCE; senha = nome do ator) e domínios em modo JWT;
-                         # showcase:conferir ainda usa o login de dev, só com `task showcase`
+                         # showcase:conferir funciona nos dois modos
 ```
 
-Depois abra http://localhost:3000 e siga [`docs/ROTEIRO-DE-VERIFICACAO.md`](docs/ROTEIRO-DE-VERIFICACAO.md).
+Depois abra http://localhost:3000 e siga [`docs/ROTEIRO-DE-VERIFICACAO.md`](docs/ROTEIRO-DE-VERIFICACAO.md), que abre com uma linha por funcionalidade básica.
 
 `task preparar` publica os pacotes; num Verdaccio que já os tem, rode só `task instalar`.
 
