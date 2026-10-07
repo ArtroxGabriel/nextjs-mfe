@@ -12,7 +12,7 @@ Uma linha por funcionalidade: o que fazer no navegador, o que deve acontecer e o
 | F4 | os tratamentos | Abra `/zona1/recursos/r-3` como carla, `/zona1/relatorios` como ana e uma zona fora do ar | 404 sem página de "sem acesso"; zona fora do ar dá 503 com a página da base e o código de suporte, e o resto segue respondendo | F4 | A4, A7, A9, A12, A15 |
 | F5 | base de UI | Compare o cabeçalho e o menu nas três zonas e clique **Avisar no toast do shell** | a mesma moldura em todas e o toast aparece pela moldura | F5 | A3, A5, A6 |
 | F6 | bases em pacotes separados | Nada a fazer no navegador: confira os `package.json` das quatro apps | `@erp/contratos`, `@erp/nucleo` e `@erp/moldura` em versão exata, o núcleo na mesma versão em todas | F6 | (só pelo teste) |
-| F7 | integração com os domínios | Abra `/zona1/recursos/r-1` como bruno e como carla | o custo aparece só para quem é do financeiro (o bruno vê, a carla não); a recusa de mutação com versão desatualizada (409, `REGISTRO_DESATUALIZADO` no domínio) só é provada pelo teste, que repete a versão já consumida de uma tarefa já concluída, então nenhum dado muda (só o número da versão sobe) | F7 | A7 |
+| F7 | integração com os domínios | Abra `/zona1/recursos/r-1` como bruno e como carla | o custo aparece só para quem é do financeiro (o bruno vê, a carla não); a recusa de mutação com versão desatualizada (409, `REGISTRO_DESATUALIZADO`) só é provada pelo teste | F7 | A7 |
 
 ## Base genérica em `repos/`
 

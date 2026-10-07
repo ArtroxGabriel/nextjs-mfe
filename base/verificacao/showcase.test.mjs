@@ -9,9 +9,11 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { RAIZ } from '../scripts/ambiente.mjs'
-import { pedir, entrarComo, modoDeLogin, menu, formularios, acaoPeloCliente } from './apoio.mjs'
+import { randomUUID } from 'node:crypto'
+import { pedir, entrarComo, modoDeLogin, menu, formularios, acaoPeloCliente, tokenDoKeycloak } from './apoio.mjs'
 import { subirZonaDemo } from '../showcase/zona-demo.mjs'
 
+const DOMINIO_C_URL = process.env.DOMINIO_C_URL ?? 'http://127.0.0.1:4003'
 const ACESSO_URL = process.env.ACESSO_URL ?? 'http://127.0.0.1:4020'
 const TTL_MAPA_MS = Number(process.env.ERP_MAPA_ZONAS_TTL_MS ?? 30_000)
 // entrada e saída da demo: um TTL do mapa mais uma releitura, com folga
@@ -189,15 +191,27 @@ test('F5 base de UI', async () => {
   ]
   const [primeira, ...demais] = paginas
   assert.ok(cabecalhoDaMoldura(primeira[1].html), 'cabeçalho da moldura na zona 1')
+  const nav = (html) => html.match(/<nav[^>]*aria-label="Módulos"[\s\S]*?<\/nav>/)?.[0] ?? ''
+  const abertura = (html) => nav(html).match(/^<nav[^>]*>/)?.[0]
+  const classesDosLinks = (html) => [...nav(html).matchAll(/<a [^>]*>/g)].map((m) => m[0].replace(/href="[^"]*"/, '').replace(/\s*aria-current="page"/, ''))
   for (const [caminho, r] of paginas) {
     assert.equal(r.status, 200, caminho)
-    assert.match(r.html, /<nav[^>]*aria-label="Módulos"/, `menu em ${caminho}`)
+    assert.ok(nav(r.html), `menu em ${caminho}`)
     assert.match(r.html, /<div class="moldura-toasts" role="status"/, `região de toasts em ${caminho}`)
   }
-  for (const [caminho, r] of demais) assert.equal(cabecalhoDaMoldura(r.html), cabecalhoDaMoldura(primeira[1].html), `cabeçalho de ${caminho} difere do da zona 1`)
+  // zona 1 e zona 2 (mesmo ator): o bloco do menu é idêntico, salvo o item atual; zona de acesso (menu por módulo,
+  // outro ator): a mesma abertura do <nav> e a mesma marcação de link
+  const semAtual = (html) => nav(html).replace(/\s*aria-current="page"/g, '')
+  assert.equal(semAtual(demais[0][1].html), semAtual(primeira[1].html), 'menu da zona 2 difere do da zona 1')
+  for (const [caminho, r] of demais) {
+    assert.equal(cabecalhoDaMoldura(r.html), cabecalhoDaMoldura(primeira[1].html), `cabeçalho de ${caminho} difere do da zona 1`)
+    assert.equal(abertura(r.html), abertura(primeira[1].html), `abertura do menu de ${caminho} difere do da zona 1`)
+    assert.deepEqual(new Set(classesDosLinks(r.html)), new Set(classesDosLinks(primeira[1].html)), `links do menu de ${caminho} diferem do da zona 1`)
+  }
   assert.match(primeira[1].html, /<button type="button">Avisar no toast do shell<\/button>/, 'botão que emite o toast na zona 1')
 
-  // um toast vindo de uma zona aparece dentro da região da moldura: versão desatualizada em t-4 (já concluída,
+  // O clique em "Avisar no toast do shell" (emitirToast em memória, ilha de cliente) só se confere à mão (A5/A6 do roteiro).
+  // Aqui se prova o toast que atravessa a troca de zona e aparece pela moldura: versão desatualizada em t-4 (já concluída,
   // então nada muda) vira o toast de erro no cookie de flash, e o documento seguinte o traz na moldura
   const z2 = await pedir('/zona2', { cookie: ana })
   const base = formularios(z2.html).find((f) => f.id)
@@ -225,7 +239,8 @@ test('F6 bases em pacotes separados', async () => {
   }
   for (const p of pacotes) assert.equal(versoes[p].size, 1, `${p} em versões diferentes entre as apps: ${[...versoes[p]].join(', ')}`)
 
-  // o shell responde pelas três zonas com a moldura dessa mesma versão (todas instaladas na versão acima)
+  // Provado: declaração exata, o mesmo núcleo em todas (lockstep) e o instalado igual ao declarado. A resposta HTTP só
+  // mostra que as três zonas servem a moldura; a versão dela não aparece no HTML.
   const ana = (await como('ana')).cookie
   const carla = (await como('carla')).cookie
   for (const [caminho, cookie] of [['/zona1', ana], ['/zona2', ana], ['/acesso', carla]]) {
@@ -244,16 +259,21 @@ test('F7 integração com os domínios', async () => {
   assert.equal(c.status, 200)
   assert.doesNotMatch(c.html, /CC-10/, 'carla não deveria ver o custo')
 
-  // mutação com If-Match: a ação manda a versão que o cliente conhece. Usa t-4, já concluída: concluir de novo
-  // não muda o dado (só a versão sobe), então a verificação não deixa tarefa nenhuma alterada.
+  // Mutação com If-Match: a ação manda a versão que o cliente conhece. Usa t-4, já concluída: concluir de novo não muda
+  // o dado, só o número da versão, que SÓ CRESCE (2 por rodada) no estado gravado do showcase;
+  // `task showcase:dados:resetar` o devolve à semente. A versão atual vem do GET do domínio C, como a zona 2 lê.
   const ana = (await como('ana')).cookie
   const base = formularios((await pedir('/zona2', { cookie: ana })).html).find((f) => f.id)
+  const token = modo === 'oidc' ? await tokenDoKeycloak('ana') : `dev.ana.${randomUUID()}`
+  const lista = await fetch(`${DOMINIO_C_URL}/v1/tarefas`, { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(5000) })
+  assert.equal(lista.status, 200, `GET /v1/tarefas do domínio C respondeu ${lista.status}`)
+  const atual = (await lista.json()).find((t) => t.id === 't-4')
+  assert.ok(Number.isInteger(atual?.versao), 't-4 fora da lista do domínio C')
+  const aceita = atual.versao
   const tentar = (versao) => acaoPeloCliente({ ...CONCLUIR, campos: { ...base, id: 't-4', versao: String(versao) }, cookie: ana })
   const passou = (r) => /"destino":"\/zona1"/.test(r.corpo)
 
-  let aceita
-  for (let v = 1; v <= 30 && aceita === undefined; v++) if (passou(await tentar(v))) aceita = v
-  assert.ok(aceita !== undefined, 'nenhuma versão de t-4 entre 1 e 30 foi aceita')
+  assert.ok(passou(await tentar(aceita)), `com a versão atual (${aceita}) a mutação deveria passar`)
   // a versão aceita acabou de ser consumida: repetir a mesma agora é uma versão desatualizada
   const velha = await tentar(aceita)
   assert.ok(!passou(velha), 'a versão desatualizada deveria ser recusada')
