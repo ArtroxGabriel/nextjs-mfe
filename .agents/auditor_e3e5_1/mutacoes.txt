@@ -1,0 +1,32 @@
+# mutacoes auditor_e3e5_1 (id | arquivo | mutação | verificação | resultado | revertida)
+ZD1 | base/showcase/zona-demo.mjs | e?.code -> e?.codigo (EADDRINUSE) | nenhum teste do repo executa o ramo; arnês no scratchpad (aud/zd.sh) | VIVA: porta ocupada volta a dar stack crua (a correção do it.1 sem teste) | sim
+ZD2 | base/showcase/zona-demo.mjs | registrar() sem try/catch | idem | VIVA: gestão de acesso fora vira "TypeError: fetch failed" cru (correção do it.1 sem teste) | sim
+ZD3 | base/showcase/zona-demo.mjs | ignora registro >= 300 | idem; suite só usa caminho feliz | VIVA: 403 no registro e o script diz "Zona demo no ar, rota registrada", exit 0 | sim
+ZD4 | base/showcase/zona-demo.mjs | remover ignora status do DELETE | idem | VIVA: DELETE 500 e "Rota removida", exit 0 (correção da Task 2 fix 1 sem teste) | sim
+ZD5 | base/showcase/zona-demo.mjs | sair() sem demo.remover() (T2-M1) | arnês: SIGINT sem DELETE e "Rota removida"; suíte: ver ZD5-F2 | VIVA no script; pega indireta ver ZD5-F2 | sim
+ZD6 | base/showcase/zona-demo.mjs | derrubar() remove a rota (T2-M2) | arnês: mapa vazio depois do Enter; suíte: ver ZD6-F4 | VIVA no script; ver ZD6-F4 | sim
+S1 | erp-shell lib/decisao-proxy.ts | sonda: página sem supportId | shell pnpm test | PEGA: invariante 12 (sonda) | sim
+S2 | erp-shell lib/decisao-proxy.ts | sonda: sem registrarNoConsole | shell pnpm test | PEGA: invariante 12 (sonda) | sim
+S3 | erp-shell lib/decisao-proxy.ts | sonda: página com outro supportId que o registrado | shell pnpm test | PEGA: invariante 12 (sonda) | sim
+S4 | erp-shell lib/pagina-erro-zona.ts | SEGURO sem '-' (UUID recusado, página sem id) | shell pnpm test | PEGA: 5 testes | sim
+S5 | erp-shell lib/decisao-proxy.ts | sonda: decisão sem supportId | shell pnpm test | PEGA: invariante 12 (sonda) | sim
+G1 | base/verificacao/showcase.test.mjs (cópia) | suíte do showcase de volta ao glob base/verificacao/*.test.mjs | task verificar:redis, showcase derrubado | PEGA: 136 testes, 135 pass, 1 fail (o arquivo do showcase, modoDeLogin sem shell) | sim (cópia apagada)
+M5 | base/verificacao/showcase/showcase.test.mjs | F4 'limpa' só com derrubar (rota fica), sem after() | F4 e depois F2 | PEGA: F4 passa; a rodada seguinte reprova F2 ('a rota demo já estava registrada antes do teste') | sim (rota removida à mão)
+ZD5-F2 | zona-demo sair() sem remover, contra o showcase | SIGINT no zona-demo mutado e depois F2 | PEGA (indireta): zona-demo diz 'Rota removida', exit 0; F2 da rodada seguinte reprova ('a rota demo já estava registrada') | sim
+ZD6-F4 | zona-demo derrubar() remove a rota (T2-M2 declarada), contra o showcase | F4 | VIVA: F4 passa (503 em 6 ms pelo mapa ainda em memória no shell + sonda). Falta: em F4, depois de derrubar, conferir que 'demo' continua em GET /v2/zonas | sim
+T1-M2 | base/showcase/conferir.mjs | redis-cli sem REDISCLI_AUTH | conferir (dev) | PEGA: ✖ Redis e ✖ sessão gravada no Redis, exit 1 | sim
+T1-M3 | base/showcase/conferir.mjs | checagem do fragmento invertida | conferir (dev) | PEGA: ✖ linha do bloco, exit 1 | sim
+C1 | (ambiente) ACESSO_URL inalcançável no conferir | conferir (dev) | PEGA: ✖ mapa de zonas, exit 1 | n/a
+P3 | erp-zona-2/package.json | @erp/moldura 0.5.0 -> 0.4.0 (declarado difere do instalado) | F6 | PEGA: 'instalado difere do declarado' | sim
+P4 | erp-zona-acesso/package.json | @erp/moldura em faixa ^0.5.0 | F6 | PEGA: 'deve declarar em versão exata' | sim
+T4-M4 | erp-dominio-stub src/dominio-a.mjs | custo para todos (sem filtro FINANCEIRO) | F7 e conferir (dev) | PEGA: F7 'carla não deveria ver o custo'; conferir ✖ carla não vê custo | sim
+IFM | erp-dominio-stub src/dominio-c.mjs | domínio C ignora If-Match (aceita versão velha) | F7 (dev) | PEGA: 'a versão desatualizada deveria ser recusada' | sim
+T1-M1 | base/verificacao/apoio.mjs | modoDeLogin sempre 'dev' | conferir e F1 (showcase OIDC) | PEGA: conferir exit 1 ('login de ana nao devolveu cookie (HTTP 303)'); F1 reprova | sim
+F7tok | base/verificacao/showcase/showcase.test.mjs | F7 com token dev também no modo OIDC | F7 (OIDC) | PEGA (mais restritiva): 'GET /v1/tarefas do domínio C respondeu 401' | sim
+T4-M1 | erp-zona-1 app/zona1/page.tsx | zona 1 não pede o fragmento da zona 2 | F3 e conferir (dev, reconstruído) | PEGA: F3 'ana deveria ver o bloco'; conferir ✖ linha do bloco | sim
+S6 (T4-M3) | erp-shell proxy.ts | zona-inativa re-renderiza a página sem supportId (ignora decisao.html) | F4 (dev, reconstruído); unidades do shell NÃO pegam | PEGA: F4 'a página da base sem supportId' | sim
+S7 | erp-shell lib/decisao-proxy.ts | documento pelo caminho rápido (origem interna no x-middleware-rewrite) | conferir e unidades do shell | PEGA: conferir ✖ 'documento da zona 1 sem origem interna em cabeçalho — em: x-middleware-rewrite'; shell 4 fail | sim
+T4-M2 | erp-zona-2 app/layout.tsx | cabeçalho próprio no lugar da moldura | F3, F5, F7 (dev, reconstruído) | PEGA: F5 'menu em /zona2'; F3 'menu de /zona2'; F7 'o toast de registro desatualizado' | sim
+NAV2 | erp-zona-2 app/layout.tsx | menu com rótulo próprio da zona 2 (variante do extra 'nav próprio') | F3, F5 (dev, reconstruído) | PEGA: F5 'menu da zona 2 difere do da zona 1' (F3 passa: compara só hrefs) | sim
+B4b | erp-zona-acesso app/layout.tsx | moldura sem usuário (usuario={null}; com undefined nem compila) | F5 (dev, reconstruído) | PEGA: 'cabeçalho de /acesso difere do da zona 1' | sim
+S1-e2e | erp-shell lib/decisao-proxy.ts | sonda: página sem supportId (S1), contra o showcase | F4 (dev, reconstruído) | VIVA no F4 (o 503 logo depois de derrubar vem do gateway, motivo=conexao, que tem supportId próprio); PEGA pela unidade 'invariante 12' do shell (S1). Limite: F4 não distingue sonda de gateway | sim
