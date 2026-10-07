@@ -198,5 +198,5 @@
   página na carga; o ADR-0011 (adendo 1) cita o `alvo.md` §6, fora de commit; `atual.md` sem a aresta zona 1 → zona 2; o
   `p:relatorios` do `elementosDoPainel` casa a string exata (falso vermelho com um `title` inocente; usar o `href`); C1a sem o
   caso "nada pendente"; falha de domínio e acesso negado dão o mesmo 204 (intencional).
-- **Fecha em:** o contrato e o `atual.md` com o E4 (roteiro); a guarda do shell e o `p:relatorios` quando o shell ou o teste forem
+- **Fecha em:** o `atual.md` com o E4 (roteiro); os limites da lista de permissão, quando o primeiro fragmento novo precisar; a guarda do shell e o `p:relatorios` quando o shell ou o teste forem
   tocados de novo; o resto, um por um, se incomodar.

@@ -167,12 +167,12 @@ bundle — o bloco chegaria sem estilo.
 O consumidor envia `Accept-Fragmento-Versao: 1`. A zona dona serve a versão pedida ou
 responde `204`.
 
-Sem o cabeçalho `Accept-Fragmento-Versao`, a dona serve a versão 1; só recusa (`204`) versão
-diferente dela.
-
 Isso transforma incompatibilidade em **bloco ausente**, que já é um estado que o desenho
 trata, em vez de bloco quebrado, que não é. Trocar a versão é mudança de contrato: publica
 a nova, serve as duas por duas minors, depois remove a velha.
+
+Sem o cabeçalho `Accept-Fragmento-Versao`, a dona serve a versão 1; só recusa (`204`) versão
+diferente dela.
 
 ---
 
