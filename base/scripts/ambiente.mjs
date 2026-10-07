@@ -62,7 +62,7 @@ export const AMBIENTE_PERMITIDO = {
   zona: [
     ...DO_SISTEMA,
     'SESSAO_DIR', 'REDIS_URL_ZONA', 'ACESSO_URL', 'SHELL_HOSTS', 'DOMINIO_A_URL', 'DOMINIO_B_URL', 'DOMINIO_C_URL', 'ZONA2_URL',
-    'ERP_TOKEN_SERVICO', 'ERP_DESTINO_TIMEOUT_MS', 'ERP_FRAGMENTO_TIMEOUT_MS', 'ERP_PERMITIR_IDENTIDADE_DEV', 'ERP_TOKEN_VIDA_S',
+    'ERP_TOKEN_SERVICO', 'ERP_ZONA_ORIGEM_INTERNA', 'ERP_DESTINO_TIMEOUT_MS', 'ERP_FRAGMENTO_TIMEOUT_MS', 'ERP_PERMITIR_IDENTIDADE_DEV', 'ERP_TOKEN_VIDA_S',
     // não é segredo: a zona só tira dele a origem do IdP para o form-action da CSP (ADR-0013, decisão 6)
     'IDP_EMISSOR',
     // `1` aceita IdP `http://` de loopback em produção, só no showcase e na verificação (ADR-0013, adendo 2)
@@ -151,6 +151,10 @@ export async function subir({ construir = false, log = false } = {}) {
     // só as zonas que são módulo têm manifesto (shell e zona de acesso não: ADR-0014, adendo 1)
     for (const { dir } of APPS.filter(({ dir }) => temScript(join(RAIZ, dir), 'registrar'))) {
       executar('registrar', dir, 'pnpm', ['registrar'], { esperar: true })
+    }
+    // toda zona registra a própria rota, inclusive a de acesso, que não tem manifesto (C3)
+    for (const { dir } of APPS.filter(({ dir }) => temScript(join(RAIZ, dir), 'registrar-rota'))) {
+      executar('registrar-rota', dir, 'pnpm', ['registrar-rota'], { esperar: true })
     }
   }
   const subirDominio = async (nome) => {

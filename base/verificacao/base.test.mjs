@@ -57,6 +57,16 @@ const padraoDaRota = (rota) => new RegExp('^' + rota
   .replace(/\[\.\.\.[^\]]+\]/g, '.+')
   .replace(/\[[^\]]+\]/g, '[^/]+') + '$')
 
+test('C3: depois da subida, cada zona registrou a propria rota na gestao de acesso (GET /v2/zonas com svc.shell)', async () => {
+  const r = await fetch('http://127.0.0.1:4020/v2/zonas', { headers: { authorization: 'Bearer svc.shell' }, redirect: 'manual' })
+  assert.equal(r.status, 200)
+  const zonas = await r.json()
+  assert.deepEqual(
+    zonas.map(({ id, origem }) => ({ id, origem })).sort((a, b) => a.id.localeCompare(b.id)),
+    [{ id: 'acesso', origem: 'http://127.0.0.1:3003' }, { id: 'zona1', origem: 'http://127.0.0.1:3001' }, { id: 'zona2', origem: 'http://127.0.0.1:3002' }],
+  )
+})
+
 test('camada 1: sem cookie, shell e zonas mandam para o login do shell, com Location relativo', async () => {
   for (const caminho of ['/', '/zona1', '/zona1/relatorios', '/zona2', '/acesso']) {
     const r = await pedir(caminho)

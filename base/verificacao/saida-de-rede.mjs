@@ -56,6 +56,8 @@ const STORE_DE_SESSAO = 'store de sessão (ADR-0002): endereço só do ambiente 
   'nunca da requisição; nas zonas, cliente só com `get` e usuário ACL só de leitura'
 const DEPLOY = 'registro do manifesto no deploy (AGENTS.md, invariante 4, primeira exceção): roda fora do Next, ' +
   'origem fixa do ambiente, `redirect: manual` e timeout'
+const DEPLOY_ROTA = 'registro da rota da zona no deploy (AGENTS.md, invariante 4, primeira exceção): roda fora do Next, ' +
+  'origem fixa do ambiente, `redirect: manual` e timeout'
 export const EXCECOES = {
   'erp-shell/lib/saude-zonas.ts': {
     permite: ['fetch'],
@@ -68,6 +70,9 @@ export const EXCECOES = {
   'erp-zona-acesso/lib/redis.ts': { permite: ['redis'], motivo: STORE_DE_SESSAO },
   'erp-zona-1/scripts/registrar-manifesto.ts': { permite: ['fetch'], motivo: DEPLOY },
   'erp-zona-2/scripts/registrar-manifesto.ts': { permite: ['fetch'], motivo: DEPLOY },
+  'erp-zona-1/scripts/registrar-rota.ts': { permite: ['fetch'], motivo: DEPLOY_ROTA },
+  'erp-zona-2/scripts/registrar-rota.ts': { permite: ['fetch'], motivo: DEPLOY_ROTA },
+  'erp-zona-acesso/scripts/registrar-rota.ts': { permite: ['fetch'], motivo: DEPLOY_ROTA },
 }
 
 /** Nomes de um padrão de ligação (`x`, `{ a, b: [c] }`), cada um com o nó que o declara. */

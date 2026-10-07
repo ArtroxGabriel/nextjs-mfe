@@ -276,3 +276,32 @@ test('F04: variavel so do shell (segredo do cliente OIDC e afins) nunca entra no
   // dentes: o shell recebe o segredo
   assert.equal(ambienteDoPapel('shell', { IDP_CLIENTE_SEGREDO: 's' }).IDP_CLIENTE_SEGREDO, 's')
 })
+
+// --- C3: cada zona registra a própria rota no deploy ---------------------------------------------------
+test('C3: toda zona tem o script registrar-rota, com id do pacote, origem do ambiente e as travas do registro de destinos', () => {
+  const zonas = [['erp-zona-1', 'zona1', 3001], ['erp-zona-2', 'zona2', 3002], ['erp-zona-acesso', 'acesso', 3003]]
+  for (const [dir, id, porta] of zonas) {
+    const pkg = JSON.parse(readFileSync(join(RAIZ_DOS_REPOS, dir, 'package.json'), 'utf8'))
+    assert.equal(pkg.scripts['registrar-rota'], 'node scripts/registrar-rota.ts', dir)
+    const fonte = readFileSync(join(RAIZ_DOS_REPOS, dir, 'scripts', 'registrar-rota.ts'), 'utf8')
+    // o id vem do pacote (manifesto ou constante), nunca do ambiente
+    assert.match(fonte, id === 'acesso' ? /const id = 'acesso'/ : /const id = manifesto\.id/, `${dir}: id`)
+    assert.doesNotMatch(fonte, /process\.env\.\w*(ID|ZONA_ID|NOME)\b/, `${dir}: id lido do ambiente`)
+    assert.equal((fonte.match(/process\.env\./g) ?? []).length, 3, `${dir}: so ACESSO_URL, ERP_ZONA_ORIGEM_INTERNA e ERP_TOKEN_SERVICO`)
+    assert.match(fonte, new RegExp(`process\\.env\\.ERP_ZONA_ORIGEM_INTERNA \\?\\? 'http://127\\.0\\.0\\.1:${porta}'`), `${dir}: origem padrao`)
+    assert.match(fonte, /redirect: 'manual'/, `${dir}: segue redirecionamento`)
+    assert.match(fonte, /AbortSignal\.timeout\(/, `${dir}: sem timeout`)
+    assert.match(fonte, /r\.status !== 200[\s\S]*process\.exit\(1\)/, `${dir}: nao sai com 1`)
+  }
+})
+
+test('C3: a origem interna da zona entra na lista de inclusao da zona e nao na do dominio', async () => {
+  const { AMBIENTE_PERMITIDO } = await import('./ambiente.mjs')
+  assert.ok(AMBIENTE_PERMITIDO.zona.includes('ERP_ZONA_ORIGEM_INTERNA'))
+  assert.ok(!AMBIENTE_PERMITIDO.dominio.includes('ERP_ZONA_ORIGEM_INTERNA'))
+})
+
+test('C3: ambiente.mjs roda registrar-rota de todas as zonas, nao so das que tem manifesto', () => {
+  const fonte = readFileSync(new URL('./ambiente.mjs', import.meta.url), 'utf8')
+  assert.match(fonte, /APPS\.filter\(\(\{ dir \}\) => temScript\(join\(RAIZ, dir\), 'registrar-rota'\)\)/)
+})

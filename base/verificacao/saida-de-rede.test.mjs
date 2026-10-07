@@ -68,7 +68,9 @@ test('as excecoes sao exatamente estas, cada uma com motivo e com o que permite;
   // acrescentar uma exige mudar este teste, e a revisão vê as duas coisas juntas.
   assert.deepEqual(Object.keys(EXCECOES).sort(), [
     'erp-shell/lib/redis.ts', 'erp-shell/lib/saude-zonas.ts', 'erp-zona-1/lib/redis.ts', 'erp-zona-1/scripts/registrar-manifesto.ts',
-    'erp-zona-2/lib/redis.ts', 'erp-zona-2/scripts/registrar-manifesto.ts', 'erp-zona-acesso/lib/redis.ts',
+    'erp-zona-1/scripts/registrar-rota.ts',
+    'erp-zona-2/lib/redis.ts', 'erp-zona-2/scripts/registrar-manifesto.ts', 'erp-zona-2/scripts/registrar-rota.ts',
+    'erp-zona-acesso/lib/redis.ts', 'erp-zona-acesso/scripts/registrar-rota.ts',
   ])
   const { readFileSync } = require_('node:fs')
   for (const [arq, { motivo, permite }] of Object.entries(EXCECOES)) {
