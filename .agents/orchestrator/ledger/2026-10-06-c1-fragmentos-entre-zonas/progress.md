@@ -11,3 +11,13 @@ Task 2: minor (deferred, suspicion): //zona2/_fragmento/x, /zona2//_fragmento/x,
 Task 2: minor (deferred): /zona2-static/_fragmento/... is also 404 (beyond the brief, harmless)
 Task 2: minor (deferred): C1b does not cover //, %2F nor %255F
 Task 2: complete (main dcba633..4e9de60, shell 45787f1..836ddc4, review clean)
+Task 3: dispatched (Sonnet), main BASE 3e180ac, zona-1 BASE 860a176
+Task 3: implemented (main 3e180ac..decd1ae, zona-1 860a176..39c4b76); verificar 119+4, redis 123/123, estatica 51/51, shell 116; atual.md not edited (no natural place); review dispatched
+Task 3: minor (deferred): ADR-0011 addendum 1 cites alvo.md §6, a file kept out of commit by the human (pending reference)
+Task 3: minor (deferred): atual.md not wrong, only incomplete: missing the zone 1 -> zone 2 edge (diagram l.25-26, table l.158)
+Task 3: minor (deferred): page.tsx fetches the fragment also for users without the zone 2 module (one useless 204 call per render)
+Task 3: minor (deferred): invalid ZONA2_URL fails the page at load (fail-fast) instead of hiding the block; document only
+Task 3: minor (deferred): C1c does not check the RSC payload nor token absence in the HTML (gate challenger)
+Task 3: minor (deferred, outside diff, core): ehHtmlInerte misses <img/onerror= (slash instead of space); CSP without nonce blocks it, but the gate auditor should try it
+Task 3: cannot-verify resolved: no co-author footer in decd1ae nor 39c4b76 (checked)
+Task 3: complete (main 3e180ac..decd1ae, zona-1 860a176..39c4b76, review clean)
