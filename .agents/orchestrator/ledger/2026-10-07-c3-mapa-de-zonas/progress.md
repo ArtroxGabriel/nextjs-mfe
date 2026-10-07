@@ -38,3 +38,11 @@ Task 4: minor (deferred): ERP_ZONA_OCIOSIDADE_MS lacks the "greater than ERP_DES
 Task 4: minor (deferred): ADR-0015 decision 1 says Sec-Fetch-Dest; align with GET/HEAD without RSC and Next-Action (Task 5)
 Task 4: human decision (2026-10-07) on x-middleware-rewrite leak: option b+a, the edge proxy strips x-middleware-* in production; declared limit on the local machine; ADR-0015 addendum, DEFERRED and infra doc in Task 5
 Task 4: complete (shell c7a08d9..4eb47e2, main a515aec..5700aaf, review Approved; Important resolved by human decision; code minors Location //, ociosidade rule, L10 tightening and /_next/data e2e carried into Task 5)
+Task 5: dispatched (Sonnet), main BASE 526d4f8, shell BASE 4eb47e2; scope = brief + human decision on x-middleware-rewrite + Task 4 code minors (Location //, ociosidade rule, L10 TTL+1s, /_next/data e2e)
+Task 5: implemented (shell 4eb47e2..0081185, main 526d4f8..897c657), shell 158/158, verificar:redis 135/135, estatica 52/52, scripts 29/29; L9 6011, L9b 6013, L9c 7005 after headers (ociosidade 7000), L10 2217/2002 ms; mutations caught; review dispatched
+Task 5: review: Approved; 1 Important (01-operacao cites D28 instead of D31) + doc minors folded into fix round 1 because they are human style rules or doc accuracy in a doc task (× in alvo.md, hard-wrapped added paragraphs, divergent measured numbers, "TTL plus one refresh" wording, ADR-0015 decision 4 still cites nucleo.zonas.listar); FIX_BASE main 897c657
+Task 5: minor (deferred): /_next/data e2e lacks a positive control (a shell page /_next/data answering 200) so a wrong BUILD_ID would also give 404
+Task 5: minor (deferred): atual.md proxy flow diagram cut at page end in PDF (renderer, pre-existing); consider splitting
+Task 5: fix round 1/5 (5 addressed, 1 open: DEFERRED line 21 L9b 6010 vs 6013; main 897c657..e0474cf); fix round 2 dispatched
+Task 5: fix round 2/5 (1 addressed, 0 open; main e0474cf..07c7c81)
+Task 5: complete (shell 4eb47e2..0081185, main 526d4f8..07c7c81, review clean after 2 fix rounds)
