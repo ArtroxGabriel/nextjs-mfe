@@ -101,7 +101,7 @@ Estes pontos entram como teste na fatia do gateway, se o mecanismo for aprovado:
 - resposta em streaming longa, para medir o corte por silêncio entre pedaços;
 - envio de arquivos grandes do navegador para a zona;
 - o cancelamento quando o usuário fecha a aba, para garantir que o shell solta a conexão com a zona;
-- o custo medido contra as zonas de verdade, com renderização real, para confirmar a estimativa do item 4.
+- o custo medido contra as zonas de verdade, com renderização real, para confirmar a estimativa do item 4. Feito em 2026-10-07 com `task medir:gateway`; resultados no ADR-0015, seção "Medição contra as zonas reais".
 
 ### Outras questões das recomendações
 

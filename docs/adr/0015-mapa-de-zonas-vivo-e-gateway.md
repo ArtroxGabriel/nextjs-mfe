@@ -58,6 +58,23 @@ O manifesto v2 da zona é só `{ id, nome, funcionalidades }` (invariante 17, AD
 6. **Regras de configuração.** `ERP_ZONA_TETO_MS` e `ERP_ZONA_OCIOSIDADE_MS` têm de ser maiores que `ERP_DESTINO_TIMEOUT_MS`; o shell recusa subir se não forem (a ociosidade menor cortaria no meio uma resposta que espera um domínio lento).
 7. **`Location` do gateway.** Origem interna da zona vira caminho relativo, e um caminho que comece com `//` ou `/\` colapsa para uma barra só: sem isso `http://<origem>//outro.host/x` virava `//outro.host/x`, redirecionamento aberto.
 
+### Medição contra as zonas reais
+
+Medido em 2026-10-07 com `task medir:gateway` (base de produção no showcase, ator `ana`, conexões keep-alive com `accept-encoding: gzip`, 8 s por cenário depois de 2 s de aquecimento). Mesma máquina, números para comparar: o que vale é um cenário contra o outro na mesma rodada. A CPU é a do grupo de processos do shell, dividida pelas requisições.
+
+| Cenário | Conexões | p50 (ms) | p99 (ms) | req/s | Bytes por resposta | CPU do shell (ms/req) |
+|---|---|---|---|---|---|---|
+| a. documento `GET /zona1`, pelo gateway | 1 | 25,9 | 39,6 | 38 | 3263 | 7,48 |
+| a. documento `GET /zona1`, pelo gateway | 4 | 44,2 | 60,7 | 87 | 3263 | 4,39 |
+| b. RSC da mesma página, caminho rápido | 1 | 18,4 | 37,2 | 51 | 2703 | 5,33 |
+| b. RSC da mesma página, caminho rápido | 4 | 34,6 | 54,1 | 114 | 2703 | 3,41 |
+| c. ativo `/zona1-static/...`, caminho rápido | 1 | 3,3 | 8,1 | 271 | 662 | 2,19 |
+| c. ativo `/zona1-static/...`, caminho rápido | 4 | 5,8 | 15,0 | 581 | 662 | 2,04 |
+
+O documento chegou comprimido (`content-encoding: gzip`) e nenhum cenário teve erro. O RSC é pedido como o App Router pede, com `RSC: 1` e `?_rsc` sem valor (com outro valor o Next da zona responde 307 para `?_rsc`).
+
+Contra o tempo de renderização da própria zona (o RSC da mesma página, 18,4 ms com uma conexão), o gateway acrescentou cerca de 7,5 ms no p50 e 2 ms de CPU por requisição de documento, bem menos que as 2 a 4,5 vezes da medição sintética, porque a renderização real da zona domina o tempo e o gateway só repassa. O custo fixo de passar pelo shell, sem renderização, é o do ativo estático (cerca de 2 ms de CPU por requisição), e é o que o caminho rápido paga.
+
 ## Adendo 1 (2026-10-07): `x-middleware-rewrite` no caminho rápido
 
 - **Fato.** No caminho rápido (RSC, arquivos estáticos e Server Actions) o Next anota na resposta ao navegador o cabeçalho `x-middleware-rewrite` com a origem interna da zona (`resolve-routes.js:466-469`, `router-server.js:395-397`). O `NextResponse.rewrite` para URL externa fica absoluto e nenhuma configuração do Next remove o cabeçalho. Vaza topologia interna, não credencial. No documento pelo gateway só aparece o caminho relativo `/_gateway/...`, que do navegador dá 404.

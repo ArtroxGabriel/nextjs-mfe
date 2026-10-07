@@ -111,6 +111,13 @@ tasks:
       REDIS_URL: redis://default:dev-shell-escrita@127.0.0.1:6379
       REDIS_URL_ZONA: redis://zona:dev-zona-leitura@127.0.0.1:6379
 
+  medir:gateway:
+    desc: "Mede p50/p99/req/s e CPU do shell: documento de zona pelo gateway, RSC e ativo pelo caminho rápido, 1 e 4 conexões (task showcase:subir antes; MEDIR_SEGUNDOS=8)"
+    cmd: node base/scripts/medir-gateway.mjs
+    env:
+      REDIS_URL: redis://default:dev-shell-escrita@127.0.0.1:6379
+      REDIS_URL_ZONA: redis://zona:dev-zona-leitura@127.0.0.1:6379
+
   verificar:oidc:
     desc: "Ponta a ponta em modo OIDC contra o Keycloak do showcase (task showcase:subir antes; falha sem ele)"
     cmd: node --test base/verificacao/oidc/*.test.mjs
