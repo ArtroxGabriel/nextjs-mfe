@@ -1,0 +1,32 @@
+✖ C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache (9247.039816ms)
+✔ C1b (ADR-0011, decisao 8): o navegador nao alcanca _fragmento pelo shell, em nenhuma grafia, com ou sem cookie (235.501803ms)
+✔ C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos (387.981032ms)
+✔ C1d: zona 2 travada ou fora apaga so o bloco dela no painel da zona 1, dentro do timeout do fragmento (2954.254324ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13350.59206
+
+✖ failing tests:
+
+test at base/verificacao/base.test.mjs:861:1
+✖ C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache (9247.039816ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 204
+  
+      at TestContext.<anonymous> (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/verificacao/base.test.mjs:883:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 204,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

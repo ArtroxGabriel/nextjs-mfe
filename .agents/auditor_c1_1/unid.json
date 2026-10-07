@@ -1,0 +1,158 @@
+[
+ {
+  "id": "M2a",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)",
+  "depois": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 9_999, 'ERP_ZONA_TETO_MS', 120_000)"
+ },
+ {
+  "id": "M2b",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)",
+  "depois": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_001, 'ERP_ZONA_TETO_MS', 120_000)"
+ },
+ {
+  "id": "M2c",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)",
+  "depois": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 30_000, 'ERP_ZONA_TETO_MS', 120_000)"
+ },
+ {
+  "id": "M2d",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)",
+  "depois": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 6_000, 'ERP_ZONA_TETO_MS', 120_000)"
+ },
+ {
+  "id": "M3a",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "if (teto <= destino) {",
+  "depois": "if (teto < destino) {"
+ },
+ {
+  "id": "M3b",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "if (teto <= destino) {",
+  "depois": "if (teto >= destino) {"
+ },
+ {
+  "id": "M3c",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "if (teto <= destino) {",
+  "depois": "if (false) {"
+ },
+ {
+  "id": "M3d",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "if (teto <= destino) {",
+  "depois": "if (teto <= 5_000) {"
+ },
+ {
+  "id": "M4a",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)",
+  "depois": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_001)"
+ },
+ {
+  "id": "M4b",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)",
+  "depois": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 119_999)"
+ },
+ {
+  "id": "M4c",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)",
+  "depois": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS')"
+ },
+ {
+  "id": "M4d",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)",
+  "depois": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 60_000)"
+ },
+ {
+  "id": "M5a",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)",
+  "depois": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 4_999, 'ERP_DESTINO_TIMEOUT_MS', 60_000)"
+ },
+ {
+  "id": "M5b",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)",
+  "depois": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_001, 'ERP_DESTINO_TIMEOUT_MS', 60_000)"
+ },
+ {
+  "id": "M5c",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)",
+  "depois": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 2_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)"
+ },
+ {
+  "id": "M5d",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)",
+  "depois": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 10_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)"
+ },
+ {
+  "id": "M6a",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)",
+  "depois": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_001)"
+ },
+ {
+  "id": "M6b",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)",
+  "depois": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 59_999)"
+ },
+ {
+  "id": "M6c",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)",
+  "depois": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS')"
+ },
+ {
+  "id": "M6d",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)",
+  "depois": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 120_000)"
+ },
+ {
+  "id": "M7a",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)",
+  "depois": "lerNumeroPositivo(process.env.ERP_ZONA_TETO_MS, 10_000, 'ERP_ZONA_TETO_MS', 120_000)"
+ },
+ {
+  "id": "M7b",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)",
+  "depois": "lerNumeroPositivo(process.env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)"
+ },
+ {
+  "id": "M7c",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "lerNumeroPositivo(env.ERP_DESTINO_TIMEOUT_MS, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)",
+  "depois": "lerNumeroPositivo(undefined, 5_000, 'ERP_DESTINO_TIMEOUT_MS', 60_000)"
+ },
+ {
+  "id": "M8a",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "  return teto\n}",
+  "depois": "  return Math.max(teto, 10_000)\n}"
+ },
+ {
+  "id": "M8b",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "  return teto\n}",
+  "depois": "  return Math.min(teto, 60_000)\n}"
+ },
+ {
+  "id": "M8c",
+  "arquivo": "lib/configuracao.ts",
+  "antes": "  return teto\n}",
+  "depois": "  return destino * 2\n}"
+ }
+]

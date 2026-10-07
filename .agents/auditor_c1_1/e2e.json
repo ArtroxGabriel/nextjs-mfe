@@ -1,0 +1,233 @@
+[
+ {
+  "id": "E-S1",
+  "repo": "repos/erp-shell",
+  "arquivo": "lib/decisao-proxy.ts",
+  "nota": "exigida (ponta a ponta): remover a chamada da guarda",
+  "antes": "    if (ehFragmento(caminho)) return { acao: 'nao-encontrado' }\n",
+  "depois": "",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-P1",
+  "repo": "repos/erp-shell",
+  "arquivo": "proxy.ts",
+  "nota": "variante: 404 com corpo",
+  "antes": "return new NextResponse(null, { status: 404, headers: { 'cache-control': 'no-store' } })",
+  "depois": "return new NextResponse('nao encontrado', { status: 404, headers: { 'cache-control': 'no-store' } })",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-P2",
+  "repo": "repos/erp-shell",
+  "arquivo": "proxy.ts",
+  "nota": "variante: 404 sem no-store",
+  "antes": "return new NextResponse(null, { status: 404, headers: { 'cache-control': 'no-store' } })",
+  "depois": "return new NextResponse(null, { status: 404 })",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-P3",
+  "repo": "repos/erp-shell",
+  "arquivo": "proxy.ts",
+  "nota": "variante: case nao-encontrado segue para a zona",
+  "antes": "return new NextResponse(null, { status: 404, headers: { 'cache-control': 'no-store' } })",
+  "depois": "return NextResponse.next()",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-Z1",
+  "repo": "repos/erp-zona-2",
+  "arquivo": "app/zona2/%5Ffragmento/tarefas/[id]/route.ts",
+  "nota": "exigida: remover exigirModulo",
+  "antes": "    await nucleo.acesso.exigirModulo('zona2', 'tarefas.ver')\n",
+  "depois": "",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-Z2",
+  "repo": "repos/erp-zona-2",
+  "arquivo": "app/zona2/%5Ffragmento/tarefas/[id]/route.ts",
+  "nota": "exigida: funcionalidade trocada",
+  "antes": "'tarefas.ver'",
+  "depois": "'tarefas.concluir'",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-Z2b",
+  "repo": "repos/erp-zona-2",
+  "arquivo": "app/zona2/%5Ffragmento/tarefas/[id]/route.ts",
+  "nota": "variante: modulo trocado",
+  "antes": "exigirModulo('zona2'",
+  "depois": "exigirModulo('zona1'",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-Z3",
+  "repo": "repos/erp-zona-2",
+  "arquivo": "app/zona2/%5Ffragmento/tarefas/[id]/route.ts",
+  "nota": "exigida: remover o filtro de chave",
+  "antes": "    if (id !== 'pendentes') return null\n",
+  "depois": "",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-Z4",
+  "repo": "repos/erp-zona-2",
+  "arquivo": "lib/fragmento-tarefas.ts",
+  "nota": "exigida: remover escapar",
+  "antes": "<li>${escapar(t.titulo)}</li>",
+  "depois": "<li>${t.titulo}</li>",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-Z4b",
+  "repo": "repos/erp-zona-2",
+  "arquivo": "lib/fragmento-tarefas.ts",
+  "nota": "variante: escapar sem < e >",
+  "antes": "texto.replace(/[&<>\"']/g",
+  "depois": "texto.replace(/[&\"']/g",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-Z5",
+  "repo": "repos/erp-zona-2",
+  "arquivo": "lib/fragmento-tarefas.ts",
+  "nota": "exigida: <script> no HTML do bloco (dono 500, zona 1 sem bloco)",
+  "antes": "+ '<h2 id=",
+  "depois": "+ '<script>1</script><h2 id=",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-Z5b",
+  "repo": "repos/erp-zona-2",
+  "arquivo": "lib/fragmento-tarefas.ts",
+  "nota": "variante (contorno): <img/onerror> no HTML do bloco",
+  "antes": "+ '<h2 id=",
+  "depois": "+ '<img/onerror=alert(1) src=x><h2 id=",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-Z6",
+  "repo": "repos/erp-zona-2",
+  "arquivo": "lib/fragmento-tarefas.ts",
+  "nota": "variante: filtro !concluida removido",
+  "antes": "tarefas.filter((t) => !t.concluida)",
+  "depois": "tarefas",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-Z6b",
+  "repo": "repos/erp-zona-2",
+  "arquivo": "lib/fragmento-tarefas.ts",
+  "nota": "variante: filtro invertido",
+  "antes": "tarefas.filter((t) => !t.concluida)",
+  "depois": "tarefas.filter((t) => t.concluida)",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-U1",
+  "repo": "repos/erp-zona-1",
+  "arquivo": "app/zona1/page.tsx",
+  "nota": "variante: embute sem checar null",
+  "antes": "{tarefas && <div dangerouslySetInnerHTML={{ __html: tarefas }} />}",
+  "depois": "<div dangerouslySetInnerHTML={{ __html: tarefas ?? '' }} />",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-U1b",
+  "repo": "repos/erp-zona-1",
+  "arquivo": "app/zona1/page.tsx",
+  "nota": "variante: placeholder no lugar da ausencia (copia do padrao dos outros blocos)",
+  "antes": "{tarefas && <div dangerouslySetInnerHTML={{ __html: tarefas }} />}",
+  "depois": "{tarefas ? <div dangerouslySetInnerHTML={{ __html: tarefas }} /> : <p>Tarefas indisponíveis no momento.</p>}",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-U2",
+  "repo": "repos/erp-zona-1",
+  "arquivo": "lib/fragmentos.ts",
+  "nota": "variante: cookie nao repassado",
+  "antes": "lerCookieDeSessao: async () => (await cookies()).get('__Host-session')?.value",
+  "depois": "lerCookieDeSessao: async () => { await cookies(); return undefined }",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-U2b",
+  "repo": "repos/erp-zona-1",
+  "arquivo": "lib/fragmentos.ts",
+  "nota": "variante: nome de cookie errado",
+  "antes": "get('__Host-session')",
+  "depois": "get('session')",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-U3",
+  "repo": "repos/erp-zona-1",
+  "arquivo": "app/zona1/page.tsx",
+  "nota": "variante: ordem do Promise.all trocada",
+  "antes": "const [recursos, indicadores, tarefas] = await Promise.all([",
+  "depois": "const [recursos, tarefas, indicadores] = await Promise.all([",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-U5",
+  "repo": "repos/erp-zona-1",
+  "arquivo": "lib/fragmentos.ts",
+  "nota": "variante: origem apontando para o shell",
+  "antes": "'http://127.0.0.1:3002'",
+  "depois": "'http://127.0.0.1:3000'",
+  "modos": [
+   "e2e"
+  ]
+ },
+ {
+  "id": "E-U5b",
+  "repo": "repos/erp-zona-1",
+  "arquivo": "lib/fragmentos.ts",
+  "nota": "variante: fragmento fora da allowlist",
+  "antes": "fragmentos: ['tarefas']",
+  "depois": "fragmentos: []",
+  "modos": [
+   "e2e"
+  ]
+ }
+]

@@ -1,0 +1,9 @@
+[original] painel /zona1 ana: 200; CSP: default-src 'self'; script-src 'self' 'nonce-d3a651033d2242ba837fcb542a9886b9' 'strict-dynamic'; style-src 'self' 'nonce-d3a651033d2242ba837fcb542a9886b9'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+[original] bloco: <section data-fragmento="zona2/tarefas" aria-labelledby="fragmento-zona2-tarefas"><h2 id="fragmento-zona2-tarefas">Tarefas pendentes (zona 2)</h2><ul><li>Revisar cadastro</li><li>Conferir inventário</li><li>A &lt;img/onerror=alert(1) src=x&gt; &amp; B</li><li>&lt;meta http-equiv=refresh content=&quot;0;url=https://exemplo.invalid/&quot;&gt;</li></ul><p><a href="/zona2">Abrir as tarefas</a></p></section>
+[original] /zona2/_fragmento/tarefas/pendentes: zona2 direto 200 COM BLOCO; shell 404
+[original] /zona2/_fragmento%2Ftarefas%2Fpendentes: zona2 direto 404; shell 404
+[original] /zona2/_fragmento/tarefas/pendentes%: zona2 direto 500; shell 404
+[original] /zona2/_fragmento/tarefas/%zz: zona2 direto 500; shell 404
+[original] /zona2/%5Ffragmento/tarefas/pendentes%25: zona2 direto 404; shell 404
+[original] /zona2/_fragmento/tarefas/pend%65ntes: zona2 direto 200 COM BLOCO; shell 404
+[original] /zona2/_fragmento/tarefas/pendentes/: zona2 direto 308; shell 308

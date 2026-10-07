@@ -1,0 +1,21 @@
+
+[E-Z4-full] repos/erp-zona-2/lib/fragmento-tarefas.ts:15  (exigida: remover escapar (suite base.test.mjs inteira))
+  antes : '<li>${escapar(t.titulo)}</li>'
+  depois: '<li>${t.titulo}</li>'
+  comando: CONSTRUIR=1 node --test base/verificacao/base.test.mjs
+  resultado: e2efull: VIVA (68 testes verdes) [59s]
+
+
+[E-Z6-full] repos/erp-zona-2/lib/fragmento-tarefas.ts:13  (variante: filtro !concluida removido (suite base.test.mjs inteira))
+  antes : 'tarefas.filter((t) => !t.concluida)'
+  depois: 'tarefas'
+  comando: CONSTRUIR=1 node --test base/verificacao/base.test.mjs
+  resultado: e2efull: VIVA (68 testes verdes) [53s]
+
+
+[E-U1b-full] repos/erp-zona-1/app/zona1/page.tsx:36  (variante: placeholder no lugar da ausencia (copia do padrao dos outros blocos) (suite base.test.mjs inteira))
+  antes : '{tarefas && <div dangerouslySetInnerHTML={{ __html: tarefas }} />}'
+  depois: '{tarefas ? <div dangerouslySetInnerHTML={{ __html: tarefas }} /> : <p>Tarefas indisponíveis no momento.</p>}'
+  comando: CONSTRUIR=1 node --test base/verificacao/base.test.mjs
+  resultado: e2efull: VIVA (68 testes verdes) [60s]
+

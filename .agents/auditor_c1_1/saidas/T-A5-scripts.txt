@@ -1,0 +1,45 @@
+✔ sem build: precisa construir (1.909435ms)
+✔ build mais novo que o fonte: nao precisa (0.658129ms)
+✔ fonte mais novo que o build: precisa (0.476267ms)
+✔ mudanca so no package.json (versao de pacote) tambem conta (0.477779ms)
+✔ AM1/AM2: cada entrada do build, mudada sozinha, pede reconstrucao (2.664908ms)
+✔ LA (auditor_b1_d1_9, D15): mudanca em base/scripts/ambiente.mjs pede reconstrucao de app da base (0.748201ms)
+✔ AM3: subir recusa porta ocupada antes de subir qualquer coisa (64.513951ms)
+✔ V1: zona e dominio nao recebem nenhum valor com a senha de escrita, venha no nome que vier (2.091825ms)
+✔ V1: o papel sai do diretorio; toda app que nao e o shell e zona (0.398815ms)
+✔ V1: todo processo nasce por um unico ponto, com o ambiente do papel (build, start, registrar, avulsa) (0.847428ms)
+✔ V1 no nucleo: so conta o que a zona carrega, e a excecao por funcao tem dentes (89.790136ms)
+✖ V1: a lista de inclusao cobre toda variavel que zona e dominio leem (variavel nova nao some calada) (162.118659ms)
+✔ F04: variavel so do shell (segredo do cliente OIDC e afins) nunca entra no ambiente de zona nem de dominio (146.409416ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 12
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 808.922979
+
+✖ failing tests:
+
+test at base/scripts/ambiente.test.mjs:241:1
+✖ V1: a lista de inclusao cobre toda variavel que zona e dominio leem (variavel nova nao some calada) (162.118659ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'ZONA2_URL'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/scripts/ambiente.test.mjs:249:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'ZONA2_URL' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

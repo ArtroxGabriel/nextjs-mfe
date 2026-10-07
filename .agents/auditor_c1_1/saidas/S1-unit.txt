@@ -1,0 +1,161 @@
+✔ lerTetoDaZona: sem variavel, 10 s (decisao B1) (3.953986ms)
+✔ lerTetoDaZona: le ERP_ZONA_TETO_MS (0.48179ms)
+✔ lerTetoDaZona: valor invalido falha na subida, nunca vira o padrao (1.561599ms)
+✔ lerTetoDaZona: aceita o teto de 120 s (0.420887ms)
+✔ lerTetoDaZona: recusa teto igual ou menor que o timeout de dominio (padrao 5000) (0.54521ms)
+✔ lerTetoDaZona: ERP_DESTINO_TIMEOUT_MS invalido tambem falha (mesma validacao do nucleo) (0.355039ms)
+✔ shell com OIDC (IDP_EMISSOR): form-action aceita a origem do IdP, para o logout (3.324182ms)
+✔ shell sem OIDC: form-action continua so self (0.32964ms)
+✔ o proxy do shell monta a CSP por cspDoShell, nunca por politicaDeSeguranca direto (0.999568ms)
+✔ P0-d (memoria): 20 requisicoes concorrentes com token vencendo, 1 renovacao e 19 seguem sem esperar (22.321624ms)
+✔ paginas do shell (memoria): so requisicoes a / com o token na janela renovam uma vez e gravam o token novo (1.142831ms)
+✔ pagina do shell com sessao revogada (memoria): navegacao a / vai ao login com o cookie apagado (2.598156ms)
+✔ paginas do shell (memoria): so requisicoes a /preferencias com o token na janela renovam uma vez e gravam o token novo (0.632136ms)
+✔ pagina do shell com sessao revogada (memoria): navegacao a /preferencias vai ao login com o cookie apagado (0.32804ms)
+✔ revogada (memoria): navegacao vai ao login com o cookie apagado e a sessao some do store (0.531256ms)
+✔ erro transitorio do IdP (memoria): a sessao fica e a requisicao segue (0.447355ms)
+✔ P0-d (redis falso): 20 requisicoes concorrentes com token vencendo, 1 renovacao e 19 seguem sem esperar (10.541683ms)
+✔ paginas do shell (redis falso): so requisicoes a / com o token na janela renovam uma vez e gravam o token novo (1.03825ms)
+✔ pagina do shell com sessao revogada (redis falso): navegacao a / vai ao login com o cookie apagado (0.609777ms)
+✔ paginas do shell (redis falso): so requisicoes a /preferencias com o token na janela renovam uma vez e gravam o token novo (0.699213ms)
+✔ pagina do shell com sessao revogada (redis falso): navegacao a /preferencias vai ao login com o cookie apagado (0.434091ms)
+✔ revogada (redis falso): navegacao vai ao login com o cookie apagado e a sessao some do store (0.431537ms)
+✔ erro transitorio do IdP (redis falso): a sessao fica e a requisicao segue (0.314265ms)
+✔ revogada numa Server Action (POST): segue sem redirecionar, para a camada 2 responder, e apaga o cookie (0.472945ms)
+✔ cookie de sessao que nao existe no store (ausente): navegacao vai ao login com o cookie apagado (0.382301ms)
+✔ token em dia: nenhuma ida ao IdP e a requisicao segue (0.287174ms)
+✔ rotas publicas, telemetria e estaticos de zona nao renovam (0.57394ms)
+✔ token ja vencido (memoria): 10 requisicoes concorrentes, os perdedores esperam a renovacao e todas seguem (52.841024ms)
+✔ token ja vencido (redis falso): 10 requisicoes concorrentes, os perdedores esperam a renovacao e todas seguem (51.76389ms)
+✔ store fora antes do lock (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (1.311461ms)
+✔ store fora na releitura com o lock na mao (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (0.505352ms)
+✔ store fora durante a espera do perdedor (memoria): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (100.957152ms)
+✔ store fora antes do lock (redis falso): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (0.74587ms)
+✔ store fora na releitura com o lock na mao (redis falso): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (0.44971ms)
+✔ store fora durante a espera do perdedor (redis falso): token vencido, a requisicao segue sem apagar o cookie e a sessao fica (101.293188ms)
+✔ Cenario 1: acessar uma rota de zona inativa apresenta status 503 e pagina de erro (17.537648ms)
+✔ rotas publicas do shell nao exigem cookie e retornam acao publica (1.271047ms)
+✔ rotas de telemetria passam para o gateway do shell (0.594363ms)
+✔ rota raiz do shell sem cookie redireciona para login (0.732391ms)
+✔ rota raiz do shell com cookie prossegue (1.233646ms)
+✔ zona ativa sem cookie redireciona para login (1.056447ms)
+✔ zona ativa com cookie prossegue (0.973654ms)
+✔ U5: zona fora e asset estatico dela da 503 (a sonda vem antes do corte de asset) (2.000471ms)
+✔ U6: /api fora de /api/otel e /api/auth continua exigindo cookie (1.22959ms)
+✖ C1: /{zona}/_fragmento/ e 404 no shell, com ou sem cookie, em qualquer grafia, sem consultar a sonda (1.498197ms)
+✔ C1: so o segmento _fragmento logo depois do prefixo da zona e recusado (dentes do teste acima) (1.341525ms)
+✔ SET com PX, NX e XX vira a forma de opcoes do node-redis, sem perder a condicao (3.53275ms)
+✔ SET devolve a resposta do Redis: OK so quando gravou (0.360179ms)
+✔ GETDEL, GET e DEL passam direto (0.525759ms)
+✔ GET /api/auth/entrar grava a transacao, poe o id em __Host-erp-login e manda ao IdP (41.651635ms)
+✔ GET /api/auth/entrar com IdP de verdade: Location e a URL do IdP (0.883787ms)
+✔ GET /api/auth/entrar: Max-Age do cookie da transacao segue ERP_LOGIN_TRANSACAO_S lido pelo nucleo (0.989317ms)
+✔ GET /api/auth/entrar com o IdP fora: volta ao login com codigo e supportId, sem cookie e sem detalhe (1.389383ms)
+✔ GET /api/auth/retorno com retorno valido: sessao nova em __Host-session e __Host-erp-login apagado (3.167482ms)
+✔ GET /api/auth/retorno com state ou nonce divergente: login de novo, sem sessao, e a transacao morre (2.192945ms)
+✔ GET /api/auth/retorno consome a transacao: o segundo retorno com o mesmo cookie e recusado (1.248666ms)
+✔ GET /api/auth/retorno sem o cookie da transacao: login de novo (0.466874ms)
+✔ GET /api/auth/retorno com usuario fora dos atores de dev: login de novo (0.850065ms)
+✔ login nao vira redirecionamento aberto (2.500396ms)
+✔ GET /api/auth/retorno com o IdP fora (concluir lanca): login de novo com codigo e supportId, cookie da transacao apagado (1.001549ms)
+✔ POST /api/auth/sair encerra a sessao, apaga o cookie e manda ao logout do IdP (1.127454ms)
+✔ POST /api/auth/sair sem logout no IdP (dev) vai ao login do shell (0.664218ms)
+✔ POST /api/auth/sair com o IdP fora (encerrar lanca): sessao local encerrada, cookie apagado, login do shell (0.688976ms)
+✔ POST /api/auth/sair sem cookie: so apaga e vai ao login (0.427989ms)
+✔ POST /api/auth/sair de outra origem (Sec-Fetch-Site cross-site): 403 com codigo e supportId, cookie e store intactos (6.365466ms)
+✔ POST /api/auth/sair de outra origem (Sec-Fetch-Site same-site): 403 com codigo e supportId, cookie e store intactos (0.966759ms)
+✔ POST /api/auth/sair de outra origem (Sec-Fetch-Site cross-site com Origin do shell): 403 com codigo e supportId, cookie e store intactos (0.744994ms)
+✔ POST /api/auth/sair de outra origem (sem Sec-Fetch-Site, Origin de outro site): 403 com codigo e supportId, cookie e store intactos (0.684828ms)
+✔ POST /api/auth/sair de outra origem (sem Sec-Fetch-Site, Origin de outra porta): 403 com codigo e supportId, cookie e store intactos (0.714697ms)
+✔ POST /api/auth/sair de outra origem (sem Sec-Fetch-Site, Origin null): 403 com codigo e supportId, cookie e store intactos (0.725736ms)
+✔ POST /api/auth/sair de outra origem (sem Sec-Fetch-Site, Origin https do mesmo host numa requisicao http): 403 com codigo e supportId, cookie e store intactos (0.650542ms)
+✔ POST /api/auth/sair de outra origem (sem Sec-Fetch-Site, Origin http do mesmo host numa requisicao https): 403 com codigo e supportId, cookie e store intactos (0.521711ms)
+✔ POST /api/auth/sair da mesma origem (Sec-Fetch-Site same-origin (o botao Sair do shell)): encerra e apaga o cookie (0.462283ms)
+✔ POST /api/auth/sair da mesma origem (sem Sec-Fetch-Site, Origin do shell): encerra e apaga o cookie (0.312181ms)
+✔ POST /api/auth/sair da mesma origem (sem Sec-Fetch-Site nem Origin): encerra e apaga o cookie (0.217829ms)
+✔ POST /api/auth/sair da mesma origem (sem Sec-Fetch-Site, Origin https do shell numa requisicao https): encerra e apaga o cookie (0.330789ms)
+✔ SHELL_HOSTS: espacos em volta de cada host e itens vazios nao contam; sem a variavel, localhost:3000 (0.378313ms)
+✔ POST /api/auth/sair com SHELL_HOSTS com espaco: o segundo host do shell e aceito (0.370805ms)
+✔ a rota sair e as paginas leem SHELL_HOSTS por lerHostsDoShell, sem split proprio (0.688309ms)
+✔ registrarNoConsole: uma linha so com etapa ou motivo, codigo e supportId (rotas e nucleo) (0.368095ms)
+✔ lib/nucleo.ts passa o registrador das rotas ao nucleo e nao le ERP_LOGIN_TRANSACAO_S (25.233458ms)
+✔ lib/cookies.ts e so de servidor: fora da condicao react-server a importacao falha (227.925673ms)
+✔ criarCacheSaudeZona: identifica zona saudavel quando a rota de saude responde 200 (3.560461ms)
+✔ criarCacheSaudeZona: identifica zona inativa quando fetch falha (Cenário 1) (0.745909ms)
+✔ criarCacheSaudeZona: utiliza cache durante a janela de TTL sem repetir I/O (3.211246ms)
+✔ criarCacheSaudeZona: chamadas concorrentes compartilham a mesma probe em andamento (21.294037ms)
+✔ U1: entrada saudavel expira depois do TTL e a sonda roda de novo (82.210951ms)
+✔ U2: entrada "fora" tambem expira: a zona volta sem reiniciar o shell (81.519446ms)
+✔ U3 (auditor_b1_d1_2, L1): so 2xx da rota de saude e "no ar"; 404, 3xx e 5xx sao fora (1.069112ms)
+✔ L3: a sonda nao segue redirecionamento, nao usa cache e tem timeout (0.576554ms)
+✔ U4: zona travada e dada como fora em ~500 ms (timeout padrao da sonda) (500.811209ms)
+✔ configuracao: lerNumeroPositivo aceita valores validos e lanca com formato invalido (1.797012ms)
+✔ L2: parametros da sonda e da telemetria tem teto; acima dele, erro na subida (1.917289ms)
+✔ S05: sem ERP_SONDA_TTL_MS o TTL da sonda e 1 s (docs/CONFIGURACAO.md), nao o teto (0.302885ms)
+✔ S17: zona "fora" tambem fica no cache durante o TTL: a zona caida nao e sondada a cada pedido (0.450245ms)
+✔ S17b: zona "fora" permanece em cache apos intervalo menor que TTL (50.056946ms)
+✔ telemetria: limitador permite ate 60 lotes por minuto por usuario (4.416999ms)
+✔ telemetria: limitador reseta a contagem apos expirar a janela (0.496495ms)
+✔ telemetria: tamanho maximo e 256 KB (0.364124ms)
+✔ processarLoteDeTelemetria: sem sessao valida descarta silenciosamente com 204 (0.430969ms)
+✔ processarLoteDeTelemetria: payload acima de 256 KB retorna 413 (3.189999ms)
+✔ processarLoteDeTelemetria: taxa excedida retorna 429 com Retry-After (0.666776ms)
+✔ lerComLimite: le o corpo inteiro quando cabe no limite (7.243937ms)
+✔ lerComLimite: para de ler e devolve null assim que passa do limite (sem Content-Length) (2.616371ms)
+✔ lerComLimite: corpo ausente e corpo vazio (0.714936ms)
+✔ limitador: entradas de janela vencida sao descartadas, o mapa nao cresce sem limite (3.170251ms)
+✔ limitador: descartar vencidos nao zera quem ainda esta na janela (0.591682ms)
+✔ configuracao: lerNumeroPositivo em telemetria valida numeros inteiros positivos (2.450923ms)
+✔ ehRotaReservada: identifica corretamente rotas reservadas do shell (4.574476ms)
+✔ carregarZonas: rotas reservadas nao podem ser sobrescritas por zonas (Criterio 3) (1.044533ms)
+✔ carregarZonas: permite sobrescrever origem via variaveis de ambiente (0.793821ms)
+✔ gerarRewrites: deriva regras a partir do mapa central de configuracoes (Criterio 2) (3.861147ms)
+✔ encontrarZonaPorCaminho: resolve a zona correspondente para paginas e assets (1.128016ms)
+✔ C1: busca de zona ignora maiusculas, como o rewrite do Next (senao /ZONA2 escapa da sonda) (4.265277ms)
+✔ C1: prefixo estatico em qualquer caixa continua sendo asset, nao pagina (36.216213ms)
+✔ reviewer_shell_2: id de zona com maiuscula ou caractere estranho falha no boot, nao abre o C1 (2.750196ms)
+ℹ tests 116
+ℹ suites 0
+ℹ pass 115
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1194.45935
+ℹ start of coverage report
+ℹ ---------------------------------------------------------------------
+ℹ file                 | line % | branch % | funcs % | uncovered lines
+ℹ ---------------------------------------------------------------------
+ℹ lib                  |        |          |         | 
+ℹ  configuracao.ts     | 100.00 |   100.00 |  100.00 | 
+ℹ  cookies.ts          | 100.00 |    84.62 |  100.00 | 
+ℹ  csp.ts              | 100.00 |   100.00 |  100.00 | 
+ℹ  decisao-proxy.ts    |  96.71 |    97.06 |   80.00 | 50-54
+ℹ  destino-interno.ts  | 100.00 |    88.89 |  100.00 | 
+ℹ  pagina-erro-zona.ts | 100.00 |    66.67 |  100.00 | 
+ℹ  redis.ts            |  82.93 |    90.91 |   83.33 | 32-38
+ℹ  rotas-auth.ts       | 100.00 |    90.91 |  100.00 | 
+ℹ  saude-zonas.ts      |  97.14 |   100.00 |   83.33 | 64-65
+ℹ  telemetria.ts       |  98.43 |    96.55 |   75.00 | 57-58
+ℹ  zonas.ts            | 100.00 |    87.50 |  100.00 | 
+ℹ ---------------------------------------------------------------------
+ℹ all files            |  97.97 |    92.96 |   90.20 | 
+ℹ ---------------------------------------------------------------------
+ℹ end of coverage report
+
+✖ failing tests:
+
+test at test/proxy.test.mjs:100:1
+✖ C1: /{zona}/_fragmento/ e 404 no shell, com ou sem cookie, em qualquer grafia, sem consultar a sonda (1.498197ms)
+  Error: a sonda nao deveria rodar
+      at Object.verificar (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/repos/erp-shell/test/proxy.test.mjs:101:58)
+      at decidirAcaoDoProxy (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/repos/erp-shell/lib/decisao-proxy.ts:120:39)
+      at TestContext.<anonymous> (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/repos/erp-shell/test/proxy.test.mjs:108:23)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+$ node --conditions react-server --experimental-test-coverage --test test/*.test.mjs
+[ELIFECYCLE] Test failed. See above for more details.

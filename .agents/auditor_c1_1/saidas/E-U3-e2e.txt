@@ -1,0 +1,94 @@
+✖ C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache (5491.205039ms)
+✖ C1b (ADR-0011, decisao 8): o navegador nao alcanca _fragmento pelo shell, em nenhuma grafia, com ou sem cookie (1.710966ms)
+✖ C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos (0.282183ms)
+✖ C1d: zona 2 travada ou fora apaga so o bloco dela no painel da zona 1, dentro do timeout do fragmento (0.160533ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 0
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6050.65923
+
+✖ failing tests:
+
+test at base/verificacao/base.test.mjs:861:1
+✖ C1a (ADR-0011): a zona 2 serve o fragmento de tarefas so a quem tem tarefas.ver, inerte e sem cache (5491.205039ms)
+  Error: Command failed: pnpm build
+      at genericNodeError (node:internal/errors:986:15)
+      at wrappedFn (node:internal/errors:540:14)
+      at checkExecSyncError (node:child_process:942:11)
+      at execFileSync (node:child_process:978:15)
+      at executar (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/scripts/ambiente.mjs:136:26)
+      at subir (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/scripts/ambiente.mjs:213:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async before.timeout (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/verificacao/base.test.mjs:32:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7) {
+    status: 1,
+    signal: null,
+    output: [ null, null, null ],
+    pid: 531723,
+    stdout: null,
+    stderr: null
+  }
+
+test at base/verificacao/base.test.mjs:891:1
+✖ C1b (ADR-0011, decisao 8): o navegador nao alcanca _fragmento pelo shell, em nenhuma grafia, com ou sem cookie (1.710966ms)
+  Error: Command failed: pnpm build
+      at genericNodeError (node:internal/errors:986:15)
+      at wrappedFn (node:internal/errors:540:14)
+      at checkExecSyncError (node:child_process:942:11)
+      at execFileSync (node:child_process:978:15)
+      at executar (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/scripts/ambiente.mjs:136:26)
+      at subir (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/scripts/ambiente.mjs:213:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async before.timeout (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/verificacao/base.test.mjs:32:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7) {
+    status: 1,
+    signal: null,
+    output: [ null, null, null ],
+    pid: 531723,
+    stdout: null,
+    stderr: null
+  }
+
+test at base/verificacao/base.test.mjs:906:1
+✖ C1c: o painel da zona 1 mostra o bloco de tarefas da zona 2 so para quem tem os dois modulos (0.282183ms)
+  Error: Command failed: pnpm build
+      at genericNodeError (node:internal/errors:986:15)
+      at wrappedFn (node:internal/errors:540:14)
+      at checkExecSyncError (node:child_process:942:11)
+      at execFileSync (node:child_process:978:15)
+      at executar (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/scripts/ambiente.mjs:136:26)
+      at subir (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/scripts/ambiente.mjs:213:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async before.timeout (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/verificacao/base.test.mjs:32:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7) {
+    status: 1,
+    signal: null,
+    output: [ null, null, null ],
+    pid: 531723,
+    stdout: null,
+    stderr: null
+  }
+
+test at base/verificacao/base.test.mjs:920:1
+✖ C1d: zona 2 travada ou fora apaga so o bloco dela no painel da zona 1, dentro do timeout do fragmento (0.160533ms)
+  Error: Command failed: pnpm build
+      at genericNodeError (node:internal/errors:986:15)
+      at wrappedFn (node:internal/errors:540:14)
+      at checkExecSyncError (node:child_process:942:11)
+      at execFileSync (node:child_process:978:15)
+      at executar (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/scripts/ambiente.mjs:136:26)
+      at subir (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/scripts/ambiente.mjs:213:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async before.timeout (file:///home/wilson-castro/Documents/projects/mira/nextjs-mfe/base/verificacao/base.test.mjs:32:14)
+      at async TestHook.run (node:internal/test_runner/test:1409:7) {
+    status: 1,
+    signal: null,
+    output: [ null, null, null ],
+    pid: 531723,
+    stdout: null,
+    stderr: null
+  }
