@@ -405,3 +405,10 @@ Antes do gate (2026-10-07): `task test` verde (contratos 20, núcleo 286, moldur
 
 Gate Result: **VETO (só por teste)**. Correção: teste em `test/mapa-zonas.test.mjs` para o prefixo estático com fronteira de segmento. Iteração 2: só um auditor novo (regra do humano, 2026-10-06).
 
+## Gate: C3, iteração 2 (só auditor: veto só por teste), principal `4a6fc63`, shell `d52b5fc`
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| worker_c3_1 | correção do veto (sonnet) | — | .agents/worker_c3_1/handoff.md | só teste: prefixo estático com fronteira de segmento (`zona1` e `zona1-staticx`) e página de erro sem ecoar id hostil; N06 e N13 reprovam; shell 160/160 |
+| auditor_c3_2 | general-purpose forense (opus) | em andamento | .agents/auditor_c3_2/handoff.md | |
+
