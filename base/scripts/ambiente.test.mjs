@@ -89,6 +89,21 @@ test('V1: zona e dominio nao recebem nenhum valor com a senha de escrita, venha 
   assert.throws(() => ambienteDoPapel('outro', base), /papel desconhecido/)
 })
 
+test('C3: so o shell recebe svc.shell e as origens permitidas, e o que o chamador definiu vence', async () => {
+  const { ambienteDoPapel } = await import('./ambiente.mjs')
+  const sh = ambienteDoPapel('shell', { PATH: '/usr/bin' })
+  assert.equal(sh.ERP_TOKEN_SERVICO, 'svc.shell')
+  assert.equal(sh.ERP_ZONAS_ORIGENS_PERMITIDAS, '127.0.0.1:*,localhost:*')
+  for (const papel of ['zona', 'dominio']) {
+    const env = ambienteDoPapel(papel, { PATH: '/usr/bin' })
+    assert.equal(env.ERP_TOKEN_SERVICO, undefined, `${papel} recebeu o token do shell`)
+    assert.equal(env.ERP_ZONAS_ORIGENS_PERMITIDAS, undefined, `${papel} recebeu as origens`)
+  }
+  const dado = ambienteDoPapel('shell', { ERP_TOKEN_SERVICO: 'outro', ERP_ZONAS_ORIGENS_PERMITIDAS: 'h:1' })
+  assert.equal(dado.ERP_TOKEN_SERVICO, 'outro')
+  assert.equal(dado.ERP_ZONAS_ORIGENS_PERMITIDAS, 'h:1')
+})
+
 test('V1: o papel sai do diretorio; toda app que nao e o shell e zona', async () => {
   const { papelDe, APPS } = await import('./ambiente.mjs')
   assert.equal(papelDe('erp-shell'), 'shell')

@@ -81,7 +81,9 @@ export const papelDe = (dir) => (dir === 'erp-shell' ? 'shell' : dir === 'erp-do
 
 /** O ambiente que um processo do papel recebe, a partir do ambiente de quem sobe a base. */
 export function ambienteDoPapel(papel, base) {
-  if (papel === 'shell') return { ...base }
+  // O shell é o único que lê o mapa vivo de zonas (C3): recebe o token de serviço dele e os padrões de origem
+  // de desenvolvimento, salvo se quem sobe já os definiu. Nunca vão às zonas (o token delas é outro).
+  if (papel === 'shell') return { ERP_TOKEN_SERVICO: 'svc.shell', ERP_ZONAS_ORIGENS_PERMITIDAS: '127.0.0.1:*,localhost:*', ...base }
   const permitidas = AMBIENTE_PERMITIDO[papel]
   if (!permitidas) throw new Error(`papel desconhecido: ${papel}`)
   return Object.fromEntries(Object.entries(base).filter(([k]) => permitidas.includes(k)))
