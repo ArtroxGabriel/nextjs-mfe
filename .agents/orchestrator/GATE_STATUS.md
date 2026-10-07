@@ -401,5 +401,7 @@ Antes do gate (2026-10-07): `task test` verde (contratos 20, núcleo 286, moldur
 |-------|------|---------|--------|-------|
 | revisor_c3_1 | revisor-mfe (sonnet) | **APPROVE** | .agents/revisor_c3_1/handoff.md | sem crítico nem importante; 4 menores (rota `/_gateway` sem marca de que veio do proxy; `*` do padrão de origem casa pontos; mapa vazio legítimo dá 503 para qualquer `/abc`; `01-operacao.md` cita `caseSensitiveRoutes`) |
 | challenger_c3_1 | simulador-condicoes (sonnet) | **APPROVE** | .agents/challenger_c3_1/handoff.md | 66 grafias de `/_gateway` e 120 pedidos com cabeçalho forjado, nenhum alcança zona; registro hostil descartado pelo shell; origem hostil dentro dos padrões recebe o cookie opaco (risco aceito no ADR-0015); documento com zona travada recebe a página no teto; mapa com fonte fora segue o último bom; navegação real com RSC 200 (ponto aberto do ADR fechado); observações: sem teto total para gotejamento, fallback de RSC não executado, entrada descartada vira 404 |
-| auditor_c3_1 | general-purpose forense (opus) | em andamento | .agents/auditor_c3_1/handoff.md | |
+| auditor_c3_1 | general-purpose forense (opus) | **VETO (só por teste)** | .agents/auditor_c3_1/handoff.md, mutacoes.txt | 59 mutações, 51 pegas (14 declaradas todas pegas; 5 ponta a ponta todas pegas); viva de boa-fé N06: `encontrar` com o prefixo estático sem a barra (`/zona1-staticx` casa a `zona1`), nenhum teste reprova; outras 7 vivas equivalentes ou sem impacto; regressão por família verde e árvores limpas |
+
+Gate Result: **VETO (só por teste)**. Correção: teste em `test/mapa-zonas.test.mjs` para o prefixo estático com fronteira de segmento. Iteração 2: só um auditor novo (regra do humano, 2026-10-06).
 
