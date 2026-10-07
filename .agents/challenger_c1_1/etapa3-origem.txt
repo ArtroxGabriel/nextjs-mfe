@@ -1,0 +1,64 @@
+ator ana                   200  len=262   cc=private, no-store ct=text/html loc=- FRAGMENTO  
+ator bruno                 204  len=0     cc=private, no-store ct=- loc=-   
+ator davi                  204  len=0     cc=private, no-store ct=- loc=-   
+ator carla                 204  len=0     cc=private, no-store ct=- loc=-   
+ator eva                   200  len=262   cc=private, no-store ct=text/html loc=- FRAGMENTO  
+forjado                    204  len=0     cc=private, no-store ct=- loc=-   
+forjado longo              204  len=0     cc=private, no-store ct=- loc=-   
+cookie vazio valor         204  len=0     cc=private, no-store ct=- loc=-   
+sem cookie                 307  len=53    cc=- ct=- loc=/login?de=%2Fzona2%2F_fragmento%2Ftarefa   
+versao "0"                 204  len=0     cc=private, no-store ct=- loc=-   
+versao "2"                 204  len=0     cc=private, no-store ct=- loc=-   
+versao ""                  204  len=0     cc=private, no-store ct=- loc=-   
+versao "1.0"               204  len=0     cc=private, no-store ct=- loc=-   
+versao "01"                204  len=0     cc=private, no-store ct=- loc=-   
+versao "-1"                204  len=0     cc=private, no-store ct=- loc=-   
+versao "1,2"               204  len=0     cc=private, no-store ct=- loc=-   
+versao "abc"               204  len=0     cc=private, no-store ct=- loc=-   
+sem header versao          200  len=262   cc=private, no-store ct=text/html loc=- FRAGMENTO  
+chave "todas"              204  len=0     cc=private, no-store ct=- loc=-   
+chave ".."                 308  len=17    cc=- ct=- loc=/zona2/_fragmento   
+chave "%2e%2e"             308  len=17    cc=- ct=- loc=/zona2/_fragmento   
+chave ""                   308  len=25    cc=- ct=- loc=/zona2/_fragmento/tarefas   
+chave "xxxxxxxxxxxxxxxxxxxx" 204  len=0     cc=private, no-store ct=- loc=-   
+chave "Pendentes"          204  len=0     cc=private, no-store ct=- loc=-   
+chave "pendentes%00"       204  len=0     cc=private, no-store ct=- loc=-   
+chave "pendentes%20"       204  len=0     cc=private, no-store ct=- loc=-   
+chave "pendentes/x"        404  len=10272 cc=private, no-cache, no-store, max-age=0, must-revalidate ct=text/html loc=-  SCRIPT 
+chave "%70endentes"        200  len=262   cc=private, no-store ct=text/html loc=- FRAGMENTO  
+outro dominio              404  len=10264 cc=private, no-cache, no-store, max-age=0, must-revalidate ct=text/html loc=-  SCRIPT 
+dest document              404  len=0     cc=private, no-store ct=- loc=-   
+dest iframe                404  len=0     cc=private, no-store ct=- loc=-   
+dest frame                 404  len=0     cc=private, no-store ct=- loc=-   
+dest fencedframe           404  len=0     cc=private, no-store ct=- loc=-   
+dest embed                 404  len=0     cc=private, no-store ct=- loc=-   
+dest object                404  len=0     cc=private, no-store ct=- loc=-   
+dest empty                 200  len=262   cc=private, no-store ct=text/html loc=- FRAGMENTO  
+dest script                404  len=0     cc=private, no-store ct=- loc=-   
+dest image                 404  len=0     cc=private, no-store ct=- loc=-   
+dest style                 404  len=0     cc=private, no-store ct=- loc=-   
+dest worker                404  len=0     cc=private, no-store ct=- loc=-   
+dest sharedworker          404  len=0     cc=private, no-store ct=- loc=-   
+dest serviceworker         404  len=0     cc=private, no-store ct=- loc=-   
+dest report                404  len=0     cc=private, no-store ct=- loc=-   
+dest audioworklet          404  len=0     cc=private, no-store ct=- loc=-   
+dest video                 404  len=0     cc=private, no-store ct=- loc=-   
+dest audio                 404  len=0     cc=private, no-store ct=- loc=-   
+dest track                 404  len=0     cc=private, no-store ct=- loc=-   
+dest manifest              404  len=0     cc=private, no-store ct=- loc=-   
+dest xslt                  404  len=0     cc=private, no-store ct=- loc=-   
+dest nested-document       404  len=0     cc=private, no-store ct=- loc=-   
+dest                       404  len=0     cc=private, no-store ct=- loc=-   
+dest DOCUMENT              404  len=0     cc=private, no-store ct=- loc=-   
+dest Iframe                404  len=0     cc=private, no-store ct=- loc=-   
+dest+mode navigate         200  len=262   cc=private, no-store ct=text/html loc=- FRAGMENTO  
+mode navigate sem dest     200  len=262   cc=private, no-store ct=text/html loc=- FRAGMENTO  
+Accept */*                 200  len=262   cc=private, no-store ct=text/html loc=- FRAGMENTO  
+Accept text/html (nav)     200  len=262   cc=private, no-store ct=text/html loc=- FRAGMENTO  
+metodo POST                405  len=0     cc=- ct=- loc=-   
+metodo PUT                 405  len=0     cc=- ct=- loc=-   
+metodo PATCH               405  len=0     cc=- ct=- loc=-   
+metodo DELETE              405  len=0     cc=- ct=- loc=-   
+metodo HEAD                200  len=0     cc=private, no-store ct=text/html loc=-   
+metodo OPTIONS             204  len=0     cc=- ct=- loc=-   
+metodo TRACE               500  len=21    cc=private, no-cache, no-store, max-age=0, must-revalidate ct=text/plain loc=-   
