@@ -1,0 +1,10 @@
+ana    200 text/html; charset=utf-8 private, no-store corpo=312B <section data-fragmento="zona2/tarefas" aria-labelledby="fragmento-zona2-tarefas"><h2 id="fragmento-zona2-tarefas">Tarefas pendentes (zona 2)</h2><ul><li>Revisa
+bruno  204 null private, no-store corpo=0B 
+carla  204 null private, no-store corpo=0B 
+davi   204 null private, no-store corpo=0B 
+sem cookie               307 53B
+sec-fetch-dest document  404 0B
+versao 2                 204 0B
+id outro 204 0B
+__Host-session=invalido -> 204
+__Host-session=<mascarado> -> 204

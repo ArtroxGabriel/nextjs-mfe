@@ -1,0 +1,22 @@
+canonico           200 28B private, no-store
+img                500 0B private, no-store
+svg                500 0B private, no-store
+meta               500 0B private, no-store
+base               500 0B private, no-store
+form               500 0B private, no-store
+entidade           500 0B private, no-store
+tab                500 0B private, no-store
+proto              500 0B private, no-store
+barra              500 0B private, no-store
+style              500 0B private, no-store
+styleattr          500 0B private, no-store
+fecha              500 0B private, no-store
+coment             500 0B private, no-store
+template           500 0B private, no-store
+noscript           500 0B private, no-store
+math               500 0B private, no-store
+nul                500 0B private, no-store
+script             500 0B private, no-store
+naofechada         500 0B private, no-store
+atributoDuplicado  500 0B private, no-store
+lança erro         500
