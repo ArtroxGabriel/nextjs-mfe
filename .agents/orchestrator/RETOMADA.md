@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (C3: plano escrito, 6 tasks; execução começou pela Task 1)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (C3: Tasks 1 a 3 fechadas; Task 4, proxy híbrido e gateway, em andamento)**.
 
 ## Objetivo final
 
