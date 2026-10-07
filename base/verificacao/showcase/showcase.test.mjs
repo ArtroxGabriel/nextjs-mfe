@@ -171,6 +171,8 @@ test('F4 os tratamentos', async () => {
     }, PRAZO_DA_SONDA_MS, 250)
     assert.ok(queda.ok, `/demo não deu 503 em ${PRAZO_DA_SONDA_MS} ms depois de derrubada (status ${queda.r.status})`)
     console.log(`# F4: /demo deu 503 em ${Date.now() - t0} ms depois de derrubada`)
+    // derrubar fecha a zona e mantém a rota: o 503 acima pode vir do mapa ainda em memória no shell, então confere na fonte
+    assert.ok((await idsDoMapa()).includes('demo'), 'depois de derrubar, a rota demo deveria continuar no mapa da gestão de acesso')
     assert.match(queda.r.html, /Zona temporariamente indisponível/)
     assert.match(queda.r.html, /data-support-id="[0-9a-f-]{36}"/, 'a página da base sem supportId')
     assert.doesNotMatch(queda.r.html, /\bat .*\(|node_modules|Error:/, 'stack na página de zona fora do ar')
