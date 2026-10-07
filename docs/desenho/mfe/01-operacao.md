@@ -75,27 +75,24 @@ intermediário que o guardasse serviria o pedido da `marina` para o `gabrigas`.
 
 ### 2.1 O mapa de zonas é configuração de primeira classe
 
-Zona não se descobre — se declara. O mesmo mapa alimenta três coisas, e elas precisam
-concordar ou o sistema falha de formas difíceis de ler:
+Zona não se descobre no navegador: ela se registra no deploy, e o shell lê o mapa em execução (ADR-0015). O prefixo é a convenção `/{id}` e não se registra; o que se registra é a origem interna, por um passo de deploy da zona (`scripts/registrar-rota.ts`, `POST /v2/zonas/{id}/rota` na gestão de acesso, aceito só de `svc.{id}`). O código da zona não declara origem. O shell lê `GET /v2/zonas` pelo destino `mapa-zonas`, valida cada entrada (id no formato e fora das rotas reservadas, origem `http` ou `https` sem credencial, caminho nem query, host dentro de `ERP_ZONAS_ORIGENS_PERMITIDAS`) e guarda o resultado por `ERP_MAPA_ZONAS_TTL_MS`, com o último mapa bom em memória e no Redis. O mesmo mapa alimenta três coisas, e elas precisam concordar ou o sistema falha de formas difíceis de ler:
 
-```
-mapa de zonas ──┬─→ rewrites do shell        (para onde o navegador é levado)
-                ├─→ allowlist de fragmento   (quem pode ser chamado no servidor)
-                └─→ navegação do shell       (o que aparece no menu)
-```
+- **roteamento do shell:** o `proxy.ts` escolhe o gateway de documento ou o rewrite rápido;
+- **sonda de saúde:** qual zona está de pé;
+- **prefixos reservados:** o que nenhuma zona pode tomar.
+
+A allowlist de fragmento segue por `ZONA2_URL` (ADR-0011, decisão 4); convergir com o mapa é futuro. Uma zona nova passa a responder pelo shell em até um TTL mais uma releitura, sem reiniciar nem republicar o shell (L10 da verificação). Para cada requisição, o `proxy.ts` decide pelo tipo: navegação de documento (`GET` ou `HEAD` sem `RSC` e sem `Next-Action`, fora do prefixo estático) vai ao gateway interno (`lib/gateway-zona.ts`), que entrega a página da base se a zona não mandar os cabeçalhos no teto; RSC, arquivos estáticos e Server Actions vão por `NextResponse.rewrite` para a origem do mapa, o caminho rápido do Next. Zona fora do mapa, ou mapa vazio, é 404 ou 503 do shell.
 
 | Ambiente | Como as zonas se endereçam |
 |---|---|
-| desenvolvimento | `http://localhost:3001`, `:3002`, `:3003` |
-| produção | DNS interno, não roteável da internet |
+| desenvolvimento | `http://localhost:3001`, `:3002`, `:3003`, registradas por `registrar-rota` |
+| produção | DNS interno, não roteável da internet, registrado no deploy da zona |
 
-**A zona nunca é alcançável diretamente pelo navegador em produção.** Ela existe atrás do
-shell. Isso não é detalhe de infraestrutura: é o que faz a camada 1 do `proxy.ts` ter
-sentido, e é o mesmo motivo pelo qual o domínio não é exposto.
+**A zona nunca é alcançável diretamente pelo navegador em produção.** Ela existe atrás do shell. Isso não é detalhe de infraestrutura: é o que faz a camada 1 do `proxy.ts` ter sentido, e é o mesmo motivo pelo qual o domínio não é exposto. Uma condição vale para o caminho rápido: o Next anota a reescrita do `proxy.ts` na resposta (`x-middleware-rewrite`) com a origem interna da zona, e nenhuma configuração o remove; em produção a borda na frente do shell tira os cabeçalhos `x-middleware-*` da resposta ([`infraestrutura-alvo.md`](../../arquitetura/infraestrutura-alvo.md)); na máquina local isso é um limite declarado (D31 do `DEFERRED.md`).
 
 ### 2.2 O que não pode vir do ambiente
 
-`API_BASE_URL`, o mapa de zonas e o emissor OIDC vêm de variável de ambiente. **Nada disso
+`API_BASE_URL`, a origem de cada zona (registrada no deploy) e o emissor OIDC vêm de ambiente ou de registro do deploy. **Nada disso
 pode vir de cabeçalho de requisição** — nem `Host`, nem `X-Forwarded-*`. Um destino
 derivado de cabeçalho é o mesmo furo que a allowlist do elemento 7 existe para fechar, com
 outra roupa.
@@ -177,7 +174,7 @@ Continua aberto só o failover do Redis durante a renovação (§8.2).
 O menu do shell precisa conhecer as rotas das três zonas — e é a única peça que
 legitimamente sabe de todas.
 
-- É construído a partir do **mapa de zonas** (§2.1), não descoberto em runtime.
+- É construído a partir do que o shell já conhece (§2.1), não descoberto no navegador.
 - É filtrado por `roles`, que é decisão de cliente sobre si mesmo.
 - **Filtrar o menu não é autorização.** Esconder a entrada de Comercial para quem não tem
   o grupo é ergonomia; quem digitar a URL recebe `404` do domínio. As duas coisas precisam
@@ -201,16 +198,7 @@ Cada nível degrada sem levar o de cima junto:
 | Store de sessão fora | ninguém autentica | **sem degradação** — é núcleo |
 | Shell fora | nada funciona | aceito: é o gateway |
 
-A terceira linha vale em regime, com duas exceções limitadas. O `rewrites()` do Next não
-tem gancho para falha do destino: a zona morta vira um 500 cru do framework, sem
-`Content-Type`, antes de qualquer código do shell rodar. Por isso o shell decide antes do
-rewrite. O middleware consulta o health check da zona (§5.2), guarda o resultado por 1 s e,
-com a zona fora, responde 503 com `Retry-After` e a página de erro. As rotas do shell
-diferenciam maiúsculas (`experimental.caseSensitiveRoutes`): sem isso, o rewrite aceitava
-`/REMOTE-APP` e o matcher do middleware não, e essa variante recebia o 500 cru durante a
-queda inteira. Hoje ela recebe o 404 do shell. A opção é experimental no Next 15 e precisa
-ser conferida a cada atualização do framework; o smoke test falha se a variante voltar a
-chegar à zona.
+A terceira linha vale em regime, com duas exceções limitadas. O `rewrites()` do Next não tem gancho para falha do destino: a zona morta vira um 500 cru do framework, sem `Content-Type`, antes de qualquer código do shell rodar. Por isso o shell decide antes. O `proxy.ts` consulta a sonda da zona (§5.2), guarda o resultado por 1 s e, com a zona fora, responde 503 com `Retry-After` e a página de erro. Desde o ADR-0015 a navegação de documento não usa o `rewrites()` (que saiu): vai pelo gateway do shell, que tem o gancho que faltava. As rotas do shell diferenciam maiúsculas (`experimental.caseSensitiveRoutes`): sem isso, o roteamento aceitava `/REMOTE-APP` e o matcher do proxy não, e essa variante recebia o 500 cru durante a queda inteira. Hoje ela recebe o 404 do shell. A opção é experimental no Next 15 e precisa ser conferida a cada atualização do framework; o smoke test falha se a variante voltar a chegar à zona.
 
 A primeira exceção é o intervalo logo após a queda de um processo que morreu. Enquanto o
 último resultado saudável está no cache, as requisições ainda chegam à zona e recebem o
@@ -221,20 +209,7 @@ sequencial (16 quedas, três medições independentes), depois de 79 a 190 requi
 medido na iteração anterior com o cache de 3 s, o intervalo foi de 2,96 s. A janela é
 limitada por tempo, e quantas requisições caem nela depende da taxa.
 
-A segunda exceção é a zona travada: processo vivo, porta aceitando conexão, sem resposta
-(medido com `SIGSTOP`). Uma requisição enviada dentro do mesmo intervalo de 1 s passa pela
-sonda e fica presa na zona até o teto do proxy do Next (`experimental.proxyTimeout`), que o
-shell lê de `ERP_ZONA_TETO_MS`: **10 s** por padrão (decisão B1, 2026-09-23; antes do D7 era o
-padrão fixo do Next, 30 s, observado 3 de 3). No teto, o próprio Next responde 500 cru; o
-`rewrites()` não tem gancho para trocar essa resposta pela página da base, que vem com o
-mecanismo de roteamento do C3. O teto conta **silêncio**, não duração: é o tempo do socket sem
-nenhum byte, então uma resposta longa que segue mandando dados (streaming, download) não é
-cortada. O SSE do C2 mora no shell e nem passa pelo proxy; uma resposta longa de zona convive
-com o teto mandando algum byte em intervalo menor que ele, e a que precisar ficar mais tempo
-calada vira pedido assíncrono. O teto tem de passar `ERP_DESTINO_TIMEOUT_MS` (o shell recusa
-subir se não passar): senão uma página que espera um domínio lento seria cortada antes de
-degradar. A verificação ponta a ponta (L9) sobe o shell com 6 s e confere a requisição solta
-no teto.
+A segunda exceção é a zona travada: processo vivo, porta aceitando conexão, sem resposta (medido com `SIGSTOP`). Uma requisição enviada dentro do mesmo intervalo de 1 s passa pela sonda e fica presa na zona. Para a **navegação de documento**, o gateway do shell conta `ERP_ZONA_TETO_MS` (**10 s** por padrão, decisão B1, 2026-09-23) até os **cabeçalhos** da zona chegarem e, no estouro, solta a zona e responde 503 com a página da base, `supportId` e `no-store` (ADR-0015, decisão 7; antes disso o padrão do Next era 30 s e o 500 era cru). A verificação ponta a ponta mede a página da base em 6012 ms com o teto em 6 s (L9) e em 6013 ms numa página que encadeia chamadas lentas sem mandar byte (L9b). Depois do primeiro byte vale `ERP_ZONA_OCIOSIDADE_MS`: a resposta parada é cortada sem página, porque o status já saiu (L9c mediu o corte 7005 ms depois dos cabeçalhos com a ociosidade em 7 s). Esse limite é de qualquer repasse com streaming. No **caminho rápido** (RSC, Server Action, estático) o teto vira o `experimental.proxyTimeout` do Next e conta silêncio: o socket sem nenhum byte; no estouro quem responde é o Next, com o 500 cru, que não tem gancho para a página da base. Uma Server Action em zona travada recebe esse erro cru (limite declarado, D28). O SSE do C2 mora no shell e nem passa pelo proxy. O teto e a ociosidade têm de passar `ERP_DESTINO_TIMEOUT_MS` (o shell recusa subir se não passarem): senão uma página que espera um domínio lento seria cortada antes de degradar.
 
 Depois do intervalo, a requisição que dispara a sonda espera o timeout da
 sonda, 800 ms (815 a 817 ms medidos), e recebe 503. O custo não é único: o cache vale 1 s a

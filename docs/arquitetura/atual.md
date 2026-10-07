@@ -9,7 +9,7 @@
 
 ## 1. Visão geral
 
-O navegador fala só com o shell (`:3000`). O shell repassa cada prefixo de zona por rewrite. Cada
+O navegador fala só com o shell (`:3000`). O shell repassa cada prefixo de zona pelo mapa de zonas vivo (ADR-0015): documento pelo gateway interno, o resto por rewrite. Cada
 aplicação tem o próprio BFF e só chama domínio pelo **registro de destinos** do `@erp/nucleo`.
 
 ```mermaid
@@ -17,7 +17,7 @@ flowchart TB
     B["🌐 Navegador<br/>cookie __Host-session (id opaco)"]
 
     subgraph SHELL["erp-shell :3000"]
-        GW["proxy.ts + rewrites gerados de zonas.json<br/>/zona1 · /zona2 · /acesso (+ /&lt;id&gt;-static)<br/>sonda de saúde por zona → 503"]
+        GW["proxy.ts + mapa de zonas vivo (gestão de acesso)<br/>gateway de documento + rewrite rápido<br/>/zona1, /zona2, /acesso (+ /&lt;id&gt;-static)<br/>sonda de saúde por zona e 503"]
         OT["/api/otel/v1/traces<br/>gateway de telemetria"]
         AUTH["/login · /api/auth/entrar · /api/auth/retorno · /api/auth/sair<br/>ÚNICO escritor da sessão; renova no proxy (ADR-0013)"]
         SH["/ (shell.inicio)"]
@@ -35,6 +35,7 @@ flowchart TB
 
     B --> SHELL
     GW --> Z1 & Z2 & ZA
+    GW -. "mapa de zonas (svc.shell)" .-> GA
     AUTH --> ST
     SH & Z1 & Z2 & ZA -. lê .-> ST
     SH --> DP
@@ -50,8 +51,7 @@ requisição com cabeçalho de navegador (`Origin`, `Sec-Fetch-*`).
 ### 1.1 O que o `proxy.ts` do shell decide, em ordem
 
 `repos/erp-shell/lib/decisao-proxy.ts` é uma função pura, testada sem o Next; o `proxy.ts` só a
-traduz para `NextResponse`. Os rewrites de `next.config.ts` e a busca de zona saem do mesmo
-`zonas.json`, então rota nova de zona entra nos dois de uma vez.
+traduz para `NextResponse`. Não há mais `rewrites()` em `next.config.ts` nem `zonas.json`: a decisão de qual zona atende o prefixo e a sonda leem o mesmo mapa vivo (`lib/mapa-zonas.ts`), então uma zona registrada entra nos dois de uma vez, em até um TTL.
 
 ```mermaid
 flowchart TD
@@ -63,16 +63,21 @@ flowchart TD
     Z -- sim --> S{"sonda de saúde da zona<br/>(cache 1 s, timeout 500 ms)"}
     S -- "fora (erro de rede ou status ≥ 500)" --> E503["503 · Retry-After: 5<br/>página de zona indisponível"]
     S -- ok --> ST{"asset estático?"}
-    ST -- sim --> REW["segue para o rewrite"]
+    ST -- sim --> REW["rewrite para a origem do mapa<br/>(caminho rápido)"]
     ST -- não --> C{"cookie __Host-session?"}
     Z -- não --> C
     C -- não --> L["307 /login?de=…"]
     C -- sim --> RN{"renovação proativa (ADR-0013)<br/>1 leitura do store; IdP só na janela e com o lock"}
     RN -- "revogada ou ausente (GET)" --> L2["307 /login?de=… e apaga o cookie"]
     RN -- "em dia, renovada, em andamento ou erro" --> OK["segue com CSP, x-erp-caminho<br/>e flash consumido"]
+    OK --> ZR{"prefixo de zona?"}
+    ZR -- não --> PG["página do shell"]
+    ZR -- sim --> DOC{"GET ou HEAD sem RSC nem Next-Action,<br/>fora do prefixo estático?"}
+    DOC -- sim --> GWY["gateway de documento (/_gateway/...)<br/>sem cabeçalhos no teto: 503 com a página da base"]
+    DOC -- não --> REW
 ```
 
-Escrita pelo Gabriel em 2026-09-21. O primeiro gate reprovou e a correção entrou em `erp-shell`
+Escrita pelo Gabriel em 2026-09-21; o roteamento por mapa vivo e gateway é do C3 (ADR-0015). O primeiro gate reprovou e a correção entrou em `erp-shell`
 `f3d8803`; falta a segunda rodada de gate. O prefixo de zona é casado **sem diferenciar
 maiúsculas**, como o rewrite do Next (`/ZONA2` também passa pela sonda). O caminho que o Next
 entrega ao proxy já vem normalizado, e o revisor mediu que rewrite e proxy usam o mesmo parser:
@@ -106,7 +111,7 @@ sequenceDiagram
     S->>ST: consome a transação; grava { sub, nome, tokens, expira } — só o shell
     S-->>N: 303 · Set-Cookie __Host-session=<uuid> HttpOnly Secure
     N->>S: GET /zona1/relatorios
-    S->>Z: rewrite (cookie repassado)
+    S->>Z: repasse pelo gateway de documento (cookie repassado)
     Note over Z: camada 1 — proxy: cookie existe? senão 307 /login
     Z->>ST: lê a sessão pelo id (modo leitura)
     Z->>GA: GET /v1/modulos-permitidos (Bearer do usuário)
@@ -203,7 +208,7 @@ sequenceDiagram
 |---|---|
 | um domínio de negócio (ex.: A) | a página abre; o bloco daquele domínio diz "indisponível no momento" |
 | o domínio de gestão de acesso | a moldura sem menu e "Serviço indisponível" no HTML do servidor, sem a página: sem ele ninguém entra em módulo. O status continua 200 (o layout não o define) |
-| uma zona | o shell responde 503 com `Retry-After: 5` e uma página própria, em qualquer caixa do caminho; as outras zonas seguem. **Exceção medida:** logo depois da queda, enquanto a última sonda boa vale (cache de 1 s), requisições recebem o 500 cru do Next (até ~0,8 s, challenger_shell_1). Zona travada segura a requisição ~0,6 s (timeout da sonda); a que já tinha passado pela sonda é solta no teto (`ERP_ZONA_TETO_MS`, 10 s) com o 500 cru do Next, até o C3 trazer a página (D7). Ao voltar, a zona responde de novo em 0,8–1,2 s (0,8 s se a última sonda já venceu; até 1,2 s se ainda vale; challenger_shell_1 e _2) |
+| uma zona | o shell responde 503 com `Retry-After: 5` e uma página própria, em qualquer caixa do caminho; as outras zonas seguem. **Exceção medida:** logo depois da queda, enquanto a última sonda boa vale (cache de 1 s), requisições recebem o 500 cru do Next (até ~0,8 s, challenger_shell_1). Zona travada segura a requisição ~0,6 s (timeout da sonda); a que já tinha passado pela sonda é solta no teto (`ERP_ZONA_TETO_MS`, 10 s): a navegação de documento recebe a página da base com `supportId` (gateway, D7 fechado); RSC, Server Action e estático seguem com o 500 cru do Next. Ao voltar, a zona responde de novo em 0,8–1,2 s (0,8 s se a última sonda já venceu; até 1,2 s se ainda vale; challenger_shell_1 e _2) |
 | o domínio falso de gestão de acesso é reiniciado | perde manifestos e concessões (estado em memória); `pnpm registrar` em cada app os recria. O domínio real persiste |
 
 Como rodar e conferir à mão: [`../ROTEIRO-DE-VERIFICACAO.md`](../ROTEIRO-DE-VERIFICACAO.md).

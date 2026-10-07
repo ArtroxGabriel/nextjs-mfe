@@ -8,7 +8,7 @@ sem código de domínio no núcleo. Decisões no
 
 | Parte | Onde | Porta | Papel |
 |---|---|---|---|
-| Shell | `repos/erp-shell` | 3000 | login, único escritor da sessão, rewrites das zonas (`zonas.json`), 503 de zona fora, gateway de telemetria, domínio próprio (avisos) |
+| Shell | `repos/erp-shell` | 3000 | login, único escritor da sessão, roteamento das zonas pelo mapa vivo (ADR-0015), 503 de zona fora, gateway de telemetria, domínio próprio (avisos) |
 | Zona 1 | `repos/erp-zona-1` | 3001 | domínios A e B; módulo livre `/zona1` e restrito `/zona1/relatorios` |
 | Zona 2 | `repos/erp-zona-2` | 3002 | domínio C; Server Action com `If-Match` que leva o toast para a zona 1 |
 | Zona de acesso | `repos/erp-zona-acesso` | 3003 | perfil × módulo, restrição e usuário × perfil |
@@ -131,8 +131,7 @@ A verificação manual, item a item, está em
    com os destinos que a zona pode chamar, e `<Moldura>` no layout.
 2. **Manifesto** `acesso.manifesto.ts`: módulos, perfis e concessões com o prefixo da zona.
    Registre com `pnpm registrar`.
-3. **Shell**: acrescente `"<zona>": "<origem>"` em `repos/erp-shell/zonas.json`. Rewrites, sonda de
-   saúde e 503 saem desse mapa.
+3. **Rota**: rode `pnpm registrar-rota` no deploy da zona (`scripts/registrar-rota.ts`, com `ERP_ZONA_ORIGEM_INTERNA`). O shell não se edita nem se republica: o mapa vivo, a sonda de saúde e o 503 passam a incluir a zona em até um TTL (`ERP_MAPA_ZONAS_TTL_MS`).
 4. **Submódulo e verificação**: registre o repositório em `.gitmodules` e inclua a app em
    `base/scripts/ambiente.mjs` e nas listas de `base/verificacao/base.test.mjs`.
 

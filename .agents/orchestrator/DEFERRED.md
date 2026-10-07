@@ -18,15 +18,12 @@
 > **D29** (`ehHtmlInerte` deixava passar HTML ativo) fechou no núcleo **0.10.4** (2026-10-07): validação por lista de
 > permissão (`docs/desenho/mfe/02-zonas.md` §2.3, ADR-0011 adendo 2). Evidência: 15 testes em `erp-nucleo`, mutações M1–M13
 > do plano todas pegas. Commits: núcleo `50a0fea`; apps em lockstep, principal `bbf6a84`. Limites da lista: D30.
-
-## D7 — Zona travada: teto feito, página com o C3
-
-- **Feito (2026-10-06):** o shell lê `ERP_ZONA_TETO_MS` (padrão 10 s, decisão B1) como `experimental.proxyTimeout`; a
-  requisição que já passou pela sonda é solta no teto, não nos 30 s fixos do Next. Verificação L9.
-- **Fica:** no teto, quem responde é o Next, com 500 cru; o `rewrites()` não tem gancho para a página da base
-  (`proxy-request.js`, `onProxyError`). Escolha do humano (2026-10-06): a página dentro do teto vem com o mecanismo de
-  roteamento do C3, para o caminho de toda requisição mudar uma vez só.
-- **Fecha em:** C3. Teto aprovado no gate do D7 (2026-10-06, `GATE_STATUS.md`); menores e limites em D28.
+> **D7** (zona travada: página da base dentro do teto) fechou no C3 (2026-10-07, ADR-0015): o documento passa pelo gateway do
+> shell, que conta `ERP_ZONA_TETO_MS` até os cabeçalhos e responde 503 com a página e o `supportId`. Evidência (`task
+> verificar:redis`): L9 6012 ms com o teto em 6 s (antes, 500 cru em 6 s), L9b (três chamadas lentas de 2,5 s em sequência,
+> sem byte) 6010 ms, L9c (cabeçalhos mandados e zona parada) corte por ociosidade no prazo declarado. Commits: shell `c7a08d9`
+> (mapa) e `4eb47e2` (gateway e proxy híbrido); principal `5700aaf`. Os itens de roteamento do D28 fecharam junto; ficam nele
+> só os demais. Limites novos do C3: D31.
 
 ## D12 — Menores do núcleo (fatia 1)
 
@@ -170,15 +167,13 @@
   `Number(process.env.ERP_ZONA_TETO_MS) || 10_000` no `next.config.ts` perde a validação sem teste que note (nenhum teste liga
   o `next.config.ts` ao leitor validado; sugestão: teste estático ou caso ponta a ponta com 5000 recusado); M6b padrão/teto de
   `ERP_DESTINO_TIMEOUT_MS` copiados do núcleo no shell, sem teste de paridade (a deriva no núcleo é pega pelo teste de fixação dele).
-- **Para o C3:** página com várias chamadas lentas em sequência, sem mandar bytes, também é cortada no teto com 500 cru (a regra
-  teto > tempo de domínio cobre uma chamada); com o `dominio-c` congelado a `/zona2` devolve a página de erro genérica do Next,
-  sem `supportId`.
+- **Para o C3 (fechado em 2026-10-07):** página com várias chamadas lentas em sequência e `dominio-c` congelado agora recebem a página da base com `supportId` no teto (L9b e L9; shell `4eb47e2`, principal `5700aaf`).
 - **Para o C2:** com `Accept-Encoding: gzip` o shell entrega a resposta da zona toda de uma vez no fim (com `identity`, aos pedaços).
 - **Menores:** L9 com `??=` calcula teto 0 se `ERP_ZONA_TETO_MS` vier vazio (falha alta, sem falso verde); critério `ms >= 2000`
   do L9 sozinho não separa o teto de outra lentidão (o piso `teto - 500` cobre); contagens de teste de `docs/arquitetura/atual.md`
   defasadas; sonda 800 ms em `01-operacao.md` contra 500 ms de padrão em `CONFIGURACAO.md`; espera de domínio entre 5 e 10 s não
   exercitada (as zonas declaram 2 s por destino).
-- **Fecha em:** o do C3 e o do C2 com eles; os demais quando o shell ou a verificação forem tocados de novo.
+- **Fecha em:** o do C2 (gzip); os demais quando o shell ou a verificação forem tocados de novo.
 
 ## D30 — Menores e limites declarados do C1 (tasks e gate, 2026-10-06)
 
@@ -208,3 +203,13 @@
   caso "nada pendente"; falha de domínio e acesso negado dão o mesmo 204 (intencional).
 - **Fecha em:** o `atual.md` com o E4 (roteiro); os limites da lista de permissão, quando o primeiro fragmento novo precisar; a guarda do shell e o `p:relatorios` quando o shell ou o teste forem
   tocados de novo; o resto, um por um, se incomodar.
+
+## D31: Limites declarados do C3 (mapa de zonas vivo e gateway, 2026-10-07, ADR-0015)
+
+- **O que é:** limites aceitos do roteamento híbrido; nenhum é defeito de produto. Evidência em `.superpowers/sdd/2026-10-07-c3-mapa-de-zonas/` (relatórios das tarefas 4 e 5).
+- **Corte sem página depois do primeiro byte.** Se a zona manda os cabeçalhos e para no meio, o gateway corta a conexão ao fim de `ERP_ZONA_OCIOSIDADE_MS` e o navegador vê a resposta truncada: o status já saiu e não há como trocá-lo pela página da base. Vale para qualquer repasse com streaming (L9c).
+- **Server Action em zona travada.** A Server Action vai pelo caminho rápido (`NextResponse.rewrite`), e no estouro do `proxyTimeout` quem responde é o Next, com o erro cru. Só a navegação de documento tem a página da base.
+- **Zona nova entra em instâncias do shell em momentos diferentes.** Cada instância relê o mapa pelo próprio TTL, sem coordenação: uma zona recém-registrada pode responder numa instância e dar 404 em outra por até um TTL mais uma releitura (a releitura não bloqueia quem chega). A zona removida some do mesmo modo. Medido numa instância: 2077 a 2207 ms com TTL de 2 s (L10).
+- **`x-middleware-rewrite` no caminho rápido (decisão do humano, 2026-10-07).** No RSC, nos estáticos e nas Server Actions, o Next anota na resposta ao navegador `x-middleware-rewrite` com a origem interna da zona (`resolve-routes.js:466-469`, `router-server.js:395-397`; nenhuma configuração o remove). Vaza topologia interna, não credencial. Decisão: em produção a borda na frente do shell tira os cabeçalhos `x-middleware-*` da resposta (`docs/arquitetura/infraestrutura-alvo.md`, seções 1, 5 e 8; ADR-0015, adendo); na máquina local é um limite declarado, e a verificação (`base.test.mjs`) só confere que o documento pelo gateway mostra apenas o caminho relativo `/_gateway/...`.
+- **`x-forwarded-proto` do navegador é repassado.** O gateway repassa o `x-forwarded-proto` que vier, como o caminho rápido já fazia; o balanceador tem de sobrescrevê-lo (`docs/CONFIGURACAO.md`, nota do `X-Forwarded-Proto`).
+- **Fecha em:** a borda de produção (a regra de `x-middleware-*` vira configuração do balanceador); os demais ficam como limites do desenho.

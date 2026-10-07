@@ -119,3 +119,7 @@ tem de estar no manifesto dela. Gate — † v1 no ar e v2 fora → serviço ind
 404 em `/zona2`; † revogar davi em `zona1` → 404 na requisição seguinte; † pessoa desligada → `/login`.
 
 **Em aberto:** se o Keycloak importa `id` de usuário que não é UUID (usar UUID fixo até medir).
+
+## Adendo 2 (2026-10-07): credencial de serviço do shell para o mapa de zonas
+
+O [ADR-0015](0015-mapa-de-zonas-vivo-e-gateway.md) (C3) adianta um pedaço da credencial de serviço do shell, que este ADR deixava para o G5: o shell lê `GET /v2/zonas` com o token `svc.shell` (`ERP_TOKEN_SERVICO`), com escopo só de leitura do mapa. No domínio falso (mock), `POST /v2/zonas/{id}/rota` só aceita `svc.{id}` e `GET /v2/zonas` só aceita `svc.shell`, com auditoria do registro. A base injeta `svc.shell` apenas no ambiente do shell, nunca no das zonas. O consumo de eventos e o resto do G5 continuam como estavam.

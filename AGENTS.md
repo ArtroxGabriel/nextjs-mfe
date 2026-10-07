@@ -23,10 +23,12 @@ pacotes ou em `base/verificacao/`.
 4. **SEMPRE** chame domínio por um destino do **registro de destinos** do núcleo
    (`nucleo.destino(nome)`), nunca com `fetch` direto. A zona escolhe o modelo de caminho
    declarado e preenche parâmetros; origem, método e credencial são do registro — RFC 10017.
-   Ver ADR-0009. Primeira exceção: o script de deploy `scripts/registrar-manifesto.ts`, que roda
-   fora do Next e usa `fetch` com origem fixa, `redirect: 'manual'` e timeout.
+   Ver ADR-0009. Primeira exceção: os scripts de deploy `scripts/registrar-manifesto.ts` e `scripts/registrar-rota.ts`, que rodam
+   fora do Next e usam `fetch` com origem fixa, `redirect: 'manual'` e timeout.
    Segunda exceção: a sonda de saúde do shell (`erp-shell/lib/saude-zonas.ts`), que só chama
-   as origens do `zonas.json`. A checagem N8 (`base/verificacao/saida-de-rede.mjs`) lê a estrutura
+   as origens do mapa de zonas validado (nunca a requisição). Terceira exceção: o gateway de documento
+   do shell (`erp-shell/lib/gateway-zona.ts`, ADR-0015), que só usa `node:http` e `node:https` e só
+   chama a origem do mapa validado mais o caminho que casou o prefixo da zona. A checagem N8 (`base/verificacao/saida-de-rede.mjs`) lê a estrutura
    do código e só aceita as exceções listadas lá, cada uma com o motivo.
    O IdP não é destino do registro: discovery, token e logout só passam pelo adaptador
    `identidadeOidc` de `@erp/nucleo/shell` (ADR-0013, decisão 5); app nenhuma importa
@@ -67,6 +69,7 @@ pacotes ou em `base/verificacao/`.
 | dado que o navegador busca depois | `app/{zona}/api/bff/` (route handler) | cookie do `fetch` |
 | bloco de outra zona | `criarFragmento` na consumidora, `responderFragmento` na dona (ADR-0011) | cookie repassado |
 | chamada vinda de fora da aplicação | **não no BFF**: leve ao domínio | — |
+| endereço de uma zona | registro de rota no deploy da zona (`scripts/registrar-rota.ts`), nunca no código | o shell lê do mapa |
 | tempo, timeout, TTL, limite, política de sessão | **configuração**: variável de ambiente (ou arquivo de configuração versionado) lida no servidor, com padrão seguro e documentada em [`docs/CONFIGURACAO.md`](docs/CONFIGURACAO.md) no mesmo commit; nunca constante escondida no código | — |
 
 Verificação de acesso: `proxy.ts` (cookie existe?) → layout/página (`exigirModulo`, 404) → UI

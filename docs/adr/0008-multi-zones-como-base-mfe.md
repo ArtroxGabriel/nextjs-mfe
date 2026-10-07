@@ -66,3 +66,7 @@ entre zonas — React e o design system são baixados uma vez por zona (limitaç
 
 **Fica em aberto:** se a duplicação de bundle medida justificar Module Federation
 restrito à UI — e só à UI, que não carrega dado sensível. Decisão adiada até haver medição.
+
+## Adendo 1 (2026-10-07): o roteamento por prefixo mudou
+
+O [ADR-0015](0015-mapa-de-zonas-vivo-e-gateway.md) troca o mecanismo de roteamento desta decisão. O shell não gera mais `rewrites()` a partir de um arquivo no build: o `proxy.ts` lê o mapa de zonas vivo, e a navegação de documento passa por um gateway interno do shell, que responde a página da base no estouro do teto (RSC, estáticos e Server Actions seguem por rewrite). As rotas do shell das decisões acima (`/api/stream`, `/api/auth/*`, `/api/otel/*`) continuam reservadas e nunca vão a uma zona.

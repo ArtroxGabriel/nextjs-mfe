@@ -113,7 +113,7 @@ das páginas, as Server Actions e os *route handlers* (`app/**/route.ts`).
 
 | É responsabilidade do shell | Arquivos |
 |---|---|
-| Receber todo pedido e repassar à zona dona do prefixo (mapa `zonas.json`) | `proxy.ts`, `lib/decisao-proxy.ts`, `lib/zonas.ts`, `zonas.json` |
+| Receber todo pedido e repassar à zona dona do prefixo (mapa de zonas vivo, ADR-0015) | `proxy.ts`, `lib/decisao-proxy.ts`, `lib/mapa-zonas.ts`, `lib/gateway-zona.ts`, `lib/zonas.ts` |
 | Conferir se cada zona está no ar (sonda com cache curto) e, se não, responder 503 com página própria | `lib/saude-zonas.ts`, `app/(publico)/erro-de-zona/` |
 | **Login e logout** — é a única app que cria e apaga sessão | `app/api/auth/entrar/route.ts`, `app/api/auth/sair/route.ts`, `lib/nucleo.ts` (`criarNucleoDoShell`) |
 | Página inicial e avisos da plataforma (domínio `plataforma`) | `app/(app)/page.tsx` |
@@ -246,6 +246,6 @@ As quatro apps usam **a mesma versão exata** do núcleo (hoje 0.7.0); o `pre-pu
 | mudar dado | Server Action dentro de `acaoProtegida` | route handler sem módulo; `fetch` do cliente para o domínio |
 | interação no navegador (clique, estado) | componente `'use client'` recebendo só valores simples | lógica de permissão |
 | um módulo novo | manifesto da zona (`<zona>.<nome>`) + `exigirModulo` na página | manifesto de outra zona |
-| uma zona nova | novo repositório seguindo zona 1/2, entrada em `zonas.json` do shell (README da raiz, "Escalar") | dentro de outra zona |
+| uma zona nova | novo repositório seguindo zona 1/2, registro de rota no deploy da zona, `registrar-rota` (README da raiz, "Escalar") | dentro de outra zona |
 | um tempo, limite ou timeout | variável de ambiente documentada em `CONFIGURACAO.md` | constante no código |
 | algo chamado de fora da aplicação (outro sistema) | no **domínio** | no BFF |

@@ -73,3 +73,7 @@ Decisão preparada pelo `arquiteto-mfe` em 2026-09-21.
   §2.3 (tags, atributos, `href` de mesma origem).
 - Consequência: fragmento com tag ou atributo novo reprova até a lista abrir, e abrir é commit com teste. Limites
   declarados da lista: D30 em `.agents/orchestrator/DEFERRED.md`.
+
+## Nota (2026-10-07): o fragmento segue com `ZONA2_URL`
+
+Com o mapa de zonas vivo ([ADR-0015](0015-mapa-de-zonas-vivo-e-gateway.md)), o shell deixou de ler `zonas.json`, mas o fragmento entre zonas não mudou: a zona consumidora continua lendo a origem da zona dona em `ZONA2_URL` (decisão 4). Convergir a allowlist de fragmento com o mapa é trabalho futuro.

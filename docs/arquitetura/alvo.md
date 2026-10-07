@@ -18,7 +18,7 @@ flowchart TB
     B["🌐 Navegador<br/>uma aba · um SharedWorker"]
 
     subgraph SHELL["erp-shell — gateway (deploy próprio)"]
-        GW["rewrites por prefixo<br/>gerados do mapa de zonas"]
+        GW["roteamento por prefixo<br/>mapa de zonas vivo: gateway de documento e rewrite"]
         AUTH["/login · /api/auth/*<br/>sessão OIDC"]
         STREAM["/api/stream<br/>uma conexão SSE por aba"]
         OTEL["/api/otel/*<br/>proxy de telemetria"]
@@ -159,12 +159,12 @@ flowchart LR
 | Tema | Hoje (`atual.md`) | Alvo | Primeiro passo sugerido |
 |---|---|---|---|
 | Framework | Next 16, App Router, `proxy.ts` | igual | — |
-| Zonas | shell + 3 zonas; rewrites, sonda e 503 gerados de `zonas.json` | mapa de zonas gerado dos manifestos registrados | ler prefixos e origens do domínio de gestão de acesso no boot do shell |
+| Zonas | shell + 3 zonas; mapa de zonas vivo lido da gestão de acesso (registro de rota no deploy, ADR-0015): documento pelo gateway do shell, RSC, estático e Server Action por rewrite; zona nova em até um TTL, sem republicar o shell | igual, com a borda tirando `x-middleware-*` da resposta e o fragmento entre zonas convergindo para o mesmo mapa | medir o gateway contra as zonas de verdade (C3, tarefa 6); trocar `ZONA2_URL` pelo mapa |
 | Login | `identidadeOidc` (OIDC + PKCE, `openid-client`) com `IDP_EMISSOR`; sem ele, `identidadeDev` (5 atores, sem senha) — ADR-0013 | igual | — (`task showcase:oidc`, `task verificar:oidc`) |
 | Store de sessão | arquivo em disco compartilhado; adaptador `sessaoRedis` **pronto** no núcleo 0.4.0 (leitor na raiz, escritor em `/shell`), ainda não ligado | Redis compartilhado (`noeviction`, AOF) | ligar nas apps: instalar `redis` (node-redis), subir um Redis local no `docker-compose` e trocar o adaptador em `lib/nucleo.ts` — depois do gate do shell |
 | Renovação de token | proativa e serializada no `proxy.ts` do shell, lock `SET NX PX` com releitura (ADR-0013, que substitui a decisão 3 do ADR-0009); sessão de 30 min por inatividade | igual | teste P0-d: failover do Redis durante a renovação (PENDENCIAS §4) |
 | Acesso a módulo | gestão de acesso federada, 404 para módulo negado | igual, com cache por versão de política se a medição pedir | medir a consulta por renderização |
-| Falha isolada de zona | 503 com `Retry-After` e página própria, sonda de saúde por zona com cache de 1 s — **implementado, gate reprovou** (C1: caminho com maiúsculas escapa da sonda). A sonda bate na página da zona; **não existe `/{zona}/api/health`** | igual, com zona travada limitada pelo timeout da sonda e sem janela de 500 cru | gate do shell: caminho normalizado × cru (R1 da PoC), zona travada, janela logo após a queda |
+| Falha isolada de zona | 503 com `Retry-After` e página própria, sonda de saúde por zona com cache de 1 s: **implementado, gate reprovou** (C1: caminho com maiúsculas escapa da sonda). A sonda bate na página da zona; **não existe `/{zona}/api/health`** | igual, com zona travada limitada pelo teto do gateway (página da base no documento) e sem janela de 500 cru | gate do shell: caminho normalizado × cru (R1 da PoC), zona travada, janela logo após a queda |
 | Composição | núcleo 0.5.0 tem `criarFragmento` (consumidor) e `responderFragmento` (dono), ADR-0011; nenhuma zona usa ainda | `FragmentoRemoto` com timeout e circuit breaker | rota `_fragmento` na zona 2, bloco na zona 1, recusa de `/{zona}/_fragmento/` no shell |
 | SSE | não há | `/api/stream` no shell + `SharedWorker` | — |
 | Design system | `@erp/moldura` (moldura e toast) | `@erp/ui` publicado com semver tolerante | medir duplicação de bundle entre zonas antes |

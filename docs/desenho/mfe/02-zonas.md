@@ -199,14 +199,12 @@ como as zonas sobem em momentos diferentes, sempre há alguém que não atualizo
 
 Checklist para um time novo. A ordem importa: cada passo depende do anterior.
 
-1. **Registrar a zona no mapa** (§2.1 de `01-operacao.md`). Sem isso, ela não é roteável,
-   não é chamável como fragmento e não aparece na navegação.
+1. **Registrar a rota da zona** (§2.1 de `01-operacao.md`): um passo de deploy, `scripts/registrar-rota.ts` (`pnpm registrar-rota`), que envia o id do pacote e a origem interna lida de `ERP_ZONA_ORIGEM_INTERNA` à gestão de acesso, com o token `svc.{id}`. O prefixo `/{id}` não se registra e a origem nunca fica no código da zona (invariante 17). O shell passa a rotear a zona em até um TTL do mapa (`ERP_MAPA_ZONAS_TTL_MS`), sem editar arquivo nem republicar, desde que o host da origem caiba em `ERP_ZONAS_ORIGENS_PERMITIDAS`. Sem o registro, ela não é roteável. A zona também precisa do manifesto v2 registrado (`pnpm registrar`) para aparecer no acesso.
 2. **Repositório** com `pnpm-workspace.yaml` próprio (`packages: []`), `.npmrc` apontando
    o escopo `@erp` ao registry, e `exactOptionalPropertyTypes: true` no `tsconfig` — sem
    essa flag a ausência do bloco sensível deixa de ser garantida no código desta zona.
 3. **`lib/nucleo.ts`**, a raiz de composição, e `proxy.ts` de uma linha via `criarProxy`.
-4. **`assetPrefix: '/{zona}-static'`** e as três regras de rewrite no shell: raiz da zona,
-   sub-rotas, e assets.
+4. **`assetPrefix: '/{zona}-static'`**. O shell não tem regra de rewrite por zona: o `proxy.ts` roteia a raiz, as sub-rotas e os assets pelo mapa vivo.
 5. **A suíte de invariantes**, rodando contra esta zona. Invariante afirmado sem
    verificação é intenção, e a zona nova não herda as verificações das outras.
 6. **Gate de lockstep** no CI, comparando `@erp/nucleo` com o dist-tag.

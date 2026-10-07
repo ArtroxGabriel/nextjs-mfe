@@ -26,7 +26,7 @@ block-beta
   block:BORDA:3
     columns 2
     T1["Camada 1: borda, a única pública"]:2
-    CDN["CDN<br/>arquivos estáticos"] LB["WAF e balanceador<br/>TLS e limite de taxa"]
+    CDN["CDN<br/>arquivos estáticos"] LB["WAF e balanceador<br/>TLS, limite de taxa<br/>sem x-middleware-*"]
   end
   block:APP:3
     columns 2
@@ -59,7 +59,7 @@ block-beta
 
 Quatro regras sustentam esse desenho:
 
-1. **O navegador conhece um endereço só.** Página, API e telemetria saem da mesma origem, com um certificado e um balanceador (invariante 10).
+1. **O navegador conhece um endereço só.** Página, API e telemetria saem da mesma origem, com um certificado e um balanceador (invariante 10). O balanceador tira da resposta os cabeçalhos `x-middleware-*`: o Next anota neles a reescrita do shell com a origem interna da zona, e sem essa regra o endereço da zona chegaria ao navegador.
 2. **Zona e domínio não têm porta pública.** A zona só é alcançada pelo shell, e o domínio só pela zona. Isso vira regra de firewall a cada zona nova.
 3. **Só o shell grava a sessão.** As zonas leem o Redis com um usuário que só tem permissão de leitura (invariante 15).
 4. **O domínio decide.** Ele valida sozinho o token do usuário com as chaves públicas do provedor OIDC e não confia no BFF para autorizar (invariante 9).
@@ -176,9 +176,9 @@ sequenceDiagram
     S-->>N: página
 ```
 
-O navegador nunca vê o token de acesso, o refresh token, nem o endereço da zona, do domínio ou do Redis.
+O navegador nunca vê o token de acesso, o refresh token, nem o endereço do domínio ou do Redis. O endereço da zona também não chega a ele, com uma condição: o balanceador tira os cabeçalhos `x-middleware-*` da resposta (regra da seção 8). Sem essa regra, o caminho rápido do shell (RSC, arquivos estáticos e Server Actions) devolve `x-middleware-rewrite` com a origem interna da zona, e nenhuma configuração do Next o remove.
 
-Hoje o shell encaminha para a zona por regras geradas do `zonas.json` no build. O [ADR-0015](../adr/0015-mapa-de-zonas-vivo-e-gateway.md), ainda em proposta, troca essa fonte por um mapa lido em tempo de execução.
+O shell encaminha para a zona por um mapa lido em tempo de execução da gestão de acesso, que cada zona alimenta no deploy com o registro da sua rota ([ADR-0015](../adr/0015-mapa-de-zonas-vivo-e-gateway.md)). A navegação de documento passa pelo gateway interno do shell, que entrega a página de indisponível no estouro do teto; RSC, estáticos e Server Actions vão por rewrite. O passo "encaminha pelo mapa de zonas" do diagrama não depende de build: zona nova entra em até um TTL do mapa, sem republicar o shell.
 
 ## 5. Cada serviço e o que acontece se ele cair
 
@@ -186,7 +186,7 @@ Hoje o shell encaminha para a zona por regras geradas do `zonas.json` no build. 
 |---|---|---|
 | CDN | entrega os arquivos estáticos com cache longo | os arquivos vêm do Node, mais devagar, e nada quebra |
 | WAF e limite de taxa | barra rajadas e varreduras antes do Node | o shell recebe o pico direto |
-| Balanceador | termina o TLS e repassa ao shell, sem buffer nas conexões longas | nada funciona |
+| Balanceador | termina o TLS, repassa ao shell sem buffer nas conexões longas e tira os cabeçalhos `x-middleware-*` da resposta | nada funciona |
 | Shell | login, renovação da sessão, encaminhamento às zonas, página de zona fora do ar | nada funciona |
 | Zonas | cada uma renderiza o seu módulo e chama os seus domínios | só aquela zona mostra a página de indisponível |
 | Redis | guarda a sessão, a transação de login e o lock de renovação | ninguém se autentica, de propósito |
@@ -244,6 +244,7 @@ Esta tabela é a regra de firewall. O que não está nela fica bloqueado.
 |---|---|---|---|
 | internet | CDN e balanceador | cookie de sessão | as únicas portas públicas |
 | balanceador | shell | repassa o cookie | conexões longas sem buffer |
+| balanceador | internet (resposta) | nenhuma | remove os cabeçalhos `x-middleware-*`, que trazem a origem interna da zona (ADR-0015, adendo) |
 | shell | zonas | repassa o cookie | o destino vem do mapa de zonas, nunca de um cabeçalho |
 | shell | provedor OIDC | segredo do cliente do shell | login, token e logout |
 | shell | Redis | usuário com escrita | lê e grava a sessão |
@@ -262,7 +263,7 @@ Zona e domínio ficam na mesma rede, com latência perto de 1 ms. Um alarme acim
 |---|---|---|---|
 | CDN | não existe | CDN na frente dos arquivos estáticos | escolher e configurar |
 | WAF e limite de taxa | só o limite da rota de telemetria | na borda, por IP e por sessão | desenho (`01-operacao.md` §8.3) |
-| Balanceador e TLS | HTTP em `localhost` | um certificado e uma origem | escolher o proxy e escrever as regras |
+| Balanceador e TLS | HTTP em `localhost`; o shell devolve `x-middleware-rewrite` com a origem interna da zona no caminho rápido (limite declarado, D31) | um certificado, uma origem e a remoção de `x-middleware-*` na resposta | escolher o proxy e escrever as regras |
 | Rede interna | tudo em `127.0.0.1` | namespaces por time, sem rota da internet | regras de rede por namespace |
 | Redis | contêiner único com `noeviction`, AOF e os dois usuários | o mesmo, com failover e TLS | teste de failover durante a renovação |
 | Avisos em tempo real | não existe | canal por usuário no Redis | item C2 do plano |
