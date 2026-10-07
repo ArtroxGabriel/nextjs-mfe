@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06 (gate do D7 aprovado; Tasks 1–3 do C1 fechadas; gate do C1 iteração 1 vetado só por teste; worker_c1_1 corrigindo)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06 (gate do D7 aprovado; Tasks 1–3 do C1 fechadas; gate do C1 iteração 1 vetado só por teste; correção feita (worker_c1_1); iteração 2 só com auditor)**.
 
 ## Objetivo final
 
@@ -85,7 +85,7 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
 
 **Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente
 (`docker ps`: Redis e Keycloak podem ter caído com a máquina → `task showcase:subir` e `task showcase:checar`); então
-**Em andamento:** correção do veto do gate do C1 por `worker_c1_1` (handoff em `.agents/worker_c1_1/handoff.md`): semente do stub com tarefa de título hostil e uma concluída, e asserções de título, escape e ausência em C1a/C1c. Depois: iteração 2 só com um auditor novo (`auditor_c1_2`), que reaplica E-Z4, E-Z4b, E-Z6, E-Z6b e E-U1b. Se a sessão cair, despachar um worker novo a partir do handoff parcial. Depois do C1: núcleo 0.10.4 (`DEFERRED.md` D29), antes do C3.
+**Em andamento:** gate do C1, iteração 2, **só auditor** (`auditor_c1_2`, Opus): reaplica E-Z4, E-Z4b, E-Z6, E-Z6b e E-U1b sobre a correção do `worker_c1_1` (stub `b85540c`, principal `ca0f4b6`). Se a sessão cair, despachar `auditor_c1_3` só com as etapas que faltam. Depois do C1: núcleo 0.10.4 (`DEFERRED.md` D29), antes do C3.
 
 ## Plano até o objetivo
 
