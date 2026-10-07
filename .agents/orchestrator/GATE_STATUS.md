@@ -399,7 +399,7 @@ Antes do gate (2026-10-07): `task test` verde (contratos 20, núcleo 286, moldur
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
-| revisor_c3_1 | revisor-mfe (sonnet) | em andamento | .agents/revisor_c3_1/handoff.md | |
-| challenger_c3_1 | simulador-condicoes (sonnet) | em andamento | .agents/challenger_c3_1/handoff.md | |
-| auditor_c3_1 | general-purpose forense (opus) | espera o challenger | .agents/auditor_c3_1/handoff.md | |
+| revisor_c3_1 | revisor-mfe (sonnet) | **APPROVE** | .agents/revisor_c3_1/handoff.md | sem crítico nem importante; 4 menores (rota `/_gateway` sem marca de que veio do proxy; `*` do padrão de origem casa pontos; mapa vazio legítimo dá 503 para qualquer `/abc`; `01-operacao.md` cita `caseSensitiveRoutes`) |
+| challenger_c3_1 | simulador-condicoes (sonnet) | **APPROVE** | .agents/challenger_c3_1/handoff.md | 66 grafias de `/_gateway` e 120 pedidos com cabeçalho forjado, nenhum alcança zona; registro hostil descartado pelo shell; origem hostil dentro dos padrões recebe o cookie opaco (risco aceito no ADR-0015); documento com zona travada recebe a página no teto; mapa com fonte fora segue o último bom; navegação real com RSC 200 (ponto aberto do ADR fechado); observações: sem teto total para gotejamento, fallback de RSC não executado, entrada descartada vira 404 |
+| auditor_c3_1 | general-purpose forense (opus) | em andamento | .agents/auditor_c3_1/handoff.md | |
 
