@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { pedir, entrarComo, modoDeLogin, menu } from '../verificacao/apoio.mjs'
 
 const PAGINAS = ['/', '/zona1', '/zona1/relatorios', '/zona1/recursos/r-1', '/zona1/recursos/r-3', '/zona2', '/acesso']
-const ATORES = ['ana', 'bruno', 'carla', 'davi']
+const ATORES = ['ana', 'bruno', 'carla', 'davi', 'eva']
 const SENHA_SHELL = process.env.ERP_REDIS_SENHA_SHELL ?? 'dev-shell-escrita'
 const ACESSO_URL = process.env.ACESSO_URL ?? 'http://127.0.0.1:4020'
 const COMPOSE = ['compose', '-f', join(import.meta.dirname, 'docker-compose.yml')]
@@ -58,13 +58,13 @@ ok('carla (admin de acesso) não vê custo', !/CC-10/.test((await pedir('/zona1/
 // segurança visível de fora
 const r = await pedir('/', { cookie: bruno })
 ok('CSP com nonce', /'nonce-[^']+'/.test(r.csp ?? ''))
-ok('nenhum token no HTML', !/dev\.(ana|bruno|carla|davi)\.|eyJ/.test(r.html))
+ok('nenhum token no HTML', !/dev\.(ana|bruno|carla|davi|eva)\.|eyJ/.test(r.html))
 
 // bloco da zona 2 no painel da zona 1 (fragmento, C1): só para quem tem os dois módulos
 const bloco = async (u) => /data-fragmento="zona2\/tarefas"/.test((await pedir('/zona1', { cookie: (await entrarComo(u, { modo })).cookie })).html)
 const comBloco = {}
 for (const u of ATORES) comBloco[u] = await bloco(u)
-ok('bloco "Tarefas pendentes (zona 2)" no painel da zona 1: ana vê; bruno e davi não', comBloco.ana && !comBloco.bruno && !comBloco.davi,
+ok('bloco "Tarefas pendentes (zona 2)" no painel da zona 1: só a ana vê; bruno, carla, davi e eva não', comBloco.ana && ATORES.every((u) => u === 'ana' || !comBloco[u]),
   ATORES.map((u) => `${u} ${comBloco[u] ? 'vê' : 'não vê'}`).join(', '))
 
 // mapa de zonas na gestão de acesso (C3)

@@ -51,6 +51,7 @@ task base          # sobe tudo em http://localhost:3000 (Ctrl-C derruba)
 
 ```bash
 task showcase            # Redis + Keycloak + domínios com dados gravados + shell e 3 zonas; Ctrl-C derruba
+task showcase -- --log   # o mesmo, com os logs do shell e das zonas no terminal (a linha de erro do passo A15 do roteiro)
 task showcase:conferir   # noutro terminal: o que cada ator vê em cada zona, infraestrutura e segurança visível
 task showcase:zona-demo  # noutro terminal: uma zona nova entra, cai, volta e sai sem reiniciar o shell
 task showcase:oidc       # o mesmo com login pelo Keycloak (OIDC + PKCE; senha = nome do ator) e domínios em modo JWT;

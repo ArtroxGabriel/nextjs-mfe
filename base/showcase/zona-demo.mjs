@@ -4,14 +4,25 @@ import { createInterface } from 'node:readline'
 import { pathToFileURL } from 'node:url'
 import { subirZonaDeTeste } from '../verificacao/zona-de-teste.mjs'
 
+/** Falha de uso esperada: a mensagem basta, sem stack. */
+class ErroDeUso extends Error {}
+
 /**
  * Sobe a zona `demo` e registra a rota. `derrubar` fecha o servidor e deixa a rota registrada (o shell mostra a
  * página de zona fora do ar); `voltar` sobe de novo na mesma porta; `remover` apaga a rota e fecha o servidor.
  */
 export async function subirZonaDemo({ id = 'demo', porta = 3009, hosts = ['127.0.0.1'] } = {}) {
-  let zona = await subirZonaDeTeste({ id, porta, hosts })
+  let zona
+  try { zona = await subirZonaDeTeste({ id, porta, hosts }) } catch (e) {
+    if (e?.code === 'EADDRINUSE') throw new ErroDeUso(`a porta ${porta} já está em uso: já há uma zona demo no ar (outro \`task showcase:zona-demo\`) ou outro processo nela. Feche-o e tente de novo.`)
+    throw e
+  }
   let no_ar = true
-  const registro = await zona.registrar()
+  let registro
+  try { registro = await zona.registrar() } catch {
+    await zona.fechar()
+    throw new ErroDeUso(`não consegui falar com a gestão de acesso (${process.env.ACESSO_URL ?? 'http://127.0.0.1:4020'}): o showcase precisa estar no ar. Suba-o com \`task showcase\` e tente de novo.`)
+  }
   if (registro >= 300) {
     await zona.fechar()
     throw new Error(`a gestão de acesso recusou registrar a rota de ${id} (status ${registro})`)
@@ -42,7 +53,12 @@ export async function subirZonaDemo({ id = 'demo', porta = 3009, hosts = ['127.0
 async function principal() {
   const ms = Number(process.env.ERP_MAPA_ZONAS_TTL_MS ?? 30000)
   const prazo = `em até um TTL do mapa mais uma releitura${Number.isFinite(ms) && ms > 0 ? ` (TTL de ${ms / 1000} s)` : ''}`
-  const demo = await subirZonaDemo()
+  let demo
+  try { demo = await subirZonaDemo() } catch (e) {
+    if (!(e instanceof ErroDeUso)) throw e
+    console.error(e.message)
+    process.exit(1)
+  }
   let saindo = false
   const sair = async (codigo) => {
     if (saindo) return
