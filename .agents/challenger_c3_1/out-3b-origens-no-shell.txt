@@ -1,0 +1,5 @@
+origem http://169.254.169.254 dominio gravou 200 | shell DOC 404 404: This page could not be found. 10ms | RSC 404 xmr= -
+origem http://127.0.0.1.evil.exemplo:3001 dominio gravou 200 | shell DOC 404 404: This page could not be found. 9ms | RSC 404 xmr= -
+origem http://evil.exemplo:3001 dominio gravou 200 | shell DOC 404 404: This page could not be found. 8ms | RSC 404 xmr= -
+origem http://[::1]:3001 dominio gravou 200 | shell DOC 404 404: This page could not be found. 7ms | RSC 404 xmr= -
+restaurada: DOC 404 404: This page could not be found.

@@ -1,0 +1,65 @@
+B quente, fonte no ar:
+ /zona1 200 182ms
+ /zona1 200 58ms
+ /zona1 200 56ms
+guarda no Redis (tamanho/ttl): len= 272 ttl= 86397
+--- fonte FORA (conexao recusada), B quente, 12 s ---
+ t=0s /zona1 200 49ms /zona2 200 43ms
+ t=1.4s /zona1 200 46ms /zona2 200 37ms
+ t=2.8s /zona1 200 43ms /zona2 200 33ms
+ t=4.199999999999999s /zona1 200 45ms /zona2 200 32ms
+ t=5.6s /zona1 200 41ms /zona2 200 29ms
+ t=7s /zona1 200 48ms /zona2 200 32ms
+ t=8.399999999999999s /zona1 200 46ms /zona2 200 30ms
+ t=9.799999999999999s /zona1 200 44ms /zona2 200 31ms
+ t=11.2s /zona1 200 42ms /zona2 200 28ms
+ t=12.6s /zona1 200 39ms /zona2 200 29ms
+--- B FRIO com a fonte fora e a guarda no Redis ---
+ /zona1 200 194ms -
+ /zona1 200 54ms -
+ /zona1 200 44ms -
+--- B FRIO, fonte fora, SEM guarda (DEL erp:mapa-zonas) ---
+ DEL -> 1
+  /zona1 DOC 503 82ms Zona temporariamente indisponível retry-after= 5 supportId= true
+  /zona1 RSC 503 6ms Zona temporariamente indisponível retry-after= 5 supportId= true
+  /zona2 DOC 503 4ms Zona temporariamente indisponível retry-after= 5 supportId= true
+  /zona2 RSC 503 4ms Zona temporariamente indisponível retry-after= 5 supportId= true
+  /zona1/recursos/r-1 DOC 503 3ms Zona temporariamente indisponível retry-after= 5 supportId= true
+  /zona1/recursos/r-1 RSC 503 4ms Zona temporariamente indisponível retry-after= 5 supportId= true
+  /acesso DOC 503 3ms Zona temporariamente indisponível retry-after= 5 supportId= true
+  /acesso RSC 503 4ms Zona temporariamente indisponível retry-after= 5 supportId= true
+  /nao-existe DOC 503 4ms Zona temporariamente indisponível retry-after= 5 supportId= true
+  /nao-existe RSC 503 3ms Zona temporariamente indisponível retry-after= 5 supportId= true
+  /login DOC 200 16ms ERP — entrar retry-after= - supportId= false
+  /login RSC 307 4ms - retry-after= - supportId= false
+ corpo (trecho): <!doctype html> <html lang="pt-BR"> <head> <meta charset="utf-8" /> <meta name="viewport" content="width=device-width, initial-scale=1" /> <title>Zona temporariamente indisponível</title>  </head> <body> <main> <div class="card"> <div class="badge"><span class="dot"></span>Zona "zona1" Offline</div> | vaza= false
+--- fonte volta ---
+ /zona1 503 3ms
+ /zona1 503 6ms
+ /zona1 503 7ms
+ /zona1 200 79ms
+ /zona1 200 39ms
+ /zona1 200 53ms
+--- log do shell B (linhas mapa) ---
+[mapa-zonas] fonte do mapa indisponivel ou invalida: ERRO_INTERNO
+[mapa-zonas] fonte do mapa indisponivel ou invalida: ERRO_INTERNO
+[mapa-zonas] fonte do mapa indisponivel ou invalida: ERRO_INTERNO
+[mapa-zonas] fonte do mapa indisponivel ou invalida: ERRO_INTERNO
+[mapa-zonas] fonte do mapa indisponivel ou invalida: ERRO_INTERNO
+[mapa-zonas] fonte do mapa indisponivel ou invalida: ERRO_INTERNO
+[mapa-zonas] fonte do mapa indisponivel ou invalida: ERRO_INTERNO
+[mapa-zonas] fonte do mapa indisponivel ou invalida: ERRO_INTERNO
+[zona] zona1: motivo=mapa-vazio codigo=ERRO_INTERNO supportId=c830dd98-9998-493a-ae98-240a25584d91
+[zona] zona1: motivo=mapa-vazio codigo=ERRO_INTERNO supportId=c6548aa9-8ec3-4a1a-8642-4dbee43d797d
+[zona] zona2: motivo=mapa-vazio codigo=ERRO_INTERNO supportId=2b386f30-b4a9-48fb-899c-bd5554df4dd2
+[zona] zona2: motivo=mapa-vazio codigo=ERRO_INTERNO supportId=e956daf3-b39f-4aeb-8b1d-2716d3e81ace
+[zona] zona1: motivo=mapa-vazio codigo=ERRO_INTERNO supportId=c44b144e-6a59-4d8b-849c-fe293a4e2039
+[zona] zona1: motivo=mapa-vazio codigo=ERRO_INTERNO supportId=86383bb1-9853-4355-89ba-b184db5d94dd
+[zona] acesso: motivo=mapa-vazio codigo=ERRO_INTERNO supportId=0207838c-5cc8-4708-bfc2-daf84c2ad6ab
+[zona] acesso: motivo=mapa-vazio codigo=ERRO_INTERNO supportId=0244d13a-4c92-4fa8-8b04-cfd3549b9bf6
+[zona] nao-existe: motivo=mapa-vazio codigo=ERRO_INTERNO supportId=78f3a068-f8ae-465e-a369-5a0c8c2c3fff
+[zona] nao-existe: motivo=mapa-vazio codigo=ERRO_INTERNO supportId=1f618837-5ceb-447b-a24b-1102b4ef9b68
+[zona] zona1: motivo=mapa-vazio codigo=ERRO_INTERNO supportId=c13c75fc-be2c-487c-affd-314aeefab85a
+[zona] zona1: motivo=mapa-vazio codigo=ERRO_INTERNO supportId=51a50742-5d70-4162-935d-d227cc8c6b5c
+[zona] zona1: motivo=mapa-vazio codigo=ERRO_INTERNO supportId=b5538588-6fdd-4f6f-9013-a9e751e21612
+[zona] zona1: motivo=mapa-vazio codigo=ERRO_INTERNO supportId=7026a736-bda0-49e6-84e5-fd77bc255f6e

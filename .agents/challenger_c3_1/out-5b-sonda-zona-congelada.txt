@@ -1,0 +1,7 @@
+DOC zona1 congelada #0 503 526ms retry-after= 5 len= 1893
+DOC zona1 congelada #1 503 508ms retry-after= 5 len= 1893
+DOC zona1 congelada #2 503 506ms retry-after= 5 len= 1893
+DOC zona1 congelada #3 503 507ms retry-after= 5 len= 1893
+RSC congelada 503 507ms len= 1893
+zona2 viva durante 200 44ms
+depois do SIGCONT 200 53ms

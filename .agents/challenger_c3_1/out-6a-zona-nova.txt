@@ -1,0 +1,6 @@
+antes de registrar: /zona9 -> 404
+registro 200
+zona9 apareceu apos ms 2364 tentativas 10 (TTL=2000)
+remocao 204
+zona9 sumiu apos ms 2104 tentativas 9
+zona9 apos sumir, sem cookie: 307 | com cookie RSC: 404

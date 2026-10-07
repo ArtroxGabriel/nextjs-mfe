@@ -1,0 +1,17 @@
+registro zona travada 200
+sanidade 200
+DOC antes dos cabecalhos #0 503 4010ms ct= text/html; charset=utf-8 retry-after= 5 cc= no-store supportId= 3862e2b4-d6b3-40b3-9157-c8ecd62096f0 len= 2042 vaza= false
+DOC antes dos cabecalhos #1 503 4031ms ct= text/html; charset=utf-8 retry-after= 5 cc= no-store supportId= 148100d0-a4b3-4d22-804d-a7341621c832 len= 2042 vaza= false
+DOC antes dos cabecalhos #2 503 4023ms ct= text/html; charset=utf-8 retry-after= 5 cc= no-store supportId= 8465c63e-4285-43fe-a9ee-a81447708d87 len= 2042 vaza= false
+corpo (trecho): <!doctype html> <html lang="pt-BR"> <head> <meta charset="utf-8" /> <meta name="viewport" content="width=device-width, initial-scale=1" /> <title>Zona temporariamente indisponível</title> <style> :root { --bg-color: #030712; --card-bg: #111827; --text-color: #f9fafb; --text-muted: #9ca3af; --border-color: #1f2937; --accent: #38bdf8; --danger: #ef4444; } * { box-sizing: border-box; margin: 0; paddi
+headers: {"x-middleware-rewrite":"/_gateway/zona1/pendura","vary":"rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch","cache-control":"no-store","content-type":"text/html; charset=utf-8","retry-after":"5","date":"Wed, 07 Oct 2026 18:25:12 GMT","connection":"keep-alive","keep-alive":"timeout=5","transfer-encoding":"chunked"}
+HEAD antes dos cabecalhos 503 4014ms
+RSC antes dos cabecalhos #0 500 4031ms ct= undefined loc= - len= 21 corpo= Internal Server Error
+RSC antes dos cabecalhos #1 500 4012ms ct= undefined loc= - len= 21 corpo= Internal Server Error
+Server Action antes dos cabecalhos 500 4013ms len= 21 corpo= Internal Server Error
+DOC depois do primeiro byte (para): {"st":200,"first":13,"fim":6016,"bytes":25,"abortado":true}
+DOC depois do primeiro byte (para) #2: {"st":200,"first":14,"fim":6016,"bytes":25,"abortado":true}
+RSC depois do primeiro byte (para): {"st":200,"first":11,"fim":4012,"bytes":25,"abortado":true}
+DOC gotejo 1 byte/s (nunca ocioso): {"semCorteEm20s":true}
+restaura 200
+restaurada DOC 200

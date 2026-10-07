@@ -1,0 +1,40 @@
+push /zona1/relatorios -> URL /zona1/relatorios | h1: Relatórios | navegacao completa (type!=navigate count): 1
+push /zona1 -> URL /zona1 | h1: Painel da zona 1 | navegacao completa (type!=navigate count): 1
+push /zona1/recursos/r-1 -> URL /zona1/recursos/r-1 | h1: Recurso público 1 | navegacao completa (type!=navigate count): 1
+push /zona1 -> URL /zona1 | h1: Painel da zona 1 | navegacao completa (type!=navigate count): 1
+fetch RSC vistos pelo JS do Next: [
+ {
+  "u": "http://localhost:3000/zona1/relatorios?_rsc=zcNLuQiGHAVatZ7b",
+  "status": 200,
+  "redirected": false,
+  "type": "basic",
+  "ct": "text/x-component",
+  "ms": 15
+ },
+ {
+  "u": "http://localhost:3000/zona1?_rsc=-HUjvCsN9E7BxGZu",
+  "status": 200,
+  "redirected": false,
+  "type": "basic",
+  "ct": "text/x-component",
+  "ms": 29
+ },
+ {
+  "u": "http://localhost:3000/zona1/recursos/r-1?_rsc=zcNLuQiGHAVatZ7b",
+  "status": 200,
+  "redirected": false,
+  "type": "basic",
+  "ct": "text/x-component",
+  "ms": 25
+ },
+ {
+  "u": "http://localhost:3000/zona1?_rsc=DECmS49fvXkSheOm",
+  "status": 200,
+  "redirected": false,
+  "type": "basic",
+  "ct": "text/x-component",
+  "ms": 25
+ }
+]
+clique no link relatorios: clicou
+ URL /zona1/relatorios | window.__marca preservado (sem hard nav): false | fetch RSC: undefined
