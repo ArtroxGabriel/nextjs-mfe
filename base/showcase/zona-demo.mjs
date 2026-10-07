@@ -64,7 +64,7 @@ async function principal() {
 O shell relê o mapa de zonas de tempos em tempos (ERP_MAPA_ZONAS_TTL_MS), sem reiniciar.
 
 1. Entre no showcase com qualquer ator e abra ${demo.url}. A página aparece ${prazo}.
-2. Enter: derruba a zona. A rota continua no mapa, então a queda é imediata: recarregue a página e veja a página de zona fora do ar.
+2. Enter: derruba a zona. A rota continua no mapa, então não há espera pelo mapa: recarregue a página e, em até cerca de 1 s (ERP_SONDA_TTL_MS), veja a página de zona fora do ar.
 3. Enter de novo: a zona volta. Recarregue a página.
 4. Ctrl-C: remove a rota e sai. A página volta a 404 ${prazo}.
 `)
