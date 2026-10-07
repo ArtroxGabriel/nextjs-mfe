@@ -443,4 +443,6 @@ Gate Result: **VETO (só por teste)**. Correção com worker_e3e5_2: teste do `z
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
 | worker_e3e5_2 | correção do veto (sonnet) | — | .agents/worker_e3e5_2/handoff.md | só teste: `base/scripts/zona-demo.test.mjs` (6 testes, processo filho contra gestão de acesso falsa) e F4 com a rota no mapa depois de derrubar; ZD1 a ZD6 reprovam; `scripts:test` 35/35, `showcase:verificar` 7/7 |
-| auditor_e3e5_2 | general-purpose forense (opus) | em andamento | .agents/auditor_e3e5_2/handoff.md, mutacoes.txt | |
+| auditor_e3e5_2 | general-purpose forense (opus) | **VETO (só por teste)** | .agents/auditor_e3e5_2/handoff.md, mutacoes.txt | correção só de teste confirmada; ZD1 a ZD6 pegas (ZD6 também pelo F4 no showcase); 17 mutações novas, 8 pegas, 4 vivas equivalentes, 5 vivas de boa-fé nos sinais e no laço do comando: N4 sem SIGHUP, N3 SIGTERM sem remover, N5 fim da entrada sem remover, N6 Enter mandando DELETE, N1 DELETE 404 deixando de ser tolerado; o pulo com a 3009 ocupada não funciona (`skip` avaliado antes do `before`); `setTimeout` sem limpar deixa o arquivo em 8,7 s; regressão por família verde |
+
+Gate Result: **VETO (só por teste)**. Correção com worker_e3e5_3: casos de SIGINT, SIGTERM e SIGHUP, fim da entrada, Enter sem DELETE e DELETE 404 tolerado no `base/scripts/zona-demo.test.mjs`; pulo por `t.skip()`; temporizadores limpos. Iteração 4: só um auditor novo.
