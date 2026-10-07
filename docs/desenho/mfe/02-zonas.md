@@ -124,6 +124,38 @@ código de um módulo executando com os privilégios do documento de outro.
 **Interatividade num bloco remoto é da zona consumidora.** Ela recebe o conteúdo inerte e
 o embrulha na própria ilha, com o próprio nonce.
 
+**Como o núcleo verifica "inerte".** `ehHtmlInerte` (`@erp/nucleo`, 0.10.4) valida por **lista de
+permissão**. O fragmento é escrito por uma zona da própria base, em forma canônica; a gramática
+é estreita de propósito, e o que não estiver nela é recusado, sem tentar entender HTML
+arbitrário.
+
+| Token | Forma aceita |
+|---|---|
+| abertura | `<tag>` ou `<tag a="v" b="v">`: tag em minúsculas, **um espaço** antes de cada atributo, valor sempre entre `"` |
+| fechamento | `</tag>`, fechando a última tag aberta (pilha) |
+| texto | qualquer caractere, exceto `<`, `>`, `&` solto e controle (tab, LF e CR são aceitos); entidade só `&amp;` `&lt;` `&gt;` `&quot;` `&#39;` `&nbsp;` |
+
+Qualquer outro `<` ou `>` reprova: comentário, doctype, CDATA, `<img/onerror>`, maiúsculas,
+atributo sem aspas ou com aspas simples. No fim do texto a pilha precisa estar vazia; fechamento
+sobrando (`</section></main>`) quebraria o layout da consumidora, que embute o HTML com
+`dangerouslySetInnerHTML`.
+
+| | Permitido |
+|---|---|
+| tags | `section` `div` `span` `p` `h2` `h3` `h4` `ul` `ol` `li` `a` `strong` `em` `small` `time` `br` (`br` é vazia: sem fechamento) |
+| atributos em qualquer tag | `id` `class` `aria-label` `aria-labelledby` `aria-describedby` `data-fragmento` |
+| atributos por tag | `a`: `href`; `time`: `datetime` |
+| valor de atributo | texto sem `"`, `<`, `>`, `` ` ``, controle nem `&` solto; entidade só as cinco de escape (sem `&nbsp;`) |
+| `href` | caminho da mesma origem: começa com `/`, não com `//` nem `/\`; só `A-Za-z0-9-._~/?=%#`. Sem `:` (nenhum esquema), sem `&` (nenhuma entidade), sem espaço |
+
+Atributo repetido na mesma tag reprova. Ficam de fora de propósito: `img` (carrega recurso de
+outra origem), `table`, `style`, `form`, `button`, `input` e `title`.
+
+**Abrir a lista é commit com teste.** Quem precisar de tag, atributo ou forma de `href` nova
+altera a lista em `fragmento.ts` e acrescenta o teste no mesmo commit. Até lá, fragmento com
+tag nova reprova (a consumidora o trata como bloco ausente). Limites conhecidos da lista estão
+em `.agents/orchestrator/DEFERRED.md` (D30).
+
 ### 2.4 Estilo
 
 O fragmento usa **apenas tokens do `@erp/ui`**, nunca classes utilitárias da zona dona.
@@ -134,6 +166,9 @@ bundle — o bloco chegaria sem estilo.
 
 O consumidor envia `Accept-Fragmento-Versao: 1`. A zona dona serve a versão pedida ou
 responde `204`.
+
+Sem o cabeçalho `Accept-Fragmento-Versao`, a dona serve a versão 1; só recusa (`204`) versão
+diferente dela.
 
 Isso transforma incompatibilidade em **bloco ausente**, que já é um estado que o desenho
 trata, em vez de bloco quebrado, que não é. Trocar a versão é mudança de contrato: publica

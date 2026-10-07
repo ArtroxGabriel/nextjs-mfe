@@ -63,3 +63,13 @@ Decisão preparada pelo `arquiteto-mfe` em 2026-09-21.
   com a origem da zona 2 em `ZONA2_URL`. O shell responde 404 a `/{zona}/_fragmento/...` vindo do navegador, antes da
   sonda e do cookie (decisão 8). Verificações C1a–C1d em `base/verificacao/base.test.mjs`.
 - Continua fora: circuit breaker e `<Suspense>` em volta do bloco (`alvo.md` §6); hoje o limite é o timeout de 2 s.
+
+## Adendo 2 (2026-10-07): "inerte" passa a ser lista de permissão
+
+- Motivo: o gate do C1 mostrou que a validação por lista de proibição (`<script>`, `on*=`) deixava passar o que a CSP
+  não barra (atributos e esquemas que ela não cobre). A consumidora embute o HTML com `dangerouslySetInnerHTML`; a
+  verificação precisa recusar tudo o que não foi previsto.
+- Decisão: `ehHtmlInerte` (`@erp/nucleo` 0.10.4) aceita só a gramática e as listas de `docs/desenho/mfe/02-zonas.md`
+  §2.3 (tags, atributos, `href` de mesma origem).
+- Consequência: fragmento com tag ou atributo novo reprova até a lista abrir, e abrir é commit com teste. Limites
+  declarados da lista: D30 em `.agents/orchestrator/DEFERRED.md`.
