@@ -362,3 +362,16 @@ humano: conta como teste) e asserções de título, escape e ausência em C1a/C1
 
 Gate Result: **VETO (só por teste)**. Correção: no C1c, a estrutura do painel de bruno/davi sem nenhum elemento além dos blocos
 deles; no C1a/C1c, `<li>` com o título escapado. Iteração 3: só um auditor novo.
+
+## Gate — C1, iteração 3 (só auditor: veto só por teste), principal `a95aade` (correção em `103c656`)
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| worker_c1_2 | correção do veto (opus) | — | .agents/worker_c1_2/handoff.md | só `base.test.mjs`: `elementosDoPainel` exige para bruno/davi o primeiro nível do `<main>` = `h1, section:indicadores, section:recursos, button`; título escapado dentro de `<li>` |
+| auditor_c1_3 | general-purpose forense (opus) | **PASS** | .agents/auditor_c1_3/handoff.md, mutacoes.txt | as 5 do veto pegas e o controle verde; 14 variantes, 10 pegas; 4 vivas por contorno (A2: texto neutro dentro de uma seção, no layout ou no `h1`) → `DEFERRED.md` D30; regressão por família 18/18; falso vermelho com `title` no link de relatórios (observação) |
+
+Gate Result: **PASS**. Fecha o **C1** (#10): a zona 1 embute o bloco de tarefas da zona 2 por fragmento (ADR-0011, adendo 1),
+o shell recusa `_fragmento` do navegador, e a zona 2 fora ou travada apaga só o bloco. Estado ao fim: `task test` verde (stub 75,
+shell 116), `task verificar` 119 + 4 pulados, `verificar:redis` 123/123, `verificar:estatica` 51/51, árvores limpas, portas
+livres. Pastas dos verificadores e workers removidas depois do registro; última versão no commit `b091977`
+(`git show b091977:.agents/<nome>/handoff.md`). Tag `gate-c1-aprovado`.

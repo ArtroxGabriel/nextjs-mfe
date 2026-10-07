@@ -186,3 +186,21 @@
 - **Decisão do humano (2026-10-06):** corrigir logo depois do gate do C1, antes do C3: núcleo 0.10.4 (lista de permissão
   de tags e atributos, não lista de bloqueio), lockstep nas 4 apps, com gate próprio.
 - **Fecha em:** núcleo 0.10.4.
+
+## D30 — Menores e limites declarados do C1 (tasks e gate, 2026-10-06)
+
+- **O que é:** achados sem defeito de produto das revisões das Tasks 1–3 e do gate do C1 (ledger em
+  `ledger/2026-10-06-c1-fragmentos-entre-zonas/`; handoffs em `git show b091977:.agents/<nome>/handoff.md`).
+- **Limites declarados (auditor_c1_3, regra A2):** a checagem estrutural do C1c olha só o primeiro nível do `<main>`; texto
+  neutro dentro de uma seção da zona 1, no layout ou no `h1` só é pego pela guarda de texto. V-Z6d (filtro `versao === 1`) é contorno.
+- **Grafias no shell (challenger_c1_1):** `//` e barra final dão 308 para a forma canônica (que dá 404); `%2F`, `%20`, `%00` e `;`
+  passam pela guarda, mas não casam a rota da zona 2 (307 ao login sem cookie; 404 HTML da zona com cookie). Endurecimento
+  opcional: colapsar `/+` e tratar `%2F` antes do regex.
+- **Contrato:** a zona 2 serve o fragmento sem `Accept-Fragmento-Versao` (o núcleo só recusa versão diferente de 1); falta a
+  linha em `02-zonas.md` §2.5 dizendo isso.
+- **Menores:** o painel pede o fragmento também a quem não tem a zona 2 (um 204 por render); `ZONA2_URL` inválida derruba a
+  página na carga; o ADR-0011 (adendo 1) cita o `alvo.md` §6, fora de commit; `atual.md` sem a aresta zona 1 → zona 2; o
+  `p:relatorios` do `elementosDoPainel` casa a string exata (falso vermelho com um `title` inocente; usar o `href`); C1a sem o
+  caso "nada pendente"; falha de domínio e acesso negado dão o mesmo 204 (intencional).
+- **Fecha em:** o contrato e o `atual.md` com o E4 (roteiro); a guarda do shell e o `p:relatorios` quando o shell ou o teste forem
+  tocados de novo; o resto, um por um, se incomodar.

@@ -1,3 +1,0 @@
-[V-U1c] bruno 200: "</section><p>Bloco indisponível no momento.</p><button type=\"button\">Avisar no toast do shell</button><!--$--><!--/$--></main><div class=\"moldura-toasts\" role=\""
-[V-U1c] davi 200: "</section><p>Bloco indisponível no momento.</p><button type=\"button\">Avisar no toast do shell</button><!--$--><!--/$--></main><div class=\"moldura-toasts\" role=\""
-[V-U1c] ana 200: "</section><div><section data-fragmento=\"zona2/tarefas\" aria-labelledby=\"fragmento-zona2-tarefas\"><h2 id=\"fragmento-zona2-tarefas\">Tarefas pendentes (zona 2)</h2"

@@ -1,3 +1,0 @@
-[E-Z4] painel /zona1 ana: 200; CSP: default-src 'self'; script-src 'self' 'nonce-c362dc1a19b14955a99faeda262a8747' 'strict-dynamic'; style-src 'self' 'nonce-c362dc1a19b14955a99faeda262a8747'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
-[E-Z4] bloco: <section data-fragmento="zona2/tarefas" aria-labelledby="fragmento-zona2-tarefas"><h2 id="fragmento-zona2-tarefas">Tarefas pendentes (zona 2)</h2><ul><li>Revisar cadastro</li><li>Conferir inventário</li><li>A <img/onerror=alert(1) src=x> & B</li><li><meta http-equiv=refresh content="0;url=https://exemplo.invalid/"></li></ul><p><a href="/zona2">Abrir as tarefas</a></p></section>
-[E-Z4] /zona2/_fragmento/tarefas/pendentes: zona2 direto 200 COM BLOCO; shell 404

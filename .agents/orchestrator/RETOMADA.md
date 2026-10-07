@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06 (gate do D7 aprovado; Tasks 1–3 do C1 fechadas; gate do C1 iteração 1 vetado só por teste; correção feita (worker_c1_1); iteração 2 vetada só por teste; correção feita; iteração 3 só com auditor)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-06 (gate do C1 aprovado na iteração 3; próximo: núcleo 0.10.4, D29)**.
 
 ## Objetivo final
 
@@ -60,7 +60,7 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
 | Unidades | contratos 20, núcleo 271, moldura 26, stub 75, shell 108; estática 51/51 | `task test`, `task verificar:estatica` |
 | Pacotes | `@erp/nucleo` **0.10.3**, `@erp/contratos` **0.4.0**, `@erp/moldura` **0.5.0**, só no Verdaccio desta máquina; lockstep ok | `task lockstep` |
 | ADRs | 0013 com adendos 1–3 e 0014 com adendo 1, aceitos | `docs/adr/` |
-| Gates fechados | shell, B1+D1+G3+K, D2, D19-B (2026-10-06, tag `gate-d19b-aprovado`), **D7** (2026-10-06, iteração 1, tag `gate-d7-aprovado`) | `GATE_STATUS.md` |
+| Gates fechados | shell, B1+D1+G3+K, D2, D19-B (2026-10-06, tag `gate-d19b-aprovado`), D7 (2026-10-06, iteração 1, tag `gate-d7-aprovado`), **C1** (2026-10-06, iteração 3, tag `gate-c1-aprovado`) | `GATE_STATUS.md`
 
 ## Próximo passo: C1, depois C3 (ordem do humano, 2026-10-06; D7 ✅)
 
@@ -72,7 +72,8 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
    **Decisão do humano (2026-10-06): teto agora, página com o C3.** O `proxyTimeout` do Next conta inatividade do socket e, ao
    estourar, o próprio Next escreve o 500 cru (`proxy-request.js`, sem gancho); o D7 entrega `ERP_ZONA_TETO_MS` (10 s, B1) e a
    página de indisponível dentro do teto passa a ser requisito do C3.
-2. ⏳ **C1 — fragmentos entre zonas** (#10). Plano: `docs/superpowers/plans/2026-10-06-c1-fragmentos-entre-zonas.md` (3 tasks + gate: dona na zona 2, recusa no shell, bloco no painel da zona 1 com `ZONA2_URL`). **Task 1 ✅** (zona 2 `1626fd1`, principal `eb5cf05`, C1a; revisão limpa, 3 menores no ledger). **Task 2 ✅** (shell `836ddc4`, principal `4e9de60`, C1b; revisão limpa; suspeita de grafia com barra dupla para o challenger do gate). **Task 3 ✅** (zona 1 `39c4b76`, principal `decd1ae`, C1c e C1d; `verificar` 119 + 4 pulados, `verificar:redis` 123/123, estática 51/51; revisão limpa). **Gate iteração 1 em andamento** (2026-10-06): `revisor_c1_1` APROVA (6 menores), `challenger_c1_1` APROVA (50 grafias, nenhuma alcança a rota pelo shell; portas liberadas); `auditor_c1_1` **VETO só por teste** (escape, placeholder no painel e filtro de pendentes não testados). Correção: `worker_c1_1` (semente do stub + asserções em C1a/C1c); iteração 2 só com um auditor novo (decisão do humano, 2026-10-06). Núcleo pronto desde a 0.5.0 (`criarFragmento`/`responderFragmento`, ADR-0011).
+2. ✅ **C1 — fragmentos entre zonas** (#10). Plano: `docs/superpowers/plans/2026-10-06-c1-fragmentos-entre-zonas.md`. Zona 2 `1626fd1` (dona), shell `836ddc4` (recusa), zona 1 `39c4b76` (bloco, `ZONA2_URL`); testes C1a–C1d. **Gate aprovado na iteração 3** (2026-10-06): revisor e challenger APROVAM; auditor vetou duas vezes só por teste (escape, filtro, placeholder) e passou na 3; tag `gate-c1-aprovado`. Menores e limites em `DEFERRED.md` D30.
+2b. ⬜ **Núcleo 0.10.4 — `ehHtmlInerte` por lista de permissão** (`DEFERRED.md` D29; decisão do humano, 2026-10-06: logo depois do C1, antes do C3). Plano em `docs/superpowers/plans/`, lockstep nas 4 apps, gate próprio.
    Falta: rota `_fragmento` na zona 2, bloco dela na zona 1, o shell recusa `/{zona}/_fragmento/` vindo do navegador, e
    o teste ponta a ponta.
 3. ⬜ **C3 — mapa de zonas pelos manifestos** (#14). Zona nova entra sem editar o `zonas.json` nem republicar o shell.
@@ -85,7 +86,7 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
 
 **Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente
 (`docker ps`: Redis e Keycloak podem ter caído com a máquina → `task showcase:subir` e `task showcase:checar`); então
-**Em andamento:** gate do C1, iteração 2 vetada só por teste (`auditor_c1_2`: placeholder com outro texto e escape da lista inteira não pegos). Correção feita por `worker_c1_2` (principal `103c656`, só teste); **iteração 3 em andamento**, só com `auditor_c1_3`, que reaplica V-U1c, V-U1d, V-U1f, V-Z4e e E-U1b. Depois do C1: núcleo 0.10.4 (`DEFERRED.md` D29), antes do C3.
+escrever o plano do **núcleo 0.10.4** (`DEFERRED.md` D29: `ehHtmlInerte` por lista de permissão de tags e atributos; lockstep nas 4 apps) em `docs/superpowers/plans/` e seguir task a task. Nada está rodando e nenhum agente está aberto.
 
 ## Plano até o objetivo
 
@@ -101,7 +102,7 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · ⏸️ depois do objeti
 | | B3 `/{zona}/api/health` sem domínio; sonda do shell o usa | ✅ gate B1+D1+G3+K aprovado | #3 | — |
 | | B5 parâmetros em configuração (B5a shell, B5b núcleo) | ✅; os de sessão entram com o D2 | #20 | — |
 | | B4/B6 verificações estáticas de segurança | ✅ 48 testes; limites em D14, lacunas em D15 (K6) | #20 | — |
-| **C. Funcionalidades** | C1 fragmentos entre zonas | ⬜ | #10 | B1 |
+| **C. Funcionalidades** | C1 fragmentos entre zonas | ✅ gate aprovado (2026-10-06, iteração 3) | #10 | B1 |
 | | C2 SSE no shell (`/api/stream` + `SharedWorker`) | ⏸️ depois do objetivo (humano, 2026-10-06) | #11 | B1; decisão B ok |
 | | **D7** zona travada segura a requisição ~30 s e devolve 500 cru (separado do C2) | ✅ teto; gate aprovado (2026-10-06); página com o C3 | #11 | — |
 | | C3 mapa de zonas vindo dos manifestos | ⬜ básico (humano, 2026-10-06) | #14 | B1 |

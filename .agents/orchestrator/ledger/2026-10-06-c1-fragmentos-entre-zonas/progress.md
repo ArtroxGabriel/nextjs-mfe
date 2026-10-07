@@ -21,3 +21,4 @@ Task 3: minor (deferred): C1c does not check the RSC payload nor token absence i
 Task 3: minor (deferred, outside diff, core): ehHtmlInerte misses <img/onerror= (slash instead of space); CSP without nonce blocks it, but the gate auditor should try it
 Task 3: cannot-verify resolved: no co-author footer in decd1ae nor 39c4b76 (checked)
 Task 3: complete (main 3e180ac..decd1ae, zona-1 860a176..39c4b76, review clean)
+Gate: PASS at iteration 3 (it.1 and it.2 vetoed by test only, fixed by worker_c1_1/worker_c1_2); tag gate-c1-aprovado

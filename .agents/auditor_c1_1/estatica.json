@@ -1,7 +1,0 @@
-[
- {"id":"T-U4","repo":"repos/erp-zona-1","arquivo":"app/zona1/page.tsx","nota":"exigida: fetch direto a zona 2 no painel (N8)","antes":"fragmentos.buscar('zona2', 'tarefas', 'pendentes'),","depois":"fetch('http://127.0.0.1:3002/zona2/_fragmento/tarefas/pendentes').then((r) => r.text(), () => null),","modos":["estatica"]},
- {"id":"T-U4b","repo":"repos/erp-zona-1","arquivo":"app/zona1/page.tsx","nota":"variante: globalThis.fetch","antes":"fragmentos.buscar('zona2', 'tarefas', 'pendentes'),","depois":"globalThis.fetch('http://127.0.0.1:3002/zona2/_fragmento/tarefas/pendentes').then((r) => r.text(), () => null),","modos":["estatica"]},
- {"id":"T-U4c","repo":"repos/erp-zona-1","arquivo":"app/zona1/page.tsx","nota":"variante: globalThis['fetch']","antes":"fragmentos.buscar('zona2', 'tarefas', 'pendentes'),","depois":"globalThis['fetch']('http://127.0.0.1:3002/zona2/_fragmento/tarefas/pendentes').then((r) => r.text(), () => null),","modos":["estatica"]},
- {"id":"T-U4d","repo":"repos/erp-zona-1","arquivo":"lib/fragmentos.ts","nota":"variante: fetch proprio injetado no criarFragmento","antes":"  lerCookieDeSessao:","depois":"  fetch: (u, i) => fetch(u, i),\n  lerCookieDeSessao:","modos":["estatica"]},
- {"id":"T-A5","repo":"","arquivo":"base/scripts/ambiente.mjs","nota":"exigida: ZONA2_URL fora de AMBIENTE_PERMITIDO.zona","antes":"'DOMINIO_C_URL', 'ZONA2_URL',","depois":"'DOMINIO_C_URL',","modos":["scripts"]}
-]
