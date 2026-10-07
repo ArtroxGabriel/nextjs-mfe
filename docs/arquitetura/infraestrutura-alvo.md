@@ -1,12 +1,8 @@
 # Infraestrutura alvo
 
-Este documento mostra os serviços que a base precisa para rodar fora da máquina de desenvolvimento, quem cuida de
-cada um e onde cada um roda. O funcionamento interno das aplicações está em [`alvo.md`](alvo.md), e o que existe hoje
-está em [`atual.md`](atual.md). O que falta para chegar ao alvo está na seção 9.
+Este documento mostra os serviços que a base precisa para rodar fora da máquina de desenvolvimento, quem cuida de cada um e onde cada um roda. O funcionamento interno das aplicações está em [`alvo.md`](alvo.md), e o que existe hoje está em [`atual.md`](atual.md). O que falta para chegar ao alvo está na seção 9.
 
-Fontes: [`infraestrutura-fora-da-vercel.md`](../desenho/mfe/infraestrutura-fora-da-vercel.md),
-[`01-operacao.md`](../desenho/mfe/01-operacao.md), [`07-observabilidade.md`](../desenho/bff/07-observabilidade.md),
-[`PENDENCIAS.md`](../desenho/bff/PENDENCIAS.md) e os ADRs 0002, 0004 e 0013.
+Fontes: [`infraestrutura-fora-da-vercel.md`](../desenho/mfe/infraestrutura-fora-da-vercel.md), [`01-operacao.md`](../desenho/mfe/01-operacao.md), [`07-observabilidade.md`](../desenho/bff/07-observabilidade.md), [`PENDENCIAS.md`](../desenho/bff/PENDENCIAS.md) e os ADRs 0002, 0004 e 0013.
 
 ## Como ler os diagramas
 
@@ -18,80 +14,59 @@ Fontes: [`infraestrutura-fora-da-vercel.md`](../desenho/mfe/infraestrutura-fora-
 | seta contínua | chamada feita durante a requisição do usuário |
 | seta tracejada | chamada fora da requisição do usuário, como telemetria ou deploy |
 
-As cores seguem a camada: vermelho para a borda, azul para a aplicação, verde para os domínios e amarelo para os
-serviços de plataforma.
+As cores seguem a camada: vermelho para a borda, azul para a aplicação, verde para os domínios e amarelo para os serviços de plataforma.
 
 ## 1. As camadas
 
-A requisição do usuário atravessa três camadas, de cima para baixo. Cada camada só chama a camada logo abaixo dela.
-Os serviços de plataforma ficam ao lado e atendem as camadas de aplicação e de domínio.
+A requisição do usuário atravessa três camadas, de cima para baixo, e cada camada só chama a camada logo abaixo dela. Os serviços de plataforma ficam embaixo e atendem as camadas de aplicação e de domínio; quem chama cada serviço está na seção 8.
 
 ```mermaid
-flowchart TB
-    NAV["Navegador"]
-
-    subgraph BORDA["Camada 1: borda, a única exposta à internet"]
-        direction LR
-        CDN["CDN<br/>arquivos estáticos"]
-        LB["WAF e balanceador<br/>TLS e limite de taxa"]
-    end
-
-    subgraph APP["Camada 2: aplicação, rede interna"]
-        direction LR
-        SH["Shell"]
-        ZN["Zonas<br/>uma por módulo"]
-    end
-
-    subgraph DOM["Camada 3: domínios, rede interna"]
-        direction LR
-        DN["Domínios de negócio"]
-        GA["Gestão de acesso"]
-    end
-
-    subgraph PLAT["Serviços de plataforma, rede interna"]
-        direction TB
-        RD[("Redis<br/>sessão")]
-        ID["Provedor OIDC"]
-        OT["Coletor de telemetria"]
-    end
-
-    NAV --> CDN
-    NAV --> LB
-    LB --> SH
-    SH --> ZN
-    ZN --> DN
-    SH --> GA
-    ZN --> GA
-    SH --> RD
-    ZN -.-> RD
-    SH --> ID
-    DN -.-> ID
-    APP -.-> OT
-
-    classDef borda fill:#fde2e1,stroke:#c0392b,color:#000
-    classDef app fill:#e1ecfd,stroke:#2c5aa0,color:#000
-    classDef dom fill:#e3f6e5,stroke:#1e8449,color:#000
-    classDef plat fill:#fff4d6,stroke:#b7950b,color:#000
-    class CDN,LB borda
-    class SH,ZN app
-    class DN,GA dom
-    class RD,ID,OT plat
+block-beta
+  columns 3
+  block:BORDA:3
+    columns 2
+    T1["Camada 1: borda, a única pública"]:2
+    CDN["CDN<br/>arquivos estáticos"] LB["WAF e balanceador<br/>TLS e limite de taxa"]
+  end
+  block:APP:3
+    columns 2
+    T2["Camada 2: aplicação, rede interna"]:2
+    SH["Shell"] ZN["Zonas<br/>uma por módulo"]
+  end
+  block:DOM:3
+    columns 2
+    T3["Camada 3: domínios, rede interna"]:2
+    DN["Domínios de negócio"] GA["Gestão de acesso"]
+  end
+  block:PLAT:3
+    columns 3
+    T4["Serviços de plataforma, usados pelas camadas 2 e 3"]:3
+    RD[("Redis<br/>sessão")] ID["Provedor OIDC"] OT["Coletor de telemetria"]
+  end
+  BORDA --> APP
+  APP --> DOM
+  classDef borda fill:#fde2e1,stroke:#c0392b,color:#000
+  classDef app fill:#e1ecfd,stroke:#2c5aa0,color:#000
+  classDef dom fill:#e3f6e5,stroke:#1e8449,color:#000
+  classDef plat fill:#fff4d6,stroke:#b7950b,color:#000
+  classDef titulo fill:none,stroke:none,color:#000
+  class CDN,LB borda
+  class SH,ZN app
+  class DN,GA dom
+  class RD,ID,OT plat
+  class T1,T2,T3,T4 titulo
 ```
 
 Quatro regras sustentam esse desenho:
 
-1. **O navegador conhece um endereço só.** Página, API e telemetria saem da mesma origem, com um certificado e um
-   balanceador (invariante 10).
-2. **Zona e domínio não têm porta pública.** A zona só é alcançada pelo shell, e o domínio só pela zona. Isso vira regra
-   de firewall a cada zona nova.
+1. **O navegador conhece um endereço só.** Página, API e telemetria saem da mesma origem, com um certificado e um balanceador (invariante 10).
+2. **Zona e domínio não têm porta pública.** A zona só é alcançada pelo shell, e o domínio só pela zona. Isso vira regra de firewall a cada zona nova.
 3. **Só o shell grava a sessão.** As zonas leem o Redis com um usuário que só tem permissão de leitura (invariante 15).
-4. **O domínio decide.** Ele valida sozinho o token do usuário com as chaves públicas do provedor OIDC e não confia no
-   BFF para autorizar (invariante 9).
+4. **O domínio decide.** Ele valida sozinho o token do usuário com as chaves públicas do provedor OIDC e não confia no BFF para autorizar (invariante 9).
 
 ## 2. Times e responsabilidades
 
-Cada time é dono de uma parte e a entrega sem depender da agenda dos outros. O que um time não pode mudar sozinho fica
-na última coluna.
+Cada time é dono de uma parte e a entrega sem depender da agenda dos outros. O que um time não pode mudar sozinho fica na última coluna.
 
 | Time | É dono de | Camada | Não muda sem combinar |
 |---|---|---|---|
@@ -103,8 +78,7 @@ na última coluna.
 
 ## 3. Onde cada parte roda
 
-No desenvolvimento, tudo roda numa máquina só. No alvo, cada time publica no próprio namespace de um cluster, e a regra
-de rede entre namespaces segue a tabela da seção 8.
+No desenvolvimento, tudo roda numa máquina só. No alvo, cada time publica no próprio namespace de um cluster, e a regra de rede entre namespaces segue a tabela da seção 8.
 
 | Componente | Time | Desenvolvimento | Alvo |
 |---|---|---|---|
@@ -204,8 +178,7 @@ sequenceDiagram
 
 O navegador nunca vê o token de acesso, o refresh token, nem o endereço da zona, do domínio ou do Redis.
 
-Hoje o shell encaminha para a zona por regras geradas do `zonas.json` no build. O [ADR-0015](../adr/0015-mapa-de-zonas-vivo-e-gateway.md),
-ainda em proposta, troca essa fonte por um mapa lido em tempo de execução.
+Hoje o shell encaminha para a zona por regras geradas do `zonas.json` no build. O [ADR-0015](../adr/0015-mapa-de-zonas-vivo-e-gateway.md), ainda em proposta, troca essa fonte por um mapa lido em tempo de execução.
 
 ## 5. Cada serviço e o que acontece se ele cair
 
@@ -224,8 +197,7 @@ ainda em proposta, troca essa fonte por um mapa lido em tempo de execução.
 
 ## 6. Sessão no Redis
 
-Uma instância, com `noeviction`, para que nenhuma sessão seja descartada por falta de memória, e com AOF, para
-sobreviver a um reinício. No alvo, com failover e TLS.
+Uma instância, com `noeviction`, para que nenhuma sessão seja descartada por falta de memória, e com AOF, para sobreviver a um reinício. No alvo, com failover e TLS.
 
 | Chave | Quem grava | Quem lê | Para quê |
 |---|---|---|---|
@@ -234,13 +206,11 @@ sobreviver a um reinício. No alvo, com failover e TLS.
 | `erp:renovacao:{id}` | shell | shell | evita que duas réplicas renovem ao mesmo tempo, o que faria o provedor revogar a sessão |
 | canal `sse:user:{sub}` | domínios | shell | avisa a aba aberta numa réplica que algo mudou; entra com o item C2 |
 
-O Redis precisa estar na mesma rede de todas as zonas. Uma zona publicada sem acesso a ele trata todo usuário como
-deslogado.
+O Redis precisa estar na mesma rede de todas as zonas. Uma zona publicada sem acesso a ele trata todo usuário como deslogado.
 
 ## 7. Telemetria e entrega
 
-**Telemetria.** O navegador nunca fala com o coletor. Ele envia os traces ao shell, que exige sessão, limita o volume e
-repassa. O shell e as zonas propagam o `traceparent` até o domínio. Nenhum span leva cookie, token ou dado pessoal.
+**Telemetria.** O navegador nunca fala com o coletor. Ele envia os traces ao shell, que exige sessão, limita o volume e repassa. O shell e as zonas propagam o `traceparent` até o domínio. Nenhum span leva cookie, token ou dado pessoal.
 
 **Entrega.** Cada repositório tem a própria esteira. A ordem de publicação segue a dependência entre as partes.
 
@@ -264,9 +234,7 @@ flowchart LR
     APPS --> IMG --> CL
 ```
 
-A ordem é contratos, núcleo, moldura, zonas e por fim o shell, que passa a rotear para a zona nova. Uma zona volta de
-versão sozinha, mas nunca abaixo da versão do núcleo em uso por todas. Cada aplicação vira uma imagem com
-`output: 'standalone'` e usa `/{zona}/api/health` como sonda de vida, sem chamar o domínio.
+A ordem é contratos, núcleo, moldura, zonas e por fim o shell, que passa a rotear para a zona nova. Uma zona volta de versão sozinha, mas nunca abaixo da versão do núcleo em uso por todas. Cada aplicação vira uma imagem com `output: 'standalone'` e usa `/{zona}/api/health` como sonda de vida, sem chamar o domínio.
 
 ## 8. Regras de rede
 
@@ -286,8 +254,7 @@ Esta tabela é a regra de firewall. O que não está nela fica bloqueado.
 | shell e zonas | coletor | nenhuma | spans sem dado pessoal |
 | CI | registros | token de publicação | fora da requisição do usuário |
 
-Zona e domínio ficam na mesma rede, com latência perto de 1 ms. Um alarme acima de 5 ms por par avisa quando o modelo de
-desempenho deixa de valer ([`08-desempenho.md`](../desenho/bff/08-desempenho.md)).
+Zona e domínio ficam na mesma rede, com latência perto de 1 ms. Um alarme acima de 5 ms por par avisa quando o modelo de desempenho deixa de valer ([`08-desempenho.md`](../desenho/bff/08-desempenho.md)).
 
 ## 9. Hoje e alvo
 
