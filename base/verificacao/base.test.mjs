@@ -32,7 +32,8 @@ before(async () => {
   // (5 s), senão o shell recusa subir
   process.env.ERP_ZONA_TETO_MS ??= '6000'
   // C3: ociosidade do gateway (L9c) e TTL do mapa vivo (L10, L11) curtos, para a verificação não esperar os padrões
-  process.env.ERP_ZONA_OCIOSIDADE_MS ??= '3000'
+  // maior que ERP_DESTINO_TIMEOUT_MS (5 s), senão o shell recusa subir; ainda curta o bastante para o L9c não esperar 10 s
+  process.env.ERP_ZONA_OCIOSIDADE_MS ??= '7000'
   process.env.ERP_MAPA_ZONAS_TTL_MS ??= '2000'
   // CONSTRUIR=1 reconstrói só as apps com fonte mais novo que o build; CONSTRUIR=tudo, todas
   ambiente = await subir({ construir: process.env.CONSTRUIR === 'tudo' ? 'tudo' : process.env.CONSTRUIR === '1' })
@@ -993,8 +994,9 @@ test('L10 (C3): zona nova registrada passa a responder pelo shell em ate um TTL,
   const pid = ambiente.apps.get('erp-shell').pid
 
   const { ms } = await zona9DeTeste(ana)
-  // releitura sem bloquear: a primeira requisição depois do TTL ainda usa o mapa antigo e dispara a releitura
-  assert.ok(ms < 2 * ttl + 1_000, `a zona nova levou ${ms} ms para responder; TTL ${ttl} ms`)
+  // releitura sem bloquear: a primeira requisição depois do TTL ainda usa o mapa antigo e dispara a releitura;
+  // na prática TTL mais uma releitura, e a folga de 1 s cobre só o registro e a releitura
+  assert.ok(ms < ttl + 1_000, `a zona nova levou ${ms} ms para responder; TTL ${ttl} ms`)
   const doc = await pedir('/zona9/pagina?x=1', { cookie: ana })
   assert.equal(doc.status, 200)
   assert.match(doc.html, /zona9\/pagina/)
@@ -1010,7 +1012,7 @@ test('L10 (C3): zona nova registrada passa a responder pelo shell em ate um TTL,
   assert.equal(await zona9.remover('zona9'), 204)
   const fim = await ate404()
   assert.equal(fim.st, 404, 'rota removida e a zona continuou respondendo pelo shell')
-  assert.ok(fim.ms < 2 * ttl + 1_000, `a zona removida levou ${fim.ms} ms para sair; TTL ${ttl} ms`)
+  assert.ok(fim.ms < ttl + 1_000, `a zona removida levou ${fim.ms} ms para sair; TTL ${ttl} ms`)
   console.log(`# L10: zona nova roteada em ${ms} ms; removida, 404 em ${fim.ms} ms (TTL ${ttl} ms)`)
 })
 
@@ -1048,6 +1050,15 @@ test('C3: /_gateway direto do navegador da 404, com e sem cookie, em qualquer gr
   }
   // dentes: o mesmo documento pelo caminho de verdade chega
   assert.equal((await pedir('/zona1', { cookie: ana })).status, 200)
+})
+
+test('C3: /_next/data do shell para o caminho do gateway da 404 (a pagina interna nao e alcancavel por ai)', async () => {
+  const ana = (await entrar('ana')).cookie
+  const buildId = readFileSync(join(RAIZ, 'erp-shell', '.next', 'BUILD_ID'), 'utf8').trim()
+  // com cookie (sem ele o proxy manda ao login, como em qualquer rota protegida)
+  const r = await pedir(`/_next/data/${buildId}/_gateway/zona1.json`, { cookie: ana })
+  assert.equal(r.status, 404, `/_next/data/.../_gateway/zona1.json: ${r.status}`)
+  assert.doesNotMatch(r.html, /Painel|zona1/i, 'conteudo de zona pelo /_next/data')
 })
 
 test('C3: documento pelo gateway chega comprimido como a zona mandou, sem o caminho interno nos cabecalhos', async () => {
