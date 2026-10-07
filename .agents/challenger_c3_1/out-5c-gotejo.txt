@@ -1,5 +1,0 @@
-registro 200
-encerrado por mim aos 60s sem corte
-gotejo 1 byte/s: duracao ms 60006 bytes 59
-restaura 200
-restaurada 200

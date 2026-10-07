@@ -1,9 +1,0 @@
-registro canario 200
-DOC /zona1 200 ct= text/html canario= 1 xmr= /_gateway/zona1 body= CANARIO
-RSC /zona1 200 ct= text/html canario= 1 xmr= http://127.0.0.1:3555/zona1 body= CANARIO
-POST action /zona1 200 ct= text/html canario= 1 xmr= http://127.0.0.1:3555/zona1 body= CANARIO
-estatico /zona1-static/a.css (sem cookie) 200 ct= text/html canario= 1 xmr= http://127.0.0.1:3555/zona1-static/a.css body= CANARIO
-DOC sem cookie /zona1 307 ct= undefined canario= - xmr= - body= /login?de=%2Fzona1
-restaura 200
-DOC restaurado 200 ct= text/html; charset=utf-8 canario= - xmr= /_gateway/zona1 body= <!DOCTYPE html><html lang="pt-BR"><head><meta charSet="utf-8
-[{"id":"zona1","origem":"http://127.0.0.1:3001","registradaEm":"2026-10-07T18:23:51.657Z"},{"id":"zona2","origem":"http://127.0.0.1:3002","registradaEm":"2026-10-07T18:21:00.939Z"},{"id":"acesso","origem":"http://127.0.0.1:3003","registradaEm":"2026-10-07T18:21:01.319Z"}]
