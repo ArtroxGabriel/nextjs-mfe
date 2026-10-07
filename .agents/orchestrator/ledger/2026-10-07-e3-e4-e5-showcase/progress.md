@@ -36,3 +36,4 @@ Gate e3e5 it.1: challenger_e3e5_1 REJECT (3d9c3d4): roadmap A3/A8/A9/A10/A15 dif
 Gate e3e5 it.2: worker_e3e5_1 fixed (af8239c, handoff 8a1f3cb); revisor_e3e5_2 and challenger_e3e5_2 dispatched
 Gate e3e5 it.2: revisor_e3e5_2 APPROVE (2f232e2), 4 minors -> D33
 Gate e3e5 it.2: challenger_e3e5_2 APPROVE (99ab8e8); auditor_e3e5_1 dispatched (opus)
+Gate e3e5 it.2: auditor_e3e5_1 VETO only by test (0273cd7): 5 live in zona-demo (ZD1-4, ZD6); fix -> worker_e3e5_2 (test only)
