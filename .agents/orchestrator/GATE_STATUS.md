@@ -352,3 +352,13 @@ Tag `gate-d7-aprovado`.
 
 Gate Result: **VETO (só por teste)**. Correção: tarefas com título hostil e uma concluída na semente do domínio C (decisão do
 humano: conta como teste) e asserções de título, escape e ausência em C1a/C1c. Iteração 2: só um auditor novo.
+
+## Gate — C1, iteração 2 (só auditor: veto só por teste), principal `1edc130` (correção em `ca0f4b6`), stub `b85540c`
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| worker_c1_1 | correção do veto (opus) | — | .agents/worker_c1_1/handoff.md | só teste e semente: `t-3` com título hostil e `t-4` concluída; C1a/C1c conferem título escapado, cru ausente, concluída ausente; bruno/davi sem `/tarefa\|zona 2/i`; as 5 do veto reprovam |
+| auditor_c1_2 | general-purpose forense (opus) | **VETO (só por teste)** | .agents/auditor_c1_2/handoff.md, mutacoes.txt | as 5 do veto pegas; 13 variantes, 7 pegas; vivas de boa-fé: placeholder com outro texto (V-U1c "Bloco indisponível", V-U1d `<p>—</p>`, V-U1f `<section>` "Pendências") e escape aplicado à lista inteira (V-Z4e); V-Z6d (`versao === 1`) é contorno; regressão por família 12/12 |
+
+Gate Result: **VETO (só por teste)**. Correção: no C1c, a estrutura do painel de bruno/davi sem nenhum elemento além dos blocos
+deles; no C1a/C1c, `<li>` com o título escapado. Iteração 3: só um auditor novo.
