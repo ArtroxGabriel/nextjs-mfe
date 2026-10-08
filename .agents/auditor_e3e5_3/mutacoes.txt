@@ -1,0 +1,25 @@
+# mutacoes auditor_e3e5_3 (id | arquivo | mutação | verificação | resultado | revertida)
+# arquivo: base/showcase/zona-demo.mjs salvo indicação; verificação: node --test base/scripts/zona-demo.test.mjs
+N1 | zona-demo.mjs | remover: 'status >= 300 && status !== 404' -> 'status >= 300' | zona-demo.test | PEGA: ZD9 | sim
+N3 | zona-demo.mjs | SIGTERM -> process.exit(0) sem sair() | zona-demo.test | PEGA: ZD5 SIGTERM | sim
+N4 | zona-demo.mjs | sem o handler de SIGHUP | zona-demo.test | PEGA: ZD5 SIGHUP | sim
+N5 | zona-demo.mjs | entrada fechada: 'await sair(0)' -> 'process.exit(0)' | zona-demo.test | PEGA: ZD7 | sim
+N6 | zona-demo.mjs | Enter chama demo.remover() no lugar de demo.derrubar() | zona-demo.test | PEGA: ZD8 | sim
+ZD1 | zona-demo.mjs | e?.code -> e?.codigo (EADDRINUSE) | zona-demo.test | PEGA: ZD1 | sim
+ZD2 | zona-demo.mjs | registrar() sem try/catch | zona-demo.test | PEGA: ZD2 | sim
+ZD3 | zona-demo.mjs | if (registro >= 300) -> if (false) | zona-demo.test | PEGA: ZD3 (prazo de 8 s) | sim
+ZD4 | zona-demo.mjs | remover ignora status (if (false) throw) | zona-demo.test | PEGA: ZD4, ZD6 | sim
+ZD5 | zona-demo.mjs | sair() sem demo.remover() | zona-demo.test | PEGA: ZD4, ZD5 x3, ZD7, ZD8 | sim
+ZD6 | zona-demo.mjs | derrubar() chama zona.remover() | zona-demo.test | PEGA: ZD6, ZD8 (agora também pelo laço do script) | sim
+M1 | zona-demo.mjs | voltar() não sobe a zona de novo (só no_ar = true) | zona-demo.test; arnês Enter-Enter-health | VIVA, DE BOA-FÉ SEM TESTE: o script imprime 'Zona de volta' e a 3009 dá ECONNREFUSED (sem mutação: health 200). ZD6 chama voltar() sem conferir nada; ZD8 só dá um Enter; F4 do showcase não chama voltar | sim
+M9 | zona-demo.mjs | laço do Enter sem 'no_ar = !no_ar' (todo Enter derruba, a zona nunca volta) | zona-demo.test | VIVA, DE BOA-FÉ SEM TESTE: passo 3 do roteiro some (mesma lacuna do M1) | sim
+M5 | zona-demo.mjs | sair() sem a guarda 'if (saindo) return' | zona-demo.test | VIVA, EQUIVALENTE: dois Ctrl-C mandam dois DELETE; o segundo dá 404, tolerado; mesmo resultado (rota removida, sai 0) | sim
+M8 | zona-demo.mjs | erro no Enter só imprime, sem sair(1) | zona-demo.test | VIVA, EQUIVALENTE ACEITÁVEL: o único erro alcançável é voltar() com a 3009 tomada; mutado o usuário tenta de novo ou dá Ctrl-C (que remove a rota); nada fica órfão | sim
+M12 | zona-demo.mjs | hosts padrão '127.0.0.1' -> '0.0.0.0' | zona-demo.test | VIVA, EQUIVALENTE NO QUE O COMANDO PROMETE: a zona demo é um servidor de marca sem credencial nem dado; a origem registrada segue 127.0.0.1. Observação, não veto | sim
+M2 | zona-demo.mjs | voltar() sem a guarda 'if (no_ar) return' | zona-demo.test | VIVA, EQUIVALENTE no script (o laço só chama voltar com a zona fora do ar) | sim
+M3 | zona-demo.mjs | derrubar() sem a guarda 'if (!no_ar) return' | zona-demo.test | VIVA, EQUIVALENTE (fechar servidor já fechado não falha; o laço não chama duas vezes) | sim
+M4 | zona-demo.mjs | remover: finally fecha sempre (sem 'if (no_ar)') | zona-demo.test | VIVA, EQUIVALENTE (fechar já fechado não falha) | sim
+M15 | zona-demo.mjs | registro >= 300 -> >= 400 (3xx conta como registrado) | zona-demo.test | VIVA, LIMITE: a gestão de acesso não responde 3xx nessa rota e o fetch usa redirect manual; observação, não veto | sim
+M18 | zona-demo.mjs | remover sem await no zona.remover() | zona-demo.test | PEGA: ZD4, ZD5 x3, ZD6, ZD7, ZD8 | sim
+SKIP | base/scripts/zona-demo.test.mjs | (sem mutação) 3009 ocupada por outro processo node | node --test do arquivo | OK: os 11 pulam com '# a porta 3009 está ocupada por outro processo: feche-o para rodar estes testes', 0,19 s, sem falha nem trava (frágil do auditor_e3e5_2 resolvido) | n/a
+TEMPO | base/scripts/zona-demo.test.mjs | (sem mutação) | time node --test | OK: 1,6 s; com ZD3 mutado o caso estoura o prazo de 8 s e o arquivo termina (temporizadores limpos, sem trava) | n/a
