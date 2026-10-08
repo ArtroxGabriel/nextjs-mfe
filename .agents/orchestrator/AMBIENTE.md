@@ -106,6 +106,19 @@
 - **Não edite por número de linha (`sed -i 'Ns…'`) depois de outra edição no mesmo arquivo.** Em
   2026-09-22 o número vinha de um `grep` anterior à edição e o `sed` apagou a asserção do L3; a
   verificação deu 50/50 com um teste vazio. Edite por conteúdo (texto único) e confira o `git diff`.
+- **`pkill -f` e `pgrep -f` matam o shell da ferramenta** (E3-E5, 2026-10-07, três vezes: worker da Task 4, challenger e
+  auditor): o padrão casa com a linha de comando do próprio shell, que contém o padrão. Mate pelo PID guardado ao subir
+  (`$!`) ou lido no `ss -ltnp`.
+- **Ctrl-C (SIGINT) no `task showcase` não derruba todos os listeners**: confira com `ss -ltn` depois e mate pelo PID o que
+  sobrar, antes de entregar as portas.
+- **Toda suíte nova em `base/verificacao/` raiz entra no `verificar:redis`** (glob `base/verificacao/*.test.mjs`). A suíte
+  do showcase entrou ali e a base passou a dar 135 mais 1 falha (2026-10-07); suíte que exige o showcase no ar vai para
+  uma subpasta (`base/verificacao/showcase/`, como `oidc/`), e teste de ferramenta que não precisa da base vai para
+  `base/scripts/*.test.mjs` (`task scripts:test`).
+- **Logs e scripts de mutação ficam no scratchpad**, nunca na raiz do repositório (um auditor gravou `ZD*.log` na raiz).
+- **`task showcase:descer` remove o contêiner do Keycloak** (o realm é reimportado no `up`) e mantém o volume do Redis; o
+  Verdaccio guarda os pacotes em volume (`repos_verdaccio_storage`), então `docker stop verdaccio` não perde nada. Para
+  voltar: `docker start verdaccio`, `task showcase:subir`, esperar o Keycloak e `task showcase:checar`.
 
 ## 4. Commits
 

@@ -40,6 +40,20 @@ necessário no repositório. Detalhes no fim de `RETOMADA.md`.
 **Regra de processo (humano, 2026-10-07):**
 - **Mutações declaradas no plano.** Toda task que muda código de produto traz no plano a tabela das mutações que os testes dela precisam pegar. O worker roda essas mutações antes de pedir o gate e registra, no relatório da task, qual teste pegou cada uma; mutação que sobrevive pede um teste novo na mesma task. O auditor do gate reaplica a tabela e procura mutações novas. Primeiro uso: o plano do núcleo 0.10.4, cujo gate fechou na iteração 1 (o do C1 levou 3).
 
+**Práticas do orquestrador (gate do E3, E4 e E5, 2026-10-07; não são regras do humano):**
+- **Verificação final completa antes do challenger.** O orquestrador roda todas as famílias (`task test`, estática, scripts,
+  `verificar:redis`, `verificar:oidc`, `showcase:verificar` nos dois modos) antes de despachar o challenger: a rodada achou
+  uma regressão (suíte do showcase no glob da base) que o revisor por leitura não viu.
+- **Revisor por leitura em paralelo; challenger e auditor depois das portas.** O revisor não usa portas e pode rodar junto
+  com a verificação final.
+- **Veto só por teste pequeno: o orquestrador pode corrigir** (um teste, poucas linhas), provando a mutação do veto contra o
+  teste novo e revertendo, e registra no `GATE_STATUS.md` quem corrigiu. Correção maior vai a um worker.
+- **Auditor da iteração N recebe a lista do que os anteriores já mutaram e classificaram** (os `mutacoes.txt`), com a
+  instrução de não repetir nem reclassificar sem fato novo, e de ser proporcional ao que o roteiro ou o comando prometem.
+  Nesse gate isso levou o quinto auditor ao PASS.
+- **Em aberto com o humano:** um teto de iterações por veto só por teste para ferramentas do showcase (o gate do E3-E5
+  levou 6). Pergunta Q4 de `pedidos/2026-10-07-proximo-passo.md`.
+
 ## Como um gate funciona
 
 ```mermaid
