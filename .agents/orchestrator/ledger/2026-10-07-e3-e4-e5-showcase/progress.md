@@ -42,3 +42,5 @@ Gate e3e5 it.3: auditor_e3e5_2 VETO only by test (18169b6): N1 N3 N4 N5 N6 live 
 Gate e3e5 it.4: worker_e3e5_3 fixed (c8b492a tests only, handoff ad985a3), scripts:test 40/40; auditor_e3e5_3 dispatched
 Gate e3e5 it.4: auditor_e3e5_3 VETO only by test (46f558f): M1, M9 (voltar never checked). Fixed by orchestrator in 92c6159 (ZD8 second Enter + health, ZD6 health after voltar); M1 caught by ZD6+ZD8, M9 by ZD8; scripts:test 40/40. Iteration 5: auditor_e3e5_4
 Gate e3e5 it.5: auditor_e3e5_4 VETO only by test (e50b36d): P4 (voltar without id -> DELETE of another zone, 404 tolerated, demo route orphan). Fixed by orchestrator in 5a06f1e (ZD6/ZD8 check DELETE path and credential); P4 caught by ZD6+ZD8. Iteration 6: auditor_e3e5_5
+Gate e3e5 it.6: auditor_e3e5_4 fix in 5a06f1e; auditor_e3e5_5 PASS (6ebab5e). Gate approved, tag gate-e3e5-aprovado
+Task 5: complete (records, gate). Plan complete; objective reached. Next: pedidos/2026-10-07-proximo-passo.md

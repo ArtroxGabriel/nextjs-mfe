@@ -1,7 +1,8 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (E3-E5: Tasks 1 a 3 fechadas; Task 4 (`showcase:verificar`, `4f7c562` e `d625731`) fechada; Task 5 (verificação final e gate) em andamento)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (objetivo atingido: gate do E3, E4 e E5 aprovado; próximo passo depende do pedido `pedidos/2026-10-07-proximo-passo.md`)**.
+
 
 ## Objetivo final
 
@@ -52,17 +53,23 @@ O pedido [`pedidos/2026-09-23-decisoes-gate-c2-d2.md`](../../pedidos/2026-09-23-
   adendo 2 ao ADR-0013; só as tarefas do showcase e da verificação ligam.
 - **Token de serviço no modo JWT (Task 5 do D2):** opção (a) — adendo ao ADR-0013; com `IDP_EMISSOR`, `svc.<app>` só registra o manifesto do próprio módulo; `svc.idp`, `primeiro-acesso`, `decisoes` e `eventos` recusados nesse modo; README e `CONFIGURACAO.md` com o alcance real.
 
-## Estado (conferido em 2026-10-06, fim do gate da D19-B)
+## Estado (conferido em 2026-10-07, fim do gate do E3, E4 e E5)
 
 | O quê | Estado | Evidência |
 |---|---|---|
-| Ponta a ponta | `verificar:redis` **118/118**, modo arquivo **114 + 4 pulados**, `verificar:oidc` **6/6** | `GATE_STATUS.md` (D19-B it.2) |
-| Unidades | contratos 20, núcleo 271, moldura 26, stub 75, shell 108; estática 51/51 | `task test`, `task verificar:estatica` |
+| Ponta a ponta | `verificar:redis` **135/135**, `verificar:oidc` **6/6**, `showcase:verificar` **7/7** nos dois modos de login | `GATE_STATUS.md` (E3-E5 it.6) |
+| Unidades | contratos 20, núcleo 286, moldura 26, stub 83, shell 161; estática 52/52; scripts 40/40 | `task test`, `task verificar:estatica`, `task scripts:test` |
 | Pacotes | `@erp/nucleo` **0.10.4**, `@erp/contratos` **0.4.0**, `@erp/moldura` **0.5.0**, só no Verdaccio desta máquina; lockstep ok | `task lockstep` |
 | ADRs | 0013 com adendos 1–3 e 0014 com adendo 1, aceitos | `docs/adr/` |
-| Gates fechados | shell, B1+D1+G3+K, D2, D19-B (2026-10-06, tag `gate-d19b-aprovado`), D7 (2026-10-06, iteração 1, tag `gate-d7-aprovado`), C1 (2026-10-06, iteração 3, tag `gate-c1-aprovado`), D29 (2026-10-07, iteração 1, tag `gate-d29-aprovado`), **C3** (2026-10-07, iteração 2, tag `gate-c3-aprovado`) | `GATE_STATUS.md`
+| Gates fechados | shell, B1+D1+G3+K, D2, D19-B (2026-10-06, tag `gate-d19b-aprovado`), D7 (2026-10-06, iteração 1, tag `gate-d7-aprovado`), C1 (2026-10-06, iteração 3, tag `gate-c1-aprovado`), D29 (2026-10-07, iteração 1, tag `gate-d29-aprovado`), C3 (2026-10-07, iteração 2, tag `gate-c3-aprovado`), **E3, E4 e E5** (2026-10-07, iteração 6, tag `gate-e3e5-aprovado`) | `GATE_STATUS.md`
 
-## Próximo passo: núcleo 0.10.4, depois C3 (ordem do humano, 2026-10-06; D7 e C1 ✅)
+## Objetivo atingido (2026-10-07); próximo passo aguarda o humano
+
+**Evidência por funcionalidade básica** (tabela F1 a F7 de `docs/ROTEIRO-DE-VERIFICACAO.md`, provada por `task showcase:verificar` nos dois modos e seguida por HTTP pelo challenger do gate): F1 o shell renderiza; F2 há zonas (o mapa tem as três e a zona demo entra e sai sem reiniciar o shell); F3 as zonas se integram (menu, fragmento da zona 2 no painel da zona 1, sessão e saída em todas); F4 os tratamentos (404 sem placeholder, zona fora do ar com a página da base e `supportId`, erro normalizado); F5 base de UI (mesma moldura e menu nas três zonas, toast pela moldura); F6 bases em pacotes separados (`@erp/contratos`, `@erp/nucleo`, `@erp/moldura` em versão exata e lockstep); F7 integração com os domínios (custo só para o financeiro, mutação com versão desatualizada recusada com 409).
+
+**Próximo passo:** o pedido [`pedidos/2026-10-07-proximo-passo.md`](../../pedidos/2026-10-07-proximo-passo.md) pergunta ao humano a ordem entre registro de pacotes e CI (P1), os itens adiados (C2, B2, G4, G5) e a Lista 2. Nada começa antes da resposta.
+
+### Como se chegou aqui (ordem do humano, 2026-10-06)
 
 Sessão e identidade estão fechadas (D1, D2, D19-B). Os menores do D2 estão em `DEFERRED.md` D27; os de arquitetura em
 D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com plano em `docs/superpowers/plans/`
@@ -75,9 +82,9 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
 2. ✅ **C1 — fragmentos entre zonas** (#10). Plano: `docs/superpowers/plans/2026-10-06-c1-fragmentos-entre-zonas.md`. Zona 2 `1626fd1` (dona), shell `836ddc4` (recusa), zona 1 `39c4b76` (bloco, `ZONA2_URL`); testes C1a–C1d. **Gate aprovado na iteração 3** (2026-10-06): revisor e challenger APROVAM; auditor vetou duas vezes só por teste (escape, filtro, placeholder) e passou na 3; tag `gate-c1-aprovado`. Menores e limites em `DEFERRED.md` D30.
 2b. ✅ **Núcleo 0.10.4 — `ehHtmlInerte` por lista de permissão** (`DEFERRED.md` D29; decisão do humano, 2026-10-06: logo depois do C1, antes do C3). Plano: `docs/superpowers/plans/2026-10-07-nucleo-0104-html-inerte.md` (4 tasks; mutações M1–M13 declaradas no plano e rodadas pelo worker antes do gate), lockstep nas 4 apps, gate próprio. Feito: núcleo `50a0fea` (15 testes, M1–M13 pegas); apps shell `2f03183`, zona-1 `0a1dcc0`, zona-2 `4184225`, zona-acesso `54741cd`, ponteiros `bbf6a84`; documentos (02-zonas §2.3 e §2.5, ADR-0011 adendo 2, D29 fechado, limites no D30). **Gate aprovado na iteração 1** (2026-10-07): revisor e challenger APROVAM, auditor PASS (61 execuções, 51 pegas, 10 vivas equivalentes ou mais restritivas); tag `gate-d29-aprovado`. Menores em `DEFERRED.md` D30.
 3. ✅ **C3, mapa de zonas vivo e gateway híbrido** (#14). Plano: `docs/superpowers/plans/2026-10-07-c3-mapa-de-zonas.md`; ADR-0015 aceito (pacote recomendado e decisão sobre o `x-middleware-rewrite`, 2026-10-07). Stub `2da6dcb`, zonas `ce8e015`, `f88cce7`, `73a2c19`, shell `d52b5fc`, principal até `4a6fc63`. **Gate aprovado na iteração 2** (2026-10-07): revisor e challenger APROVAM; auditor vetou só por teste (prefixo estático sem a barra) e passou na 2; tag `gate-c3-aprovado`. Fecha o D7. Limites no `DEFERRED.md` D31, menores no D32.
-4. ⏳ **E3, E4 e E5** (#19). Plano: `docs/superpowers/plans/2026-10-07-e3-e4-e5-showcase.md`. Task 1 (`showcase:conferir` nos dois modos, `beb5b95`), Task 2 (`showcase:zona-demo`, `7ea3658` e `1198ab1`) e Task 2b (supportId na página de zona fora do ar pela sonda, shell `d6e48fc`) fechadas; Task 3 (roteiro F1 a F7, `2d1a6df` e `8d3428e`) fechada; faltam a Task 4 (`showcase:verificar`) e a Task 5 (verificação final e gate).
+4. ✅ **E3, E4 e E5** (#19). Plano: `docs/superpowers/plans/2026-10-07-e3-e4-e5-showcase.md`. `showcase:conferir` nos dois modos (`beb5b95`), `showcase:zona-demo` (`7ea3658`, `1198ab1`, `af8239c`), `supportId` pela sonda (shell `d6e48fc`), roteiro F1 a F7 e A1 a A15 (`2d1a6df`, `8d3428e`, `af8239c`), `showcase:verificar` (`4f7c562`, `d625731`, `a63710b`), caminhos de falha do `zona-demo` sob teste (`7e1730a`, `c8b492a`, `92c6159`, `5a06f1e`). **Gate aprovado na iteração 6** (2026-10-07): challenger reprovou a 1 pelo texto do roteiro; auditores vetaram 2 a 5 só por teste, todos no `zona-demo`; tag `gate-e3e5-aprovado`. Menores no `DEFERRED.md` D33.
 
-**Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente (`docker ps`; `task showcase:checar`); então seguir o plano `docs/superpowers/plans/2026-10-07-e3-e4-e5-showcase.md` (5 tasks) em Subagent-Driven; o ledger diz em que task está (`.superpowers/sdd/2026-10-07-e3-e4-e5-showcase/progress.md`, cópia em `ledger/`). Nada está rodando e nenhum agente está aberto.
+**Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; conferir o ambiente (`docker ps`; `task showcase:checar`); ler a resposta do pedido `pedidos/2026-10-07-proximo-passo.md` e seguir por ela (plano novo em `docs/superpowers/plans/`). Sem resposta, nada começa. Nada está rodando e nenhum agente está aberto.
 
 ## Plano até o objetivo
 
@@ -101,9 +108,9 @@ Legenda: ✅ feito · ⏳ em andamento · ⬜ a fazer · ⏸️ depois do objeti
 | | D2 OIDC + PKCE e renovação proativa com lock (**ADR-0013 aceito**; pessoa por `sub`) | ✅ gate do D2 aprovado (iteração 3, 2026-10-05); D19-B aprovada (2026-10-06) | #9 | — |
 | **E. Showcase** | E1 domínios mock com dados em JSON | ✅ | #19 | — |
 | | E2 `docker-compose` com Redis e Keycloak | ✅ | #19 | — |
-| | E3 `task showcase` e `task showcase:conferir` | ✅ login pelo Keycloak com `task showcase:oidc`; `showcase:conferir` ainda só no login de dev | #19 | — |
-| | E4 roteiro do showcase: uma linha por funcionalidade básica | ⬜ | #19 | C1, C3, D7, E3 |
-| | E5 verificação ponta a ponta contra o showcase | ⬜ | #19 | E4 |
+| | E3 `task showcase` e `task showcase:conferir` | ✅ nos dois modos de login, com o fragmento e o mapa de zonas (gate E3-E5, 2026-10-07) | #19 | — |
+| | E4 roteiro do showcase: uma linha por funcionalidade básica | ✅ F1 a F7 e A1 a A15, mais `task showcase:zona-demo` (gate E3-E5) | #19 | — |
+| | E5 verificação ponta a ponta contra o showcase | ✅ `task showcase:verificar` 7/7 nos dois modos (gate E3-E5) | #19 | — |
 | **G. Gestão de acesso v2** | G1 modelo e mock (porta 4020) | ✅ | #21 | — |
 | | G2 **ADR-0014 + adendo 1, aceito** | ✅ | #21 | — |
 | | G3 alinhar à v2 | ✅ gate B1+D1+G3+K aprovado | #21 | — |
@@ -152,13 +159,14 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 3. ✅ Instalações aprovadas (2026-09-22): `redis`, SDK OpenTelemetry, biblioteca OIDC, imagens do Redis e do Keycloak.
    Continua valendo mostrar o que entra antes de instalar.
 4. ✅ Sessão de 30 min por inatividade (2026-09-22); parâmetros em `docs/CONFIGURACAO.md`.
-5. **Registro de pacotes / CI (P1): no fim do plano** (humano, 2026-09-23). Até lá, `task pacotes:alinhar-hashes`.
+5. **Registro de pacotes / CI (P1): no fim do plano** (humano, 2026-09-23). Até lá, `task pacotes:alinhar-hashes`. O plano até o objetivo terminou: a ordem está no pedido `pedidos/2026-10-07-proximo-passo.md`.
+8. **Aberto: `pedidos/2026-10-07-proximo-passo.md`**, o que vem depois do objetivo.
 6. Aplicar no GitLab o que estiver "pendente" em `ATIVIDADES.md` §2 (hoje só comentários opcionais).
 7. ✅ **Modo OIDC na máquina local** (2026-10-03): opção (a), ver "Decisões do humano" acima.
 
 ## Ambiente (2026-10-07)
 
-- No ar (fim do gate do D29): Verdaccio (4873), Redis (6379) e Keycloak (8080), `showcase:checar` ok. Se a máquina reiniciar:
+- No ar (fim do gate do E3, E4 e E5): Verdaccio (4873), Redis (6379) e Keycloak (8080), `showcase:checar` ok. Se a máquina reiniciar:
   `task showcase:subir` e `task showcase:checar`. Portas da base 3000–3003 e 4001–4120 livres; nenhum agente rodando.
 - `@erp/nucleo` 0.10.4 só no Verdaccio desta máquina. Outra máquina: `task pacotes:publicar` e `task pacotes:alinhar-hashes`.
 - Fora de commit, de propósito: os `pnpm-lock.yaml` de erp-dominio-stub e erp-moldura (hash local, `AMBIENTE.md` §1).
