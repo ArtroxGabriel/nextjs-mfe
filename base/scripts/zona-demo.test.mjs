@@ -70,6 +70,12 @@ function filho(env = {}) {
   return { p, saida: () => texto, ate, esperarSaida, recebidos: (metodo) => falsa.recebidas.filter((r) => r.metodo === metodo) }
 }
 
+/** A zona demo responde de novo na 3009 (a saúde da zona de teste, sem passar pelo shell). */
+async function responde() {
+  const r = await fetch(`http://127.0.0.1:${PORTA_DEMO}/demo/api/health`, { signal: AbortSignal.timeout(2000) })
+  assert.equal(r.status, 200, 'a zona demo deveria responder na 3009')
+}
+
 async function portaLivre() {
   const s = await escutar(PORTA_DEMO)
   await fechar(s)
@@ -165,7 +171,7 @@ test('ZD7: fim da entrada depois de "no ar" remove a rota e sai 0', async (t) =>
   } finally { f.p.kill('SIGKILL') }
 })
 
-test('ZD8: Enter derruba a zona e mantém a rota; o SIGINT seguinte remove uma vez', async (t) => {
+test('ZD8: Enter derruba a zona e mantém a rota; Enter de novo a traz de volta; o SIGINT seguinte remove uma vez', async (t) => {
   if (pular(t)) return
   configurar({ post: 201, del: 204 })
   const f = filho()
@@ -175,6 +181,10 @@ test('ZD8: Enter derruba a zona e mantém a rota; o SIGINT seguinte remove uma v
     await f.ate(/Zona derrubada/)
     assert.equal(f.recebidos('DELETE').length, 0, 'o Enter não pode remover a rota')
     await portaLivre()
+    f.p.stdin.write('\n')
+    await f.ate(/Zona de volta/)
+    await responde()
+    assert.equal(f.recebidos('DELETE').length, 0, 'a volta não pode remover a rota')
     f.p.kill('SIGINT')
     const { codigo } = await f.esperarSaida()
     assert.equal(codigo, 0, f.saida())
@@ -195,7 +205,7 @@ test('ZD9: DELETE 404 (rota já ausente) é tolerado: SIGINT sai 0 e diz "Rota r
   } finally { f.p.kill('SIGKILL') }
 })
 
-test('ZD6: derrubar() fecha a zona e mantém a rota (nenhum DELETE); remover() com 500 lança', async (t) => {
+test('ZD6: derrubar() fecha a zona e mantém a rota (nenhum DELETE); voltar() a traz de volta; remover() com 500 lança', async (t) => {
   if (pular(t)) return
   configurar({ post: 201, del: 204 })
   const { subirZonaDemo } = await import('../showcase/zona-demo.mjs')
@@ -204,6 +214,7 @@ test('ZD6: derrubar() fecha a zona e mantém a rota (nenhum DELETE); remover() c
     await demo.derrubar()
     assert.equal(falsa.recebidas.filter((r) => r.metodo === 'DELETE').length, 0, 'derrubar não pode remover a rota')
     await demo.voltar()
+    await responde()
     await demo.derrubar()
   } finally { await demo.remover() }
   assert.equal(falsa.recebidas.filter((r) => r.metodo === 'DELETE').length, 1, 'remover manda o DELETE')
