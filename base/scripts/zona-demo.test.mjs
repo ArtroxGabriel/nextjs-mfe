@@ -70,6 +70,13 @@ function filho(env = {}) {
   return { p, saida: () => texto, ate, esperarSaida, recebidos: (metodo) => falsa.recebidas.filter((r) => r.metodo === metodo) }
 }
 
+/** O DELETE que chegou é o da rota `demo`, com a credencial da própria zona. */
+function deleteDaDemo(del) {
+  assert.equal(del.length, 1, 'a gestão de acesso deveria receber um DELETE')
+  assert.equal(del[0].caminho, '/v2/zonas/demo/rota')
+  assert.equal(del[0].autorizacao, 'Bearer svc.demo')
+}
+
 /** A zona demo responde de novo na 3009 (a saúde da zona de teste, sem passar pelo shell). */
 async function responde() {
   const r = await fetch(`http://127.0.0.1:${PORTA_DEMO}/demo/api/health`, { signal: AbortSignal.timeout(2000) })
@@ -150,10 +157,7 @@ for (const sinal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
       const { codigo } = await f.esperarSaida()
       assert.equal(codigo, 0, f.saida())
       assert.match(f.saida(), /Rota removida/)
-      const del = f.recebidos('DELETE')
-      assert.equal(del.length, 1, 'a gestão de acesso deveria receber um DELETE')
-      assert.equal(del[0].caminho, '/v2/zonas/demo/rota')
-      assert.equal(del[0].autorizacao, 'Bearer svc.demo')
+      deleteDaDemo(f.recebidos('DELETE'))
     } finally { f.p.kill('SIGKILL') }
   })
 }
@@ -188,7 +192,7 @@ test('ZD8: Enter derruba a zona e mantém a rota; Enter de novo a traz de volta;
     f.p.kill('SIGINT')
     const { codigo } = await f.esperarSaida()
     assert.equal(codigo, 0, f.saida())
-    assert.equal(f.recebidos('DELETE').length, 1)
+    deleteDaDemo(f.recebidos('DELETE'))
   } finally { f.p.kill('SIGKILL') }
 })
 
@@ -217,7 +221,7 @@ test('ZD6: derrubar() fecha a zona e mantém a rota (nenhum DELETE); voltar() a 
     await responde()
     await demo.derrubar()
   } finally { await demo.remover() }
-  assert.equal(falsa.recebidas.filter((r) => r.metodo === 'DELETE').length, 1, 'remover manda o DELETE')
+  deleteDaDemo(falsa.recebidas.filter((r) => r.metodo === 'DELETE'))
   await portaLivre()
 
   configurar({ post: 201, del: 500 })
