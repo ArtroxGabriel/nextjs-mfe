@@ -40,3 +40,4 @@ Gate e3e5 it.2: auditor_e3e5_1 VETO only by test (0273cd7): 5 live in zona-demo 
 Gate e3e5 it.3: worker_e3e5_2 fixed (7e1730a tests only, handoff 5184b6b), scripts:test 35/35; auditor_e3e5_2 dispatched
 Gate e3e5 it.3: auditor_e3e5_2 VETO only by test (18169b6): N1 N3 N4 N5 N6 live (signals, EOF, Enter loop, DELETE 404); skip broken; timers; fix -> worker_e3e5_3 (same agent as _2, new handoff)
 Gate e3e5 it.4: worker_e3e5_3 fixed (c8b492a tests only, handoff ad985a3), scripts:test 40/40; auditor_e3e5_3 dispatched
+Gate e3e5 it.4: auditor_e3e5_3 VETO only by test (46f558f): M1, M9 (voltar never checked). Fixed by orchestrator in 92c6159 (ZD8 second Enter + health, ZD6 health after voltar); M1 caught by ZD6+ZD8, M9 by ZD8; scripts:test 40/40. Iteration 5: auditor_e3e5_4

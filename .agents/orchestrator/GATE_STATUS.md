@@ -452,4 +452,12 @@ Gate Result: **VETO (só por teste)**. Correção com worker_e3e5_3: casos de SI
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
 | worker_e3e5_3 | correção do veto (sonnet) | — | .agents/worker_e3e5_3/handoff.md | só teste: os três sinais, fim da entrada, Enter sem DELETE e DELETE 404 tolerado; pulo por `t.skip()` (11 pulados com a 3009 ocupada); temporizadores limpos; N1, N3, N4, N5, N6 e ZD1 a ZD6 reprovam; `scripts:test` 40/40 |
-| auditor_e3e5_3 | general-purpose forense (opus) | em andamento | .agents/auditor_e3e5_3/handoff.md, mutacoes.txt | |
+| auditor_e3e5_3 | general-purpose forense (opus) | **VETO (só por teste)** | .agents/auditor_e3e5_3/handoff.md, mutacoes.txt | correção só de teste confirmada; N1, N3 a N6 e ZD1 a ZD6 pegas; pulo com a 3009 ocupada e tempo (1,6 s) resolvidos; 21 mutações novas, 12 pegas, 7 equivalentes ou limite, 2 de boa-fé sem teste: M1 (`voltar` sem subir a zona) e M9 (o Enter nunca volta), ninguém confere que a zona responde depois de voltar; regressão por família verde |
+
+Gate Result: **VETO (só por teste)**. Correção pelo orquestrador em `92c6159` (só teste): ZD8 dá o segundo Enter e confere a saúde da zona na 3009; ZD6 confere a saúde depois de `voltar()`. M1 reprova ZD6 e ZD8, M9 reprova ZD8; `scripts:test` 40/40. Iteração 5: só um auditor novo.
+
+## Gate: E3, E4 e E5, iteração 5 (só auditor: veto só por teste), principal `92c6159`
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| auditor_e3e5_4 | general-purpose forense (opus) | em andamento | .agents/auditor_e3e5_4/handoff.md, mutacoes.txt | |
