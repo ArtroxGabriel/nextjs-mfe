@@ -1,0 +1,13 @@
+# mutacoes auditor_e3e5_4 (id | arquivo | mutação | verificação | resultado | revertida); arquivo: base/showcase/zona-demo.mjs; verificação: node --test base/scripts/zona-demo.test.mjs
+M1 | zona-demo.mjs | voltar() não sobe a zona de novo (só no_ar = true), como auditor_e3e5_3 | node --test base/scripts/zona-demo.test.mjs | PEGA: ZD6 e ZD8 (fetch ECONNREFUSED 127.0.0.1:3009 em responde()) | sim
+M9 | zona-demo.mjs | laço do Enter sem no_ar = !no_ar, como auditor_e3e5_3 | idem | PEGA: ZD8 (prazo esgotado esperando /Zona de volta/) | sim
+P1 | zona-demo.mjs | derrubar() sem 'no_ar = false' (voltar() vê no_ar e não sobe) | idem | PEGA: ZD6 e ZD8 (ECONNREFUSED na 3009) | sim
+P2 | zona-demo.mjs | voltar() sem 'no_ar = true' (o terceiro Enter diria "derrubada" com a zona no ar; remover não fecha) | idem | PEGA: ZD6 (porta presa); o arquivo trava até o timeout externo de 90 s (servidor vazado no processo do teste, inerente à mutação, como o N2) | sim
+P3 | zona-demo.mjs | voltar() sobe na porta + 1 | idem | PEGA: ZD6 e ZD8 | sim
+P4 | zona-demo.mjs | voltar() sem o id: 'subirZonaDeTeste({ porta, hosts })' (id padrão do apoio = 'zona9') | idem; arnês no scratchpad (arnes-p4.mjs: gestão falsa com o comportamento do stub, Enter, Enter, SIGINT) | VIVA, DE BOA-FÉ SEM TESTE: depois de voltar, o Ctrl-C manda 'DELETE /v2/zonas/zona9/rota Bearer svc.zona9'; a gestão de acesso (stub, servidor.mjs:168) responde 404, tolerado; o script diz "Rota removida", sai 0, e a rota demo fica órfã no mapa (sem mutação: DELETE /v2/zonas/demo/rota svc.demo, mapa vazio). Passo 4 do roteiro. ZD5 confere caminho e credencial só sem voltar; ZD8 e ZD6 só contam os DELETE | sim
+P6 | zona-demo.mjs | sem os handlers de uncaughtException e unhandledRejection | idem | VIVA, EQUIVALENTE: depois do laço começar nada lança fora de try (laço e sair() pegam os erros); defensivo | sim
+P7 | zona-demo.mjs | ErroDeUso sai 0 em vez de 1 | idem | PEGA: ZD1 e ZD2 | sim
+P9 | zona-demo.mjs | laço começa com no_ar = false (primeiro Enter chama voltar) | idem | PEGA: ZD8 | sim
+P10 | zona-demo.mjs | SIGINT chama sair(1) | idem | PEGA: ZD5 SIGINT, ZD8, ZD9 | sim
+SKIP | zona-demo.test.mjs | (sem mutação) 3009 ocupada por outro processo node | node --test do arquivo | OK: 11 pulados com a mensagem, 0,21 s | n/a
+FRAGIL | zona-demo.test.mjs | (sem mutação) 5 rodadas seguidas; busca por sleep fixo | node --test x5; grep | OK: 11/11 nas 5 (1,5 s); só prazos (8 s, 2 s no fetch), sem sleep; filho morto em finally, ZD6 remove em finally | n/a
