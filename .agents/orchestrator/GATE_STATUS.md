@@ -460,4 +460,12 @@ Gate Result: **VETO (só por teste)**. Correção pelo orquestrador em `92c6159`
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
-| auditor_e3e5_4 | general-purpose forense (opus) | em andamento | .agents/auditor_e3e5_4/handoff.md, mutacoes.txt | |
+| auditor_e3e5_4 | general-purpose forense (opus) | **VETO (só por teste)** | .agents/auditor_e3e5_4/handoff.md, mutacoes.txt | correção só de teste confirmada; M1 e M9 pegas; 10 mutações novas, 8 pegas, P6 equivalente (handlers defensivos), P4 de boa-fé sem teste: `voltar()` sem o id, o Ctrl-C manda o DELETE de outra zona, recebe 404 tolerado e a rota `demo` fica órfã; regressão por família verde |
+
+Gate Result: **VETO (só por teste)**. Correção pelo orquestrador em `5a06f1e` (só teste): ZD6 e ZD8 conferem caminho e credencial do DELETE depois de voltar, como o ZD5. P4 reprova ZD6 e ZD8; `scripts:test` 40/40. Iteração 6: só um auditor novo.
+
+## Gate: E3, E4 e E5, iteração 6 (só auditor: veto só por teste), principal `5a06f1e`
+
+| Agent | Role | Verdict | Source | Notes |
+|-------|------|---------|--------|-------|
+| auditor_e3e5_5 | general-purpose forense (opus) | em andamento | .agents/auditor_e3e5_5/handoff.md, mutacoes.txt | |
