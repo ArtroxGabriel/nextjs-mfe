@@ -1,7 +1,7 @@
 # Retomada — onde o trabalho está agora
 
 > Só o estado atual, o plano e o próximo passo. O que termina sai daqui e vai para
-> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-07 (objetivo atingido: gate do E3, E4 e E5 aprovado; próximo passo depende do pedido `pedidos/2026-10-07-proximo-passo.md`)**.
+> `GATE_STATUS.md` (vereditos) ou `ATIVIDADES.md` (GitLab). Atualizado em **2026-10-08 (handoff para o Codex em `CODEX.md`; objetivo atingido em 2026-10-07; próximo passo depende do pedido `pedidos/2026-10-07-proximo-passo.md`, ainda sem resposta)**.
 
 
 ## Objetivo final
@@ -84,7 +84,7 @@ D17, D18, D24–D26. Ordem decidida pelo humano, **um de cada vez**, cada um com
 3. ✅ **C3, mapa de zonas vivo e gateway híbrido** (#14). Plano: `docs/superpowers/plans/2026-10-07-c3-mapa-de-zonas.md`; ADR-0015 aceito (pacote recomendado e decisão sobre o `x-middleware-rewrite`, 2026-10-07). Stub `2da6dcb`, zonas `ce8e015`, `f88cce7`, `73a2c19`, shell `d52b5fc`, principal até `4a6fc63`. **Gate aprovado na iteração 2** (2026-10-07): revisor e challenger APROVAM; auditor vetou só por teste (prefixo estático sem a barra) e passou na 2; tag `gate-c3-aprovado`. Fecha o D7. Limites no `DEFERRED.md` D31, menores no D32.
 4. ✅ **E3, E4 e E5** (#19). Plano: `docs/superpowers/plans/2026-10-07-e3-e4-e5-showcase.md`. `showcase:conferir` nos dois modos (`beb5b95`), `showcase:zona-demo` (`7ea3658`, `1198ab1`, `af8239c`), `supportId` pela sonda (shell `d6e48fc`), roteiro F1 a F7 e A1 a A15 (`2d1a6df`, `8d3428e`, `af8239c`), `showcase:verificar` (`4f7c562`, `d625731`, `a63710b`), caminhos de falha do `zona-demo` sob teste (`7e1730a`, `c8b492a`, `92c6159`, `5a06f1e`). **Gate aprovado na iteração 6** (2026-10-07): challenger reprovou a 1 pelo texto do roteiro; auditores vetaram 2 a 5 só por teste, todos no `zona-demo`; tag `gate-e3e5-aprovado`. Menores no `DEFERRED.md` D33.
 
-**Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md`; `git fetch` e ler commits do outro; subir o ambiente (`docker start verdaccio`, `task showcase:subir`, `task showcase:checar`); ler a resposta do pedido `pedidos/2026-10-07-proximo-passo.md` e seguir por ela (plano novo em `docs/superpowers/plans/`). Sem resposta, nada começa. Nada está rodando e nenhum agente está aberto.
+**Para retomar (passo exato):** ler este arquivo e `AMBIENTE.md` (Codex ou outra ferramenta sem os subagentes do Claude Code: também `CODEX.md`); `git fetch` e ler commits do outro; subir o ambiente (`docker start verdaccio`, `task showcase:subir`, `task showcase:checar`); ler a resposta do pedido `pedidos/2026-10-07-proximo-passo.md` e seguir por ela (plano novo em `docs/superpowers/plans/`). Sem resposta, nada começa. Nada está rodando e nenhum agente está aberto.
 
 ## Plano até o objetivo
 
@@ -164,7 +164,7 @@ Cada item começa com um **pedido de detalhamento** em `pedidos/AAAA-MM-DD-<assu
 6. Aplicar no GitLab o que estiver "pendente" em `ATIVIDADES.md` §2 (hoje só comentários opcionais).
 7. ✅ **Modo OIDC na máquina local** (2026-10-03): opção (a), ver "Decisões do humano" acima.
 
-## Ambiente (2026-10-07)
+## Ambiente (2026-10-08, sem mudança desde 2026-10-07)
 
 - **Tudo parado (2026-10-07, fim da sessão, a pedido do humano):** `task showcase:descer` (Redis e Keycloak; o volume do Redis
   fica) e `docker stop verdaccio` (pacotes no volume). Nenhum processo da base, nenhuma porta da base ou dos contêineres

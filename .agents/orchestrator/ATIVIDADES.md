@@ -4,7 +4,7 @@
 > atualiza ao fim de todo gate, task ou decisão; o humano copia para o GitLab e marca a coluna
 > "No GitLab?". Regras de quando avisar: `MANUTENCAO-GITLAB.md`.
 >
-> Última revisão: **2026-10-06 (gate do C1 aprovado: fechar #10; comentário opcional em #11; comentários de repriorização pendentes)**. Anterior: **2026-10-05 (gate do D2 aprovado na iteração 3)** (**fechar #9 (#120)** com o comentário de §3; #21 segue em andamento com G4 e G5; a espera do perdedor com token vencido, D19-B, segue no repositório).
+> Última revisão: **2026-10-08 (sem mudança de atividade; handoff do orquestrador para o Codex; seguem pendentes fechar #9, #10 e #19)**. Anterior: **2026-10-07 (gate do E3, E4 e E5 aprovado: fechar #19)**. Antes: **2026-10-06 (gate do C1 aprovado: fechar #10; comentário opcional em #11; comentários de repriorização pendentes)**. Antes: **2026-10-05 (gate do D2 aprovado na iteração 3)** (**fechar #9 (#120)** com o comentário de §3; #21 segue em andamento com G4 e G5; a espera do perdedor com token vencido, D19-B, segue no repositório).
 
 ## 1. Como ler e manter
 
@@ -464,3 +464,4 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-10-07 (C3) | C3 (#14) começou: ADR-0015 proposto (gateway de zona no shell, mapa vivo pela gestão de acesso); parado no pedido `pedidos/2026-10-07-c3-mapa-de-zonas.md` (H1–H6). Nada novo no GitLab até a decisão |
 | 2026-10-07 (gate E3-E5) | E3, E4 e E5 entregues: `showcase:conferir` nos dois modos, roteiro F1 a F7, `showcase:verificar` 7/7 nos dois modos, zona de demonstração; gate aprovado na iteração 6 (tag `gate-e3e5-aprovado`). **Objetivo da base atingido.** **Fechar #19** com o comentário de §3; próximo passo no pedido `pedidos/2026-10-07-proximo-passo.md` |
 | 2026-10-07 (C3) | Gate do C3 aprovado na iteração 2: zona nova entra registrando a própria rota no deploy, sem editar arquivo do shell nem reiniciá-lo; zona travada devolve a página da base no teto (fecha o D7). Pendente no GitLab: comentário na #14 (entrega do mapa de zonas vivo, ADR-0015) e na #11 (página de zona travada dentro do teto, com o C3) |
+| 2026-10-08 | Sem mudança de atividade. Orquestrador passa para o Codex (`.agents/orchestrator/CODEX.md`). Seguem pendentes no GitLab: fechar #9, #10 e #19; comentários na #14 e na #11 |

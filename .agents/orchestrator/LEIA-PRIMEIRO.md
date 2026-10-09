@@ -12,6 +12,7 @@ depender de conversa anterior. Leia nesta ordem:
 | 5 | [`DEFERRED.md`](DEFERRED.md) | o que foi adiado de propósito, com evidência | ao adiar ou resolver um item |
 | 6 | [`MANUTENCAO-GITLAB.md`](MANUTENCAO-GITLAB.md) | regras de quando e como avisar sobre o GitLab | raramente |
 | 7 | [`ledger/`](ledger/) | cópia do ledger SDD de cada plano (estado de cada task, achados adiados) | `task orquestrador:ledger` ao fechar task |
+| 8 | [`CODEX.md`](CODEX.md) | handoff para agente sem subagentes do Claude Code (Codex): equivalências do processo e primeiros passos | ao trocar de ferramenta ou mudar o processo |
 
 Na raiz de `.agents/` ficam só o orquestrador e as pastas dos verificadores do gate em andamento
 (e do anterior, enquanto o atual cita os achados dele). **Gate fechado: as pastas saem com `git rm`**;

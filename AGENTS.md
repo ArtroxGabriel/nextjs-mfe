@@ -83,7 +83,7 @@ verdes; decisão estrutural nova tem ADR em `docs/adr/`; armadilha nova vai para
 ## Onde está o resto
 
 `README.md` (rodar) · `docs/README.md` (arquitetura) · `.agents/orchestrator/LEIA-PRIMEIRO.md`
-(trabalho em andamento) · `README.md` de cada `repos/erp-*` (o que cada parte é).
+(trabalho em andamento; agente sem os subagentes do Claude Code começa por `.agents/orchestrator/CODEX.md`) · `README.md` de cada `repos/erp-*` (o que cada parte é).
 
 <!-- ai-memory:start -->
 ## Long-term memory (ai-memory)
