@@ -1,0 +1,47 @@
+name: Verificar a base
+
+'on':
+  push:
+    branches: [main, bff-multizone]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      ERP_NPM_TOKEN_LEITURA:
+        required: false
+      SUBMODULOS_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ERP_NPM_REGISTRY: ${{ vars.ERP_NPM_REGISTRY }}
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{ secrets.SUBMODULOS_TOKEN || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - uses: go-task/setup-task@v2
+        with:
+          version: '3.53.1'
+      - name: Instalar o pnpm fixado
+        run: npm install --global pnpm@12.5.1
+      - name: Instalar pelos artefatos canonicos
+        run: task instalar
+        env:
+          ERP_NPM_TOKEN: ${{ secrets.ERP_NPM_TOKEN_LEITURA }}
+      - name: Conferir contratos e seguranca
+        run: task ci:verificar
+      - name: Verificar ponta a ponta com sessao em arquivo
+        run: task verificar:construir

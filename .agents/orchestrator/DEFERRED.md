@@ -71,6 +71,8 @@
 
 ## D18 — `/login/dev` aberto quando o shell sobe em produção sem `IDP_EMISSOR`
 
+**Atualização 2026-10-09:** corrigido na implementação do P1, shell local `bd51363`, ainda sem gate concluído. A evidência abaixo é histórica; os scripts atuais não autorizam dev implicitamente.
+
 - **O que é:** os scripts `build` e `start` do `erp-shell` fixam `ERP_PERMITIR_IDENTIDADE_DEV=1`. Sem `IDP_EMISSOR`,
   um deploy que use `pnpm start` sobe com `identidadeDev`: qualquer um entra como qualquer ator, sem senha.
 - **Evidência:** `erp-shell/package.json` (`"start": "ERP_PERMITIR_IDENTIDADE_DEV=1 next start -p 3000"`); a guarda

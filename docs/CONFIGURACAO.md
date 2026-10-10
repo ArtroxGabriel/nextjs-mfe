@@ -26,7 +26,7 @@ Exemplo de ambiente do showcase: [`base/showcase/.env.example`](../base/showcase
 | `IDP_URL_RETORNO` | `http://localhost:3000/api/auth/retorno` | URL absoluta de `/api/auth/retorno` do shell, registrada no IdP como `redirect_uri`; sem query nem fragmento. O padrão é o do realm do showcase e usa `http://`, que o núcleo recusa em produção (exceto loopback com `ERP_PERMITIR_HTTP_LOCAL=1`, ADR-0013 adendo 2): fora da máquina local, obrigatória | shell (`lib/nucleo.ts`, só com `IDP_EMISSOR`), que passa a `identidadeOidc({ urlRetorno })` | ✅ (D2) |
 | `IDP_URL_POS_LOGOUT` | `http://localhost:3000/login` | Para onde o IdP manda o navegador depois do logout (`post_logout_redirect_uri`, registrada no IdP). Mesma regra de `http://` do item acima | shell (`lib/nucleo.ts`, só com `IDP_EMISSOR`), que passa a `identidadeOidc({ urlPosLogout })` | ✅ (D2) |
 | `KEYCLOAK_ADMIN_USUARIO`, `KEYCLOAK_ADMIN_SENHA` | `admin` / `admin` (só showcase) | Administrador inicial do Keycloak | compose; `checar-keycloak.mjs` | ✅ |
-| `ERP_PERMITIR_IDENTIDADE_DEV` | — | `1` permite `identidadeDev` com `NODE_ENV=production` (só verificação local) | núcleo | ✅ |
+| `ERP_PERMITIR_IDENTIDADE_DEV` | — | `1` permite `identidadeDev` com `NODE_ENV=production`, somente quando a ferramenta local de showcase ou verificação injeta explicitamente a variável. Os scripts `build` e `start` do shell não a definem. Na subida, o shell de produção sem `IDP_EMISSOR` e sem essa autorização sai antes de servir | núcleo e shell | ✅ (D18, P1) |
 | `ERP_PERMITIR_HTTP_LOCAL` | — (desligado) | `1` (valor exato) aceita `http://` com `NODE_ENV=production` **só para host de loopback** (`localhost`, `127.0.0.1`, `[::1]`): emissor, `IDP_URL_RETORNO` e `IDP_URL_POS_LOGOUT` do OIDC e a origem do IdP no `form-action` da CSP. Qualquer outro host `http://` continua recusado em produção, com ou sem ela. Existe para a base verificar o build de produção contra o Keycloak local (ADR-0013, adendo 2). **Só o showcase e a verificação ligam** (`task showcase:oidc`, `task verificar:oidc`); os scripts `build`/`start` das apps nunca. Fora da máquina local, não defina | núcleo (`borda/http-local.ts`: `identidadeOidc` e CSP do shell e das zonas, na criação); stub dos domínios (§4); entra na lista de inclusão de zonas e domínios | ✅ (núcleo 0.10.2) |
 | `SESSAO_DIR` | temporário | Pasta do store de sessão em arquivo (desenvolvimento; some com o Redis) | núcleo, apps | ✅ |
 | `REDIS_URL` | — | Store de sessão (ADR-0002). Definido: shell grava e zonas leem no Redis; ausente: arquivo em `SESSAO_DIR`. Leva a senha do usuário de escrita, que só o shell conhece. O showcase usa `redis://default:dev-shell-escrita@127.0.0.1:6379` | apps (`lib/redis.ts`) | ✅ D1 |
@@ -125,4 +125,17 @@ B5a (shell) e B5b (núcleo 0.8.0) já tinham tirado do código os tempos e limit
 | `ERP_DESTINO_TIMEOUT_MS` (na tarefa `verificar:oidc`) | `5000` (§2); a tarefa fixa `2000` | A tarefa baixa para 2 s para o lock de 5 s passar da regra lock > 2 × timeout (§1); vale para shell, zonas e stub (JWKS) durante a tarefa | `Taskfile.yml` (`verificar:oidc`) |
 | `ERP_RENOVACAO_ESPERA_MS` (na tarefa `verificar:oidc`) | `2000` (§1); a tarefa fixa `4000` | Abaixo do lock de 5 s (a espera tem de ser menor que ele) e acima do timeout de 2 s: um refresh lento do Keycloak não vira `307` para quem perdeu o lock no teste do token vencido | `Taskfile.yml` (`verificar:oidc`) |
 | `VERIFICAR_OIDC_EXIGIR` | vazio (`1` na tarefa) | Com `1`, `base/verificacao/oidc/*.test.mjs` falha em vez de pular quando falta uma pré-condição (Keycloak fora do ar, `IDP_EMISSOR` diferente do do showcase, `ERP_PERMITIR_HTTP_LOCAL` ou `REDIS_URL` ausentes, vida do token incompatível com a janela). `task verificar:oidc` a define: no gate, verde quer dizer rodado. Fora da tarefa (`node --test` à mão) o arquivo pula | `base/verificacao/oidc/oidc.test.mjs` |
+
+## 7. Registro de pacotes e CI
+
+Variáveis das ferramentas de entrega, sem repasse às zonas ou aos domínios. Fluxo e ativação em [REGISTRO-E-CI.md](REGISTRO-E-CI.md).
+
+| Variável | Padrão | Significado | Quem lê |
+|---|---|---|---|
+| `ERP_NPM_REGISTRY` | `http://localhost:4873/` somente fora do CI | Registro dos `@erp/*`; HTTPS obrigatório fora de loopback, sem credenciais na URL. No CI é obrigatório, sem fallback local | `base/scripts/pacotes.mjs` |
+| `ERP_NPM_TOKEN` | ausente | Token de leitura; arquivo de autenticação temporário, modo 0600, removido no fim. Não gravar no Git nem passar como argumento | `pacotes.mjs`, instalação e preflight |
+| `ERP_NPM_TOKEN_PUBLICACAO` | ausente | Token de escrita, obrigatório para publicação em HTTPS; não entregue ao build. O workflow o define somente no passo de publicação | `pacotes.mjs`, publicação |
+| `ERP_NPM_TIMEOUT_MS` | `10000` | Prazo de consulta de metadata por tentativa; inteiro de 100 a 120000 ms | `pacotes.mjs` |
+
+O workflow mapeia os secrets `ERP_NPM_TOKEN_LEITURA` e `ERP_NPM_TOKEN_PUBLICACAO` para as variáveis acima. `SUBMODULOS_TOKEN` permite checkout de submódulos privados, com leitura somente. Prazos dos jobs, versionados nos workflows: 30 minutos para verificação e 15 para publicação; Node 24.21.0, pnpm 12.5.1 e Task 3.53.1.
 

@@ -42,24 +42,35 @@ tasks:
     cmd: node base/scripts/registry.mjs down
 
   pacotes:publicar:
-    desc: "Publica contratos, núcleo e moldura no Verdaccio — só num Verdaccio vazio ou com versão nova (ADR-0010)"
+    desc: "Publica versões novas no ERP_NPM_REGISTRY; recusa versão existente, erro do registro e árvore suja"
+    cmd: node base/scripts/pacotes.mjs publicar {{.CLI_ARGS}}
+
+  ci:verificar:
+    desc: "CI: lockstep, submódulos enviados, unidades, segurança estática e scripts"
     cmds:
-      - for: { var: PACOTES, split: ' ' }
-        cmd: cd repos/{{.ITEM}} && pnpm install && pnpm publicar
+      - task: lockstep
+      - task: checar-envio
+      - task: test
+      - task: verificar:estatica
+      - task: scripts:test
+
+  pacotes:verificar:
+    desc: "Confere os hashes de todos os @erp/* no registro contra os lockfiles, sem alterá-los"
+    cmd: node base/scripts/pacotes.mjs verificar
+
+  pacotes:migrar-registro:
+    desc: "Remove URLs locais dos lockfiles só depois de provar que o registro tem os mesmos artefatos; nunca troca hash"
+    cmd: node base/scripts/pacotes.mjs migrar-registro
 
   instalar:
-    desc: Instala as dependências das apps e do stub (os pacotes já têm de estar no Verdaccio)
-    cmds:
-      - for: [erp-shell, erp-zona-1, erp-zona-2, erp-zona-acesso, erp-dominio-stub]
-        cmd: cd repos/{{.ITEM}} && pnpm install
+    desc: "Instala os 8 repositórios com lockfile congelado; os artefatos já precisam existir no registro"
+    cmd: node base/scripts/pacotes.mjs instalar
 
   preparar:
-    desc: "Máquina nova: submódulos, hooks, Verdaccio, publicação e instalação, nesta ordem"
+    desc: "Máquina nova: submódulos, hooks e instalação congelada pelo registro já abastecido"
     cmds:
-      - task: submodulos
+      - task: submodulos:init
       - task: hooks
-      - task: registry:subir
-      - task: pacotes:publicar
       - task: instalar
 
   # --- rodar -------------------------------------------------------------------------------

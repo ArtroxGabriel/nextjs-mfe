@@ -1,0 +1,56 @@
+name: Publicar pacote imutavel
+
+'on':
+  workflow_dispatch:
+    inputs:
+      pacote:
+        description: Pacote com versao nova, ja commitada no submodulo fixado
+        required: true
+        type: choice
+        options: [erp-contratos, erp-nucleo, erp-moldura]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: erp-publicacao
+  cancel-in-progress: false
+
+jobs:
+  verificar:
+    if: github.ref == 'refs/heads/bff-multizone' || github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/verificar.yml
+    secrets:
+      ERP_NPM_TOKEN_LEITURA: ${{ secrets.ERP_NPM_TOKEN_LEITURA }}
+      SUBMODULOS_TOKEN: ${{ secrets.SUBMODULOS_TOKEN }}
+
+  publicar:
+    needs: verificar
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ERP_NPM_REGISTRY: ${{ vars.ERP_NPM_REGISTRY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{ secrets.SUBMODULOS_TOKEN || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - uses: go-task/setup-task@v2
+        with:
+          version: '3.53.1'
+      - name: Instalar o pnpm fixado
+        run: npm install --global pnpm@12.5.1
+      - name: Instalar com credencial de leitura
+        run: task instalar
+        env:
+          ERP_NPM_TOKEN: ${{ secrets.ERP_NPM_TOKEN_LEITURA }}
+      - name: Publicar somente a versao nova
+        run: task pacotes:publicar -- "$PACOTE"
+        env:
+          PACOTE: ${{ inputs.pacote }}
+          ERP_NPM_TOKEN_PUBLICACAO: ${{ secrets.ERP_NPM_TOKEN_PUBLICACAO }}

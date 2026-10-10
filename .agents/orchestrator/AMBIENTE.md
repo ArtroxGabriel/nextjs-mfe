@@ -135,7 +135,7 @@
 - **Limite de uso interrompe agente no meio de uma mutação.** Em 2026-09-22 o auditor parou duas vezes (uma por engano do
   orquestrador, outra pelo limite da API) com mutação aplicada no `dist` instalado e um `tee` pendurado. Ao retomar: conferir
   fontes (`git status` dos submódulos), `dist` contra o tarball do Verdaccio (hash da árvore), portas e processos (`ps`), e
-  retomar o MESMO agente com SendMessage dizendo o que achou. Nunca parar um verificador por conta própria.
+  na mesma sessão, comunicar o achado ao verificador. Interrompido pelo limite ou vindo de outra sessão: novo verificador, conforme LEIA-PRIMEIRO.md (regra de 2026-10-06). Pausa explícita do humano encerra o trabalho e exige cleanup dos processos próprios.
 - **Mutação que só o comportamento revela exige o challenger certo.** Na iteração 3, P09 (action chamando o domínio antes da
   checagem) e E10c (CPF numa prop de ilha) passaram 71/71 e só o auditor viu. No despacho do challenger, listar as mutações
   sobreviventes da rodada anterior como casos a exercitar com a base no ar.

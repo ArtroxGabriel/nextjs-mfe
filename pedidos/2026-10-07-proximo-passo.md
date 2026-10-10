@@ -1,6 +1,6 @@
 # O que vem depois do objetivo da base
 
-**Estado:** aberto.
+**Estado:** encaminhado pela autorização de prosseguir em 2026-10-09.
 **Aberto em:** 2026-10-07.
 **Para:** o humano responsável pela base.
 **O que espera por isto:** todo trabalho novo. O objetivo da base está atingido (gate do E3, E4 e E5 aprovado em 2026-10-07, tag `gate-e3e5-aprovado`) e nada começa antes da resposta.
@@ -38,4 +38,13 @@ Uma linha por pergunta: `Q1: (a)`, `Q2: ...`, `Q3: ...`, `Q4: ...`, com observa�
 
 ## Resposta
 
-(vazia)
+Em 2026-10-09, após a avaliação do estado e do processo, o humano escreveu: "prossiga sem pedir confirmações e tenha cuidado com o processo de outro agente executando em ~/Documents/sisbin-planejamento-local".
+
+Encaminhamento do agente, sem atribuir respostas literais Q1 a Q4 ao humano:
+
+- Seguir a recomendação da avaliação: P1 primeiro, G5 e depois G4.
+- Usar GitHub Actions, pois principal e submódulos estão no GitHub. Registro npm compartilhado configurável, preservando `@erp/*`. Endereço e credenciais não estão disponíveis; registrar a ativação como pendente.
+- Menores entram quando o código correspondente for tocado; D18 é tratado no P1.
+- Manter a regra vigente de auditoria proporcional e mutações já classificadas. Não criar um teto novo nem remover o auditor sem decisão específica.
+
+Plano: `docs/superpowers/plans/2026-10-09-p1-registro-e-ci.md`. Não tocar o projeto citado nem encerrar seus processos.

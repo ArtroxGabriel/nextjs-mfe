@@ -21,6 +21,7 @@ export function divergencias(versoes) {
   for (const v of versoes) {
     if (!v.declarada) erros.push(`${v.dir}: nao depende de @erp/nucleo`)
     else if (!/^\d+\.\d+\.\d+$/.test(v.declarada)) erros.push(`${v.dir}: versao nao exata (${v.declarada}); lockstep exige versao fixa`)
+    if (!v.travada) erros.push(`${v.dir}: nucleo ausente no lockfile`)
     if (v.declarada && v.travada && v.declarada !== v.travada) erros.push(`${v.dir}: package.json diz ${v.declarada}, lockfile trava ${v.travada}`)
   }
   const distintas = new Set(versoes.map((v) => v.travada ?? v.declarada))

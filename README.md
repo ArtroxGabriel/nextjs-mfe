@@ -12,7 +12,7 @@ sem código de domínio no núcleo. Decisões no
 | Zona 1 | `repos/erp-zona-1` | 3001 | domínios A e B; módulo livre `/zona1` e restrito `/zona1/relatorios` |
 | Zona 2 | `repos/erp-zona-2` | 3002 | domínio C; Server Action com `If-Match` que leva o toast para a zona 1 |
 | Zona de acesso | `repos/erp-zona-acesso` | 3003 | perfil × módulo, restrição e usuário × perfil |
-| Pacotes | `repos/erp-{contratos,nucleo,moldura}` | — | publicados no Verdaccio local `:4873` |
+| Pacotes | `repos/erp-{contratos,nucleo,moldura}` | — | registro npm configurável; padrão local `:4873`, ativação compartilhada no P1 |
 | Domínios falsos | `repos/erp-dominio-stub` | 4001–4004, 4010 | A, B, C, plataforma e gestão de acesso |
 | Ferramentas da base | `base/` | — | subir tudo (`scripts/`), verificação ponta a ponta (`verificacao/`), Verdaccio (`docker-compose.yml`) |
 
@@ -43,7 +43,7 @@ para a arquitetura final em [`docs/arquitetura/alvo.md`](docs/arquitetura/alvo.m
 
 ```bash
 git clone --recurse-submodules <url> && cd nextjs-mfe
-task preparar      # máquina nova: submódulos, hooks, Verdaccio, publicação dos pacotes, instalação
+task preparar      # máquina nova: submódulos, hooks e instalação congelada pelo registro já abastecido
 task base          # sobe tudo em http://localhost:3000 (Ctrl-C derruba)
 ```
 
@@ -60,7 +60,7 @@ task showcase:oidc       # o mesmo com login pelo Keycloak (OIDC + PKCE; senha =
 
 Depois abra http://localhost:3000 e siga [`docs/ROTEIRO-DE-VERIFICACAO.md`](docs/ROTEIRO-DE-VERIFICACAO.md), que abre com uma linha por funcionalidade básica.
 
-`task preparar` publica os pacotes; num Verdaccio que já os tem, rode só `task instalar`.
+`task preparar` não publica pacotes nem sobe contêineres. Configure `ERP_NPM_REGISTRY` com o registro já abastecido; para usar o Verdaccio local, rode `task registry:subir` antes. `task instalar` instala os oito repositórios com lockfile congelado. O CI e a migração do registro estão em [`docs/REGISTRO-E-CI.md`](docs/REGISTRO-E-CI.md).
 
 Entre como `ana`, `bruno`, `carla` ou `davi`: cada um vê um menu diferente. Use `localhost`, não
 `127.0.0.1`, porque o cookie `__Host-session` exige origem segura.
@@ -70,6 +70,8 @@ Entre como `ana`, `bruno`, `carla` ou `davi`: cada um vê um menu diferente. Use
 > recusa o lockfile (`ERR_PNPM_TARBALL_INTEGRITY`). Publique versão nova quando mudar um pacote,
 > nunca o mesmo número duas vezes (ADR-0010). O que fazer quando um lockfile falhar:
 > [`.agents/orchestrator/AMBIENTE.md`](.agents/orchestrator/AMBIENTE.md) §1.
+
+O fluxo compartilhado recusa diferenças de hash e não as corrige automaticamente. A ativação do registro oficial depende da migração dos artefatos canônicos; os pacotes existentes não são republicados por `task preparar`.
 
 ## 3. Como testar
 
@@ -118,8 +120,7 @@ A verificação manual, item a item, está em
   sessão em arquivo; com `IDP_EMISSOR` o shell usa OIDC + PKCE e renova o token no proxy (ADR-0013), e
   `task verificar:oidc` verifica esse modo contra o Keycloak do showcase. Sessão de 30 min **por
   inatividade**; os tempos são configuração ([`docs/CONFIGURACAO.md`](docs/CONFIGURACAO.md)).
-- O 503 de zona fora e o gateway de telemetria do shell **ainda não passaram por gate** (iteração 4
-  em andamento; ver `.agents/orchestrator/RETOMADA.md`).
+- O 503 de zona fora e o gateway de telemetria passaram pelo gate do shell. A exportação de spans continua adiada (B2).
 - O showcase (`task showcase`) sobe tudo: Redis, Keycloak, domínios com dados gravados, shell e zonas.
   A sessão fica no Redis; o login é o de desenvolvimento, ou o do Keycloak com `task showcase:oidc`.
 - Os domínios falsos leem os dados de `repos/erp-dominio-stub/dados/semente/*.json`. Na verificação
@@ -131,7 +132,7 @@ A verificação manual, item a item, está em
 1. **Repositório novo** `erp-<zona>` no modelo de `erp-zona-2`: `assetPrefix: '/<zona>-static'`,
    rotas sob `app/<zona>/`, `serverActions.allowedOrigins` com o host do shell, `lib/nucleo.ts`
    com os destinos que a zona pode chamar, e `<Moldura>` no layout.
-2. **Manifesto** `acesso.manifesto.ts`: módulos, perfis e concessões com o prefixo da zona.
+2. **Manifesto** `acesso.manifesto.ts`: somente o próprio módulo e seu catálogo de funcionalidades, no formato v2. Perfis e papéis são criados na gestão de acesso.
    Registre com `pnpm registrar`.
 3. **Rota**: rode `pnpm registrar-rota` no deploy da zona (`scripts/registrar-rota.ts`, com `ERP_ZONA_ORIGEM_INTERNA`). O shell não se edita nem se republica: o mapa vivo, a sonda de saúde e o 503 passam a incluir a zona em até um TTL mais uma releitura (`ERP_MAPA_ZONAS_TTL_MS`).
 4. **Submódulo e verificação**: registre o repositório em `.gitmodules` e inclua a app em

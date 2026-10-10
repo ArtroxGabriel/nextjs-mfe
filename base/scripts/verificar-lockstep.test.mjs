@@ -20,3 +20,7 @@ test('package.json e lockfile discordando reprova', () => {
 test('aplicacao sem o nucleo reprova', () => {
   assert.ok(divergencias([v('a', null, null)]).some((x) => /nao depende/.test(x)))
 })
+
+test('nucleo declarado sem resolucao no lockfile reprova', () => {
+  assert.ok(divergencias([v('a', '0.10.4', null), v('b', '0.10.4')]).some((x) => /ausente no lockfile/.test(x)))
+})
