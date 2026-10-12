@@ -8,6 +8,8 @@ Configure `ERP_NPM_REGISTRY` no ambiente do terminal ou do CI e `ERP_NPM_TOKEN` 
 
 `task preparar` busca os submódulos fixados, ativa os hooks deste clone e chama `task instalar`. Não sobe contêineres nem publica pacotes. `task instalar` verifica primeiro todos os hashes `@erp/*` dos oito lockfiles e depois instala com `--frozen-lockfile`. Uma divergência interrompe a operação sem reescrever hash. Também são instaladas as dependências de desenvolvimento dos três pacotes.
 
+A autenticação do pnpm usa `--userconfig` com arquivo temporário 0600 removido no `finally`. `task pacotes:sondar-auth` compara cinco mecanismos contra mock em loopback, em `view` e `install`, com token fictício. No pnpm 12.5.1, `npmrcAuthFile` camel/kebab não enviam Authorization; `--userconfig`, `npm_config_userconfig` e `.npmrc` enviam. A prova automatizada instala o tarball real e recusa divergência de specifier sem reescrever o lockfile.
+
 Para desenvolvimento com o registro local já abastecido, use `task registry:subir` antes de `task preparar`. O padrão local é `http://localhost:4873/`. Não publique novamente uma versão existente para reparar uma máquina nova.
 
 ## Migração inicial

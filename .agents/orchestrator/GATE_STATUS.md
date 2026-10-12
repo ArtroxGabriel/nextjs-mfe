@@ -5,23 +5,23 @@
 > `.agents/arquivo/...` e `.agents/*_shell_1/` citados abaixo existem só nela; `*_shell_2` está na história do
 > git e `*_shell_3`/`*_shell_4`, na tag `gate-shell-aprovado`.
 
-## Gate — Base genérica (ADR-0009), iteração 1, HEAD 1b9e811
+## Gate Base genérica (ADR-0009), iteração 1, HEAD 1b9e811
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
 | reviewer_base_1 | revisor-mfe (opus) | REQUEST_CHANGES | .agents/arquivo/reviewer_base_1/handoff.md | 0 bloqueantes; 5 importantes: repositórios sem remoto; manifesto `plataforma` cria perfil global (inv. 17); escrita de sessão na raiz do núcleo (inv. 15); host de toast ignora flash novo; erro de sessão em action vira tela genérica (inv. 12) |
 | challenger_base_1 | simulador-condicoes (sonnet) | REQUEST_CHANGES | .agents/arquivo/challenger_base_1/handoff.md | A1: action executa sem `Origin` (checagem do Next fail-open); sem boundary de erro; gestão de acesso fora = página vazia; domínio A fora derruba /zona1; 20/20 automáticos; p95 192 ms em GET /zona1 |
-| auditor | — | não despachado | — | aguardou a correção |
+| auditor | | não despachado | | aguardou a correção |
 
 Gate Result: **FAIL**. Correções: contratos b10d55f, núcleo d5912ce (0.3.0, `@erp/nucleo/shell`), moldura fd618c9,
 stub b5c8ac7, shell a28b80a, zona-1 a3883ec, zona-2 dbaa10d, zona-acesso d81dd34. Pacotes 15/58/11/16, ponta a ponta 23/23.
 Pendente de decisão do humano: remotos dos cinco repositórios só locais (achado 1 do revisor).
 
-## Gate — Base genérica, iteração 2, HEAD 8aa5a3e
+## Gate Base genérica, iteração 2, HEAD 8aa5a3e
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
 | reviewer_base_2 | revisor-mfe (sonnet) | REQUEST_CHANGES (condicional) | .agents/arquivo/reviewer_base_2/handoff.md | todos os achados da iteração 1 resolvidos; nenhuma regressão; faltava só rodar a ponta a ponta, bloqueada pelas portas |
 | auditor_base_1 | general-purpose forense (opus) | **INTEGRITY VIOLATION** | .agents/arquivo/auditor_base_1/handoff.md, mutacoes.txt | números reproduzidos (15/58/11/16, 23/23); 20 mutações exigidas pegas; veto: V1 Origin só testado na zona de acesso (X1 sobrevive na zona 2), V2 "uma vez" do toast não verificado (X5), V3 degradação sem teste, V4 ilhas sem teste (X3, X4, X6, X22) |
-| challenger | — | não despachado | — | aguardou a correção |
+| challenger | | não despachado | | aguardou a correção |
 
 Gate Result: **FAIL** (veto do auditor). Correções: núcleo 78980a4 (0.3.1: proxy consome o flash; testes de parâmetro
 hostil afirmam a recusa), moldura a268f66 (0.3.0: `executarAcao` testável; host de toast executado com hooks falsos),
@@ -30,7 +30,7 @@ stub 1517c5e (um processo por domínio), shell 6e05e55, zona-1 a315918, zona-2 8
 de toda app, toast uma vez com pote de cookies, domínios derrubados um a um e restrição de módulo comportamental.
 Mutantes do auditor conferidos pelo orquestrador: X22 e X6 agora reprovam a moldura.
 
-## Gate — Shell novo (Gabriel), iteração 1, erp-shell a63b995 / zonas bac6d37…
+## Gate Shell novo (Gabriel), iteração 1, erp-shell a63b995 / zonas bac6d37…
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
@@ -42,7 +42,7 @@ Gate Result: **FAIL** (veto do auditor + dois REQUEST_CHANGES). Rodada de corre�
 com o teste L1 do auditor; telemetria descarta anônimo e limita em streaming; C1 case-insensitive; CSP do
 shell alinhada; L2–L4 na verificação ponta a ponta.
 
-## Gate — Shell novo, iteração 2, erp-shell 4255635 / zonas a0d9bc1…
+## Gate Shell novo, iteração 2, erp-shell 4255635 / zonas a0d9bc1…
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
@@ -57,7 +57,7 @@ de `/api/otel` e `/api/auth` por segmento (U6 achou `/api/otelx` sem cookie). **
 zona 2 → L1 reprova; fail-open na zona 1 → L1 e L6 reprovam (L6 pela resposta `?_rsc=`).
 `base/verificacao` 47/47, duas vezes. Próximo: iteração 3.
 
-## Gate — Shell novo, iteração 3, erp-shell 72e0475 / zonas f26fd7c, 8627c02, ee623ab / núcleo 0.6.0
+## Gate Shell novo, iteração 3, erp-shell 72e0475 / zonas f26fd7c, 8627c02, ee623ab / núcleo 0.6.0
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
@@ -71,7 +71,7 @@ e no "L1 tem dentes"; teste novo que reprova se uma página de módulo das zonas
 comentário do L4 corrigido. **Provas:** as mutações V1 e V2 do auditor aplicadas juntas → reprovam exatamente L1 e L7
 (48/50); linha de base **50/50** duas vezes. Próximo: iteração 4.
 
-## Gate — Shell novo, iteração 4 (só a verificação mudou; produto igual à iteração 3)
+## Gate Shell novo, iteração 4 (só a verificação mudou; produto igual à iteração 3)
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
@@ -79,10 +79,10 @@ comentário do L4 corrigido. **Provas:** as mutações V1 e V2 do auditor aplica
 | challenger_shell_3 | simulador-condicoes (sonnet) | APPROVE (iteração 3) | .agents/challenger_shell_3/handoff.md | não redespachado: nenhum código de produto mudou desde a aprovação dele |
 | auditor_shell_4 | general-purpose forense (opus) | **CLEAN** | .agents/auditor_shell_4/handoff.md, mutacoes.txt | 61 mutações; V1 e V2 da iteração 3 reprovam L1 e L7; nonce fixo no shell reprova L8; 50/50 duas vezes. Lacunas sem veto: completude do L1 não distingue `[secao]` irmã de página literal; nonce fixo/previsível nas zonas; sonda de 1,5 s passa no L7; L7 interrompido deixa a zona congelada |
 
-Gate Result: **PASS** — shell novo (503 de zona, sonda, telemetria, CSP e trace do núcleo 0.6.0) aprovado.
+Gate Result: **PASS** shell novo (503 de zona, sonda, telemetria, CSP e trace do núcleo 0.6.0) aprovado.
 Lacunas do auditor_shell_4 viram endurecimento imediato da verificação (fora do gate).
 
-## Gate — Kit de aplicação (B1) + Sessão no Redis (D1), iteração 1 (núcleo 0.8.2 / moldura 0.4.0)
+## Gate Kit de aplicação (B1) + Sessão no Redis (D1), iteração 1 (núcleo 0.8.2 / moldura 0.4.0)
 
 > Pastas dos verificadores removidas em 2026-09-28; a última versão delas está no commit `7b10eae` (`git show 7b10eae:.agents/<nome>/handoff.md`).
 
@@ -90,12 +90,12 @@ Lacunas do auditor_shell_4 viram endurecimento imediato da verificação (fora d
 |-------|------|---------|--------|-------|
 | reviewer_b1_d1_1 | revisor-mfe (gemini) | APPROVE | .agents/reviewer_b1_d1_1/handoff.md | migração para o kit concluída nas 4 apps; cópias locais eliminadas; leitor/escritor estritamente segregados (invariante 15); hash SHA256 nas chaves Redis; conformidade estrita com os 17 invariantes |
 | challenger_b1_d1_1 | simulador-condicoes (gemini) | APPROVE | .agents/challenger_b1_d1_1/handoff.md | ponta a ponta `task verificar:redis` 60/60 verde; fail-closed em falha de Redis confirmado sem vazamento (invariante 12); inspeção de chaves e TTL validada; testes de unidade e estáticos 100% |
-| auditor_b1_d1_1 | auditor-forense (gemini) | **CLEAN** | .agents/auditor_b1_d1_1/handoff.md, mutacoes.txt | 7 mutações essenciais testadas (chave crua no Redis, fail-open de rede, bypass de REDIS_URL, fail-open em exigirModulo, bypass de Origin, link entre zonas, prop sensível JSX) — todas capturadas e reprovadas pelas suítes |
+| auditor_b1_d1_1 | auditor-forense (gemini) | **CLEAN** | .agents/auditor_b1_d1_1/handoff.md, mutacoes.txt | 7 mutações essenciais testadas (chave crua no Redis, fail-open de rede, bypass de REDIS_URL, fail-open em exigirModulo, bypass de Origin, link entre zonas, prop sensível JSX) todas capturadas e reprovadas pelas suítes |
 
-Gate Result: **PASS** — B1 (Kit de app no núcleo e moldura) e D1 (Persistência de sessão no Redis) aprovados integralmente.
+Gate Result: **PASS** B1 (Kit de app no núcleo e moldura) e D1 (Persistência de sessão no Redis) aprovados integralmente.
 
 
-## Gate — Kit de aplicação (B1) + Sessão no Redis (D1), iteração 2 (núcleo 0.8.2 / moldura 0.4.0 / contratos 0.3.1)
+## Gate Kit de aplicação (B1) + Sessão no Redis (D1), iteração 2 (núcleo 0.8.2 / moldura 0.4.0 / contratos 0.3.1)
 
 Rodada pedida pelo humano: a iteração 1 fez 7 mutações e usou verificadores fora do processo. Escopo ampliado ao que
 entrou sem verificação independente: núcleo 0.8.0–0.8.2 (acesso v2, campos OIDC, timeouts), B3, B4/B6, B5a.
@@ -118,7 +118,7 @@ Gate Result: **FAIL** (veto). A iteração 1 (PASS) fica superada. Correção: V
 corte seco); V1, V2, V3, V5, V7, V8 e as lacunas numa fatia de correção antes da iteração 3. Estado final conferido pelo
 orquestrador: fontes iguais ao início, `dist` instalado igual ao tarball 0.8.2 nas 4 apps, 60/60 nos dois modos.
 
-## Gate — B1 + D1 + G3 (acesso v2) + fatia K, iteração 3 (contratos 0.4.0 / núcleo 0.9.2 / moldura 0.5.0)
+## Gate B1 + D1 + G3 (acesso v2) + fatia K, iteração 3 (contratos 0.4.0 / núcleo 0.9.2 / moldura 0.5.0)
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
@@ -146,7 +146,7 @@ Gate Result: **FAIL** (veto). Revisor e challenger aprovaram; a correção (fati
 verificadores novos (o auditor vetou comportamento que o challenger não exercitou: P09 e E10c). Estado conferido pelo orquestrador ao fim:
 fontes iguais ao início, `dist` = tarball 0.9.2 nas 4 apps, portas livres, `tee` residual do auditor encerrado.
 
-## Gate — B1 + D1 + G3 (acesso v2) + fatias K e K2, iteração 4 (contratos 0.4.0 / núcleo 0.9.2 / moldura 0.5.0)
+## Gate B1 + D1 + G3 (acesso v2) + fatias K e K2, iteração 4 (contratos 0.4.0 / núcleo 0.9.2 / moldura 0.5.0)
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
@@ -169,7 +169,7 @@ Lacunas: L1 contornos do `P0-acao-protegida`; L2 `If-Match` fixo "3" (N4 usa jus
 Gate Result: **FAIL** (veto). Correção na fatia K3 (`RETOMADA.md`). Estado conferido pelo auditor ao fim: fontes iguais, `dist` = tarball
 0.9.2, dados do stub iguais, chave forjada apagada, 88/88, portas livres.
 
-## Gate — B1 + D1 + G3 (acesso v2) + fatia K3, iteração 5 (contratos 0.4.0 / núcleo 0.9.2 / moldura 0.5.0)
+## Gate B1 + D1 + G3 (acesso v2) + fatia K3, iteração 5 (contratos 0.4.0 / núcleo 0.9.2 / moldura 0.5.0)
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
@@ -182,32 +182,32 @@ Gate Result: **não aceito** (humano, 2026-09-23, após revisão do orquestrador
 objeto passava sem achado. Correção na fatia K4 (V3 pelo verificador de tipos; limites em `DEFERRED.md` D14); iteração 6 a seguir.
 As pastas `.agents/*_b1_d1_5/` saíram com `git rm`; estão no commit `bf40a18`.
 
-## Gate — B1 + D1 + G3 (acesso v2) + fatias K3/K4, iteração 6
+## Gate B1 + D1 + G3 (acesso v2) + fatias K3/K4, iteração 6
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
 | reviewer_b1_d1_6 | revisor-mfe (sonnet) | REQUEST_CHANGES | .agents/reviewer_b1_d1_6/handoff.md | `iniciar` em `ambiente.mjs` descartava o 4º argumento: `envDaApp` era código morto e toda zona recebia `REDIS_URL`; V2–V5 e L2/L3 fechados com teste; XN09 sem registro |
 | challenger_b1_d1_6 | simulador-condicoes (sonnet) | REQUEST_CHANGES | .agents/challenger_b1_d1_6/handoff.md | `task verificar:redis` 96/98 (`base.test.mjs:482` e `:909`), 2x; sessão forjada da carla gravada com a `REDIS_URL` da zona abriu `/` e `/acesso`; V3 (tipo), V5, If-Match, 401/404/403 e revogação sustentam |
-| auditor | — | não despachado | — | gate já reprovado pelos dois |
+| auditor | | não despachado | | gate já reprovado pelos dois |
 
 Gate Result: **FAIL**. A K3 nunca foi rodada no modo Redis nem, depois do teste novo, no modo arquivo. Correção **K4-3**: `iniciar(cmd, args,
 cwd, envProc)` usa o ambiente por processo; o teste `:482` injeta `REDIS_URL` de propósito para provar a recusa do produto; a parte do shell
 em `:909` só vale no modo Redis; XN09 em D14. Conferido: `task verificar:redis` 98/98, `task verificar` 95 + 3 pulados. Iteração 7 a seguir.
 
-## Gate — B1 + D1 + G3 (acesso v2) + fatias K3/K4, iteração 7
+## Gate B1 + D1 + G3 (acesso v2) + fatias K3/K4, iteração 7
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
 | reviewer_b1_d1_7 | revisor-mfe (sonnet) | APPROVE | .agents/reviewer_b1_d1_7/handoff.md | K4-3 corrige o V1; sem veto. Não bloqueantes: domínios falsos recebiam `REDIS_URL`; XN09 é erro de boa-fé, não cabe em D14 |
 | challenger_b1_d1_7 | simulador-condicoes (sonnet) | REQUEST_CHANGES | .agents/challenger_b1_d1_7/handoff.md | 98/98 e 95+3, 2x cada; nenhuma zona tem `REDIS_URL`. Mas o usuário `default` do Redis do showcase era `nopass`: só com o endereço (público no Taskfile) gravou sessão forjada da carla, aceita em `/` e `/acesso` |
-| auditor | — | não despachado | — | gate já reprovado |
+| auditor | | não despachado | | gate já reprovado |
 
 Gate Result: **FAIL**. Correção **K4-4**: `--requirepass` no usuário de escrita (`ERP_REDIS_SENHA_SHELL`, `docs/CONFIGURACAO.md`), `REDIS_URL`
 com a senha no Taskfile e no `subir.mjs`; teste novo prova que conexão sem senha recebe `NOAUTH` e que nenhum domínio falso recebe
 credencial do Redis; domínios e `pnpm registrar` sobem sem a credencial de escrita; XN09 vira regra estática (`assetPrefix`/`basePath` só
 literal) com teste, e sai do D14. Conferido: `task verificar:redis` 100/100, `task verificar` 96 + 4 pulados, estática 40/40. Iteração 8 a seguir.
 
-## Gate — B1 + D1 + G3 (acesso v2) + fatias K3/K4, iteração 8
+## Gate B1 + D1 + G3 (acesso v2) + fatias K3/K4, iteração 8
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
@@ -250,7 +250,7 @@ Correção **K5** (2026-09-28), cada item com teste que reprova com a correção
   `CONSTRUIR=tudo task verificar:redis` (build das 4 apps com o ambiente novo) e depois `task verificar:redis` **109/109**,
   `task verificar:construir` **105 + 4 pulados**. Iteração 9 a seguir, com o catálogo da iteração 8 como piso.
 
-## Gate — B1 + D1 + G3 (acesso v2) + fatias K3/K4/K5, iteração 9
+## Gate B1 + D1 + G3 (acesso v2) + fatias K3/K4/K5, iteração 9
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
@@ -264,7 +264,7 @@ escrita só no shell) e G3 (acesso v2). Estado conferido ao fim: fontes nos HEAD
 Pastas dos verificadores das iterações 2–9 removidas depois do registro; última versão no commit `f010760`
 (`git show f010760:.agents/<nome>/handoff.md`). Tag `gate-b1-d1-g3-aprovado`.
 
-## Gate — D2 (OIDC + PKCE, renovação proativa com lock; núcleo 0.10.2), iteração 1, HEAD `b8a1034`
+## Gate D2 (OIDC + PKCE, renovação proativa com lock; núcleo 0.10.2), iteração 1, HEAD `b8a1034`
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
@@ -276,7 +276,7 @@ Gate Result: **VETO** (sem defeito de produto). `worker_d2_1` escreveu os testes
 `base/scripts/ambiente.test.mjs` e `oidc.test.mjs`): P04, F04, L04 e L07 pegos; shell 86/86, núcleo 226/226, scripts 21/21,
 `verificar:oidc` 5/5. Iteração 2 com verificadores novos.
 
-## Gate — D2, iteração 2, principal `0b650ad` (testes do veto), shell `bce8f59`, núcleo `aeae3af`
+## Gate D2, iteração 2, principal `0b650ad` (testes do veto), shell `bce8f59`, núcleo `aeae3af`
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
@@ -287,7 +287,7 @@ Gate Result: **VETO** (sem defeito de produto). `worker_d2_1` escreveu os testes
 Gate Result: **VETO** (sem defeito de produto). Correção: teste de independência dos segredos da transação (sorteios independentes de
 `randomBytes`, ou derivação por hash/inclusão recusada) e as recomendações P04b e T3o; iteração 3 com verificadores novos.
 
-## Gate — D2, iteração 3, principal `cf72700`, núcleo `83b00e0`, shell `3034f76` (núcleo 0.10.2)
+## Gate D2, iteração 3, principal `cf72700`, núcleo `83b00e0`, shell `3034f76` (núcleo 0.10.2)
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
@@ -302,12 +302,12 @@ nos HEADs, `dist` do núcleo nas 4 apps = tarball 0.10.2, `task test` verde, `ve
 no padrão, portas livres. Pastas dos verificadores e workers das iterações 1–3 removidas depois do registro; última versão no commit
 `0419774` (`git show 0419774:.agents/<nome>/handoff.md`). Tag `gate-d2-aprovado`. Depois: task D19-B (`DEFERRED.md` D19).
 
-## Gate — D19-B (perdedor espera a renovação com token vencido; núcleo 0.10.3), iteração 1, principal `896c751`, núcleo `fdea296`, shell `72ecc2f`
+## Gate D19-B (perdedor espera a renovação com token vencido; núcleo 0.10.3), iteração 1, principal `896c751`, núcleo `fdea296`, shell `72ecc2f`
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
 | reviewer_d19b_1 | revisor-mfe (sonnet) | APPROVE | .agents/reviewer_d19b_1/handoff.md | branch inteira no lugar da revisão final; sem Critical/Important; `ERP_DESTINO_TIMEOUT_MS ≥ 7500` com lock padrão recusa a configuração (documentado) |
-| challenger_d19b_1 | simulador-condicoes (sonnet) | — (interrompido) | .agents/challenger_d19b_1/handoff.md | etapas 1–6 sem divergência; limite da API antes da 7; JWKS do stub frio: recuperação ~30 s depois de o IdP voltar |
+| challenger_d19b_1 | simulador-condicoes (sonnet) | (interrompido) | .agents/challenger_d19b_1/handoff.md | etapas 1–6 sem divergência; limite da API antes da 7; JWKS do stub frio: recuperação ~30 s depois de o IdP voltar |
 | challenger_d19b_2 | simulador-condicoes (sonnet) | APPROVE | .agents/challenger_d19b_2/handoff.md | etapas 7–8: regressão do D2 sem divergência; `task test`, estática 51/51, `verificar:redis` 118/118 e `verificar:oidc` 6/6, 2x |
 | auditor_d19b_1 | general-purpose forense (opus) | **VETO** | .agents/auditor_d19b_1/handoff.md, mutacoes.txt, sonda-erro-na-espera.test.mjs.txt | 96 registros, 81 pegos; E01 (0.10.2 no shell) reprova o e2e das 10 concorrentes; veto A10 (`valida(id).catch(() => null)` na espera: erro do store vira `ausente` e apaga a sessão, sintoma do D19), mais A10c/A10d do D2; observação B11 (`ESPERA_MS=''` recusado em vez de padrão) |
 
@@ -315,11 +315,11 @@ Gate Result: **VETO** (sem defeito de produto). Correção: testes em `erp-nucle
 leitor durante a espera, antes do lock e na releitura com o lock (A10, A10c, A10d) e, recomendado, no shell (`proxy-renovacao.test.mjs`)
 store que lança com token vencido termina em `prosseguir` sem `limparSessao`. Iteração 2 com verificadores novos.
 
-## Gate — D19-B, iteração 2 (só auditor: veto só por teste, regra do humano de 2026-10-06), principal `b1bacee`, núcleo `610217d`, shell `0a3131d`
+## Gate D19-B, iteração 2 (só auditor: veto só por teste, regra do humano de 2026-10-06), principal `b1bacee`, núcleo `610217d`, shell `0a3131d`
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
-| worker_d19b_1 | correção do veto (opus) | — | .agents/worker_d19b_1/handoff.md | só `test/`: núcleo +9 (três momentos × três stores) e casos de `''`, 271/271; shell +6, 108/108; cada mutação do veto reprova só o seu momento |
+| worker_d19b_1 | correção do veto (opus) | | .agents/worker_d19b_1/handoff.md | só `test/`: núcleo +9 (três momentos × três stores) e casos de `''`, 271/271; shell +6, 108/108; cada mutação do veto reprova só o seu momento |
 | auditor_d19b_2 | general-purpose forense (opus) | **PASS** | .agents/auditor_d19b_2/handoff.md, mutacoes.txt | 34 registros, 32 pegos: veto da it.1 e 16 variantes (catch → `revogada`, laço inteiro, catch dentro de `valida`…), regressão 13/13 por família com E01; A10b pega e coerente com o ADR-0013; V11 viva sem veto (`lib/redis.ts` das apps → `DEFERRED.md` D26) |
 
 Gate Result: **PASS**. Fecha a **D19-B** (`DEFERRED.md` D19 e D20): o perdedor do lock espera a renovação quando o token já venceu
@@ -328,7 +328,7 @@ Gate Result: **PASS**. Fecha a **D19-B** (`DEFERRED.md` D19 e D20): o perdedor d
 livres. Pastas dos verificadores e do worker removidas depois do registro; última versão no commit `fa93c2c`
 (`git show fa93c2c:.agents/<nome>/handoff.md`). Tag `gate-d19b-aprovado`.
 
-## Gate — D7 (zona travada: teto `ERP_ZONA_TETO_MS` como `proxyTimeout`), iteração 1, principal `f330cb7`, shell `45787f1`
+## Gate D7 (zona travada: teto `ERP_ZONA_TETO_MS` como `proxyTimeout`), iteração 1, principal `f330cb7`, shell `45787f1`
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
@@ -342,7 +342,7 @@ auditor: shell 114/114, `task verificar` 115 + 4 pulados, `verificar:redis` 119/
 verificadores removidas depois do registro; última versão no commit `aa26ba2` (`git show aa26ba2:.agents/<nome>/handoff.md`).
 Tag `gate-d7-aprovado`.
 
-## Gate — C1 (fragmentos entre zonas), iteração 1, principal `8182e2f`, shell `836ddc4`, zona 1 `39c4b76`, zona 2 `1626fd1`
+## Gate C1 (fragmentos entre zonas), iteração 1, principal `8182e2f`, shell `836ddc4`, zona 1 `39c4b76`, zona 2 `1626fd1`
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
@@ -353,21 +353,21 @@ Tag `gate-d7-aprovado`.
 Gate Result: **VETO (só por teste)**. Correção: tarefas com título hostil e uma concluída na semente do domínio C (decisão do
 humano: conta como teste) e asserções de título, escape e ausência em C1a/C1c. Iteração 2: só um auditor novo.
 
-## Gate — C1, iteração 2 (só auditor: veto só por teste), principal `1edc130` (correção em `ca0f4b6`), stub `b85540c`
+## Gate C1, iteração 2 (só auditor: veto só por teste), principal `1edc130` (correção em `ca0f4b6`), stub `b85540c`
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
-| worker_c1_1 | correção do veto (opus) | — | .agents/worker_c1_1/handoff.md | só teste e semente: `t-3` com título hostil e `t-4` concluída; C1a/C1c conferem título escapado, cru ausente, concluída ausente; bruno/davi sem `/tarefa\|zona 2/i`; as 5 do veto reprovam |
+| worker_c1_1 | correção do veto (opus) | | .agents/worker_c1_1/handoff.md | só teste e semente: `t-3` com título hostil e `t-4` concluída; C1a/C1c conferem título escapado, cru ausente, concluída ausente; bruno/davi sem `/tarefa\|zona 2/i`; as 5 do veto reprovam |
 | auditor_c1_2 | general-purpose forense (opus) | **VETO (só por teste)** | .agents/auditor_c1_2/handoff.md, mutacoes.txt | as 5 do veto pegas; 13 variantes, 7 pegas; vivas de boa-fé: placeholder com outro texto (V-U1c "Bloco indisponível", V-U1d `<p>—</p>`, V-U1f `<section>` "Pendências") e escape aplicado à lista inteira (V-Z4e); V-Z6d (`versao === 1`) é contorno; regressão por família 12/12 |
 
 Gate Result: **VETO (só por teste)**. Correção: no C1c, a estrutura do painel de bruno/davi sem nenhum elemento além dos blocos
 deles; no C1a/C1c, `<li>` com o título escapado. Iteração 3: só um auditor novo.
 
-## Gate — C1, iteração 3 (só auditor: veto só por teste), principal `a95aade` (correção em `103c656`)
+## Gate C1, iteração 3 (só auditor: veto só por teste), principal `a95aade` (correção em `103c656`)
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
-| worker_c1_2 | correção do veto (opus) | — | .agents/worker_c1_2/handoff.md | só `base.test.mjs`: `elementosDoPainel` exige para bruno/davi o primeiro nível do `<main>` = `h1, section:indicadores, section:recursos, button`; título escapado dentro de `<li>` |
+| worker_c1_2 | correção do veto (opus) | | .agents/worker_c1_2/handoff.md | só `base.test.mjs`: `elementosDoPainel` exige para bruno/davi o primeiro nível do `<main>` = `h1, section:indicadores, section:recursos, button`; título escapado dentro de `<li>` |
 | auditor_c1_3 | general-purpose forense (opus) | **PASS** | .agents/auditor_c1_3/handoff.md, mutacoes.txt | as 5 do veto pegas e o controle verde; 14 variantes, 10 pegas; 4 vivas por contorno (A2: texto neutro dentro de uma seção, no layout ou no `h1`) → `DEFERRED.md` D30; regressão por família 18/18; falso vermelho com `title` no link de relatórios (observação) |
 
 Gate Result: **PASS**. Fecha o **C1** (#10): a zona 1 embute o bloco de tarefas da zona 2 por fragmento (ADR-0011, adendo 1),
@@ -376,7 +376,7 @@ shell 116), `task verificar` 119 + 4 pulados, `verificar:redis` 123/123, `verifi
 livres. Pastas dos verificadores e workers removidas depois do registro; última versão no commit `b091977`
 (`git show b091977:.agents/<nome>/handoff.md`). Tag `gate-c1-aprovado`.
 
-## Gate — D29 (núcleo 0.10.4: `ehHtmlInerte` por lista de permissão), iteração 1, principal `806c43c`, núcleo `50a0fea`, apps em 0.10.4 (`bbf6a84`)
+## Gate D29 (núcleo 0.10.4: `ehHtmlInerte` por lista de permissão), iteração 1, principal `806c43c`, núcleo `50a0fea`, apps em 0.10.4 (`bbf6a84`)
 
 Antes do gate (2026-10-07): `task test` verde (contratos 20, núcleo 286, moldura 26, stub 75, shell 116), `typecheck` ok,
 `verificar:estatica` 51/51, `verificar:redis` 123/123, `verificar:construir` 119 + 4 pulados, `verificar:oidc` 6/6,
@@ -409,7 +409,7 @@ Gate Result: **VETO (só por teste)**. Correção: teste em `test/mapa-zonas.tes
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
-| worker_c3_1 | correção do veto (sonnet) | — | .agents/worker_c3_1/handoff.md | só teste: prefixo estático com fronteira de segmento (`zona1` e `zona1-staticx`) e página de erro sem ecoar id hostil; N06 e N13 reprovam; shell 160/160 |
+| worker_c3_1 | correção do veto (sonnet) | | .agents/worker_c3_1/handoff.md | só teste: prefixo estático com fronteira de segmento (`zona1` e `zona1-staticx`) e página de erro sem ecoar id hostil; N06 e N13 reprovam; shell 160/160 |
 | auditor_c3_2 | general-purpose forense (opus) | **PASS** | .agents/auditor_c3_2/handoff.md, mutacoes.txt | correção só de teste confirmada; N06 e N13 pegas pelos testes novos; 21 mutações, 17 pegas, 4 vivas equivalentes (ordem de casamento e validação do `supportId` contra o id da zona, hoje sem chamador hostil); regressão por família verde (shell 160, stub 83, scripts 29, estática 52, `verificar:redis` 135/135); árvores limpas |
 
 Gate Result: **PASS** (iteração 2). Fecha o **C3** (#14): zona nova entra registrando a própria rota no deploy, sem editar arquivo do shell nem reiniciá-lo; zona travada devolve ao documento a página da base com `supportId` dentro de `ERP_ZONA_TETO_MS` (fecha o D7). Menores e observações no `DEFERRED.md` D32; limites no D31. Pastas dos verificadores e do worker removidas depois do registro; última versão no commit `91fcefc` (`git show 91fcefc:.agents/<nome>/handoff.md`). Tag `gate-c3-aprovado`.
@@ -431,7 +431,7 @@ Gate Result: **REJECT** (challenger, pelo roteiro e pela mensagem de erro do `zo
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
-| worker_e3e5_1 | correção do veto (sonnet) | — | .agents/worker_e3e5_1/handoff.md | A3, A8 a A10, A14, A15 e a nota da suíte reescritos pela tela real e seguidos por HTTP; `zona-demo` com mensagem clara e exit 1 para porta ocupada e gestão de acesso fora, sem rota nem porta órfã; eva no `conferir`; `conferir` 0, `verificar` 7/7 |
+| worker_e3e5_1 | correção do veto (sonnet) | | .agents/worker_e3e5_1/handoff.md | A3, A8 a A10, A14, A15 e a nota da suíte reescritos pela tela real e seguidos por HTTP; `zona-demo` com mensagem clara e exit 1 para porta ocupada e gestão de acesso fora, sem rota nem porta órfã; eva no `conferir`; `conferir` 0, `verificar` 7/7 |
 | revisor_e3e5_2 | revisor-mfe (sonnet) | **APPROVE** | .agents/revisor_e3e5_2/handoff.md | todos os achados do challenger_e3e5_1 conferem com o código; 4 menores (`catch {}` do `zona-demo` descarta a causa; POST registrado com resposta estourando o timeout deixa rota com servidor fechado; `fechar()` no `catch` pode mascarar o erro; `dados:resetar` citado duas vezes no Preparar) |
 | challenger_e3e5_2 | simulador-condicoes (sonnet) | **APPROVE** | .agents/challenger_e3e5_2/handoff.md | roteiro inteiro por HTTP em dev e as linhas principais no Keycloak, sem divergência; A3, A8 a A10, A14, A15 batem nos dois modos; `conferir` e `verificar` (7/7) duas vezes seguidas em dev e uma no Keycloak; `zona-demo` com mensagem clara e sem rota órfã em porta ocupada, gestão de acesso fora, SIGINT, SIGTERM, SIGHUP e EOF; `verificar:redis` 135/135 com o showcase derrubado; nenhum segredo nas saídas; baixos: linhas `[ELIFECYCLE] Command failed.` no Ctrl-C do showcase |
 | auditor_e3e5_1 | general-purpose forense (opus) | **VETO (só por teste)** | .agents/auditor_e3e5_1/handoff.md, mutacoes.txt | 27 mutações em 31 rodadas, 22 pegas (tabelas das Tasks 1, 2 e 4 e os extras dos workers pegos; sonda do shell, glob da base, lockstep e moldura pegos); 5 vivas de boa-fé, todas no `zona-demo` sem teste: ZD1 e ZD2 (porta ocupada e gestão de acesso fora voltam à stack crua), ZD3 (registro recusado vira "no ar"), ZD4 (DELETE com erro vira "Rota removida"), ZD6 (`derrubar` removendo a rota passa no F4); regressão por família verde; árvores limpas |
@@ -442,7 +442,7 @@ Gate Result: **VETO (só por teste)**. Correção com worker_e3e5_2: teste do `z
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
-| worker_e3e5_2 | correção do veto (sonnet) | — | .agents/worker_e3e5_2/handoff.md | só teste: `base/scripts/zona-demo.test.mjs` (6 testes, processo filho contra gestão de acesso falsa) e F4 com a rota no mapa depois de derrubar; ZD1 a ZD6 reprovam; `scripts:test` 35/35, `showcase:verificar` 7/7 |
+| worker_e3e5_2 | correção do veto (sonnet) | | .agents/worker_e3e5_2/handoff.md | só teste: `base/scripts/zona-demo.test.mjs` (6 testes, processo filho contra gestão de acesso falsa) e F4 com a rota no mapa depois de derrubar; ZD1 a ZD6 reprovam; `scripts:test` 35/35, `showcase:verificar` 7/7 |
 | auditor_e3e5_2 | general-purpose forense (opus) | **VETO (só por teste)** | .agents/auditor_e3e5_2/handoff.md, mutacoes.txt | correção só de teste confirmada; ZD1 a ZD6 pegas (ZD6 também pelo F4 no showcase); 17 mutações novas, 8 pegas, 4 vivas equivalentes, 5 vivas de boa-fé nos sinais e no laço do comando: N4 sem SIGHUP, N3 SIGTERM sem remover, N5 fim da entrada sem remover, N6 Enter mandando DELETE, N1 DELETE 404 deixando de ser tolerado; o pulo com a 3009 ocupada não funciona (`skip` avaliado antes do `before`); `setTimeout` sem limpar deixa o arquivo em 8,7 s; regressão por família verde |
 
 Gate Result: **VETO (só por teste)**. Correção com worker_e3e5_3: casos de SIGINT, SIGTERM e SIGHUP, fim da entrada, Enter sem DELETE e DELETE 404 tolerado no `base/scripts/zona-demo.test.mjs`; pulo por `t.skip()`; temporizadores limpos. Iteração 4: só um auditor novo.
@@ -451,7 +451,7 @@ Gate Result: **VETO (só por teste)**. Correção com worker_e3e5_3: casos de SI
 
 | Agent | Role | Verdict | Source | Notes |
 |-------|------|---------|--------|-------|
-| worker_e3e5_3 | correção do veto (sonnet) | — | .agents/worker_e3e5_3/handoff.md | só teste: os três sinais, fim da entrada, Enter sem DELETE e DELETE 404 tolerado; pulo por `t.skip()` (11 pulados com a 3009 ocupada); temporizadores limpos; N1, N3, N4, N5, N6 e ZD1 a ZD6 reprovam; `scripts:test` 40/40 |
+| worker_e3e5_3 | correção do veto (sonnet) | | .agents/worker_e3e5_3/handoff.md | só teste: os três sinais, fim da entrada, Enter sem DELETE e DELETE 404 tolerado; pulo por `t.skip()` (11 pulados com a 3009 ocupada); temporizadores limpos; N1, N3, N4, N5, N6 e ZD1 a ZD6 reprovam; `scripts:test` 40/40 |
 | auditor_e3e5_3 | general-purpose forense (opus) | **VETO (só por teste)** | .agents/auditor_e3e5_3/handoff.md, mutacoes.txt | correção só de teste confirmada; N1, N3 a N6 e ZD1 a ZD6 pegas; pulo com a 3009 ocupada e tempo (1,6 s) resolvidos; 21 mutações novas, 12 pegas, 7 equivalentes ou limite, 2 de boa-fé sem teste: M1 (`voltar` sem subir a zona) e M9 (o Enter nunca volta), ninguém confere que a zona responde depois de voltar; regressão por família verde |
 
 Gate Result: **VETO (só por teste)**. Correção pelo orquestrador em `92c6159` (só teste): ZD8 dá o segundo Enter e confere a saúde da zona na 3009; ZD6 confere a saúde depois de `voltar()`. M1 reprova ZD6 e ZD8, M9 reprova ZD8; `scripts:test` 40/40. Iteração 5: só um auditor novo.
@@ -475,3 +475,9 @@ Gate Result: **PASS** (iteração 6). Fecha o **E3, o E4 e o E5** (#19) e o **ob
 ## P1: pausado em 2026-10-09, gate não aprovado
 
 Revisor APROVA por leitura (`.agents/revisor_p1_1/handoff.md`). Challenger sem aprovação: npm real passou, pnpm auth retornou 401 (`.agents/challenger_p1_1/handoff.md`). Auditor não iniciado. M1/M2 pegas, M3–M10 pendentes. Scripts 50/50; E2E em arquivo 129 pass, 6 skipped, fail 0. Unidade final falhou no teto temporal do núcleo. Registro oficial e CI remoto pendentes. Nenhum fechamento da #133. Pausa explícita e recursos encerrados, conforme RETOMADA.md.
+
+## P1 retomada autorizada em 2026-10-12 (worker, fechamento bloqueado)
+
+Auth pnpm corrigida e comprovada; M1–M10 pegas em cópia; fragilidade temporal substituída por garantia determinística (produto do núcleo intacto). Regressão local e logs no relatório docs/superpowers/reports/2026-10-12-p1-retomada/. Registro oficial/CI remoto e gate independente novos pendentes. Montagens somente leitura de .agents/ e .git/ bloqueiam aplicação deste texto, ledger e commits do principal. #133 segue em andamento; nenhuma mensagem externa enviada.
+
+Resultados finais (pass/fail/skip): unidades 579/0/0; estática 52/0/0; scripts 52/0/0; arquivo 130/0/5; Redis 135/0/0; OIDC 6/0/0; showcase dev 7/0/0 e OIDC 7/0/0. Lockstep passou. Núcleo df5b0f4 commitado; principal/ledger bloqueados, gate não aprovado.

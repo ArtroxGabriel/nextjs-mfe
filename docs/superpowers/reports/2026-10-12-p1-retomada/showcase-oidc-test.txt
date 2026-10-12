@@ -1,0 +1,20 @@
+task: [showcase:verificar] node --test --test-timeout=300000 base/verificacao/showcase/showcase.test.mjs
+# modo de login detectado: oidc
+✔ F1 o shell renderiza (378.410822ms)
+# F2: /demo apareceu em 29970 ms
+# F2: /demo sumiu em 30264 ms
+✔ F2 há zonas (60396.117276ms)
+✔ F3 as zonas se integram (1365.504826ms)
+# F4: /demo deu 503 em 8 ms depois de derrubada
+✔ F4 os tratamentos (28986.574953ms)
+✔ F5 base de UI (535.3389ms)
+✔ F6 bases em pacotes separados (323.112004ms)
+✔ F7 integração com os domínios (632.732921ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 92926.642646

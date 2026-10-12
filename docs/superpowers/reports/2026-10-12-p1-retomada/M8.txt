@@ -1,0 +1,39 @@
+✔ lerTetoDaZona: sem variavel, 10 s (decisao B1) (1.236732ms)
+✔ lerTetoDaZona: le ERP_ZONA_TETO_MS (0.208078ms)
+✔ lerTetoDaZona: valor invalido falha na subida, nunca vira o padrao (0.695777ms)
+✔ lerTetoDaZona: aceita o teto de 120 s (0.198499ms)
+✔ lerTetoDaZona: recusa teto igual ou menor que o timeout de dominio (padrao 5000) (0.333284ms)
+✔ lerTetoDaZona: ERP_DESTINO_TIMEOUT_MS invalido tambem falha (mesma validacao do nucleo) (0.178883ms)
+✔ D18: producao sem IdP recusa antes de servir; somente showcase autoriza identidade dev (0.685741ms)
+✖ D18: scripts de producao nao autorizam identidade dev implicitamente (1.390196ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 7
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 140.829774
+
+✖ failing tests:
+
+test at test/configuracao.test.mjs:49:1
+✖ D18: scripts de producao nao autorizam identidade dev implicitamente (1.390196ms)
+  AssertionError [ERR_ASSERTION]: The input was expected to not match the regular expression /ERP_PERMITIR_IDENTIDADE_DEV/. Input:
+  
+  'ERP_PERMITIR_IDENTIDADE_DEV=1 next build'
+  
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/mutacoes/mutacoes-isoladas-ZXufwi/repos/erp-shell/test/configuracao.test.mjs:51:49)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'ERP_PERMITIR_IDENTIDADE_DEV=1 next build',
+    expected: /ERP_PERMITIR_IDENTIDADE_DEV/,
+    operator: 'doesNotMatch',
+    diff: 'simple'
+  }

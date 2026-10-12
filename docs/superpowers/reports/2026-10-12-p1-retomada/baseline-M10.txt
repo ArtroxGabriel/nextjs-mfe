@@ -1,0 +1,14 @@
+✔ as aplicacoes reais estao em lockstep (2.653984ms)
+✔ uma aplicacao numa versao diferente reprova (0.390379ms)
+✔ faixa de versao (^, ~) reprova: lockstep exige versao exata (0.214604ms)
+✔ package.json e lockfile discordando reprova (0.193911ms)
+✔ aplicacao sem o nucleo reprova (0.222474ms)
+✔ nucleo declarado sem resolucao no lockfile reprova (0.240172ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 92.241764

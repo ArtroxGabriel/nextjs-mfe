@@ -1,0 +1,1 @@
+fatal: Unable to create '/home/wilson-castro/Documents/projects/mira/nextjs-mfe/.git/index.lock': Read-only file system

@@ -1,0 +1,2 @@
+task: [lockstep] node base/scripts/verificar-lockstep.mjs
+lockstep ok: @erp/nucleo 0.10.4 em 4 aplicacoes

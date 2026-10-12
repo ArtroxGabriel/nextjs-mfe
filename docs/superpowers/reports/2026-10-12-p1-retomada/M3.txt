@@ -1,0 +1,35 @@
+✔ registro externo exige HTTPS; CI nao cai silenciosamente no Verdaccio local (2.254541ms)
+✔ inventario inclui versoes transitivas e recusa hashes divergentes entre repositorios (2.64002ms)
+✖ hash diferente impede instalacao e preserva lockfile e node_modules (44.083232ms)
+✔ instalacao usa lock congelado, registro por escopo e arquivo privado removido ao terminar (13.083711ms)
+✔ falha do instalador tambem remove autenticacao temporaria (8.648923ms)
+✔ versao existente, 401 e 500 nunca chegam ao build ou publish (14.131977ms)
+✔ redirect do registro nao recebe token nem e seguido (10.007098ms)
+✔ migracao tira URL local somente com metadata canonica; nunca modifica hash (11.167587ms)
+@erp/exemplo@1.0.0: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, sha512-Gn5Rx8Zl+yFTcuZWrVXAogDPXPgPoQQHtyAzDjm0r9dSnsYKE+uBVO62+9dSNja7MKZteeJ8ouKdHM2/Zg4A8Q==
+✔ tarball de publicacao troca destino local, registra commit e publica os bytes preparados uma vez (15.710486ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 8
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 246.968924
+
+✖ failing tests:
+
+test at base/scripts/pacotes.test.mjs:57:1
+✖ hash diferente impede instalacao e preserva lockfile e node_modules (44.083232ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/mutacoes/mutacoes-isoladas-ZXufwi/base/scripts/pacotes.test.mjs:63:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /integrity diverge/,
+    operator: 'rejects',
+    diff: 'simple'
+  }

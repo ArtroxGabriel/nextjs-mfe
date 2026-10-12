@@ -1,0 +1,94 @@
+[
+  {
+    "id": "M1",
+    "resultado": "pegou",
+    "code": 1,
+    "testes": [
+      "✖ versao existente, 401 e 500 nunca chegam ao build ou publish (8.100558ms)",
+      "✖ versao existente, 401 e 500 nunca chegam ao build ou publish (8.100558ms)"
+    ]
+  },
+  {
+    "id": "M2",
+    "resultado": "pegou",
+    "code": 1,
+    "testes": [
+      "✖ versao existente, 401 e 500 nunca chegam ao build ou publish (12.119447ms)",
+      "✖ versao existente, 401 e 500 nunca chegam ao build ou publish (12.119447ms)"
+    ]
+  },
+  {
+    "id": "M3",
+    "resultado": "pegou",
+    "code": 1,
+    "testes": [
+      "✖ hash diferente impede instalacao e preserva lockfile e node_modules (44.083232ms)",
+      "✖ hash diferente impede instalacao e preserva lockfile e node_modules (44.083232ms)"
+    ]
+  },
+  {
+    "id": "M4",
+    "resultado": "pegou",
+    "code": 1,
+    "testes": [
+      "✖ redirect do registro nao recebe token nem e seguido (10.913012ms)",
+      "✖ redirect do registro nao recebe token nem e seguido (10.913012ms)"
+    ]
+  },
+  {
+    "id": "M5",
+    "resultado": "pegou",
+    "code": 1,
+    "testes": [
+      "✖ registro externo exige HTTPS; CI nao cai silenciosamente no Verdaccio local (2.389667ms)",
+      "✖ registro externo exige HTTPS; CI nao cai silenciosamente no Verdaccio local (2.389667ms)"
+    ]
+  },
+  {
+    "id": "M6",
+    "resultado": "pegou",
+    "code": 1,
+    "testes": [
+      "✖ instalacao usa lock congelado, registro por escopo e arquivo privado removido ao terminar (23.110487ms)",
+      "✖ pnpm real instala fixture com Authorization e lock congelado via pacotes.instalar (966.862331ms)",
+      "✖ instalacao usa lock congelado, registro por escopo e arquivo privado removido ao terminar (23.110487ms)",
+      "✖ pnpm real instala fixture com Authorization e lock congelado via pacotes.instalar (966.862331ms)"
+    ]
+  },
+  {
+    "id": "M7",
+    "resultado": "pegou",
+    "code": 1,
+    "testes": [
+      "✖ tarball de publicacao troca destino local, registra commit e publica os bytes preparados uma vez (12.19181ms)",
+      "✖ tarball de publicacao troca destino local, registra commit e publica os bytes preparados uma vez (12.19181ms)"
+    ]
+  },
+  {
+    "id": "M8",
+    "resultado": "pegou",
+    "code": 1,
+    "testes": [
+      "✖ D18: scripts de producao nao autorizam identidade dev implicitamente (1.390196ms)",
+      "✖ D18: scripts de producao nao autorizam identidade dev implicitamente (1.390196ms)"
+    ]
+  },
+  {
+    "id": "M9",
+    "resultado": "pegou",
+    "code": 1,
+    "testes": [
+      "✖ D18: producao sem IdP recusa antes de servir; somente showcase autoriza identidade dev (1.109563ms)",
+      "✖ D18: producao sem IdP recusa antes de servir; somente showcase autoriza identidade dev (1.109563ms)"
+    ]
+  },
+  {
+    "id": "M10",
+    "resultado": "pegou",
+    "code": 1,
+    "testes": [
+      "✖ nucleo declarado sem resolucao no lockfile reprova (7.981297ms)",
+      "✖ nucleo declarado sem resolucao no lockfile reprova (7.981297ms)"
+    ]
+  }
+]

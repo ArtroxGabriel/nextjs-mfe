@@ -164,3 +164,13 @@
   por SIGPIPE antes do `derrubar()` e a base fica de pé, com a mutação aplicada. Gravar a saída em arquivo e ler depois.
 - **Agente de outra sessão não existe mais:** `SendMessage` para um verificador da sessão anterior não funciona; despachar
   um novo com as etapas que faltam.
+
+## Retomada P1 (2026-10-12)
+
+- pnpm 12.5.1 não lê Authorization de --config.npmrcAuthFile nem --config.npmrc-auth-file, em view e install. --userconfig funciona nos dois (e também npm_config_userconfig/.npmrc). Prova real no relatório P1; manter arquivo privado temporário e cleanup.
+- Teto de espera algorítmico não é prazo de escalonamento: pausa do event loop de 1200 ms reproduziu falha com código correto. Testar limite exato com relógio controlado, preservando erro transitório/IdP uma vez/sessão intacta. Mock timers com import ESM de node:timers/promises precisa de syncBuiltinESMExports após enable e reset.
+- headless-shell Docker sem URL inicia sem aba; passar about:blank para o CDP encontrar página. A mutação que retira a URL reprova o autoteste real.
+- Flatpak escolhe perfil fora do workspace: EROFS na sessão Codex. Usar alternativa Docker explícita; não alterar config global. Uma falha de abrirNavegador anterior ao try do autoteste deixa servidor aberto. As tentativas iniciais deixaram dois filhos; Ctrl-C no task não os encerrou, e o kernel negou o sinal pelo container com mesmo uid. PIDs/PPIDs e limpeza pendente no relatório.
+- Nesta sessão .agents/ e .git/ são montagens somente leitura. Não tentar contornar com mounts privilegiados; preparar documentos e evidência em caminho gravável e pedir liberação do ambiente ao orquestrador. O despacho do Codex pede ao orquestrador o commit do principal; sem rodapé de coautoria (linha acima).
+
+Resultados finais (pass/fail/skip): unidades 579/0/0; estática 52/0/0; scripts 52/0/0; arquivo 130/0/5; Redis 135/0/0; OIDC 6/0/0; showcase dev 7/0/0 e OIDC 7/0/0. Lockstep passou. Núcleo df5b0f4 commitado; principal/ledger bloqueados, gate não aprovado.

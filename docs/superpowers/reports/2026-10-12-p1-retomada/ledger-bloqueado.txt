@@ -1,0 +1,9 @@
+task: [orquestrador:ledger] for d in .superpowers/sdd/*/; do
+  p=$(basename "$d"); destino=.agents/orchestrator/ledger/$p
+  [ -f "$d"progress.md ] || continue
+  mkdir -p "$destino"
+  for f in "$d"progress.md "$d"*-achados.md; do if [ -f "$f" ]; then cp "$f" "$destino/"; fi; done
+done
+
+cp: cannot create regular file '.agents/orchestrator/ledger/2026-09-09-base-mfe-fatia-1/progress.md': Read-only file system
+task: Failed to run task "orquestrador:ledger": exit status 1

@@ -1,28 +1,10 @@
-# P1: progresso salvo na pausa
+# P1 retomada autorizada em 2026-10-12
 
-**Estado:** pausado pelo humano em 2026-10-09, sem gate aprovado. Shell local `bd51363`; principal salvo depois deste registro. Nenhum envio remoto desta sessão.
+Passos técnicos 1–3 executados, regressão local completa (todas as famílias corrigidas verdes). Tasks abertas até registrar commits do principal e evidência no ledger canônico. Núcleo df5b0f4 commitado, somente testes. Montagens somente leitura impedem task orquestrador:ledger e commits do principal.
 
-## Tasks
+- Task 1: --userconfig com Authorization real em view/install do pnpm 12.5.1; teste de instalação congelada real, integridade e cleanup. M1–M7 pegas; M6 também com pnpm real.
+- Task 2: D18 coberto pela suíte do shell (163 pass/0 fail/0 skip); M8/M9 pegas em cópia.
+- Task 3: workflows já existentes; scripts/estática/lockstep locais verdes. CI remoto e registro oficial não executados.
+- Task 4: mutações, prova temporal do núcleo e regressão local no relatório; gate independente não refeito. Atualização canônica e commits do principal bloqueados por EROFS.
 
-1. Registro, instalação congelada, publicação e migração implementados. Task não fechada: pnpm real view retornou 401 sem Authorization, tanto com npmrcAuthFile camel como kebab. Instalação real não confirmada.
-2. D18 implementado. Fixture antiga do mapa corrigida com IdP. Regressão corrigida não terminou: parou antes no teste de tempo do núcleo. Gate completo pendente.
-3. Workflows escritos e YAML validado localmente. Não houve CI remoto ou registro oficial provisionado.
-4. Documentação, revisão por leitura, resultados parciais e pausa salvos. Challenger não aprovou, auditor não iniciado.
-
-## Evidência
-
-- Scripts 50/50, fail 0, skipped 0, fora do sandbox.
-- Lockstep passou; estática passou por arquivo no sandbox (2/2).
-- E2E em arquivo: 135 casos, 129 pass, 6 skipped, fail 0. Redis/OIDC/showcase não rodados nesta sessão.
-- Primeira unidade após implementação: núcleo passou; shell falhou na fixture antiga sem IdP, depois corrigida.
-- Segunda unidade: núcleo 285/286, falha no teto de tempo em identidade.test.mjs:601 (1602 ms). Causa não investigada; shell corrigido ainda não reexecutado.
-- M1/M2 pegas no scratch; M3 parou no marcador duplicado antes de aplicação. M3–M10 pendentes. Não houve mutação na árvore do projeto.
-- Revisor APROVA por leitura. npm real pack/publish passou no mock do challenger. pnpm auth pendente, gate não aprovado.
-
-## Recursos encerrados
-
-Testes do orquestrador terminados. Portas 3000–3003, 3009, 4001–4004, 4010 e 4020 conferidas livres. Challenger confirmou zero processos próprios restantes, portas efêmeras usadas 41913/33593. Dois agentes terminados, auditor não iniciado. Nenhum Docker iniciado e nenhum recurso do sisbin administrado.
-
-## Retomada
-
-Somente após novo pedido. Seguir RETOMADA.md e os dois handoffs. Resolver auth pnpm, executor M3, falha temporal, regressão e gate. P1 operacional depende de registro oficial, migração canônica e CI remoto. Não enviar o principal antes do shell e das verificações exigidas.
+Resultados brutos, logs por família, tabela M1–M10 e decisões em docs/superpowers/reports/2026-10-12-p1-retomada/README.md e JSON anexos. Não marcar P1 operacional concluído ou gate aprovado.

@@ -78,7 +78,7 @@ test('instalacao usa lock congelado, registro por escopo e arquivo privado remov
     assert.ok(args.includes(`--config.@erp:registry=${config.registro}`))
     assert.equal(opts.env.ERP_NPM_TOKEN, undefined)
     assert.ok(args.every((a) => !a.includes(config.token)))
-    auth = args.find((a) => a.startsWith('--config.npmrcAuthFile=')).split('=')[1]
+    auth = args[args.indexOf('--userconfig') + 1]
     assert.equal(statSync(auth).mode & 0o777, 0o600)
     assert.ok(readFileSync(auth, 'utf8').includes(config.token))
   } })
@@ -92,7 +92,7 @@ test('falha do instalador tambem remove autenticacao temporaria', async (t) => {
   const { config } = await registro(t)
   let auth
   await assert.rejects(instalar({ ...op, config, executar: (_bin, args) => {
-    auth = args.find((a) => a.startsWith('--config.npmrcAuthFile=')).split('=')[1]
+    auth = args[args.indexOf('--userconfig') + 1]
     throw new Error('instalacao falhou')
   } }), /instalacao falhou/)
   assert.equal(existsSync(auth), false)

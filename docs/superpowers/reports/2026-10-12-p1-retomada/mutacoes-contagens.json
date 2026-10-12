@@ -1,0 +1,72 @@
+[
+  {
+    "id": "M1",
+    "tests": 9,
+    "pass": 8,
+    "fail": 1,
+    "skipped": 0
+  },
+  {
+    "id": "M2",
+    "tests": 9,
+    "pass": 8,
+    "fail": 1,
+    "skipped": 0
+  },
+  {
+    "id": "M3",
+    "tests": 9,
+    "pass": 8,
+    "fail": 1,
+    "skipped": 0
+  },
+  {
+    "id": "M4",
+    "tests": 9,
+    "pass": 8,
+    "fail": 1,
+    "skipped": 0
+  },
+  {
+    "id": "M5",
+    "tests": 9,
+    "pass": 8,
+    "fail": 1,
+    "skipped": 0
+  },
+  {
+    "id": "M6",
+    "tests": 10,
+    "pass": 8,
+    "fail": 2,
+    "skipped": 0
+  },
+  {
+    "id": "M7",
+    "tests": 9,
+    "pass": 8,
+    "fail": 1,
+    "skipped": 0
+  },
+  {
+    "id": "M8",
+    "tests": 8,
+    "pass": 7,
+    "fail": 1,
+    "skipped": 0
+  },
+  {
+    "id": "M9",
+    "tests": 8,
+    "pass": 7,
+    "fail": 1,
+    "skipped": 0
+  },
+  {
+    "id": "M10",
+    "tests": 6,
+    "pass": 5,
+    "fail": 1,
+    "skipped": 0
+  }
+]

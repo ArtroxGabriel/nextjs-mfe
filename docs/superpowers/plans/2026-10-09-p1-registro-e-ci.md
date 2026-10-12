@@ -1,6 +1,6 @@
 # P1: registro compartilhado e CI
 
-**Pausado em 2026-10-09 por pedido explícito do humano.** Implementações das Tasks 1 a 3 salvas, mas tasks e gate ainda não concluídos. Autenticação do pnpm real retornou 401 em `view`; instalação real ainda não confirmada. Última unidade falhou no teto temporal do núcleo. M1/M2 pegas, M3–M10 pendentes. Estado e passo exato em `.agents/orchestrator/RETOMADA.md`. Todos os processos iniciados nesta sessão foram encerrados. Não retomar até novo pedido.
+**Retomada autorizada em 2026-10-12.** Worker executou autenticação real e mutações em cópia isolada. Registro e commits bloqueados pelas montagens somente leitura de `.agents/` e `.git/`; tasks não fechadas. Relatório e provas em `docs/superpowers/reports/2026-10-12-p1-retomada/`.
 
 **Autorização:** em 2026-10-09, o humano pediu continuar sem confirmações. Seguir a ordem recomendada no pedido de 2026-10-07: P1, G5 e depois G4. A implementação não administra o projeto `sisbin-planejamento-local` nem seus processos.
 
@@ -33,3 +33,9 @@
 ## Critério de conclusão
 
 O código e os testes locais podem ser concluídos sem credencial externa. P1 operacional só fecha após configurar registro, migrar os tarballs já publicados sem trocar bytes, sincronizar integridades canônicas e obter uma execução verde do CI remoto. D14, D17, cabeçalhos da borda e limite de taxa de login pertencem ao deploy da aplicação e não são fechados por uma mudança de CI de pacotes.
+
+## Evidência da retomada (2026-10-12)
+
+As Tasks continuam abertas: os commits e os documentos de `.agents/` estão bloqueados por montagem somente leitura. Autenticação real e M1–M10 executados; resultados brutos e logs em `docs/superpowers/reports/2026-10-12-p1-retomada/`. Nenhum gate aprovado nesta rodada.
+
+Achado na regressão: headless-shell Docker inicia sem página; o cliente CDP esperava uma. Correção: abrir `about:blank` como no navegador local. Autoteste real do navegador passou (1 pass, 0 fail, 0 skip). Mutação adicional exigida: retirar `about:blank` do comando Docker; o autoteste de navegador deve reprovar. Não modifica arquitetura ou autorização de produto.

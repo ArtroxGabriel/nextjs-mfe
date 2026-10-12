@@ -1,0 +1,50 @@
+{
+  "regressao-unidades.log": {
+    "tests": 579,
+    "pass": 579,
+    "fail": 0,
+    "skipped": 0
+  },
+  "regressao-estatica.log": {
+    "tests": 52,
+    "pass": 52,
+    "fail": 0,
+    "skipped": 0
+  },
+  "regressao-scripts-final.log": {
+    "tests": 52,
+    "pass": 52,
+    "fail": 0,
+    "skipped": 0
+  },
+  "regressao-arquivo-corrigido.log": {
+    "tests": 135,
+    "pass": 130,
+    "fail": 0,
+    "skipped": 5
+  },
+  "regressao-redis.log": {
+    "tests": 135,
+    "pass": 135,
+    "fail": 0,
+    "skipped": 0
+  },
+  "regressao-oidc.log": {
+    "tests": 6,
+    "pass": 6,
+    "fail": 0,
+    "skipped": 0
+  },
+  "showcase-dev-test.log": {
+    "tests": 7,
+    "pass": 7,
+    "fail": 0,
+    "skipped": 0
+  },
+  "showcase-oidc-test.log": {
+    "tests": 7,
+    "pass": 7,
+    "fail": 0,
+    "skipped": 0
+  }
+}

@@ -1,0 +1,60 @@
+✔ registro externo exige HTTPS; CI nao cai silenciosamente no Verdaccio local (2.714882ms)
+✔ inventario inclui versoes transitivas e recusa hashes divergentes entre repositorios (3.115873ms)
+✔ hash diferente impede instalacao e preserva lockfile e node_modules (49.68152ms)
+✖ instalacao usa lock congelado, registro por escopo e arquivo privado removido ao terminar (23.110487ms)
+✔ falha do instalador tambem remove autenticacao temporaria (11.404212ms)
+✔ versao existente, 401 e 500 nunca chegam ao build ou publish (15.815126ms)
+✔ redirect do registro nao recebe token nem e seguido (6.921335ms)
+✔ migracao tira URL local somente com metadata canonica; nunca modifica hash (14.233721ms)
+@erp/exemplo@1.0.0: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, sha512-Gn5Rx8Zl+yFTcuZWrVXAogDPXPgPoQQHtyAzDjm0r9dSnsYKE+uBVO62+9dSNja7MKZteeJ8ouKdHM2/Zg4A8Q==
+✔ tarball de publicacao troca destino local, registra commit e publica os bytes preparados uma vez (14.850459ms)
+✖ pnpm real instala fixture com Authorization e lock congelado via pacotes.instalar (966.862331ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 8
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1116.610515
+
+✖ failing tests:
+
+test at base/scripts/pacotes.test.mjs:68:1
+✖ instalacao usa lock congelado, registro por escopo e arquivo privado removido ao terminar (23.110487ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(args.includes('--frozen-lockfile'))
+  
+      at executar (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/mutacoes/mutacoes-isoladas-ZXufwi/base/scripts/pacotes.test.mjs:77:12)
+      at file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/mutacoes/mutacoes-isoladas-ZXufwi/base/scripts/pacotes.mjs:113:7
+      at comAutenticacao (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/mutacoes/mutacoes-isoladas-ZXufwi/base/scripts/pacotes.mjs:103:22)
+      at instalar (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/mutacoes/mutacoes-isoladas-ZXufwi/base/scripts/pacotes.mjs:111:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/mutacoes/mutacoes-isoladas-ZXufwi/base/scripts/pacotes.test.mjs:74:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at base/scripts/pnpm-auth.test.mjs:8:1
+✖ pnpm real instala fixture com Authorization e lock congelado via pacotes.instalar (966.862331ms)
+  AssertionError [ERR_ASSERTION]: pnpm real aceitou lockfile desatualizado
+      at file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/mutacoes/mutacoes-isoladas-ZXufwi/base/scripts/pnpm-auth.test.mjs:39:12
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async fixtureAuth (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/mutacoes/mutacoes-isoladas-ZXufwi/base/scripts/pnpm-auth-fixture.mjs:56:12)
+      at async TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/mutacoes/mutacoes-isoladas-ZXufwi/base/scripts/pnpm-auth.test.mjs:11:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 0,
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }

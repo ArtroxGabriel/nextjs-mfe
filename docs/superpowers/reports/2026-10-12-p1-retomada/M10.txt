@@ -1,0 +1,37 @@
+✔ as aplicacoes reais estao em lockstep (3.072065ms)
+✔ uma aplicacao numa versao diferente reprova (0.352546ms)
+✔ faixa de versao (^, ~) reprova: lockstep exige versao exata (0.232002ms)
+✔ package.json e lockfile discordando reprova (0.198748ms)
+✔ aplicacao sem o nucleo reprova (0.207695ms)
+✖ nucleo declarado sem resolucao no lockfile reprova (7.981297ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 5
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 94.67666
+
+✖ failing tests:
+
+test at base/scripts/verificar-lockstep.test.mjs:24:1
+✖ nucleo declarado sem resolucao no lockfile reprova (7.981297ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(divergencias([v('a', '0.10.4', null), v('b', '0.10.4')]).some((x) => /ausente no lockfile/.test(x)))
+  
+      at TestContext.<anonymous> (file:///tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/mutacoes/mutacoes-isoladas-ZXufwi/base/scripts/verificar-lockstep.test.mjs:25:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

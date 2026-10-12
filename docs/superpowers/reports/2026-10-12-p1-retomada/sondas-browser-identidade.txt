@@ -1,0 +1,45 @@
+pid=21265
+State:	S (sleeping)
+PPid:	21251
+Uid:	1000	1000	1000	1000
+NSpid:	21265	17
+node
+--test
+base/verificacao/base.test.mjs
+base/verificacao/navegador.test.mjs
+pid=21272
+State:	S (sleeping)
+PPid:	21265
+Uid:	1000	1000	1000	1000
+NSpid:	21272	24
+/home/wilson-castro/.local/share/mise/installs/node/24.21.0/bin/node
+--test-coverage-functions=0
+--test-concurrency=0
+base/verificacao/navegador.test.mjs
+pid=26203
+State:	S (sleeping)
+PPid:	26188
+Uid:	1000	1000	1000	1000
+NSpid:	26203	20
+node
+--test
+base/verificacao/base.test.mjs
+base/verificacao/navegador.test.mjs
+pid=26210
+State:	S (sleeping)
+PPid:	26203
+Uid:	1000	1000	1000	1000
+NSpid:	26210	27
+/home/wilson-castro/.local/share/mise/installs/node/24.21.0/bin/node
+--test-coverage-functions=0
+--test-concurrency=0
+base/verificacao/navegador.test.mjs
+pid=68789
+State:	S (sleeping)
+PPid:	68777
+Uid:	1000	1000	1000	1000
+NSpid:	68789	17
+node
+--test
+base/verificacao/base.test.mjs
+base/verificacao/navegador.test.mjs

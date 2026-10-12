@@ -110,7 +110,7 @@ export async function instalar({ raiz = raizPadrao, repos = REPOS, config = conf
   await verificar({ raiz, repos, config })
   await comAutenticacao(config, config.token, async (arquivo) => {
     for (const repo of repos) {
-      executar('pnpm', ['install', '--frozen-lockfile', `--config.@erp:registry=${config.registro}`, `--config.npmrcAuthFile=${arquivo}`], {
+      executar('pnpm', ['install', '--frozen-lockfile', `--config.@erp:registry=${config.registro}`, '--userconfig', arquivo], {
         cwd: join(raiz, repo), env: ambienteSemTokens(),
       })
     }

@@ -62,7 +62,7 @@ async function lancar(chrome) {
     const porta = String(9300 + Math.floor(Math.random() * 600))
     const nome = `erp-verificacao-${process.pid}-${porta}`
     execFileSync('docker', ['run', '-d', '--rm', '--network', 'host', '--name', nome, chrome.imagem,
-      `--remote-debugging-port=${porta}`, '--remote-debugging-address=127.0.0.1'], { stdio: 'ignore' })
+      `--remote-debugging-port=${porta}`, '--remote-debugging-address=127.0.0.1', 'about:blank'], { stdio: 'ignore' })
     const encerrar = async () => {
       try { execFileSync('docker', ['rm', '-f', nome], { stdio: 'ignore' }) } catch { /* ja saiu */ }
       if (process.env.ERP_CHROME_DOCKER_LIMPAR === '1') {

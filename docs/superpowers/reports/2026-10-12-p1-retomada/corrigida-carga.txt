@@ -1,0 +1,11 @@
+✔ memoria: token vencido e IdP com erro transitorio, o perdedor espera o teto e segue; o IdP e chamado uma vez (1238.887441ms)
+✔ arquivo: token vencido e IdP com erro transitorio, o perdedor espera o teto e segue; o IdP e chamado uma vez (1234.779046ms)
+✔ redis: token vencido e IdP com erro transitorio, o perdedor espera o teto e segue; o IdP e chamado uma vez (1233.660402ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3809.690851
