@@ -1,4 +1,6 @@
-# Retomada: gate local do P1 aprovado em 2026-10-12
+# Retomada: pausa em 2026-10-12, gate local do P1 aprovado
+
+**Pausado por pedido explícito do humano. Não retomar até novo pedido.** Nenhum processo desta sessão ficou rodando; o scratchpad da sessão (prompts e evidência bruta do Codex) foi apagado; o que importa está nos handoffs versionados em `.agents/`.
 
 **Gate local do P1 aprovado na iteração 4** (auditor_p1_4, PASS), tag local `gate-p1-local-aprovado`. P1 operacional segue aberto.
 
@@ -21,5 +23,5 @@ Handoffs em `.agents/{revisor,challenger,auditor}_p1_{2,3,4}` e `.agents/worker_
 1. **Envio:** commits locais não enviados. Ordem: `erp-nucleo` (df5b0f4) e `erp-shell` (bd51363) antes do principal. Aguarda confirmação do humano.
 2. **P1 operacional:** registro oficial com política de imutabilidade, migração dos tarballs canônicos sem trocar bytes, reconciliação das integridades e uma execução verde do CI remoto. Precisa de endereço e credenciais do humano.
 3. Lockfiles soltos de `erp-moldura` e `erp-dominio-stub`: fora de commit; reconciliar só com o registro canônico.
-4. Processos órfãos de teste de uma sessão anterior do Codex (PIDs 21265 e 21272): encerrar pelo humano.
+4. Diretórios temporários de teste em `/tmp` (`espera-*`, `fronteira-*`, `tx-*`, `erp-sessoes-*`, `app-*` e afins) não foram apagados: o projeto vizinho roda testes com os mesmos prefixos e não dá para atribuir a origem com segurança.
 5. Depois do P1: G5 e G4, na ordem encaminhada.
