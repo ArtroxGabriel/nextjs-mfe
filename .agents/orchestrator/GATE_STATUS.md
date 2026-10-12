@@ -478,6 +478,23 @@ Revisor APROVA por leitura (`.agents/revisor_p1_1/handoff.md`). Challenger sem a
 
 ## P1 retomada autorizada em 2026-10-12 (worker, fechamento bloqueado)
 
-Auth pnpm corrigida e comprovada; M1–M10 pegas em cópia; fragilidade temporal substituída por garantia determinística (produto do núcleo intacto). Regressão local e logs no relatório docs/superpowers/reports/2026-10-12-p1-retomada/. Registro oficial/CI remoto e gate independente novos pendentes. Montagens somente leitura de .agents/ e .git/ bloqueiam aplicação deste texto, ledger e commits do principal. #133 segue em andamento; nenhuma mensagem externa enviada.
+Auth pnpm corrigida e comprovada; M1–M10 pegas em cópia; fragilidade temporal substituída por garantia determinística (produto do núcleo intacto). Regressão local e logs no relatório o relatório da retomada (retirado; versão em eab0e38). Registro oficial/CI remoto e gate independente novos pendentes. Montagens somente leitura de .agents/ e .git/ bloqueiam aplicação deste texto, ledger e commits do principal. #133 segue em andamento; nenhuma mensagem externa enviada.
 
 Resultados finais (pass/fail/skip): unidades 579/0/0; estática 52/0/0; scripts 52/0/0; arquivo 130/0/5; Redis 135/0/0; OIDC 6/0/0; showcase dev 7/0/0 e OIDC 7/0/0. Lockstep passou. Núcleo df5b0f4 commitado; principal/ledger bloqueados, gate não aprovado.
+
+## P1: iteração 2 reprovada, correções locais do worker p1_3 (2026-10-12)
+
+Veredito independente vigente: REPROVA, pelos handoffs de revisor_p1_2 e challenger_p1_2. Esta execução é correção e regressão do worker, não aprovação do gate.
+
+- Revisor P2 dist antigo: publicação apaga dist antes do build; npm pack real inspecionado sem órfãos .js/.d.ts.
+- Revisor P2 material descartável: relatório e sete scripts retirados, seis tarefas retiradas; provas antigas no scratchpad e testes permanentes preservados.
+- Challenger alta cleanup: comandos assíncronos, auth removida sincronamente em sinais e exit, filhos próprios encerrados e aguardados. Quatro interrupções reais aprovadas, mais exit e filho resistente.
+- Challenger média redirect: limite declarado em REGISTRO-E-CI; M4 restringida à metadata. pnpm real segue redirect entre origens de loopback sem Authorization no destino e recusa bytes adulterados por integridade. Proposta D34 pendente de aplicação pelo orquestrador.
+- Challenger observação shell: Ready antecede a recusa sem IdP, sem resposta servida; somente registrado.
+
+Scripts 60 pass, 0 fail, 0 skip; estática 52 pass, 0 fail, 0 skip; lockstep 0.10.4 nas quatro apps, saída 0. Nenhum submódulo alterado, portanto task test não foi repetido nesta correção.
+M1 a M14 detectadas em cópia isolada, zero sobreviventes. Baselines: 43 pass, 0 fail, 0 skip. Execuções com mutações: 123 testes, 103 pass, 20 falhas esperadas, 0 skip, 0 cancelled.
+
+Evidência: /tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/worker_p1_3/handoff.md, contagens.json, mutacoes-finais/resultados.json e regressao-*.log. Commits desta rodada: zero. Aplicar propostas de documentos e commitar principal, sem lockfiles preexistentes; novo gate ainda necessário. Registro oficial e CI remoto não executados.
+
+Ao aplicar: substituir as referências anteriores a o relatório da retomada (retirado; versão em eab0e38) pelo ledger e pelo scratchpad de evidência anterior. Preservar os vereditos históricos.

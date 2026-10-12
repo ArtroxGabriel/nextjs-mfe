@@ -1,1 +1,0 @@
-EROFS: read-only file system, mkdtemp '/home/wilson-castro/.var/app/com.google.Chrome/cache/erp-verificacao-XXXXXX'

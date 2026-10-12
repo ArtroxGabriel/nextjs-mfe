@@ -1,2 +1,0 @@
-encerrando filho próprio do autoteste pid=21272 ppid=21265
-sh: can't kill pid 21272: Permission denied

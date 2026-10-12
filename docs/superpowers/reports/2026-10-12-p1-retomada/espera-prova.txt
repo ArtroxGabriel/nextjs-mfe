@@ -1,3 +1,0 @@
-{"id":"baseline","code":0}
-{"id":"antes-do-teto","code":1}
-{"id":"depois-do-teto","code":1}

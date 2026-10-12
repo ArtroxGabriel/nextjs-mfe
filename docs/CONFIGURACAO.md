@@ -136,6 +136,7 @@ Variáveis das ferramentas de entrega, sem repasse às zonas ou aos domínios. F
 | `ERP_NPM_TOKEN` | ausente | Token de leitura; arquivo de autenticação temporário, modo 0600, removido no fim. Não gravar no Git nem passar como argumento | `pacotes.mjs`, instalação e preflight |
 | `ERP_NPM_TOKEN_PUBLICACAO` | ausente | Token de escrita, obrigatório para publicação em HTTPS; não entregue ao build. O workflow o define somente no passo de publicação | `pacotes.mjs`, publicação |
 | `ERP_NPM_TIMEOUT_MS` | `10000` | Prazo de consulta de metadata por tentativa; inteiro de 100 a 120000 ms | `pacotes.mjs` |
+| `ERP_NPM_ENCERRAMENTO_MS` | `5000` | Espera pelos filhos próprios após SIGINT/SIGTERM antes de SIGKILL; inteiro de 100 a 120000 ms. A autenticação é removida sincronamente antes da espera | `pacotes.mjs` |
 
 O workflow mapeia os secrets `ERP_NPM_TOKEN_LEITURA` e `ERP_NPM_TOKEN_PUBLICACAO` para as variáveis acima. `SUBMODULOS_TOKEN` permite checkout de submódulos privados, com leitura somente. Prazos dos jobs, versionados nos workflows: 30 minutos para verificação e 15 para publicação; Node 24.21.0, pnpm 12.5.1 e Task 3.53.1.
 

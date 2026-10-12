@@ -54,30 +54,6 @@ tasks:
       - task: verificar:estatica
       - task: scripts:test
 
-  pacotes:sondar-auth:
-    desc: "Compara Authorization real do pnpm em view/install contra mock com token fictício"
-    cmd: node base/scripts/sondar-auth-pnpm.mjs
-
-  pacotes:mutacoes-p1:
-    desc: "Reaplica M1–M10 em cópia isolada; informe o diretório dos logs após --"
-    cmd: node base/scripts/mutacoes-p1.mjs {{.CLI_ARGS}}
-
-  pacotes:investigar-espera-p1:
-    desc: "Repete o teste do perdedor isolado e sob carga própria; informe diretório de logs após --"
-    cmd: node base/scripts/investigar-espera-p1.mjs {{.CLI_ARGS}}
-
-  pacotes:provar-espera-p1:
-    desc: "Prova o teste de relógio controlado contra mutações antes/depois do teto em cópia isolada"
-    cmd: node base/scripts/provar-espera-p1.mjs {{.CLI_ARGS}}
-
-  pacotes:showcases-p1:
-    desc: "Verifica showcase dev/OIDC com estado isolado e logs; informe diretório após --"
-    cmd: node base/scripts/verificar-showcases-p1.mjs {{.CLI_ARGS}}
-
-  pacotes:provar-browser-p1:
-    desc: "Prova a aba inicial do browser Docker por mutação isolada; informe diretório de logs após --"
-    cmd: node base/scripts/provar-browser-p1.mjs {{.CLI_ARGS}}
-
   pacotes:verificar:
     desc: "Confere os hashes de todos os @erp/* no registro contra os lockfiles, sem alterá-los"
     cmd: node base/scripts/pacotes.mjs verificar
@@ -179,7 +155,7 @@ tasks:
       CONSTRUIR: '{{.CONSTRUIR | default "1"}}'
 
   scripts:test:
-    desc: Testes dos scripts da base (ambiente, lockstep, hashes, estado do showcase)
+    desc: Testes dos scripts da base (pacotes, autenticacao real, sinais, ambiente, lockstep, hashes, showcase)
     cmd: node --test base/scripts/*.test.mjs
 
   verificar:estatica:

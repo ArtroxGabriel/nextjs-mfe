@@ -472,6 +472,15 @@ Registro configurável, instalação congelada, preflight de hashes, publicaçã
 
 ## P1 retomada autorizada em 2026-10-12 (worker, fechamento bloqueado)
 
-Auth pnpm corrigida e comprovada; M1–M10 pegas em cópia; fragilidade temporal substituída por garantia determinística (produto do núcleo intacto). Regressão local e logs no relatório docs/superpowers/reports/2026-10-12-p1-retomada/. Registro oficial/CI remoto e gate independente novos pendentes. Montagens somente leitura de .agents/ e .git/ bloqueiam aplicação deste texto, ledger e commits do principal. #133 segue em andamento; nenhuma mensagem externa enviada.
+Auth pnpm corrigida e comprovada; M1–M10 pegas em cópia; fragilidade temporal substituída por garantia determinística (produto do núcleo intacto). Regressão local e logs no relatório o relatório da retomada (retirado; versão em eab0e38). Registro oficial/CI remoto e gate independente novos pendentes. Montagens somente leitura de .agents/ e .git/ bloqueiam aplicação deste texto, ledger e commits do principal. #133 segue em andamento; nenhuma mensagem externa enviada.
 
 Resultados finais (pass/fail/skip): unidades 579/0/0; estática 52/0/0; scripts 52/0/0; arquivo 130/0/5; Redis 135/0/0; OIDC 6/0/0; showcase dev 7/0/0 e OIDC 7/0/0. Lockstep passou. Núcleo df5b0f4 commitado; principal/ledger bloqueados, gate não aprovado.
+
+## P1: correções após gate da iteração 2 (2026-10-12)
+
+#133 segue em andamento. Texto de atualização: publicação limpa dist, credenciais temporárias removidas também em interrupções e exit, filhos próprios aguardados, material particular do gate retirado do checkout. Redirect de tarball do pnpm é limite declarado, sem Authorization no destino e com integridade congelada validada no cenário entre origens de loopback. Observação Ready do shell registrada.
+
+Scripts 60 pass, 0 fail, 0 skip; estática 52 pass, 0 fail, 0 skip; lockstep 0.10.4 nas quatro apps, saída 0. Nenhum submódulo alterado, portanto task test não foi repetido nesta correção.
+M1 a M14 detectadas em cópia isolada, zero sobreviventes. Baselines: 43 pass, 0 fail, 0 skip. Execuções com mutações: 123 testes, 103 pass, 20 falhas esperadas, 0 skip, 0 cancelled.
+
+Gate ainda reprovado até revisão nova; nenhuma mensagem externa enviada. Registro oficial, migração canônica e CI remoto continuam pendentes. Nenhum commit criado pelo worker; principal fica no working tree para o orquestrador. Evidência e propostas: /tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/worker_p1_3/handoff.md. Corrigir referências anteriores ao relatório retirado ao aplicar este texto.

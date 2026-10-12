@@ -174,3 +174,11 @@
 - Nesta sessão .agents/ e .git/ são montagens somente leitura. Não tentar contornar com mounts privilegiados; preparar documentos e evidência em caminho gravável e pedir liberação do ambiente ao orquestrador. O despacho do Codex pede ao orquestrador o commit do principal; sem rodapé de coautoria (linha acima).
 
 Resultados finais (pass/fail/skip): unidades 579/0/0; estática 52/0/0; scripts 52/0/0; arquivo 130/0/5; Redis 135/0/0; OIDC 6/0/0; showcase dev 7/0/0 e OIDC 7/0/0. Lockstep passou. Núcleo df5b0f4 commitado; principal/ledger bloqueados, gate não aprovado.
+
+## P1: armadilhas corrigidas na iteração 2 (2026-10-12)
+
+- tsc não apaga arquivos de fontes removidas em dist. Publicação agora apaga integralmente a saída antes do build; teste planta órfãos .js/.d.ts e inspeciona npm pack real.
+- finally não roda no encerramento padrão por sinal. Install/publish usam spawn e handlers: auth removida antes de await, filhos próprios aguardados e prazo ERP_NPM_ENCERRAMENTO_MS documentado. exit tem cleanup síncrono; SIGKILL no controlador não permite limpeza.
+- Nas fixtures de pnpm 12.5.1, só npm_config_store_dir e npm_config_fetch_retries não bastaram para isolamento observado. Declarar storeDir/cacheDir/fetchRetries: 0 no pnpm-workspace.yaml da fixture evita reutilização de store e retries longos. Somente fixtures temporárias foram configuradas, sem configuração global.
+- Primeiras tentativas do teste novo falharam por cache npm somente leitura e por reuso/retry de fixture; corrigidas isolando cache e configuração. Baseline final e regressão verdes. Os recursos da tentativa interrompida foram encerrados; portas finais correspondem à observação inicial. Um snapshot intermediário incluiu serviços alheios transitórios em portas fixas; esta rodada só usou mocks efêmeros, sem administrar os demais.
+- Executores de mutação e sondas do gate ficam no scratchpad. Testes permanentes e suas fixtures ficam na suíte scripts:test; resultados essenciais ficam no ledger/GATE_STATUS.

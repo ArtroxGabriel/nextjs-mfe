@@ -16,11 +16,12 @@ export function executarAsync(bin, args, opts = {}) {
     const p = spawn(bin, args, { ...opts, stdio: ['ignore', 'pipe', 'pipe'] })
     let output = ''
     for (const s of [p.stdout, p.stderr]) s.on('data', (b) => { output += b })
-    p.on('error', falha)
-    p.on('close', (code) => ok({ code, output }))
+    let erro
+    p.on('error', (e) => { erro = e })
+    p.on('close', (code) => erro ? falha(erro) : ok({ code, output }))
   })
 }
-export async function fixtureAuth(usar) {
+export async function fixtureAuth(usar, { interceptar } = {}) {
   const dir = mkdtempSync(join(process.env.P1_SCRATCH ?? tmpdir(), 'pnpm-auth-'))
   const token = 'fixture-pnpm-sem-segredo'
   const pedidos = []
@@ -36,6 +37,7 @@ export async function fixtureAuth(usar) {
     const autorizado = req.headers.authorization === `Bearer ${token}`
     pedidos.push({ url: req.url, authorization: autorizado, presente: Boolean(req.headers.authorization) })
     if (!autorizado) { res.writeHead(401); res.end('{}'); return }
+    if (interceptar?.(req, res, { bytes, integrity, registro })) return
     if (req.url.endsWith('.tgz')) { res.writeHead(200); res.end(bytes); return }
     const meta = { name: '@erp/fixture', version: '1.0.0', dist: { integrity, tarball: `${registro}fixture.tgz` } }
     res.setHeader('content-type', 'application/json')

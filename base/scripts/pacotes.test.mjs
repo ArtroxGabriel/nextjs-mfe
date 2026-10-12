@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
@@ -29,6 +30,7 @@ async function registro(t, responder = () => ({ name: '@erp/exemplo', version: '
     res.writeHead(resposta.status ?? 200, resposta.headers ?? { 'content-type': 'application/json' })
     res.end(JSON.stringify(resposta.body ?? resposta))
   })
+  execFileSync('ss', ['-ltnp'])
   await new Promise((ok, falha) => { servidor.once('error', falha); servidor.listen(0, '127.0.0.1', ok) })
   t.after(() => new Promise((ok) => { servidor.close(ok); servidor.closeAllConnections() }))
   const config = configuracao({ ERP_NPM_REGISTRY: `http://127.0.0.1:${servidor.address().port}` })
@@ -43,7 +45,10 @@ test('registro externo exige HTTPS; CI nao cai silenciosamente no Verdaccio loca
   }
   assert.throws(() => configuracao({ CI: 'true' }), /CI exige/)
   assert.throws(() => configuracao({ ERP_NPM_TOKEN: 'segredo\nchave=x' }), /TOKEN invalido/)
-  for (const prazo of ['0', 'NaN', '1.5', '120001']) assert.throws(() => configuracao({ ERP_NPM_TIMEOUT_MS: prazo }), /TIMEOUT/)
+  for (const prazo of ['0', 'NaN', '1.5', '120001']) {
+    assert.throws(() => configuracao({ ERP_NPM_TIMEOUT_MS: prazo }), /TIMEOUT/)
+    assert.throws(() => configuracao({ ERP_NPM_ENCERRAMENTO_MS: prazo }), /ENCERRAMENTO/)
+  }
 })
 
 test('inventario inclui versoes transitivas e recusa hashes divergentes entre repositorios', (t) => {
@@ -141,7 +146,12 @@ test('tarball de publicacao troca destino local, registra commit e publica os by
     assert.equal(opts.env.ERP_NPM_TOKEN_PUBLICACAO, undefined)
     assert.ok(args.every((a) => !a.includes(config.tokenPublicacao)))
     if (bin === 'git') return args[0] === 'status' ? '' : commit
-    if (bin === 'pnpm') { assert.deepEqual(args, ['build']); return }
+    if (bin === 'pnpm') {
+      assert.deepEqual(args, ['build'])
+      mkdirSync(join(opts.cwd, 'dist'), { recursive: true })
+      writeFileSync(join(opts.cwd, 'dist', 'index.js'), 'export const exemplo = 1\n')
+      return
+    }
     if (args[0] === 'pack') {
       packs++
       const pkg = JSON.parse(readFileSync(join(opts.cwd, 'package.json'), 'utf8'))
@@ -161,4 +171,29 @@ test('tarball de publicacao troca destino local, registra commit e publica os by
   assert.equal(packs, 1)
   assert.equal(existsSync(auth), false)
   assert.equal(existsSync(destino), false)
+})
+
+
+test('dist orfao nao entra no tarball real da publicacao', async (t) => {
+  const op = fixture(t)
+  const origem = join(op.raiz, 'erp-exemplo')
+  writeFileSync(join(origem, 'dist', 'orfao.js'), 'export const removido = true')
+  writeFileSync(join(origem, 'dist', 'orfao.d.ts'), 'export declare const removido: true')
+  const commit = 'b'.repeat(40)
+  let publicado
+  let nomes
+  const { config } = await registro(t, () => publicado ?? { status: 404 })
+  await publicar({ ...op, config, executar: (bin, args, opts) => {
+    if (bin === 'git') return args[0] === 'status' ? '' : commit
+    if (bin === 'pnpm') {
+      mkdirSync(join(origem, 'dist'), { recursive: true })
+      writeFileSync(join(origem, 'dist', 'index.js'), 'export const exemplo = 1\n')
+      return
+    }
+    if (args[0] === 'pack') return execFileSync(bin, args, { ...opts, env: { ...opts.env, npm_config_cache: join(op.raiz, 'cache') } })
+    nomes = execFileSync('tar', ['-tzf', args[1]], { encoding: 'utf8' }).trim().split('\n')
+    publicado = { dist: { integrity: `sha512-${createHash('sha512').update(readFileSync(args[1])).digest('base64')}` }, erpOrigem: { commit } }
+  } })
+  assert.ok(nomes.includes('package/dist/index.js'))
+  assert.ok(!nomes.some((nome) => nome.includes('orfao')), 'saida antiga entrou no tarball')
 })

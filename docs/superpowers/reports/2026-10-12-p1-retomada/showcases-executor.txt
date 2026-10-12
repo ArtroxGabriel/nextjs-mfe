@@ -1,3 +1,0 @@
-task: [pacotes:showcases-p1] node base/scripts/verificar-showcases-p1.mjs /tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex
-{"modo":"dev","code":0}
-{"modo":"oidc","code":0}

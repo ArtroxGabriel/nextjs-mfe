@@ -8,7 +8,15 @@ Configure `ERP_NPM_REGISTRY` no ambiente do terminal ou do CI e `ERP_NPM_TOKEN` 
 
 `task preparar` busca os submódulos fixados, ativa os hooks deste clone e chama `task instalar`. Não sobe contêineres nem publica pacotes. `task instalar` verifica primeiro todos os hashes `@erp/*` dos oito lockfiles e depois instala com `--frozen-lockfile`. Uma divergência interrompe a operação sem reescrever hash. Também são instaladas as dependências de desenvolvimento dos três pacotes.
 
-A autenticação do pnpm usa `--userconfig` com arquivo temporário 0600 removido no `finally`. `task pacotes:sondar-auth` compara cinco mecanismos contra mock em loopback, em `view` e `install`, com token fictício. No pnpm 12.5.1, `npmrcAuthFile` camel/kebab não enviam Authorization; `--userconfig`, `npm_config_userconfig` e `.npmrc` enviam. A prova automatizada instala o tarball real e recusa divergência de specifier sem reescrever o lockfile.
+A autenticação do pnpm usa `--userconfig` com arquivo temporário 0600. A remoção é síncrona no encerramento por SIGINT, SIGTERM e `exit`, além do `finally` em sucesso ou falha. Nos sinais, o comando encerra somente os grupos dos filhos que iniciou e aguarda sua saída; após `ERP_NPM_ENCERRAMENTO_MS`, usa SIGKILL nesses grupos. Os testes permanentes em `task scripts:test` exercitam pnpm/npm reais interrompidos nas duas operações e a saída explícita. SIGKILL no processo controlador ou queda da máquina não permitem executar cleanup.
+
+A prova de autenticação instala um tarball real e recusa divergência de specifier sem reescrever o lockfile. No pnpm 12.5.1, a investigação mostrou que `npmrcAuthFile` camel/kebab não enviam Authorization; `--userconfig` funciona.
+
+### Limite declarado: redirect de tarball
+
+A consulta de metadata feita pelo preflight recusa 3xx, com zero chamadas ao destino. O download feito pelo pnpm 12.5.1 segue redirects. Não foi encontrada uma opção pública de recusa na [configuração de requisições](https://pnpm.io/settings/request); no [código dessa versão](https://github.com/pnpm/pnpm/blob/v12.5.1/pnpm/crates/network/src/requests.rs), o GET autenticado segue cada localização e recalcula a credencial para o destino. A recusa existe em APIs internas, sem configuração pública identificada para o instalador. Não se acrescenta proxy, downloader alternativo ou opção sem suporte.
+
+Os testes reais permanentes provam somente o caso entre duas origens de loopback com portas diferentes: o destino recebe a chamada sem Authorization; bytes canônicos são aceitos e bytes adulterados são recusados por SHA-512 do lockfile congelado, sem reescrever o lock. Essa integridade protege os bytes, não restringe o destino de rede. A medição não certifica todas as cadeias, esquemas ou implantações externas. Para a ativação, o registro oficial deve servir os tarballs diretamente, sem redirect, e essa característica precisa ser verificada no serviço escolhido. A garantia de recusa de metadata não se estende ao downloader do pnpm.
 
 Para desenvolvimento com o registro local já abastecido, use `task registry:subir` antes de `task preparar`. O padrão local é `http://localhost:4873/`. Não publique novamente uma versão existente para reparar uma máquina nova.
 
@@ -28,9 +36,9 @@ Publique um pacote de cada vez, na ordem contratos, núcleo e moldura quando tod
 
 O workflow manual `Publicar pacote imutavel` recebe o pacote por lista fechada. Só roda em `main` ou `bff-multizone`, depois do workflow de verificação. A concorrência de publicação deste repositório é serializada. O registro é responsável pela recusa atômica de publicação concorrente de uma mesma versão.
 
-O comando local equivalente é `task pacotes:publicar -- erp-nucleo`, com `ERP_NPM_TOKEN_PUBLICACAO`. Sem argumento, seleciona os três pacotes. Uma versão existente, um 401, um 500 ou um redirecionamento interrompe a operação. Não há publicação automática em push.
+O comando local equivalente é `task pacotes:publicar -- erp-nucleo`, com `ERP_NPM_TOKEN_PUBLICACAO`. Sem argumento, seleciona os três pacotes. Uma versão existente, um 401, um 500 ou um redirecionamento na consulta de metadata interrompe a operação. Não há publicação automática em push.
 
-O script constrói o pacote sem token no ambiente do build, prepara um tarball em diretório temporário e publica esse arquivo, sem scripts de ciclo de vida. O manifesto preparado contém `erpOrigem.commit` e `publishConfig.registry` com o registro validado. Depois confere a integridade e o commit na metadata devolvida. Uma falha nessa confirmação pode ocorrer depois de o registro aceitar o pacote: confira o estado antes de tentar publicar outra versão. Não há rollback nem exclusão automática.
+O script exige árvore Git limpa e remove integralmente o `dist` ignorado antes de construir. Isso elimina saídas de fontes removidas, inclusive `.js` e `.d.ts` órfãos. Usa as dependências já instaladas no checkout; não refaz sua instalação em outro checkout. Constrói sem token no ambiente do build, prepara um tarball em diretório temporário e publica esse arquivo, sem scripts de ciclo de vida. O manifesto preparado contém `erpOrigem.commit` e `publishConfig.registry` com o registro validado. Depois confere a integridade e o commit na metadata devolvida. Uma falha nessa confirmação pode ocorrer depois de o registro aceitar o pacote: confira o estado antes de tentar publicar outra versão. Não há rollback nem exclusão automática.
 
 ## GitHub Actions
 
@@ -48,3 +56,8 @@ Configure no repositório principal:
 Os workflows fixam Node 24.21.0, pnpm 12.5.1 e Task 3.53.1. Seus prazos são 30 minutos para verificação e 15 para publicação. Os runners são máquinas próprias do CI; nenhum serviço desta estação ou de outro projeto é usado. Pull requests de forks não recebem os secrets, então a instalação de pacotes privados precisa de uma execução no contexto autorizado do projeto. Não se usa `pull_request_target`.
 
 Fontes para as opções usadas: [instalação congelada do pnpm](https://pnpm.io/cli/install), [autenticação do pnpm](https://pnpm.io/npmrc), [publicação do npm](https://docs.npmjs.com/cli/v11/commands/npm-publish/), [workflows reutilizáveis](https://docs.github.com/en/actions/reference/workflows-and-actions/reusing-workflow-configurations) e [setup do Task](https://github.com/go-task/setup-task).
+
+
+## Observação da subida do shell
+
+O challenger da iteração 2 observou `Ready` no log do Next antes da recusa de produção sem IdP. Nas sondas recusadas, o processo saiu com código 1 e não serviu resposta HTTP. O anúncio não prova disponibilidade. Esta correção do publicador não muda o shell.
