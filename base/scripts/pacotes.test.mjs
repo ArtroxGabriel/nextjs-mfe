@@ -51,6 +51,17 @@ test('registro externo exige HTTPS; CI nao cai silenciosamente no Verdaccio loca
   }
 })
 
+test('HTTP aceita somente hostname de loopback exato, nunca prefixo de hostname externo', () => {
+  for (const host of ['localhost', '127.0.0.1', '[::1]']) {
+    const url = `http://${host}:4873/`
+    assert.equal(configuracao({ ERP_NPM_REGISTRY: url }).registro, url)
+  }
+  // Apenas valida configuração. Nenhum destes endereços recebe DNS ou HTTP.
+  for (const host of ['localhost.evil', '127.0.0.1.exemplo.com']) {
+    assert.throws(() => configuracao({ ERP_NPM_REGISTRY: `http://${host}/` }), /HTTP so em loopback/)
+  }
+})
+
 test('inventario inclui versoes transitivas e recusa hashes divergentes entre repositorios', (t) => {
   const op = fixture(t)
   assert.equal(inventario(op.raiz, op.repos)[0].integrity, hash)
@@ -102,6 +113,112 @@ test('falha do instalador tambem remove autenticacao temporaria', async (t) => {
   } }), /instalacao falhou/)
   assert.equal(existsSync(auth), false)
 })
+
+test('tokens semeados no ambiente nao chegam aos filhos de install, git, build, pack e publish', async (t) => {
+  const chaves = ['ERP_NPM_TOKEN', 'ERP_NPM_TOKEN_PUBLICACAO', 'NODE_AUTH_TOKEN', 'NPM_TOKEN']
+  const anteriores = chaves.map((chave) => [chave, process.env[chave]])
+  const sentinelas = chaves.map((chave) => `sentinela-ficticia-${chave}`)
+  const observacoes = []
+  const observar = (args, opts) => {
+    // O filho real recebe exatamente o ambiente preparado pelo produto. Só retorna booleanos.
+    const presentes = JSON.parse(execFileSync(process.execPath, ['-e',
+      `console.log(JSON.stringify(${JSON.stringify(chaves)}.map(chave => Object.hasOwn(process.env, chave))))`,
+    ], { env: opts.env, encoding: 'utf8' }))
+    observacoes.push({ fase: args[0], presentes, tokenNoArgv: args.some((arg) => sentinelas.some((token) => arg.includes(token))) })
+  }
+  try {
+    chaves.forEach((chave, i) => { process.env[chave] = sentinelas[i] })
+    const op = fixture(t)
+    const leitura = await registro(t)
+    leitura.config.token = process.env.ERP_NPM_TOKEN
+    await instalar({ ...op, config: leitura.config, executar: (bin, args, opts) => {
+      assert.equal(bin, 'pnpm')
+      assert.equal(args[0], 'install')
+      observar(args, opts)
+    } })
+
+    const commit = 'c'.repeat(40)
+    let publicado = false
+    const escrita = await registro(t, () => publicado
+      ? { name: '@erp/exemplo', version: '1.0.0', dist: { integrity: hash }, erpOrigem: { commit } }
+      : { status: 404 })
+    escrita.config.tokenPublicacao = process.env.ERP_NPM_TOKEN_PUBLICACAO
+    await publicar({ ...op, config: escrita.config, executar: (bin, args, opts) => {
+      observar(args, opts)
+      if (bin === 'git') return args[0] === 'status' ? '' : commit
+      if (bin === 'pnpm') {
+        assert.deepEqual(args, ['build'])
+        mkdirSync(join(opts.cwd, 'dist'), { recursive: true })
+        writeFileSync(join(opts.cwd, 'dist', 'index.js'), 'export const exemplo = 1\n')
+        return
+      }
+      assert.equal(bin, 'npm')
+      if (args[0] === 'pack') {
+        const destino = args[args.indexOf('--pack-destination') + 1]
+        writeFileSync(join(destino, 'erp-exemplo-1.0.0.tgz'), bytes)
+        return JSON.stringify([{ filename: 'erp-exemplo-1.0.0.tgz' }])
+      }
+      assert.equal(args[0], 'publish')
+      publicado = true
+    } })
+    assert.deepEqual(observacoes.map(({ fase }) => fase), ['install', 'status', 'rev-parse', 'build', 'pack', 'publish'])
+    assert.deepEqual(observacoes, observacoes.map(({ fase }) => ({ fase, presentes: chaves.map(() => false), tokenNoArgv: false })))
+  } finally {
+    for (const [chave, valor] of anteriores) {
+      if (valor === undefined) delete process.env[chave]
+      else process.env[chave] = valor
+    }
+  }
+})
+
+for (const status of [200, 401, 500, 302]) {
+  test(`reconsulta apos pack recebe ${status} e impede publish`, async (t) => {
+    const op = fixture(t)
+    const commit = 'd'.repeat(40)
+    const etapas = []
+    let consultas = 0
+    let packs = 0
+    let publicacoes = 0
+    const { config } = await registro(t, () => {
+      etapas.push('consulta')
+      consultas++
+      if (consultas === 1) return { status: 404 }
+      assert.equal(packs, 1, 'a versao ou o erro so aparecem depois do pack')
+      return {
+        status,
+        body: { name: '@erp/exemplo', version: '1.0.0', dist: { integrity: hash }, erpOrigem: { commit } },
+        headers: { 'content-type': 'application/json', ...(status === 302 ? { location: config.registro } : {}) },
+      }
+    })
+    let erro
+    try {
+      await publicar({ ...op, config, executar: (bin, args, opts) => {
+        etapas.push(args[0])
+        if (bin === 'git') return args[0] === 'status' ? '' : commit
+        if (bin === 'pnpm') {
+          assert.deepEqual(args, ['build'])
+          mkdirSync(join(opts.cwd, 'dist'), { recursive: true })
+          writeFileSync(join(opts.cwd, 'dist', 'index.js'), 'export const exemplo = 1\n')
+          return
+        }
+        assert.equal(bin, 'npm')
+        if (args[0] === 'pack') {
+          packs++
+          const destino = args[args.indexOf('--pack-destination') + 1]
+          writeFileSync(join(destino, 'erp-exemplo-1.0.0.tgz'), bytes)
+          return JSON.stringify([{ filename: 'erp-exemplo-1.0.0.tgz' }])
+        }
+        assert.equal(args[0], 'publish')
+        publicacoes++
+      } })
+    } catch (e) { erro = e }
+    assert.equal(publicacoes, 0, 'a reconsulta deve recusar antes de qualquer escrita')
+    assert.match(erro?.message ?? '', status === 200 ? /publicado por outro processo/ : new RegExp(`HTTP ${status}`))
+    assert.equal(packs, 1)
+    assert.equal(consultas, 2)
+    assert.deepEqual(etapas, ['consulta', 'status', 'rev-parse', 'build', 'pack', 'consulta'])
+  })
+}
 
 test('versao existente, 401 e 500 nunca chegam ao build ou publish', async (t) => {
   for (const status of [200, 401, 500]) {
