@@ -484,3 +484,7 @@ Scripts 60 pass, 0 fail, 0 skip; estática 52 pass, 0 fail, 0 skip; lockstep 0.1
 M1 a M14 detectadas em cópia isolada, zero sobreviventes. Baselines: 43 pass, 0 fail, 0 skip. Execuções com mutações: 123 testes, 103 pass, 20 falhas esperadas, 0 skip, 0 cancelled.
 
 Gate ainda reprovado até revisão nova; nenhuma mensagem externa enviada. Registro oficial, migração canônica e CI remoto continuam pendentes. Nenhum commit criado pelo worker; principal fica no working tree para o orquestrador. Evidência e propostas: /tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/worker_p1_3/handoff.md. Corrigir referências anteriores ao relatório retirado ao aplicar este texto.
+
+## P1 (#133): gate local aprovado em 2026-10-12
+
+Texto pronto para a atividade: "Gate local do P1 aprovado (iteração 4). Instalação congelada e publicação imutável contra registro configurável, autenticação do pnpm por arquivo temporário privado (removido também em sinal), publicação a partir de saída limpa, D18 fechado no shell, workflows de verificação e publicação manual. Pendente para fechar: registro oficial, migração dos tarballs canônicos e execução verde do CI remoto." Nenhuma mensagem enviada ao GitLab.

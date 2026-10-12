@@ -1,18 +1,25 @@
-# P1: correção da iteração 2 em 2026-10-12
+# Retomada: gate local do P1 aprovado em 2026-10-12
 
-Worker p1_3 concluiu as correções locais. Gate da iteração 2 permanece REPROVA até nova revisão independente. P1 operacional segue aberto: registro oficial, imutabilidade do serviço, migração dos tarballs canônicos, reconciliação de integridades e CI remoto pendentes.
+**Gate local do P1 aprovado na iteração 4** (auditor_p1_4, PASS), tag local `gate-p1-local-aprovado`. P1 operacional segue aberto.
 
-Publicação limpa integralmente dist antes do build. npm pack real comprova que .js e .d.ts órfãos não entram no tarball. Mantém o checkout e suas dependências instaladas; não houve publicação externa nem republicação.
+## Como foi executado
 
-Install e publish usam filhos assíncronos controlados. SIGINT/SIGTERM apagam temporários sincronamente antes de aguardar os grupos próprios; após ERP_NPM_ENCERRAMENTO_MS, SIGKILL. exit tem cleanup síncrono. Quatro interrupções reais passaram; saída explícita e filho resistente também. SIGKILL no controlador e queda da máquina não executam cleanup.
+Desde 2026-10-12 o trabalho é despachado para o Codex local (`codex exec`, sandbox `workspace-write`); o orquestrador aplica os textos e commita o principal, porque `.git/` e `.agents/` do principal são somente leitura na sandbox do Codex. Não tocar `~/Documents/sisbin-planejamento-local` nem seus processos.
 
-Redirect de metadata é recusado. pnpm 12.5.1 segue redirect de tarball, sem opção pública de recusa identificada. Testes entre origens distintas em loopback: zero Authorization no destino, bytes canônicos aceitos, bytes adulterados recusados por integridade, lock preservado. Limite em docs/REGISTRO-E-CI.md; proposta D34 em DEFERRED.md do scratchpad. Registro oficial deve servir bytes diretamente. Challenger observou Ready antes da recusa do shell sem IdP, sem servir HTTP; observação registrada, shell intacto.
+## Gate do P1
 
-Relatório de máquina e sete scripts particulares saíram do checkout. Evidência anterior e executores preservados somente em /tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/worker_p1_3. Justificativa de cada script restante em handoff.md.
+| Iteração | Revisor | Challenger | Auditor | Correção |
+|---|---|---|---|---|
+| 2 | REPROVA (dist órfão no tarball; sondas versionadas) | REPROVA (SIGINT deixa auth.ini; redirect de tarball) | não rodou | dde6957 |
+| 3 | APROVA | APROVA (42 cenários, 5 subidas do shell) | VETO só por teste (A02, A09, A10) | 20e9d13 |
+| 4 | regra do veto só por teste | idem | PASS (826 pass, 0 fail, 6 skip; lockstep verde) | nenhuma |
 
-Scripts 60 pass, 0 fail, 0 skip; estática 52 pass, 0 fail, 0 skip; lockstep 0.10.4 nas quatro apps, saída 0. Nenhum submódulo alterado, portanto task test não foi repetido nesta correção.
-M1 a M14 detectadas em cópia isolada, zero sobreviventes. Baselines: 43 pass, 0 fail, 0 skip. Execuções com mutações: 123 testes, 103 pass, 20 falhas esperadas, 0 skip, 0 cancelled.
+Handoffs em `.agents/{revisor,challenger,auditor}_p1_{2,3,4}` e `.agents/worker_p1_4`. Limite declarado: D34 (pnpm segue redirect de tarball sem enviar token; integridade protege os bytes).
 
-Nenhum commit criado, pois só o principal mudou e .git/.agents são somente leitura para o worker. Os lockfiles soltos de moldura e stub foram preservados; nenhum push ou configuração global. Processos alheios e os dois órfãos antigos foram ignorados.
+## Pendências
 
-Próximo passo do orquestrador: aplicar as propostas RETOMADA, GATE_STATUS, ATIVIDADES, progress e DEFERRED deste scratchpad, corrigir referências antigas ao relatório removido, commitar os arquivos listados em arquivos-principal.txt com mensagem em inglês sem coautoria e iniciar novo gate. Sugestão: fix(packages): clean build output and credentials on interruption. Não incluir os lockfiles preexistentes.
+1. **Envio:** commits locais não enviados. Ordem: `erp-nucleo` (df5b0f4) e `erp-shell` (bd51363) antes do principal. Aguarda confirmação do humano.
+2. **P1 operacional:** registro oficial com política de imutabilidade, migração dos tarballs canônicos sem trocar bytes, reconciliação das integridades e uma execução verde do CI remoto. Precisa de endereço e credenciais do humano.
+3. Lockfiles soltos de `erp-moldura` e `erp-dominio-stub`: fora de commit; reconciliar só com o registro canônico.
+4. Processos órfãos de teste de uma sessão anterior do Codex (PIDs 21265 e 21272): encerrar pelo humano.
+5. Depois do P1: G5 e G4, na ordem encaminhada.

@@ -10,9 +10,9 @@
 
 ## Tasks
 
-- [ ] 1. Implementar instalação e publicação pelo registro configurável, preflight de integridades dos lockfiles, testes e mutações. Corrigir a dependência inexistente de `task preparar`. Não alinhar hashes automaticamente.
-- [ ] 2. Fechar D18: scripts de build e start não autorizam identidade dev. Manter a autorização explícita do showcase e da verificação. Provar a recusa na subida do shell.
-- [ ] 3. Adicionar CI de unidades, segurança estática, scripts, lockstep e commits dos submódulos. Publicação manual em workflow separado com credencial de escrita somente nessa etapa. Documentar configuração e limitações de ativação.
+- [x] 1. Implementar instalação e publicação pelo registro configurável, preflight de integridades dos lockfiles, testes e mutações. Corrigir a dependência inexistente de `task preparar`. Não alinhar hashes automaticamente. (gate local aprovado em 2026-10-12; ativação no registro oficial pendente)
+- [x] 2. Fechar D18: scripts de build e start não autorizam identidade dev. Manter a autorização explícita do showcase e da verificação. Provar a recusa na subida do shell. (gate local aprovado em 2026-10-12; ativação no registro oficial pendente)
+- [x] 3. Adicionar CI de unidades, segurança estática, scripts, lockstep e commits dos submódulos. Publicação manual em workflow separado com credencial de escrita somente nessa etapa. Documentar configuração e limitações de ativação. (gate local aprovado em 2026-10-12; ativação no registro oficial pendente)
 - [ ] 4. Reconciliar documentos de retomada e GitLab. Rodar regressão apropriada, revisão independente e gate. Registrar os resultados sem afirmar execução remota nem registro provisionado. Commitar os passos e enviar submódulo antes do principal.
 
 ## Mutações declaradas
