@@ -133,10 +133,17 @@ Variáveis das ferramentas de entrega, sem repasse às zonas ou aos domínios. F
 | Variável | Padrão | Significado | Quem lê |
 |---|---|---|---|
 | `ERP_NPM_REGISTRY` | `http://localhost:4873/` somente fora do CI | Registro dos `@erp/*`; HTTPS obrigatório fora de loopback, sem credenciais na URL. No CI é obrigatório, sem fallback local | `base/scripts/pacotes.mjs` |
+| `ERP_NPM_REGISTRY_PUBLICACAO` | valor de `ERP_NPM_REGISTRY` | Endereço de publicação, validado pelas mesmas regras HTTPS/loopback; GitLab publica pelo projeto (`/api/v4/projects/<id>/packages/npm/`). Se a instalação usar grupo, declarar o projeto também para autenticar e validar seu tarball. Aceita vazio como não configurado | `pacotes.mjs`, publicação e leitura de tarballs |
 | `ERP_NPM_TOKEN` | ausente | Token de leitura; arquivo de autenticação temporário, modo 0600, removido no fim. Não gravar no Git nem passar como argumento | `pacotes.mjs`, instalação e preflight |
 | `ERP_NPM_TOKEN_PUBLICACAO` | ausente | Token de escrita, obrigatório para publicação em HTTPS; não entregue ao build. O workflow o define somente no passo de publicação | `pacotes.mjs`, publicação |
-| `ERP_NPM_TIMEOUT_MS` | `10000` | Prazo de consulta de metadata por tentativa; inteiro de 100 a 120000 ms | `pacotes.mjs` |
+| `ERP_NPM_TIMEOUT_MS` | `10000` | Prazo por consulta de metadata ou tarball SHA-512, incluindo leitura da resposta; inteiro de 100 a 120000 ms | `pacotes.mjs` |
 | `ERP_NPM_ENCERRAMENTO_MS` | `5000` | Espera pelos filhos próprios após SIGINT/SIGTERM antes de SIGKILL; inteiro de 100 a 120000 ms. A autenticação é removida sincronamente antes da espera | `pacotes.mjs` |
 
-O workflow mapeia os secrets `ERP_NPM_TOKEN_LEITURA` e `ERP_NPM_TOKEN_PUBLICACAO` para as variáveis acima. `SUBMODULOS_TOKEN` permite checkout de submódulos privados, com leitura somente. Prazos dos jobs, versionados nos workflows: 30 minutos para verificação e 15 para publicação; Node 24.21.0, pnpm 12.5.1 e Task 3.53.1.
+O workflow mapeia os secrets `ERP_NPM_TOKEN_LEITURA` e `ERP_NPM_TOKEN_PUBLICACAO` para as variáveis acima. `SUBMODULOS_TOKEN` permite checkout de submódulos privados, com leitura somente. GitLab CI fica desligado até `ERP_GITLAB_CI_ATIVAR=1`. No GitLab, `ERP_NPM_TOKEN_PUBLICACAO` deve ser variável **de projeto**, protegida e mascarada, com escopo de ambiente `publicacao-pacotes`, nunca `*`; leitura usa `ERP_NPM_TOKEN_LEITURA`. `PACOTE` seleciona um dos três pacotes no pipeline manual. Prazos dos jobs, versionados nos workflows e `.gitlab-ci.yml`: 30 minutos para verificação e 15 para publicação; Node 24.21.0, pnpm 12.5.1 e Task 3.53.1.
 
+| Variável de CI GitLab | Padrão | Significado | Quem lê |
+|---|---|---|---|
+| `ERP_GITLAB_CI_ATIVAR` | ausente (desligado) | `1` libera pipelines de verificação e job manual; definir só após o roteiro de ativação | `.gitlab-ci.yml`, workflow rules |
+| `PACOTE` | ausente | Seleção obrigatória na publicação manual: `erp-contratos`, `erp-nucleo` ou `erp-moldura` | `.gitlab-ci.yml`, job publicar |
+
+`GIT_SUBMODULE_STRATEGY=recursive`, `GIT_DEPTH=0` e `GIT_SUBMODULE_DEPTH=0` preservam os commits fixados com histórico para a checagem de envio. O runner precisa de leitura dos espelhos declarados em `.gitmodules`; `GIT_SUBMODULE_FORCE_HTTPS=true` converte URLs da mesma instância GitLab. Os submódulos atuais no GitHub precisam de espelhos nessa instância (ou URLs relativas) antes da ativação; não se inventa credencial do GitHub. Ver [Ativação no GitLab](REGISTRO-E-CI.md#ativação-no-gitlab).

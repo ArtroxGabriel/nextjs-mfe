@@ -1,0 +1,63 @@
+# Preparação: sem ERP_GITLAB_CI_ATIVAR=1 nenhum pipeline é criado.
+# O token de escrita deve ser variável de projeto protegida/mascarada,
+# com environment scope = publicacao-pacotes (nunca *).
+workflow:
+  rules:
+    - if: '$ERP_GITLAB_CI_ATIVAR != "1"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_OPEN_MERGE_REQUESTS'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "bff-multizone"'
+    - when: never
+
+stages: [verificar, publicar]
+
+# Ativação requer submódulos espelhados na mesma instância GitLab ou URLs relativas.
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  GIT_SUBMODULE_FORCE_HTTPS: 'true'
+  GIT_DEPTH: '0'
+  GIT_SUBMODULE_DEPTH: '0'
+  NEXT_TELEMETRY_DISABLED: '1'
+
+default:
+  image: node:24.21.0-bookworm
+  before_script:
+    # Somente no runner descartável; nenhuma configuração da estação é alterada.
+    - >-
+      env -u ERP_NPM_TOKEN_PUBLICACAO -u CI_JOB_TOKEN bash -eu -c
+      'apt-get update && apt-get install --yes --no-install-recommends iproute2 &&
+      npm install --global pnpm@12.5.1 @go-task/cli@3.53.1'
+
+verificar:
+  stage: verificar
+  timeout: 30m
+  script:
+    - test -z "${ERP_NPM_TOKEN_PUBLICACAO:-}"
+    - ERP_NPM_TOKEN="${ERP_NPM_TOKEN_LEITURA:-}" task instalar
+    - task ci:verificar
+    - task verificar:construir
+
+publicar:
+  stage: publicar
+  timeout: 15m
+  needs: [verificar]
+  resource_group: erp-publicacao
+  environment:
+    name: publicacao-pacotes
+    action: prepare
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_REF_PROTECTED == "true" && ($CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "bff-multizone")'
+      when: manual
+      allow_failure: false
+    - when: never
+  script:
+    - >-
+      case "${PACOTE:-}" in
+      erp-contratos|erp-nucleo|erp-moldura) ;;
+      *) echo 'PACOTE deve ser erp-contratos, erp-nucleo ou erp-moldura'; exit 1 ;;
+      esac
+    - test -n "${ERP_NPM_TOKEN_PUBLICACAO:-}"
+    - env -u ERP_NPM_TOKEN_PUBLICACAO ERP_NPM_TOKEN="${ERP_NPM_TOKEN_LEITURA:-}" task instalar
+    - task pacotes:publicar -- "$PACOTE"

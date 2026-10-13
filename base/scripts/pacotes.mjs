@@ -12,13 +12,8 @@ const raizPadrao = resolve(dirname(fileURLToPath(import.meta.url)), '../../repos
 
 export function configuracao(env = process.env) {
   if (env.CI && !env.ERP_NPM_REGISTRY) throw new Error('CI exige ERP_NPM_REGISTRY: configure o registro compartilhado')
-  let url
-  try { url = new URL(env.ERP_NPM_REGISTRY ?? 'http://localhost:4873/') } catch { throw new Error('ERP_NPM_REGISTRY invalido') }
-  const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
-  if (url.username || url.password || url.search || url.hash || !(url.protocol === 'https:' || (url.protocol === 'http:' && loopback))) {
-    throw new Error('ERP_NPM_REGISTRY exige HTTPS, sem credencial, query ou fragmento; HTTP so em loopback')
-  }
-  if (!url.pathname.endsWith('/')) url.pathname += '/'
+  const registro = enderecoRegistro(env.ERP_NPM_REGISTRY ?? 'http://localhost:4873/', 'ERP_NPM_REGISTRY')
+  const registroPublicacao = enderecoRegistro(env.ERP_NPM_REGISTRY_PUBLICACAO || registro, 'ERP_NPM_REGISTRY_PUBLICACAO')
   const timeoutMs = Number(env.ERP_NPM_TIMEOUT_MS ?? 10000)
   if (!Number.isInteger(timeoutMs) || timeoutMs < 100 || timeoutMs > 120000) throw new Error('ERP_NPM_TIMEOUT_MS deve estar entre 100 e 120000')
   const encerramentoMs = Number(env.ERP_NPM_ENCERRAMENTO_MS ?? 5000)
@@ -26,11 +21,22 @@ export function configuracao(env = process.env) {
   for (const chave of ['ERP_NPM_TOKEN', 'ERP_NPM_TOKEN_PUBLICACAO']) {
     if (env[chave] && /[\r\n\0]/.test(env[chave])) throw new Error(`${chave} invalido`)
   }
-  return { registro: url.href, timeoutMs, encerramentoMs, token: env.ERP_NPM_TOKEN, tokenPublicacao: env.ERP_NPM_TOKEN_PUBLICACAO }
+  return { registro, registroPublicacao, timeoutMs, encerramentoMs, token: env.ERP_NPM_TOKEN, tokenPublicacao: env.ERP_NPM_TOKEN_PUBLICACAO }
+}
+
+function enderecoRegistro(valor, chave) {
+  let url
+  try { url = new URL(valor) } catch { throw new Error(`${chave} invalido`) }
+  const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
+  if (url.username || url.password || url.search || url.hash || !(url.protocol === 'https:' || (url.protocol === 'http:' && loopback))) {
+    throw new Error(`${chave} exige HTTPS, sem credencial, query ou fragmento; HTTP so em loopback`)
+  }
+  if (!url.pathname.endsWith('/')) url.pathname += '/'
+  return url.href
 }
 
 function ambienteSemTokens(env = process.env) {
-  return Object.fromEntries(Object.entries(env).filter(([k]) => !['ERP_NPM_TOKEN', 'ERP_NPM_TOKEN_PUBLICACAO', 'NODE_AUTH_TOKEN', 'NPM_TOKEN'].includes(k)))
+  return Object.fromEntries(Object.entries(env).filter(([k]) => !['ERP_NPM_TOKEN', 'ERP_NPM_TOKEN_PUBLICACAO', 'NODE_AUTH_TOKEN', 'NPM_TOKEN', 'CI_JOB_TOKEN', 'ERP_NPM_TOKEN_LEITURA'].includes(k)))
 }
 
 /** Um hash por nome e versao, considerando tambem as dependencias transitivas antigas. */
@@ -53,7 +59,8 @@ export function inventario(raiz = raizPadrao, repos = REPOS) {
 }
 
 async function consultar(nome, versao, config, token = config.token) {
-  const url = new URL(`${encodeURIComponent(nome)}/${encodeURIComponent(versao)}`, config.registro)
+  // GitLab só documenta metadata do pacote, com um mapa versions.
+  const url = new URL(encodeURIComponent(nome), config.registro)
   let resposta
   try {
     resposta = await fetch(url, {
@@ -63,23 +70,76 @@ async function consultar(nome, versao, config, token = config.token) {
   } catch { throw new Error(`registro indisponivel ao consultar ${nome}@${versao}`) }
   if (resposta.status === 404) return null
   if (resposta.status !== 200) throw new Error(`registro recusou ${nome}@${versao}: HTTP ${resposta.status}`)
-  try { return await resposta.json() } catch { throw new Error(`metadata invalida de ${nome}@${versao}`) }
+  let metadata
+  try { metadata = await resposta.json() } catch { throw new Error(`metadata invalida de ${nome}@${versao}`) }
+  if (metadata?.name !== nome || !metadata.versions || typeof metadata.versions !== 'object' || Array.isArray(metadata.versions)) {
+    throw new Error(`metadata invalida de ${nome}@${versao}`)
+  }
+  if (!Object.hasOwn(metadata.versions, versao)) return null
+  const meta = metadata.versions[versao]
+  if (meta?.name !== nome || meta.version !== versao) throw new Error(`metadata invalida de ${nome}@${versao}`)
+  return meta
 }
 
-export async function verificar({ raiz = raizPadrao, repos = REPOS, config = configuracao(), conferirTarballs = true } = {}) {
+function registrosDeLeitura(config) {
+  // Metadata nunca amplia o escopo da credencial. Grupo -> projeto requer configuração explícita.
+  return [...new Set([config.registro, config.registroPublicacao ?? config.registro])]
+}
+function tarballPermitido(valor, config) {
+  if (typeof valor !== 'string' || /[\s\0]/.test(valor)) return false
+  let url
+  try { url = new URL(valor) } catch { return false }
+  return !url.username && !url.password && !url.search && !url.hash && registrosDeLeitura(config).some((registro) => {
+    const base = new URL(registro)
+    return url.origin === base.origin && url.pathname.startsWith(base.pathname)
+  })
+}
+async function integridadeRemota(meta, config, token = config.token) {
+  if (meta.dist?.integrity) return meta.dist.integrity
+  // GitLab gera dist com shasum SHA-1. A prova continua sendo SHA-512 dos bytes.
+  if (!tarballPermitido(meta.dist?.tarball, config)) throw new Error('tarball fora dos registros configurados; consulta recusada')
+  let resposta
+  try {
+    resposta = await fetch(meta.dist.tarball, {
+      redirect: 'manual', signal: AbortSignal.timeout(config.timeoutMs),
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    if (resposta.status !== 200) throw new Error(`tarball recusado: HTTP ${resposta.status}`)
+    return `sha512-${createHash('sha512').update(Buffer.from(await resposta.arrayBuffer())).digest('base64')}`
+  } catch (erro) {
+    if (erro.message?.startsWith('tarball recusado: HTTP ')) throw erro
+    throw new Error('tarball indisponivel; consulta recusada')
+  }
+}
+
+function registroGitlab(config) {
+  return /\/api\/v4\/(?:projects\/[^/]+\/packages\/npm|groups\/[^/]+\/-\/packages\/npm|packages\/npm)\/$/.test(new URL(config.registro).pathname)
+}
+async function verificarVersoes(raiz, repos, config) {
   const itens = inventario(raiz, repos)
+  const tarballs = new Map()
   for (const { nome, versao, integrity } of itens) {
     const meta = await consultar(nome, versao, config)
     if (!meta) throw new Error(`${nome}@${versao} ausente no registro; importe o tarball canonico ou publique uma versao nova`)
-    if (meta.name !== nome || meta.version !== versao || meta.dist?.integrity !== integrity) {
+    if (await integridadeRemota(meta, config) !== integrity) {
       throw new Error(`${nome}@${versao}: metadata ou integrity diverge do lockfile; instalacao recusada`)
     }
+    tarballs.set(`${nome}@${versao}`, meta.dist?.tarball)
   }
+  return { itens, tarballs }
+}
+const resolucoesErp = /(\n  '(@erp\/[^']+)':\n    resolution: \{integrity: [^,}]+)(?:, tarball: ([^}]+))?}/g
+
+export async function verificar({ raiz = raizPadrao, repos = REPOS, config = configuracao(), conferirTarballs = true } = {}) {
+  const { itens } = await verificarVersoes(raiz, repos, config)
   if (conferirTarballs) {
     for (const repo of repos) {
       const lock = readFileSync(join(raiz, repo, 'pnpm-lock.yaml'), 'utf8')
+      if (registroGitlab(config) && [...lock.matchAll(resolucoesErp)].some(([, , , tarball]) => !tarball)) {
+        throw new Error(`${repo}: GitLab exige URL de tarball no lockfile; use task pacotes:migrar-registro`)
+      }
       for (const [, tarball] of lock.matchAll(/tarball: ([^,}\s]+)/g)) {
-        if (!tarball.startsWith(config.registro)) throw new Error(`${repo}: tarball aponta para outro registro; use task pacotes:migrar-registro depois de importar os bytes canonicos`)
+        if (!tarballPermitido(tarball, config)) throw new Error(`${repo}: tarball aponta para outro registro; use task pacotes:migrar-registro depois de importar os bytes canonicos`)
       }
     }
   }
@@ -87,12 +147,16 @@ export async function verificar({ raiz = raizPadrao, repos = REPOS, config = con
 }
 
 export async function migrarRegistro({ raiz = raizPadrao, repos = REPOS, config = configuracao() } = {}) {
-  await verificar({ raiz, repos, config, conferirTarballs: false })
+  const { tarballs } = await verificarVersoes(raiz, repos, config)
+  const gitlab = registroGitlab(config)
+  // Valida todas as URLs antes de escrever qualquer lockfile.
+  if (gitlab && [...tarballs.values()].some((url) => !tarballPermitido(url, config))) throw new Error('tarball fora dos registros configurados; migracao recusada')
   for (const repo of repos) {
     const arquivo = join(raiz, repo, 'pnpm-lock.yaml')
     const lock = readFileSync(arquivo, 'utf8')
-    // Retira so URLs fixas dos pacotes internos. O checksum continua identico.
-    const novo = lock.replace(/(\n  '@erp\/[^']+':\n    resolution: \{integrity: [^,}]+), tarball: [^}]+}/g, '$1}')
+    // GitLab usa nomes/caminhos de tarball próprios; pnpm congelado precisa da URL explícita.
+    // Nos demais registros mantém a migração anterior, retirando a URL antiga.
+    const novo = lock.replace(resolucoesErp, (_entrada, prefixo, chave) => `${prefixo}${gitlab ? `, tarball: ${tarballs.get(chave)}` : ''}}`)
     if (novo !== lock) writeFileSync(arquivo, novo)
   }
 }
@@ -155,12 +219,14 @@ function removerTemporario(dir) {
   temporarios.delete(dir)
   atualizarHandlers()
 }
-async function comAutenticacao(config, token, executar) {
+// Leitura: o token vale para a instalação e para o endereço de onde vêm os tarballs (no GitLab, o
+// projeto). Escrita: só o endereço de publicação; o token de escrita nunca fica no caminho de leitura.
+async function comAutenticacao(config, token, executar, enderecos = [config.registro]) {
   const dir = criarTemporario('mira-npm-', config)
   const arquivo = join(dir, 'auth.ini')
-  const url = new URL(config.registro)
   try {
-    writeFileSync(arquivo, token ? `//${url.host}${url.pathname}:_authToken=${token}\n` : '', { mode: 0o600 })
+    const linhas = enderecos.map((registro) => { const url = new URL(registro); return `//${url.host}${url.pathname}:_authToken=${token}\n` })
+    writeFileSync(arquivo, token ? linhas.join('') : '', { mode: 0o600 })
     return await executar(arquivo)
   } finally { removerTemporario(dir) }
 }
@@ -200,10 +266,11 @@ export async function instalar({ raiz = raizPadrao, repos = REPOS, config = conf
         cwd: join(raiz, repo), env: ambienteSemTokens(),
       })
     }
-  })
+  }, registrosDeLeitura(config))
 }
 
 export async function publicar({ raiz = raizPadrao, repos = PUBLICAVEIS, config = configuracao(), executar = comando } = {}) {
+  config = { ...config, registro: config.registroPublicacao ?? config.registro }
   if (!config.tokenPublicacao && new URL(config.registro).protocol !== 'http:') throw new Error('publicacao compartilhada exige ERP_NPM_TOKEN_PUBLICACAO')
   const pacotes = repos.map((repo) => ({ repo, pkg: JSON.parse(readFileSync(join(raiz, repo, 'package.json'), 'utf8')) }))
   for (const { pkg } of pacotes) {
@@ -250,7 +317,7 @@ export async function publicar({ raiz = raizPadrao, repos = PUBLICAVEIS, config 
         })
       })
       const meta = await consultar(pkg.name, pkg.version, config, config.tokenPublicacao)
-      if (!meta || meta.dist?.integrity !== integrity || meta.erpOrigem?.commit !== commit) throw new Error(`${pkg.name}@${pkg.version}: registro nao confirmou o artefato publicado`)
+      if (!meta || await integridadeRemota(meta, config, config.tokenPublicacao) !== integrity || (meta.erpOrigem?.commit !== commit && !(registroGitlab(config) && !meta.erpOrigem))) throw new Error(`${pkg.name}@${pkg.version}: registro nao confirmou o artefato publicado`)
       console.log(`${pkg.name}@${pkg.version}: ${commit}, ${integrity}`)
     } finally { removerTemporario(temporario) }
   }

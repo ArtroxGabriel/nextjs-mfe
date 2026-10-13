@@ -54,15 +54,17 @@ test('AM3: subir recusa porta ocupada antes de subir qualquer coisa', { timeout:
   const { createServer } = await import('node:http')
   const { subir, APPS } = await import('./ambiente.mjs')
   const s = createServer((req, res) => res.end())
-  const porta = APPS[0].porta
-  const ok = await new Promise((r) => { s.once('error', () => r(false)); s.listen(porta, '127.0.0.1', () => r(true)) })
-  if (!ok) return   // a base esta no ar nesta maquina: a porta ja esta ocupada, e o teste nao pode prova-lo sozinho
+  await new Promise((ok, falha) => { s.once('error', falha); s.listen(0, '127.0.0.1', ok) })
+  const porta = s.address().port
+  const anterior = APPS[0].porta
+  APPS[0].porta = porta
   try {
     // se subir passar (checagem removida), derruba o que subiu antes de reprovar: nada fica orfao
     const erro = await subir().then((amb) => { amb.derrubar(); return null }, (e) => e)
     assert.match(erro?.message ?? 'subiu com a porta ocupada', new RegExp(`porta ${porta} ja esta em uso`))
   } finally {
-    s.close()
+    APPS[0].porta = anterior
+    await new Promise((ok) => { s.close(ok); s.closeAllConnections() })
   }
 })
 

@@ -30,6 +30,7 @@ jobs:
     timeout-minutes: 15
     env:
       ERP_NPM_REGISTRY: ${{ vars.ERP_NPM_REGISTRY }}
+      ERP_NPM_REGISTRY_PUBLICACAO: ${{ vars.ERP_NPM_REGISTRY_PUBLICACAO }}
     steps:
       - uses: actions/checkout@v4
         with:

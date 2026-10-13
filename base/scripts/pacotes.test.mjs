@@ -28,7 +28,10 @@ async function registro(t, responder = () => ({ name: '@erp/exemplo', version: '
     pedidos.push({ url: req.url, auth: req.headers.authorization })
     const resposta = await responder(req)
     res.writeHead(resposta.status ?? 200, resposta.headers ?? { 'content-type': 'application/json' })
-    res.end(JSON.stringify(resposta.body ?? resposta))
+    const body = resposta.body ?? resposta
+    const metadata = (resposta.status ?? 200) === 200 && !body.versions
+      ? { name: '@erp/exemplo', versions: { '1.0.0': { name: '@erp/exemplo', version: '1.0.0', ...body } } } : body
+    res.end(JSON.stringify(metadata))
   })
   execFileSync('ss', ['-ltnp'])
   await new Promise((ok, falha) => { servidor.once('error', falha); servidor.listen(0, '127.0.0.1', ok) })
@@ -115,7 +118,7 @@ test('falha do instalador tambem remove autenticacao temporaria', async (t) => {
 })
 
 test('tokens semeados no ambiente nao chegam aos filhos de install, git, build, pack e publish', async (t) => {
-  const chaves = ['ERP_NPM_TOKEN', 'ERP_NPM_TOKEN_PUBLICACAO', 'NODE_AUTH_TOKEN', 'NPM_TOKEN']
+  const chaves = ['ERP_NPM_TOKEN', 'ERP_NPM_TOKEN_PUBLICACAO', 'NODE_AUTH_TOKEN', 'NPM_TOKEN', 'CI_JOB_TOKEN', 'ERP_NPM_TOKEN_LEITURA']
   const anteriores = chaves.map((chave) => [chave, process.env[chave]])
   const sentinelas = chaves.map((chave) => `sentinela-ficticia-${chave}`)
   const observacoes = []

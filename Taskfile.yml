@@ -42,7 +42,7 @@ tasks:
     cmd: node base/scripts/registry.mjs down
 
   pacotes:publicar:
-    desc: "Publica versões novas no ERP_NPM_REGISTRY; recusa versão existente, erro do registro e árvore suja"
+    desc: "Publica versões novas no registro de publicação configurado; recusa versão existente, erro do registro e árvore suja"
     cmd: node base/scripts/pacotes.mjs publicar {{.CLI_ARGS}}
 
   ci:verificar:
@@ -59,7 +59,7 @@ tasks:
     cmd: node base/scripts/pacotes.mjs verificar
 
   pacotes:migrar-registro:
-    desc: "Remove URLs locais dos lockfiles só depois de provar que o registro tem os mesmos artefatos; nunca troca hash"
+    desc: "Migra URLs de tarball dos lockfiles após provar artefatos canônicos; GitLab fixa URL da metadata, nunca troca hash"
     cmd: node base/scripts/pacotes.mjs migrar-registro
 
   instalar:

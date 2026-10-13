@@ -21,6 +21,7 @@ jobs:
     timeout-minutes: 30
     env:
       ERP_NPM_REGISTRY: ${{ vars.ERP_NPM_REGISTRY }}
+      ERP_NPM_REGISTRY_PUBLICACAO: ${{ vars.ERP_NPM_REGISTRY_PUBLICACAO }}
       NEXT_TELEMETRY_DISABLED: '1'
     steps:
       - uses: actions/checkout@v4

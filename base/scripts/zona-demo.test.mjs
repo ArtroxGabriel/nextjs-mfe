@@ -4,10 +4,8 @@ import { test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
 import { spawn } from 'node:child_process'
-import { fileURLToPath } from 'node:url'
 
-const SCRIPT = fileURLToPath(new URL('../showcase/zona-demo.mjs', import.meta.url))
-const PORTA_DEMO = 3009
+let PORTA_DEMO
 const PRAZO_MS = 8000
 const STACK = /^\s+at /m
 
@@ -26,9 +24,10 @@ function configurar({ post = 201, del = 204 } = {}) {
   falsa.recebidas = []
 }
 
-let podeRodar = true
 before(async () => {
-  try { await fechar(await escutar(PORTA_DEMO)) } catch { podeRodar = false; return }
+  const reserva = await escutar(0)
+  PORTA_DEMO = reserva.address().port
+  await fechar(reserva)
   falsa.servidor = await escutar(0, '127.0.0.1', (req, res) => {
     falsa.recebidas.push({ metodo: req.method, caminho: req.url, autorizacao: req.headers.authorization })
     req.resume()
@@ -40,16 +39,10 @@ before(async () => {
 })
 after(async () => { if (falsa.servidor) await fechar(falsa.servidor) })
 
-/** Com a 3009 ocupada por outro processo, o teste pula com a razão (avaliado dentro do teste, depois do `before`). */
-const pular = (t) => {
-  if (podeRodar) return false
-  t.skip(`a porta ${PORTA_DEMO} está ocupada por outro processo: feche-o para rodar estes testes`)
-  return true
-}
-
 /** Roda o script como filho; `saida()` junta stdout e stderr; `ate(re)` espera a linha ou estoura o prazo. */
 function filho(env = {}) {
-  const p = spawn(process.execPath, [SCRIPT], { env: { ...process.env, ACESSO_URL: urlDe(falsa.servidor), ...env }, stdio: ['pipe', 'pipe', 'pipe'] })
+  const p = spawn(process.execPath, ['--input-type=module', '-e',
+    `import { principal } from ${JSON.stringify(new URL('../showcase/zona-demo.mjs', import.meta.url).href)}; await principal({ porta: ${PORTA_DEMO} })`], { env: { ...process.env, ACESSO_URL: urlDe(falsa.servidor), ...env }, stdio: ['pipe', 'pipe', 'pipe'] })
   let texto = ''
   const observadores = []
   const acrescentar = (d) => { texto += d; observadores.forEach((f) => f()) }
@@ -77,10 +70,10 @@ function deleteDaDemo(del) {
   assert.equal(del[0].autorizacao, 'Bearer svc.demo')
 }
 
-/** A zona demo responde de novo na 3009 (a saúde da zona de teste, sem passar pelo shell). */
+/** A zona demo responde de novo na porta efêmera (a saúde da zona de teste, sem passar pelo shell). */
 async function responde() {
   const r = await fetch(`http://127.0.0.1:${PORTA_DEMO}/demo/api/health`, { signal: AbortSignal.timeout(2000) })
-  assert.equal(r.status, 200, 'a zona demo deveria responder na 3009')
+  assert.equal(r.status, 200, 'a zona demo deveria responder na porta efêmera')
 }
 
 async function portaLivre() {
@@ -88,8 +81,7 @@ async function portaLivre() {
   await fechar(s)
 }
 
-test('ZD1: porta 3009 ocupada: sai 1 com mensagem clara, sem stack e sem falar com a gestão de acesso', async (t) => {
-  if (pular(t)) return
+test('ZD1: porta efêmera ocupada: sai 1 com mensagem clara, sem stack e sem falar com a gestão de acesso', async (t) => {
   configurar()
   const ocupante = await escutar(PORTA_DEMO)
   const f = filho()
@@ -105,8 +97,7 @@ test('ZD1: porta 3009 ocupada: sai 1 com mensagem clara, sem stack e sem falar c
   }
 })
 
-test('ZD2: gestão de acesso fora do ar: sai 1 com mensagem clara, sem stack, e fecha a 3009', async (t) => {
-  if (pular(t)) return
+test('ZD2: gestão de acesso fora do ar: sai 1 com mensagem clara, sem stack, e fecha a porta efêmera', async (t) => {
   configurar()
   const morto = await escutar(0)
   const urlMorta = urlDe(morto)
@@ -121,8 +112,7 @@ test('ZD2: gestão de acesso fora do ar: sai 1 com mensagem clara, sem stack, e 
   } finally { f.p.kill('SIGKILL') }
 })
 
-test('ZD3: registro recusado (403): não diz que registrou e fecha a 3009', async (t) => {
-  if (pular(t)) return
+test('ZD3: registro recusado (403): não diz que registrou e fecha a porta efêmera', async (t) => {
   configurar({ post: 403 })
   const f = filho()
   try {
@@ -134,7 +124,6 @@ test('ZD3: registro recusado (403): não diz que registrou e fecha a 3009', asyn
 })
 
 test('ZD4: DELETE recusado (500) ao sair: sai 1 e diz que não conseguiu remover', async (t) => {
-  if (pular(t)) return
   configurar({ post: 201, del: 500 })
   const f = filho()
   try {
@@ -148,7 +137,6 @@ test('ZD4: DELETE recusado (500) ao sair: sai 1 e diz que não conseguiu remover
 
 for (const sinal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
   test(`ZD5: ${sinal} remove a rota com a credencial da zona e sai 0`, async (t) => {
-    if (pular(t)) return
     configurar({ post: 201, del: 204 })
     const f = filho()
     try {
@@ -163,7 +151,6 @@ for (const sinal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
 }
 
 test('ZD7: fim da entrada depois de "no ar" remove a rota e sai 0', async (t) => {
-  if (pular(t)) return
   configurar({ post: 201, del: 204 })
   const f = filho()
   try {
@@ -176,7 +163,6 @@ test('ZD7: fim da entrada depois de "no ar" remove a rota e sai 0', async (t) =>
 })
 
 test('ZD8: Enter derruba a zona e mantém a rota; Enter de novo a traz de volta; o SIGINT seguinte remove uma vez', async (t) => {
-  if (pular(t)) return
   configurar({ post: 201, del: 204 })
   const f = filho()
   try {
@@ -197,7 +183,6 @@ test('ZD8: Enter derruba a zona e mantém a rota; Enter de novo a traz de volta;
 })
 
 test('ZD9: DELETE 404 (rota já ausente) é tolerado: SIGINT sai 0 e diz "Rota removida"', async (t) => {
-  if (pular(t)) return
   configurar({ post: 201, del: 404 })
   const f = filho()
   try {
@@ -210,10 +195,9 @@ test('ZD9: DELETE 404 (rota já ausente) é tolerado: SIGINT sai 0 e diz "Rota r
 })
 
 test('ZD6: derrubar() fecha a zona e mantém a rota (nenhum DELETE); voltar() a traz de volta; remover() com 500 lança', async (t) => {
-  if (pular(t)) return
   configurar({ post: 201, del: 204 })
   const { subirZonaDemo } = await import('../showcase/zona-demo.mjs')
-  const demo = await subirZonaDemo()
+  const demo = await subirZonaDemo({ porta: PORTA_DEMO })
   try {
     await demo.derrubar()
     assert.equal(falsa.recebidas.filter((r) => r.metodo === 'DELETE').length, 0, 'derrubar não pode remover a rota')
@@ -225,7 +209,7 @@ test('ZD6: derrubar() fecha a zona e mantém a rota (nenhum DELETE); voltar() a 
   await portaLivre()
 
   configurar({ post: 201, del: 500 })
-  const outra = await subirZonaDemo()
+  const outra = await subirZonaDemo({ porta: PORTA_DEMO })
   try {
     await assert.rejects(outra.remover(), /recusou remover/)
     await portaLivre()
