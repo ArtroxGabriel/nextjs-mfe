@@ -50,11 +50,11 @@ export async function subirZonaDemo({ id = 'demo', porta = 3009, hosts = ['127.0
   }
 }
 
-async function principal() {
+export async function principal({ porta = 3009 } = {}) {
   const ms = Number(process.env.ERP_MAPA_ZONAS_TTL_MS ?? 30000)
   const prazo = `em até um TTL do mapa mais uma releitura${Number.isFinite(ms) && ms > 0 ? ` (TTL de ${ms / 1000} s)` : ''}`
   let demo
-  try { demo = await subirZonaDemo() } catch (e) {
+  try { demo = await subirZonaDemo({ porta }) } catch (e) {
     if (!(e instanceof ErroDeUso)) throw e
     console.error(e.message)
     process.exit(1)
@@ -76,7 +76,7 @@ async function principal() {
   process.on('uncaughtException', (e) => { console.error(e.message); sair(1) })
   process.on('unhandledRejection', (e) => { console.error(e?.message ?? e); sair(1) })
 
-  console.log(`Zona demo no ar na porta 3009, rota registrada.
+  console.log(`Zona demo no ar na porta ${porta}, rota registrada.
 O shell relê o mapa de zonas de tempos em tempos (ERP_MAPA_ZONAS_TTL_MS), sem reiniciar.
 
 1. Entre no showcase com qualquer ator e abra ${demo.url}. A página aparece ${prazo}.
