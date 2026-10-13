@@ -14,6 +14,7 @@ import { pedir, entrar, iniciarLogin, menu, formularios, valorDoCookie, acaoPelo
 import { abrirNavegador, acharChrome, COMO_CONSEGUIR_UM_NAVEGADOR } from './navegador.mjs'
 import { varrerAplicacoes } from './saida-de-rede.mjs'
 import { subirZonaDeTeste } from './zona-de-teste.mjs'
+import { verificarLoginComAcesso } from './login-acesso.mjs'
 
 let ambiente
 // zona de teste do C3 (L9b, L9c, L10, L11), subida sob demanda por `zona9DeTeste()`
@@ -1376,6 +1377,12 @@ test('v2 fora e v1 no ar: as apps nao voltam a v1; servico indisponivel, nunca c
   assert.equal((await pedir('/zona2', { cookie: ana })).status, 200)
 })
 
+for (const caso of ['desligado', 'suspenso', 'sem-modulos']) {
+  test(`retorno dev consulta acesso antes de gravar: ${caso}, sem sessao provisoria`, async () => {
+    await verificarLoginComAcesso({ ambiente, modo: 'dev', caso })
+  })
+}
+
 test('pessoa desligada na gestao de acesso vai ao login na requisicao seguinte, nunca ao conteudo', async () => {
   const davi = (await entrar('davi')).cookie
   assert.equal((await pedir('/zona1', { cookie: davi })).status, 200)
@@ -1544,12 +1551,13 @@ test('D2: dominio com IDP_EMISSOR (pela lista de inclusao) aceita o access token
 
 test('D2 (ADR-0013, adendo 1): com IDP_EMISSOR, o registrar-manifesto das zonas segue funcionando e o token de servico so registra o proprio modulo', { timeout: 60_000 }, async () => {
   // gestão de acesso v2 avulsa em modo JWT; o IdP nem precisa estar no ar: o token de serviço não passa por ele
-  const PORTA = 4120
+  let PORTA
   const env = ambienteDoPapel('dominio', { ...process.env, IDP_EMISSOR: 'http://127.0.0.1:1/realms/erp' })
   const codigo = `import { criarGestaoDeAcessoV2 } from './src/gestao-acesso-v2/servidor.mjs'
     import { verificadorDoProcesso } from './src/base.mjs'
     if (!verificadorDoProcesso()) process.exit(2)
-    criarGestaoDeAcessoV2().listen(${PORTA}, '127.0.0.1', () => console.log('pronto'))`
+    const servidor = criarGestaoDeAcessoV2()
+    servidor.listen(0, '127.0.0.1', () => console.log(servidor.address().port))`
   const p = spawn('node', ['--input-type=module', '-e', codigo], { cwd: join(RAIZ, 'erp-dominio-stub'), env, stdio: ['ignore', 'pipe', 'inherit'] })
   const registrar = (zona, extra = {}) => new Promise((ok) => {
     const r = spawn('pnpm', ['registrar'], {
@@ -1559,7 +1567,8 @@ test('D2 (ADR-0013, adendo 1): com IDP_EMISSOR, o registrar-manifesto das zonas 
     r.once('exit', ok)
   })
   try {
-    await new Promise((ok, falha) => { p.stdout.once('data', ok); p.once('exit', (c) => falha(new Error(`gestao de acesso avulsa saiu com ${c}`))) })
+    await new Promise((ok, falha) => { p.stdout.once('data', (d) => { PORTA = Number(d.toString().trim()); ok() }); p.once('exit', (c) => falha(new Error(`gestao de acesso avulsa saiu com ${c}`))) })
+    assert.ok(Number.isInteger(PORTA) && PORTA > 0, 'porta efemera nao informada')
     assert.equal(await registrar('erp-zona-1'), 0, 'zona 1 nao registrou o proprio manifesto em modo JWT')
     assert.equal(await registrar('erp-zona-2'), 0, 'zona 2 nao registrou o proprio manifesto em modo JWT')
     assert.notEqual(await registrar('erp-zona-1', { ERP_TOKEN_SERVICO: 'svc.zona2' }), 0, 'svc.zona2 registrou o manifesto da zona 1')

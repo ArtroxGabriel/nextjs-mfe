@@ -29,6 +29,8 @@ import { createHash } from 'node:crypto'
 import { subir, SHELL, PORTAS_DE_DOMINIO } from '../../scripts/ambiente.mjs'
 import { pedir, valorDoCookie, keycloakNoAr, KEYCLOAK_EMISSOR, redisCru, monitorarRedis, loginNoKeycloak, entrarPeloKeycloak as entrarPeloKeycloakCompartilhado } from '../apoio.mjs'
 
+import { verificarLoginComAcesso } from '../login-acesso.mjs'
+
 const RAIZ_KC = new URL(KEYCLOAK_EMISSOR).origin
 const VIDA_S = Number(process.env.VERIFICAR_OIDC_TOKEN_VIDA_S ?? 20)
 const JANELA_S = Number(process.env.ERP_RENOVACAO_JANELA_S ?? 60)
@@ -144,6 +146,12 @@ describe('modo OIDC contra o Keycloak do showcase (ADR-0013)', { skip: motivoPar
     ambiente?.derrubar()
     await restaurarVida?.()
   })
+
+  for (const caso of ['desligado', 'suspenso', 'sem-modulos']) {
+    test(`retorno OIDC consulta acesso antes de gravar: ${caso}, sem sessao provisoria`, async () => {
+      await verificarLoginComAcesso({ ambiente, modo: 'oidc', caso })
+    })
+  }
 
   test('sem IDP de desenvolvimento: /login/dev nao existe', async () => {
     assert.equal((await pedir('/login/dev?state=x&nonce=y')).status, 404)

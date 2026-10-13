@@ -107,7 +107,9 @@ carregava CPF e papéis sem consumidor; o manifesto v2 usa funcionalidades relat
    sujeito, credencial de serviço no shell, cursor gravado só pelo shell e consumidor único. **Até o G5 a base
    não tem revogação ativa**: quem está dentro sai só quando a sessão acaba ou quando a página consulta `/v2/eu`.
 8. **D2 casa a pessoa por `sub`** (emenda o ADR-0013): `Sessao.sub` é o `sub` do IdP; o stub em modo JWT
-   identifica a v2 por `claims.sub`; o retorno do login chama `/v2/eu` antes de gravar e recusa `401`.
+   identifica a v2 por `claims.sub`; o retorno do login chama `/v2/eu` antes de gravar e recusa `401` (**implementado em 0.10.5**).
+   Usa o token recém-obtido pelo registro de destinos, sem sessão provisória; 3xx, 5xx, timeout e corpo
+   inválido falham sem gravar. Pessoa ativa sem módulos pode entrar; desligada e suspensa recebem `401`.
 9. **Versões e ordem:** G3 primeiro, contratos **0.4.0** e núcleo **0.9.0**, funcionando com token dev; D2 depois,
    núcleo 0.10.0.
 

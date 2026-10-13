@@ -88,7 +88,7 @@ a armadilha R1 da PoC não se repete aqui.
 | Pacote | Versão | O que tem | Quem usa |
 |---|---|---|---|
 | `@erp/contratos` | 0.2.1 | códigos de erro e mensagens; `ManifestoDeZona`, `ModuloPermitido`, `validarManifesto` | todos |
-| `@erp/nucleo` | 0.10.2 (as 4 apps) | kit de página e de Server Action `criarPaginas` em `@erp/nucleo/app` (ADR-0012); `criarNucleo`, registro de destinos, leitores de sessão (`sessaoArquivo`, `sessaoRedis`), fragmentos (`criarFragmento`, `responderFragmento`), `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell` (login, renovação com lock, logout), escritores de sessão, `identidadeDev`, `identidadeOidc` (`openid-client`, PKCE; ADR-0013) | shell e zonas (`/shell` só o shell) |
+| `@erp/nucleo` | 0.10.5 (as 4 apps) | kit de página e de Server Action `criarPaginas` em `@erp/nucleo/app` (ADR-0012); `criarNucleo`, registro de destinos, leitores de sessão (`sessaoArquivo`, `sessaoRedis`), fragmentos (`criarFragmento`, `responderFragmento`), `acessoHttp`, `criarProxy`, `pode`; em `@erp/nucleo/shell`: `criarNucleoDoShell` (login, renovação com lock, logout), escritores de sessão, `identidadeDev`, `identidadeOidc` (`openid-client`, PKCE; ADR-0013) | shell e zonas (`/shell` só o shell) |
 | `@erp/moldura` | 0.4.0 | `<Moldura>` (topo, menu com `aria-current`, host de toast), `emitirToast`, flash, `FormularioDeAcao`, `ServicoIndisponivel`, `ErroGlobal`; em `@erp/moldura/servidor`: `criarMolduraDoServidor` (menu, toast e envelope visual da Server Action) | shell e zonas |
 
 Publicados no Verdaccio local (`:4873`). Cada aplicação é um repositório com lockfile próprio.
@@ -108,13 +108,18 @@ sequenceDiagram
     S->>ST: grava a transação de login (uso único)
     S-->>N: 303 para o IdP (com IDP_EMISSOR) ou /login/dev · Set-Cookie __Host-erp-login
     N->>S: GET /api/auth/retorno?state&code (ou &usuario no dev)
-    S->>ST: consome a transação; grava { sub, nome, tokens, expira } — só o shell
+    S->>ST: consome a transação (uso único)
+    Note over S: conclui no IdP; token recém-obtido fica no núcleo
+    S->>GA: GET /v2/eu pelo registro (Bearer recém-obtido)
+    GA-->>S: acesso efetivo; 401 recusa, falha impede gravação
+    Note over S: pessoa ativa sem módulos pode entrar; sem sessão provisória
+    S->>ST: só após acesso válido: grava { sub, nome, tokens, expira } — só o shell
     S-->>N: 303 · Set-Cookie __Host-session=<uuid> HttpOnly Secure
     N->>S: GET /zona1/relatorios
     S->>Z: repasse pelo gateway de documento (cookie repassado)
     Note over Z: camada 1 — proxy: cookie existe? senão 307 /login
     Z->>ST: lê a sessão pelo id (modo leitura)
-    Z->>GA: GET /v1/modulos-permitidos (Bearer do usuário)
+    Z->>GA: GET /v2/eu (Bearer do usuário)
     Note over Z: camada 2 — módulo na lista? senão 404
     Z->>A: GET /v1/recursos (destino do registro)
     A-->>Z: projeção do ator (custo só para FINANCEIRO)
