@@ -1,6 +1,6 @@
 # Retomada: G5 em planejamento (2026-10-13)
 
-**Retomado em 2026-10-13 a pedido do humano ("avalie o processo e continue").** Gate local do P1 aprovado em 2026-10-12; P1 operacional e envio seguem esperando o humano. O G5 (revogação ativa por `/v2/eventos`) começou: o Codex escreve o plano em `docs/superpowers/plans/2026-10-13-g5-revogacao-ativa.md`; o orquestrador revisa o desenho antes de despachar a implementação.
+**Retomado em 2026-10-13 a pedido do humano ("avalie o processo e continue").** Gate local do P1 aprovado em 2026-10-12; Envio feito; P1 operacional segue esperando o humano. O G5 (revogação ativa por `/v2/eventos`) começou: o Codex escreve o plano em `docs/superpowers/plans/2026-10-13-g5-revogacao-ativa.md`; o orquestrador revisa o desenho antes de despachar a implementação.
 
 **Sessão vizinha ativa** em `~/Documents/sisbin-planejamento-local` (Claude + Codex, padrão de erros): regras de isolamento em `AMBIENTE.md`, última seção.
 
@@ -29,7 +29,7 @@ Handoffs em `.agents/auditor_p1_4` e `.agents/worker_p1_4`; os das iterações 1
 
 ## Pendências
 
-1. **Envio:** commits locais não enviados. Ordem: `erp-nucleo` (df5b0f4) e `erp-shell` (bd51363) antes do principal. Aguarda confirmação do humano.
+1. **Envio:** feito pelo humano em 2026-10-13 (`erp-nucleo` df5b0f4, `erp-shell` bd51363, principal 0f51c79; `pre-push` com submódulos e lockstep verdes).
 2. **P1 operacional:** registro oficial com política de imutabilidade, migração dos tarballs canônicos sem trocar bytes, reconciliação das integridades e uma execução verde do CI remoto. Precisa de endereço e credenciais do humano.
 3. Lockfiles soltos de `erp-moldura` e `erp-dominio-stub`: fora de commit; reconciliar só com o registro canônico.
 4. Diretórios temporários de teste em `/tmp` (`espera-*`, `fronteira-*`, `tx-*`, `erp-sessoes-*`, `app-*` e afins) não foram apagados: o projeto vizinho roda testes com os mesmos prefixos e não dá para atribuir a origem com segurança.
