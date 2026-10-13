@@ -1,6 +1,10 @@
 # Retomada: G5 em planejamento (2026-10-13)
 
-**Retomado em 2026-10-13 a pedido do humano ("avalie o processo e continue").** Gate local do P1 aprovado em 2026-10-12; envio feito; P1 operacional segue esperando o humano. O G5 (revogação ativa por `/v2/eventos`) começou: o Codex escreve o plano em `docs/superpowers/plans/2026-10-13-g5-revogacao-ativa.md`; o orquestrador revisa o desenho antes de despachar a implementação.
+**Retomado em 2026-10-13 a pedido do humano ("avalie o processo e continue").** Gate local do P1 aprovado em 2026-10-12; envio feito; P1 operacional segue esperando o humano. **Foco na entrega (2026-10-13: "não se perder do plano").** O objetivo da base foi atingido em 2026-10-07 (F1 a F7 no showcase, tag `gate-e3e5-aprovado`). G5, G4, C2, B2 e a Lista 2 ficam depois da entrega e não começam sem decisão. O plano do G5 está engavetado em `docs/superpowers/plans/2026-10-13-g5-revogacao-ativa.md`, com o recorte no topo.
+
+**Desvio achado no planejamento do G5:** `concluirLogin` (`erp-nucleo/src/fabricas/criarNucleo.ts`) grava a sessão sem consultar `/v2/eu`, embora o ADR-0014, adendo 1, item 8, diga que o retorno do login consulta e recusa `401`. Pessoa desligada consegue sessão nova; a página seguinte nega pela camada 2 e o domínio decide, então não vaza dado, mas o código diverge do ADR.
+
+**O que falta para entregar:** (1) P1 operacional: CI remoto verde, que depende de onde fica o registro; (2) fechar #9, #10 e #19 no GitLab com os textos do `ATIVIDADES.md`; (3) decidir o desvio acima: corrigir agora ou registrar no ADR como limite.
 
 **Sessão vizinha ativa** em `~/Documents/sisbin-planejamento-local` (Claude + Codex, padrão de erros): regras de isolamento em `AMBIENTE.md`, última seção.
 
