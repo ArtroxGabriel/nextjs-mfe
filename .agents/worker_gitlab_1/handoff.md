@@ -1,0 +1,10 @@
+# worker_gitlab_1 (final), 2026-10-13
+
+Estrutura do P1 para o Package Registry do GitLab, sem ativação. Executado pelo Codex; a retomada perdeu sockets (EPERM), então a regressão, as mutações G1 a G10 e duas correções foram feitas pelo orquestrador.
+
+- Decisões pela documentação oficial do GitLab: só o endpoint de projeto publica; escopo do namespace raiz exigido só no endpoint de instância; só existe metadata do pacote (sem GET por versão); duplicado npm recebe 403; metadata traz SHA-1, então o SHA-512 é provado baixando o tarball; request forwarding deve ser desligado; tarball por redirect de object storage segue o limite D34 (exige `proxy_download`); CI no GitLab exige os submódulos espelhados na mesma instância.
+- Código: `base/scripts/pacotes.mjs` (endereço de publicação separado `ERP_NPM_REGISTRY_PUBLICACAO`, token de leitura na instalação e no caminho dos tarballs, token de escrita só na publicação, origem do commit obrigatória fora do GitLab), `.gitlab-ci.yml` desligado por padrão (`ERP_GITLAB_CI_ATIVAR=1`), roteiro em `docs/REGISTRO-E-CI.md`, adendo aceito no ADR-0016. Principal `ecf4598` e `5477c64`.
+- Contagens: scripts 91/0/0; estática 52/0/0; lockstep ok.
+- Mutações: G1 GET por versão, G2 403 duplicado como sucesso, G3 caminho da metadata, G4 caminho do `_authToken`, G5 publicar no endereço de instalação, G6 HTTP externo, G7 seguir redirect, G8 SHA-1 sem provar SHA-512, G9 origem opcional fora do GitLab, G10b instalação sem o caminho dos tarballs: todas pegas. G10a (token de escrita no caminho de leitura) é equivalente: dentro de `publicar` o registro já é o de publicação.
+- Achados do orquestrador: origem do commit tinha ficado opcional para todo registro; token gravado nos dois endereços; a correção do Codex foi exagerada e quebrou a instalação real por grupo (o teste unitário contradizia a prova com pnpm, e os dois nunca tinham rodado juntos).
+- Falta para ativar: espelhar os repositórios na instância, criar o projeto do registro, desligar forwarding, proibir duplicados, criar tokens e variáveis, migrar os tarballs canônicos sem trocar bytes, provar tarball sem redirect e uma execução verde do CI.

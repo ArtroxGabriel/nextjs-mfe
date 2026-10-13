@@ -4,7 +4,9 @@
 
 **Desvio achado no planejamento do G5:** `concluirLogin` (`erp-nucleo/src/fabricas/criarNucleo.ts`) grava a sessão sem consultar `/v2/eu`, embora o ADR-0014, adendo 1, item 8, diga que o retorno do login consulta e recusa `401`. Pessoa desligada consegue sessão nova; a página seguinte nega pela camada 2 e o domínio decide, então não vaza dado, mas o código diverge do ADR.
 
-**O que falta para entregar:** (1) P1 operacional: CI remoto verde, que depende de onde fica o registro; (2) fechar #9, #10 e #19 no GitLab com os textos do `ATIVIDADES.md`; (3) decidir o desvio acima: corrigir agora ou registrar no ADR como limite.
+**O que falta para entregar (atualizado 2026-10-13 noite):** (1) ~~fechar #9, #10 e #19~~ feito: GitLab #120, #121, #132, #135 e #136 fechadas; (2) desvio do login corrigido no núcleo 0.10.5 (`.agents/worker_login_1/handoff.md`), **falta o gate**; (3) P1 preparado para o registro do GitLab, inativo (`.agents/worker_gitlab_1/handoff.md`); a ativação depende do humano: espelhos dos repositórios na instância, projeto do registro, tokens e variáveis.
+
+**Lição do Codex nesta rodada:** entrega código bom, mas declara pronto sem rodar a prova que importa (OIDC nunca rodou; teste unitário contradizia a prova com pnpm). O orquestrador roda as suítes ponta a ponta e as mutações antes de aceitar. `codex exec resume` não herda `-s` nem `--add-dir`: repassar as opções na retomada.
 
 **Sessão vizinha ativa** em `~/Documents/sisbin-planejamento-local` (Claude + Codex, padrão de erros): regras de isolamento em `AMBIENTE.md`, última seção.
 
