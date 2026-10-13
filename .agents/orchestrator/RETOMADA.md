@@ -1,6 +1,13 @@
-# Retomada: pausa em 2026-10-12, gate local do P1 aprovado
+# Retomada: G5 em planejamento (2026-10-13)
 
-**Pausado por pedido explícito do humano. Não retomar até novo pedido.** Nenhum processo desta sessão ficou rodando; o scratchpad da sessão (prompts e evidência bruta do Codex) foi apagado; o que importa está nos handoffs versionados em `.agents/`.
+**Retomado em 2026-10-13 a pedido do humano ("avalie o processo e continue").** Gate local do P1 aprovado em 2026-10-12; P1 operacional e envio seguem esperando o humano. O G5 (revogação ativa por `/v2/eventos`) começou: o Codex escreve o plano em `docs/superpowers/plans/2026-10-13-g5-revogacao-ativa.md`; o orquestrador revisa o desenho antes de despachar a implementação.
+
+## Avaliação do processo (2026-10-13)
+
+- **Evidência no scratchpad se perde:** o GATE_STATUS e o ATIVIDADES apontavam para o scratchpad apagado do worker_p1_3. Regra prática: o resumo e as contagens entram no handoff versionado em `.agents/<nome>/` antes de apagar o scratchpad; nunca citar caminho de `/tmp` em documento versionado.
+- **Tabela de mutações estreita:** o worker pegou M1 a M14, mas o auditor achou A02, A09 e A10 fora da tabela (ambiente herdado por filho, rechecagem antes de efeito, casamento exato de host). O plano do G5 declara também mutações de fronteira.
+- **Pastas de gates fechados ainda na raiz de `.agents/`** (`*_p1_1` a `*_p1_3`, `challenger_c3_1`, `seguranca_2026-09-22`): a remoção com `git rm` foi recusada pelo classificador do auto mode; tag `historico-2026-10-13` criada para a remoção; falta o humano autorizar.
+- **Documentos de retomada defasados** (topo do ATIVIDADES em 2026-10-09, CODEX.md dizendo gate não aprovado): corrigidos.
 
 **Gate local do P1 aprovado na iteração 4** (auditor_p1_4, PASS), tag local `gate-p1-local-aprovado`. P1 operacional segue aberto.
 

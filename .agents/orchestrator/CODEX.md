@@ -1,11 +1,9 @@
-# Handoff para o Codex (2026-10-09)
+# Handoff para o Codex (2026-10-13)
 
-**Pausado por pedido explícito do humano.** Não iniciar implementação ou testes até novo pedido. Todos os processos próprios foram encerrados.
+O estado atual está em `RETOMADA.md`; este arquivo só registra como o Codex entra no processo.
 
-Ler `RETOMADA.md` e `ledger/2026-10-09-p1-registro-e-ci/progress.md`. P1 iniciado, implementação parcial salva; gate não aprovado. Shell local `bd51363`, não enviado; principal fixa esse commit local para preservar o trabalho. Lockfiles preexistentes de moldura/stub fora de commit.
-
-Próximo passo autorizado apenas numa retomada: provar autenticação pnpm real (view com npmrcAuthFile camel/kebab retornou 401), corrigir M3 do executor de mutações, investigar falha de teto de tempo do núcleo e repetir unidades. Depois completar challenger/auditor e gate. Registro oficial, hashes canônicos e CI remoto continuam pendentes.
-
-Handoffs em `.agents/revisor_p1_1/handoff.md` e `.agents/challenger_p1_1/handoff.md`. O processo geral está em `AGENTS.md`, `LEIA-PRIMEIRO.md`, `RETOMADA.md` e `AMBIENTE.md`. As equivalências antigas para ferramentas podem ser lidas no commit `958c4a8` deste arquivo; não usar seu estado antigo para iniciar trabalho durante a pausa.
-
-Não tocar `~/Documents/sisbin-planejamento-local` nem seus processos. Não houve Docker nesta sessão. Submódulo deve ser enviado antes do principal somente após as verificações exigidas; os commits da pausa são locais.
+- Desde 2026-10-12 o orquestrador (Claude) despacha o trabalho para o Codex local com `codex exec` em sandbox `workspace-write`. `.git/` e `.agents/` do principal são somente leitura na sandbox: o Codex commita nos submódulos quando autorizado e entrega os textos; o orquestrador aplica e commita o principal.
+- Antes de qualquer trabalho: `AGENTS.md`, `LEIA-PRIMEIRO.md`, `RETOMADA.md`, `AMBIENTE.md` e o plano em curso em `docs/superpowers/plans/`.
+- Gate local do P1 aprovado em 2026-10-12 (iteração 4). Trabalho atual: G5 (revogação ativa).
+- Não tocar `~/Documents/sisbin-planejamento-local` nem seus processos. Submódulo é enviado antes do principal e só com confirmação do humano.
+- As equivalências antigas para ferramentas estão no commit `958c4a8` deste arquivo.

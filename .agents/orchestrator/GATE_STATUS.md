@@ -495,7 +495,7 @@ Veredito independente vigente: REPROVA, pelos handoffs de revisor_p1_2 e challen
 Scripts 60 pass, 0 fail, 0 skip; estática 52 pass, 0 fail, 0 skip; lockstep 0.10.4 nas quatro apps, saída 0. Nenhum submódulo alterado, portanto task test não foi repetido nesta correção.
 M1 a M14 detectadas em cópia isolada, zero sobreviventes. Baselines: 43 pass, 0 fail, 0 skip. Execuções com mutações: 123 testes, 103 pass, 20 falhas esperadas, 0 skip, 0 cancelled.
 
-Evidência: /tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/worker_p1_3/handoff.md, contagens.json, mutacoes-finais/resultados.json e regressao-*.log. Commits desta rodada: zero. Aplicar propostas de documentos e commitar principal, sem lockfiles preexistentes; novo gate ainda necessário. Registro oficial e CI remoto não executados.
+Evidência: a evidência bruta do worker_p1_3 ficava no scratchpad da sessão, apagado em 2026-10-12; os números acima são o registro que resta. Commits desta rodada: zero. Aplicar propostas de documentos e commitar principal, sem lockfiles preexistentes; novo gate ainda necessário. Registro oficial e CI remoto não executados.
 
 Ao aplicar: substituir as referências anteriores a o relatório da retomada (retirado; versão em eab0e38) pelo ledger e pelo scratchpad de evidência anterior. Preservar os vereditos históricos.
 

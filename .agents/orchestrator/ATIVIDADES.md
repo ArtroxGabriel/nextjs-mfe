@@ -4,7 +4,7 @@
 > atualiza ao fim de todo gate, task ou decisão; o humano copia para o GitLab e marca a coluna
 > "No GitLab?". Regras de quando avisar: `MANUTENCAO-GITLAB.md`.
 >
-> Última revisão: **2026-10-09 (P1 iniciado e pausado; gate incompleto; #133 segue em andamento; fechar #9, #10 e #19 pendente)**.
+> Última revisão: **2026-10-13 (gate local do P1 aprovado em 2026-10-12; #133 segue em andamento até o P1 operacional; G5 iniciado; fechar #9, #10 e #19 pendente)**.
 
 ## 1. Como ler e manter
 
@@ -483,7 +483,7 @@ Resultados finais (pass/fail/skip): unidades 579/0/0; estática 52/0/0; scripts 
 Scripts 60 pass, 0 fail, 0 skip; estática 52 pass, 0 fail, 0 skip; lockstep 0.10.4 nas quatro apps, saída 0. Nenhum submódulo alterado, portanto task test não foi repetido nesta correção.
 M1 a M14 detectadas em cópia isolada, zero sobreviventes. Baselines: 43 pass, 0 fail, 0 skip. Execuções com mutações: 123 testes, 103 pass, 20 falhas esperadas, 0 skip, 0 cancelled.
 
-Gate ainda reprovado até revisão nova; nenhuma mensagem externa enviada. Registro oficial, migração canônica e CI remoto continuam pendentes. Nenhum commit criado pelo worker; principal fica no working tree para o orquestrador. Evidência e propostas: /tmp/claude-1000/-home-wilson-castro-Documents-projects-mira-nextjs-mfe/c3ace712-bc26-43d0-aa52-376d9e480ce4/scratchpad/codex/worker_p1_3/handoff.md. Corrigir referências anteriores ao relatório retirado ao aplicar este texto.
+Gate ainda reprovado até revisão nova; nenhuma mensagem externa enviada. Registro oficial, migração canônica e CI remoto continuam pendentes. Nenhum commit criado pelo worker; principal fica no working tree para o orquestrador. A evidência bruta ficava no scratchpad da sessão, apagado em 2026-10-12.
 
 ## P1 (#133): gate local aprovado em 2026-10-12
 
