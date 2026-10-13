@@ -4,7 +4,7 @@
 > atualiza ao fim de todo gate, task ou decisão; o humano copia para o GitLab e marca a coluna
 > "No GitLab?". Regras de quando avisar: `MANUTENCAO-GITLAB.md`.
 >
-> Última revisão: **2026-10-13 (gate local do P1 aprovado em 2026-10-12; #133 segue em andamento até o P1 operacional; G5 iniciado; fechar #9, #10 e #19 pendente)**.
+> Última revisão: **2026-10-13 (gate local do P1 aprovado em 2026-10-12; #133 segue em andamento até o P1 operacional; fechadas no GitLab #120, #121, #132, #135 e #136; G5 engavetado; P1 rumo ao registro do GitLab)**.
 
 ## 1. Como ler e manter
 
@@ -20,11 +20,9 @@
 
 | # | Título | Estado real | Ação | No GitLab? | Evidência |
 |---|---|---|---|---|---|
-| 10 | Implementar composição por fragmentos | **entregue**: zona 1 embute o bloco de tarefas da zona 2 por fragmento; shell recusa `_fragmento` do navegador; gate do C1 aprovado (2026-10-06, iteração 3) | **fechar** com o comentário de §3 | pendente (fechamento; #121 criada em 2026-09-23) | ADR-0011; `erp-nucleo` `1841771` |
 | 11 | Centralizar o tempo real no shell | **zona travada (D7) entregue**: teto `ERP_ZONA_TETO_MS` (10 s), gate aprovado (2026-10-06); SSE (C2) depois do objetivo | manter; tirar a dependência da #2 | feito (2026-09-23, #122) | `alvo.md` §6 (SSE) |
 | 12 | Publicar o pacote visual @erp/ui | não iniciado; depende de medir duplicação de bundle | manter | | `alvo.md` §6 |
 | 14 | Definir estratégia de publicação e compatibilidade | submódulos **feitos**; hook `pre-push` que recusa submódulo não enviado **feito** (`base/scripts/checar-envio.mjs`, provado com commit só local); **gate de lockstep do núcleo feito** (`base/scripts/verificar-lockstep.mjs`, no `pre-push`, provado com divergência real); falta registro único ou publicação pelo CI em 2026-09-22 as duas máquinas alternaram commits só de hash de lockfile, cada um quebrando a instalação da outra; paliativo: `task pacotes:alinhar-hashes` e não commitar hash local | acrescentar critérios: gate de lockstep no CI, registro único, nunca republicar a mesma versão,  checar submódulo não enviado antes do push, mapa de zonas vindo do domínio de acesso | feito (2026-09-23, #125; segue em #133) | ADR-0010; `AMBIENTE.md` §1–2; `4eb128b` |
-| 19 | Entregar o showcase da base com mocks, Keycloak e Redis *(nova)* | **entregue**: `task showcase` e `task showcase:oidc` sobem tudo; `showcase:conferir` nos dois modos; roteiro com uma linha por funcionalidade básica (F1 a F7) e 15 passos; `task showcase:verificar` prova F1 a F7 nos dois modos (7/7); `task showcase:zona-demo` mostra zona nova sem reiniciar o shell; gate do E3, E4 e E5 aprovado (2026-10-07, iteração 6) | **fechar** com o comentário de §3 | pendente (fechamento; #135 criada em 2026-09-23) | `GATE_STATUS.md`; tag `gate-e3e5-aprovado` |
 | 21 | Evoluir a gestão de acesso para o modelo de referência v2 *(nova)* | **modelo e mock prontos** (G1); **ADR-0014 + adendo 1** (G2); **alinhamento implementado** (G3: corte seco para a v2, acesso por funcionalidade, papel administrativo separado de módulo, zona de acesso com pessoas × módulos; ponta a ponta 62/62 nos dois modos); **G3 aprovado** no gate B1+D1+G3+K (iteração 9, 2026-09-28); faltam o showcase com os atores (G4) e a revogação ativa por eventos (G5, lacuna declarada) | em andamento | feito (2026-09-23, #137; comentário do gate em 2026-10-02) | ADR-0014 adendo 1; `GATE_STATUS.md` |
 | 18 | Centralizar a telemetria das zonas no shell *(nova)* **ampliar para "Trace contínuo sem dado pessoal (núcleo 8)"**: o elemento 8 é núcleo e está ausente (`alvo.md` §6) | gateway e propagação de trace **aprovados no gate do shell** (iteração 4); falta exportar spans (SDK OpenTelemetry, instalação aprovada; B2) | **criar** em andamento (texto em §3) | feito (2026-09-23, #134) | `erp-shell` `6de4939`; `alvo.md` §6 (Operação) |
 
@@ -48,7 +46,9 @@ Sugestão para o GitLab: criar agora com a etiqueta "refinamento" e o estado "bl
 
 | # | Título | Motivo | No GitLab? | Evidência |
 |---|---|---|---|---|
-| 9 | Trocar login e store de desenvolvimento por OIDC e Redis | **D1 e D2 aprovados**: sessão no Redis (gate B1+D1+G3+K, 2026-09-28) e login OIDC + PKCE com renovação proativa e lock (gate do D2, iteração 3, 2026-10-05; núcleo 0.10.2 nas 4 apps; ponta a ponta 118/118 com Redis e 5/5 contra o Keycloak; 55/55 mutações pegas). Seguem no repositório: D19-B (espera do perdedor com token vencido, decisão do humano), D17, D18 | **fechar** com o comentário de §3 | pendente | `GATE_STATUS.md` (gate D2, it.3); tag `gate-d2-aprovado`; ADR-0013 |
+| 10 | Implementar composição por fragmentos | entregue e fechada | feito (2026-10-13, #121) | ADR-0011; `erp-nucleo` `1841771` |
+| 19 | Entregar o showcase da base com mocks, Keycloak e Redis *(nova)* | entregue e fechada | feito (2026-10-13, #135) | `GATE_STATUS.md`; tag `gate-e3e5-aprovado` |
+| 9 | Trocar login e store de desenvolvimento por OIDC e Redis | **D1 e D2 aprovados**: sessão no Redis (gate B1+D1+G3+K, 2026-09-28) e login OIDC + PKCE com renovação proativa e lock (gate do D2, iteração 3, 2026-10-05; núcleo 0.10.2 nas 4 apps; ponta a ponta 118/118 com Redis e 5/5 contra o Keycloak; 55/55 mutações pegas). Seguem no repositório: D19-B (espera do perdedor com token vencido, decisão do humano), D17, D18 | fechada | feito (2026-10-13, #120) | `GATE_STATUS.md` (gate D2, it.3); tag `gate-d2-aprovado`; ADR-0013 |
 | 1 | Finalizar a validação da prova de conceito | substituída pela base; PoC removida | feito (2026-09-23, #112) | tag `poc-final`; `73bdc8b` |
 | 2 | Corrigir o encerramento do SSE | substituída (era da PoC); SSE da base é a #11 | feito (2026-09-23, #113) | `DEFERRED.md` D1 |
 | 4 | Padronizar a moldura compartilhada | entregue | feito (2026-09-23, #115) | `@erp/moldura` 0.3.0 |
@@ -59,8 +59,8 @@ Sugestão para o GitLab: criar agora com a etiqueta "refinamento" e o estado "bl
 | 13 | Criar o mapa central de zonas | entregue (`zonas.json`); resíduo foi para a #14 | feito (2026-09-23, #124) | `repos/erp-shell/zonas.json` |
 | 15 | Migrar para Next.js 16 e App Router | entregue | feito (2026-09-23, #126) | Next 16.3.4 + `proxy.ts` |
 | 16 | Documentar riscos e decisões em aberto | entregue | feito (2026-09-23, #127) | ADR-0009, ADR-0010, `alvo.md` §6 |
-| 3 | Isolar a falha de zona no shell da base | entregue: gate do shell (iteração 4) e gate B1+D1+G3+K (iteração 9, 2026-09-28) com B3 | feito (2026-10-02, #132) | `erp-zona-1` `677a79c`; `erp-shell` `d7a27a9`; `GATE_STATUS.md` |
-| 20 | Migrar as apps para o kit de app e fechar as verificações da spec | entregue: gate B1+D1+G3+K (iteração 9, 2026-09-28); 109/109 com Redis | feito (2026-10-02, #136) | ADR-0012; `GATE_STATUS.md` |
+| 3 | Isolar a falha de zona no shell da base | entregue: gate do shell (iteração 4) e gate B1+D1+G3+K (iteração 9, 2026-09-28) com B3 | feito (2026-10-02, #132; fechada em 2026-10-13) | `erp-zona-1` `677a79c`; `erp-shell` `d7a27a9`; `GATE_STATUS.md` |
+| 20 | Migrar as apps para o kit de app e fechar as verificações da spec | entregue: gate B1+D1+G3+K (iteração 9, 2026-09-28); 109/109 com Redis | feito (2026-10-02, #136; fechada em 2026-10-13) | ADR-0012; `GATE_STATUS.md` |
 | 17 | Validar a base genérica BFF + Multi-Zones *(nova)* | **criar já fechada**, para registro (texto em §3) | feito (2026-09-23, #138) | ADR-0009; `base/verificacao` 26/26; `GATE_STATUS.md` |
 
 As quatro atividades do anexo de `docs/historico/revisao/2026-09-15-revisao-base-generica.md` não
@@ -465,6 +465,7 @@ O que cada pedido de detalhamento precisa responder está na tabela da lista 2 d
 | 2026-10-07 (gate E3-E5) | E3, E4 e E5 entregues: `showcase:conferir` nos dois modos, roteiro F1 a F7, `showcase:verificar` 7/7 nos dois modos, zona de demonstração; gate aprovado na iteração 6 (tag `gate-e3e5-aprovado`). **Objetivo da base atingido.** **Fechar #19** com o comentário de §3; próximo passo no pedido `pedidos/2026-10-07-proximo-passo.md` |
 | 2026-10-07 (C3) | Gate do C3 aprovado na iteração 2: zona nova entra registrando a própria rota no deploy, sem editar arquivo do shell nem reiniciá-lo; zona travada devolve a página da base no teto (fecha o D7). Pendente no GitLab: comentário na #14 (entrega do mapa de zonas vivo, ADR-0015) e na #11 (página de zona travada dentro do teto, com o C3) |
 | 2026-10-08 | Sem mudança de atividade. Orquestrador passa para o Codex (`.agents/orchestrator/CODEX.md`). Seguem pendentes no GitLab: fechar #9, #10 e #19; comentários na #14 e na #11 |
+| 2026-10-13 | Fechadas no GitLab pelo agente, com os comentários de §3: #120 (#9), #121 (#10), #135 (#19), #132 (#3) e #136 (#20). G5 engavetado (foco na entrega). P1 segue com o registro do GitLab como alvo; desvio do login (ADR-0014 adendo 1 item 8) em correção |
 
 ### P1: texto de andamento para #133 (2026-10-09)
 
