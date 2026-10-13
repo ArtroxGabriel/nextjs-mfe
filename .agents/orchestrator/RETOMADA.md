@@ -1,6 +1,6 @@
 # Retomada: G5 em planejamento (2026-10-13)
 
-**Retomado em 2026-10-13 a pedido do humano ("avalie o processo e continue").** Gate local do P1 aprovado em 2026-10-12; Envio feito; P1 operacional segue esperando o humano. O G5 (revogação ativa por `/v2/eventos`) começou: o Codex escreve o plano em `docs/superpowers/plans/2026-10-13-g5-revogacao-ativa.md`; o orquestrador revisa o desenho antes de despachar a implementação.
+**Retomado em 2026-10-13 a pedido do humano ("avalie o processo e continue").** Gate local do P1 aprovado em 2026-10-12; envio feito; P1 operacional segue esperando o humano. O G5 (revogação ativa por `/v2/eventos`) começou: o Codex escreve o plano em `docs/superpowers/plans/2026-10-13-g5-revogacao-ativa.md`; o orquestrador revisa o desenho antes de despachar a implementação.
 
 **Sessão vizinha ativa** em `~/Documents/sisbin-planejamento-local` (Claude + Codex, padrão de erros): regras de isolamento em `AMBIENTE.md`, última seção.
 
