@@ -2,6 +2,8 @@
 
 **Retomado em 2026-10-13 a pedido do humano ("avalie o processo e continue").** Gate local do P1 aprovado em 2026-10-12; P1 operacional e envio seguem esperando o humano. O G5 (revogação ativa por `/v2/eventos`) começou: o Codex escreve o plano em `docs/superpowers/plans/2026-10-13-g5-revogacao-ativa.md`; o orquestrador revisa o desenho antes de despachar a implementação.
 
+**Sessão vizinha ativa** em `~/Documents/sisbin-planejamento-local` (Claude + Codex, padrão de erros): regras de isolamento em `AMBIENTE.md`, última seção.
+
 ## Avaliação do processo (2026-10-13)
 
 - **Evidência no scratchpad se perde:** o GATE_STATUS e o ATIVIDADES apontavam para o scratchpad apagado do worker_p1_3. Regra prática: o resumo e as contagens entram no handoff versionado em `.agents/<nome>/` antes de apagar o scratchpad; nunca citar caminho de `/tmp` em documento versionado.

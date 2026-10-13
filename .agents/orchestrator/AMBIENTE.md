@@ -182,3 +182,14 @@ Resultados finais (pass/fail/skip): unidades 579/0/0; estática 52/0/0; scripts 
 - Nas fixtures de pnpm 12.5.1, só npm_config_store_dir e npm_config_fetch_retries não bastaram para isolamento observado. Declarar storeDir/cacheDir/fetchRetries: 0 no pnpm-workspace.yaml da fixture evita reutilização de store e retries longos. Somente fixtures temporárias foram configuradas, sem configuração global.
 - Primeiras tentativas do teste novo falharam por cache npm somente leitura e por reuso/retry de fixture; corrigidas isolando cache e configuração. Baseline final e regressão verdes. Os recursos da tentativa interrompida foram encerrados; portas finais correspondem à observação inicial. Um snapshot intermediário incluiu serviços alheios transitórios em portas fixas; esta rodada só usou mocks efêmeros, sem administrar os demais.
 - Executores de mutação e sondas do gate ficam no scratchpad. Testes permanentes e suas fixtures ficam na suíte scripts:test; resultados essenciais ficam no ledger/GATE_STATUS.
+
+## Sessão vizinha: projeto em `~/Documents/sisbin-planejamento-local` (2026-10-13)
+
+Outra sessão (Claude + Codex) trabalha em paralelo nesta máquina e já se isola desta base. Do nosso lado:
+
+- **Não ler, escrever nem executar** nada naquele diretório nem nos repositórios que ele orquestra; não encerrar processos de outro diretório de trabalho (conferir com `readlink /proc/<pid>/cwd` antes de qualquer ação sobre processo).
+- **Portas dela, proibidas aqui:** 3100 a 3102, 4120, 4130, 4874 (registro npm dela), 5644, 5645, 6480, 8181, 8182, 8280. As nossas: 3000 a 3002, 4020, 4873 (Verdaccio), 5432, 7070, mais as do showcase.
+- **Docker:** só os projetos compose `repos` (Verdaccio) e `erp-showcase`; nunca `docker system/volume/network prune`, nem parar ou remover containers, redes ou volumes `sisbin-*`.
+- **Configuração global compartilhada:** não alterar `~/.npmrc`, `~/.codex/`, store do pnpm (`pnpm store prune`) nem configuração global de git; os `.npmrc` de lá apontam para o registro 4874.
+- **`/tmp`:** os testes das duas bases criam prefixos parecidos; não apagar diretórios temporários que não sejam comprovadamente desta sessão.
+- **Todo despacho ao Codex** repete estas regras no prompt.
