@@ -8,7 +8,7 @@
 
 - **Evidência no scratchpad se perde:** o GATE_STATUS e o ATIVIDADES apontavam para o scratchpad apagado do worker_p1_3. Regra prática: o resumo e as contagens entram no handoff versionado em `.agents/<nome>/` antes de apagar o scratchpad; nunca citar caminho de `/tmp` em documento versionado.
 - **Tabela de mutações estreita:** o worker pegou M1 a M14, mas o auditor achou A02, A09 e A10 fora da tabela (ambiente herdado por filho, rechecagem antes de efeito, casamento exato de host). O plano do G5 declara também mutações de fronteira.
-- **Pastas de gates fechados ainda na raiz de `.agents/`** (`*_p1_1` a `*_p1_3`, `challenger_c3_1`, `seguranca_2026-09-22`): a remoção com `git rm` foi recusada pelo classificador do auto mode; tag `historico-2026-10-13` criada para a remoção; falta o humano autorizar.
+- **Pastas de gates fechados ainda na raiz de `.agents/`:** removidas pelo humano em 2026-10-13 (`*_p1_1` a `*_p1_3`, `seguranca_2026-09-22`; o auto mode recusa `git rm`); estão na tag `historico-2026-10-13`. `challenger_c3_1` só tinha um log ignorado pelo git.
 - **Documentos de retomada defasados** (topo do ATIVIDADES em 2026-10-09, CODEX.md dizendo gate não aprovado): corrigidos.
 
 **Gate local do P1 aprovado na iteração 4** (auditor_p1_4, PASS), tag local `gate-p1-local-aprovado`. P1 operacional segue aberto.
@@ -25,7 +25,7 @@ Desde 2026-10-12 o trabalho é despachado para o Codex local (`codex exec`, sand
 | 3 | APROVA | APROVA (42 cenários, 5 subidas do shell) | VETO só por teste (A02, A09, A10) | 20e9d13 |
 | 4 | regra do veto só por teste | idem | PASS (826 pass, 0 fail, 6 skip; lockstep verde) | nenhuma |
 
-Handoffs em `.agents/{revisor,challenger,auditor}_p1_{2,3,4}` e `.agents/worker_p1_4`. Limite declarado: D34 (pnpm segue redirect de tarball sem enviar token; integridade protege os bytes).
+Handoffs em `.agents/auditor_p1_4` e `.agents/worker_p1_4`; os das iterações 1 a 3 estão na tag `historico-2026-10-13`. Limite declarado: D34 (pnpm segue redirect de tarball sem enviar token; integridade protege os bytes).
 
 ## Pendências
 
