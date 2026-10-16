@@ -1,6 +1,9 @@
-# Retomada: G5 em planejamento (2026-10-13)
+# Retomada: G5 implementado (2026-10-16)
 
-**Retomado em 2026-10-13 a pedido do humano ("avalie o processo e continue").** Gate local do P1 aprovado em 2026-10-12; P1 operacional e envio seguem esperando o humano. O G5 (revogação ativa por `/v2/eventos`) começou: o Codex escreve o plano em `docs/superpowers/plans/2026-10-13-g5-revogacao-ativa.md`; o orquestrador revisa o desenho antes de despachar a implementação.
+**Atualizado em 2026-10-16.** Gate local do P1 aprovado em 2026-10-12; P1 operacional e envio seguem esperando o humano. O **G5 (revogação ativa de sessão por `/v2/eventos`)** foi implementado conforme `docs/superpowers/plans/2026-10-13-g5-revogacao-ativa.md` (ADR-0014, decisão 5 e adendo 3):
+- `erp-dominio-stub`: `GET /v2/eventos` restrito a `Bearer svc.shell` (inclusive em modo JWT via `ROTA_DE_SERVICO`, `404` para outros tokens e `401` sem credencial), cursor `desde` validado (`422 CURSOR_INVALIDO`), e `sujeitos: [sub, login]` nos eventos que atingem uma pessoa, sem expor CPF (6/6 mutações mortas).
+- `@erp/nucleo` `0.10.5` (lockstep nas 4 apps): `EscritorDeSessao.removerPorSujeito(sub)` e `nucleo.sessao.removerSessoesDoSujeito(sub)` em `@erp/nucleo/shell`, com índice `erp:sujeito:<sha256(sub)>` no Redis fora de `erp:sessao:*` (7/7 mutações mortas).
+- `erp-shell`: destino `eventos-acesso`, `lib/revogacao-ativa.ts` (revoga sessões em `PESSOA_DESLIGADA` e `PESSOA_SUSPENSA`, avança cursor em `ACESSO_REVOGADO` sem derrubar a sessão, single-flight + lock `erp:eventos:lock` e cursor `erp:eventos:cursor` no Redis), integrado em `decidirAcaoDoProxy` e `proxy.ts` (9/9 mutações mortas).
 
 **Sessão vizinha ativa** em `~/Documents/sisbin-planejamento-local` (Claude + Codex, padrão de erros): regras de isolamento em `AMBIENTE.md`, última seção.
 
@@ -15,7 +18,7 @@
 
 ## Como foi executado
 
-Desde 2026-10-12 o trabalho é despachado para o Codex local (`codex exec`, sandbox `workspace-write`); o orquestrador aplica os textos e commita o principal, porque `.git/` e `.agents/` do principal são somente leitura na sandbox do Codex. Não tocar `~/Documents/sisbin-planejamento-local` nem seus processos.
+Desde 2026-10-12 o trabalho é despachado para o Codex local (`codex exec`, sandbox `workspace-write`) ou executado diretamente pelo agente principal; nunca tocar `~/Documents/sisbin-planejamento-local` nem seus processos.
 
 ## Gate do P1
 
@@ -29,8 +32,8 @@ Handoffs em `.agents/auditor_p1_4` e `.agents/worker_p1_4`; os das iterações 1
 
 ## Pendências
 
-1. **Envio:** commits locais não enviados. Ordem: `erp-nucleo` (df5b0f4) e `erp-shell` (bd51363) antes do principal. Aguarda confirmação do humano.
+1. **Envio:** commits locais não enviados (`erp-dominio-stub`, `erp-nucleo`, `erp-zona-1`, `erp-zona-2`, `erp-zona-acesso`, `erp-shell` antes do principal). Aguarda confirmação do humano.
 2. **P1 operacional:** registro oficial com política de imutabilidade, migração dos tarballs canônicos sem trocar bytes, reconciliação das integridades e uma execução verde do CI remoto. Precisa de endereço e credenciais do humano.
 3. Lockfiles soltos de `erp-moldura` e `erp-dominio-stub`: fora de commit; reconciliar só com o registro canônico.
 4. Diretórios temporários de teste em `/tmp` (`espera-*`, `fronteira-*`, `tx-*`, `erp-sessoes-*`, `app-*` e afins) não foram apagados: o projeto vizinho roda testes com os mesmos prefixos e não dá para atribuir a origem com segurança.
-5. Depois do P1: G5 e G4, na ordem encaminhada.
+5. **Próximos passos:** gate do G5 e G4 (showcase com os atores da v2).

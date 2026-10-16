@@ -1544,7 +1544,7 @@ test('D2: dominio com IDP_EMISSOR (pela lista de inclusao) aceita o access token
 
 test('D2 (ADR-0013, adendo 1): com IDP_EMISSOR, o registrar-manifesto das zonas segue funcionando e o token de servico so registra o proprio modulo', { timeout: 60_000 }, async () => {
   // gestão de acesso v2 avulsa em modo JWT; o IdP nem precisa estar no ar: o token de serviço não passa por ele
-  const PORTA = 4120
+  const PORTA = 4121
   const env = ambienteDoPapel('dominio', { ...process.env, IDP_EMISSOR: 'http://127.0.0.1:1/realms/erp' })
   const codigo = `import { criarGestaoDeAcessoV2 } from './src/gestao-acesso-v2/servidor.mjs'
     import { verificadorDoProcesso } from './src/base.mjs'
@@ -1569,7 +1569,8 @@ test('D2 (ADR-0013, adendo 1): com IDP_EMISSOR, o registrar-manifesto das zonas 
     })
     assert.equal((await servico('svc.idp', '/v2/primeiro-acesso', { cpf: '34236671255', sub: 'forjado' })).status, 401)
     assert.equal((await servico('svc.zona1', '/v2/decisoes', { pessoa: 'p-1', modulo: 'zona1', funcionalidade: 'painel.ver' })).status, 401)
-    assert.equal((await servico('svc.shell', '/v2/eventos')).status, 401)
+    assert.equal((await servico('svc.shell', '/v2/eventos')).status, 200)
+    assert.equal((await servico('svc.zona1', '/v2/eventos')).status, 404)
   } finally {
     p.kill('SIGTERM')
   }
