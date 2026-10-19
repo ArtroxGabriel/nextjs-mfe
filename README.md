@@ -13,7 +13,7 @@ sem código de domínio no núcleo. Decisões no
 | Zona 2 | `repos/erp-zona-2` | 3002 | domínio C; Server Action com `If-Match` que leva o toast para a zona 1 |
 | Zona de acesso | `repos/erp-zona-acesso` | 3003 | perfil × módulo, restrição e usuário × perfil |
 | Pacotes | `repos/erp-{contratos,nucleo,moldura}` | — | registro npm configurável; padrão local `:4873`, ativação compartilhada no P1 |
-| Domínios falsos | `repos/erp-dominio-stub` | 4001–4004, 4010 | A, B, C, plataforma e gestão de acesso |
+| Domínios falsos | `repos/erp-dominio-stub` | 4001–4004, 4020 | A, B, C, plataforma e gestão de acesso |
 | Ferramentas da base | `base/` | — | subir tudo (`scripts/`), verificação ponta a ponta (`verificacao/`), Verdaccio (`docker-compose.yml`) |
 
 ```mermaid
@@ -34,7 +34,7 @@ para a arquitetura final em [`docs/arquitetura/alvo.md`](docs/arquitetura/alvo.m
 - Node **24** e pnpm **11 ou mais novo**. Os testes usam o runner nativo e a remoção de tipos do
   Node; não há `tsx` nem `jest`.
 - Docker, para o Verdaccio.
-- Portas 3000–3003, 4001–4004, 4010 e 4873 livres.
+- Portas 3000–3003, 4001–4004, 4020 e 4873 livres.
 
 ## 2. Instalar e rodar
 

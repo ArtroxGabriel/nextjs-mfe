@@ -1359,24 +1359,6 @@ test('T1 (nucleo 8): o trace do navegador chega ao dominio, sem dado pessoal', a
 // ---------------------------------------------------------------------------------------------
 // Gestão de acesso v2 (ADR-0014, adendo 1): uma autoridade só, e fechada.
 
-test('v2 fora e v1 no ar: as apps nao voltam a v1; servico indisponivel, nunca conteudo', async () => {
-  const ana = (await entrar('ana')).cookie
-  const davi = (await entrar('davi')).cookie
-  await ambiente.derrubarDominio('gestao-acesso-v2')
-  await ambiente.subirDominio('gestao-acesso')   // a v1 concederia o painel e a zona 2
-  try {
-    for (const [cookie, caminho, conteudo] of [[ana, '/zona2', CONTEUDO_DE_MODULO['/zona2']], [davi, '/zona1', CONTEUDO_DE_MODULO['/zona1']]]) {
-      const r = await pedir(caminho, { cookie })
-      assert.match(r.html, /<h1>Serviço indisponível<\/h1>/, caminho)
-      assert.ok(!conteudo.test(r.html), `${caminho}: conteudo veio da v1`)
-    }
-  } finally {
-    await ambiente.derrubarDominio('gestao-acesso')
-    await ambiente.subirDominio('gestao-acesso-v2')
-  }
-  assert.equal((await pedir('/zona2', { cookie: ana })).status, 200)
-})
-
 for (const caso of ['desligado', 'suspenso', 'sem-modulos']) {
   test(`retorno dev consulta acesso antes de gravar: ${caso}, sem sessao provisoria`, async () => {
     await verificarLoginComAcesso({ ambiente, modo: 'dev', caso })
@@ -1578,7 +1560,8 @@ test('D2 (ADR-0013, adendo 1): com IDP_EMISSOR, o registrar-manifesto das zonas 
     })
     assert.equal((await servico('svc.idp', '/v2/primeiro-acesso', { cpf: '34236671255', sub: 'forjado' })).status, 401)
     assert.equal((await servico('svc.zona1', '/v2/decisoes', { pessoa: 'p-1', modulo: 'zona1', funcionalidade: 'painel.ver' })).status, 401)
-    assert.equal((await servico('svc.shell', '/v2/eventos')).status, 401)
+    assert.equal((await servico('svc.shell', '/v2/eventos')).status, 200)
+    assert.equal((await servico('svc.zona1', '/v2/eventos')).status, 404)
   } finally {
     p.kill('SIGTERM')
   }

@@ -1,203 +1,196 @@
-# G5: revogação ativa por GET /v2/eventos
+# G5: revogação ativa de sessão por `/v2/eventos`
 
-**Engavetado em 2026-10-13, por decisão de foco na entrega.** Recorte decidido para quando voltar: índice por sujeito, lease com dono, cursor depois do efeito, marca de revogação por sujeito, consulta a `/v2/eu` antes de gravar o login e prova dev e OIDC; lotes, importação de sessões antigas, teto de corpo e D24/D26 viram limite declarado. O G5 fica depois do objetivo e não começa sem nova decisão. O texto abaixo é a versão completa, anterior ao recorte.
+> **Para agentes:** use superpowers:subagent-driven-development (recomendado) ou superpowers:executing-plans, task por task. Passos com `- [ ]`. Cada task de código traz a tabela de **mutações declaradas**, incluindo mutações de fronteira (`<` contra `<=`, teto, primeiro e último item): o worker roda todas antes de pedir a revisão e registra no relatório qual teste pegou cada uma (regra do humano, 2026-10-07, `LEIA-PRIMEIRO.md`).
 
-**Autorização desta rodada:** escrever somente este plano (2026-10-13). Nenhuma task está executada. Não implementar, alterar produto, commitar, publicar pacotes ou enviar. `.git/` e `.agents/` do principal são somente leitura; não administrar `sisbin-planejamento-local` nem seus processos.
+**Objetivo:** fechar a lacuna de segurança declarada do ADR-0014 (decisão 5, adendo 1 item 7 e adendo 2): quando uma pessoa é desligada (`PESSOA_DESLIGADA`) ou suspensa (`PESSOA_SUSPENSA`) na gestão de acesso, o shell consome `GET /v2/eventos?desde=<cursor>` com credencial de serviço, em consumidor único e cursor persistido só pelo shell, e remove do store todas as sessões ativas daquela pessoa dentro do intervalo configurado, sem esperar o access token vencer nem uma página da zona consultar `/v2/eu`.
 
-**Objetivo:** o shell encerrar todas as sessões de um sujeito quando a gestão de acesso publicar desligamento, suspensão ou revogação de acesso, sem depender de navegação nem de nova consulta a `/v2/eu`. Provar com sessão no Redis tanto no login dev quanto no OIDC, inclusive com duas instâncias do shell e renovação em curso. Preservar os invariantes 1, 3, 4, 10, 12, 13 e 15. G4, deploy do registro npm e alterações de UI ficam fora desta fatia.
+**Decisões:** ADR-0014 (decisão 5, adendo 1 item 7 e adendo 2) e `docs/gestao-acesso/MODELO.md` (§4 e §5). Nenhuma instalação nova.
 
-**Desenho:** implementar a decisão 5 e o adendo 1, item 7, do ADR-0014, aproveitando a credencial introduzida pelo adendo 2 e o caminho de composição do ADR-0015. Revogação é núcleo: não é extensão opcional de desempenho. O núcleo fornece mecanismos genéricos de sessão, índice, cursor e exclusão entre consumidores; o shell conhece o contrato e os tipos da gestão de acesso. Nenhum catálogo de domínio entra no `@erp/nucleo`. A proposta de adendo 3 abaixo explicita a evolução do contrato e substitui o encerramento individual citado na decisão 5 por encerramento por sujeito. Não editar o ADR nesta rodada.
+**Arquitetura em uma linha por peça:**
+- a gestão de acesso (`erp-dominio-stub`) restringe `GET /v2/eventos` a `Bearer svc.shell` (inclusive em modo JWT via `ROTA_DE_SERVICO`, como `GET /v2/zonas`), devolvendo `404` para qualquer outro serviço ou pessoa e `401` sem credencial, e inclui `sujeitos: string[]` (`sub` do OIDC e `login` de desenvolvimento, sem repetir e sem expor CPF) nos eventos cujo alvo é uma pessoa;
+- o núcleo (`@erp/nucleo` 0.10.5, exclusivo em `@erp/nucleo/shell`) acrescenta `removerPorSujeito(sub: string): Promise<number>` em `EscritorDeSessao` (nos três stores: Redis, arquivo e memória) e `removerSessoesDoSujeito(sub: string): Promise<number>` em `nucleo.sessao` do shell, mantendo índice de chaves de sessão por sujeito fora de `erp:sessao:*` (inacessível pela ACL das zonas no Redis);
+- o shell (`erp-shell`) declara o destino `eventos-acesso` (`GET /v2/eventos?desde={desde}`, `credencial: 'servico'`) e mantém o consumidor `revogacaoAtiva` (`lib/revogacao-ativa.ts`), que a cada `ERP_EVENTOS_ACESSO_INTERVALO_MS` adquire lock de consumidor único (`SET NX PX` em `erp:eventos-acesso:lock`), lê o cursor de `erp:eventos-acesso:cursor`, busca os eventos novos, remove as sessões dos `sujeitos` de `PESSOA_DESLIGADA` e `PESSOA_SUSPENSA` (sem derrubar sessão em `ACESSO_REVOGADO`, pois revogação de módulo tira apenas o módulo e mantém a sessão viva na plataforma) e avança o cursor só quando todas as remoções da página têm sucesso;
+- o `proxy.ts` do shell dispara a sincronização de `revogacaoAtiva` antes de avaliar a sessão da requisição quando o intervalo venceu, garantindo que a pessoa desligada ou suspensa caia em `/login` (`307` com cookie limpo) mesmo em páginas ou rotas que não consultam `/v2/eu`.
 
-## Evidência do código lido
+## Restrições
 
-| Onde | Estado encontrado e consequência para o plano |
-|---|---|
-| `repos/erp-shell/lib/nucleo.ts`, `lib/mapa-zonas.ts`, `lib/configuracao.ts` | O destino `mapa-zonas` declara origem `ACESSO_URL`, `GET /v2/zonas`, credencial `servico` e timeout de 2000 ms. A fonte chama `nucleo.destino('mapa-zonas')`. `tokenDeServico` lê `ERP_TOKEN_SERVICO`; `svc.shell` só é padrão fora de produção. A guarda do mapa não é um cursor de eventos. |
-| `repos/erp-shell/instrumentation.ts`, `lib/subida.ts` | `register()` confere configuração no runtime Node da subida; hoje não inicia consumidor. O mapa começa na primeira requisição: copiar esse início preguiçoso não satisfaz revogação sem visita. |
-| `repos/erp-nucleo/src/portas/sessao.ts`, `adaptadores/sessao-redis.ts`, `shell/index.ts` | Escritor só em `/shell`; chaves `erp:sessao:sha256(id)`, TTL até `expiraEm`; não há índice de sujeito. `regravar` usa `SET XX PX`, que impede ressuscitar sessão apagada. Login usa `GETDEL`; lock de renovação é `SET NX PX`, sem liberação explícita, por sessão. |
-| `repos/erp-nucleo/src/fabricas/criarNucleo.ts` | Login conclui identidade e grava id novo; **não consulta acesso antes de gravar**, apesar do ADR-0014, adendo 1, item 8. Renovação relê depois de ganhar o lock, compara `sub` e usa `regravar`. API real de logout é `encerrarSessao(id)`, não `sessao.encerrar(id)`; chama o IdP após remover. Eventos devem remover localmente, sem logout remoto por sessão. |
-| `repos/erp-nucleo/src/adaptadores/identidade-dev.ts`, semente v2 e realm | Dev grava `sub = login` (`ana`, etc.); semente e OIDC usam UUIDs fixos `…a001` a `…a005`. Token dev leva login. Usar simplesmente `p.sub` no evento não alcançaria as sessões dev atuais. |
-| `repos/erp-dominio-stub/src/gestao-acesso-v2/servidor.mjs` | `registrar` grava `{ seq, em, tipo, autor, alvo, ...extra }`, **sem `sub`**. `seq = eventos.length + 1`. `/v2/eventos?desde` retorna **array**, com filtro `seq > desde` e somente `PESSOA_DESLIGADA`, `PESSOA_SUSPENSA`, `ACESSO_REVOGADO`; não há envelope, paginação, validação de cursor ou identificador de fluxo. `alvo` é id da pessoa; revogação inclui `acesso` e `modulo`. |
-| `repos/erp-dominio-stub/src/base.mjs`, contrato OpenAPI | Eventos aceitam qualquer `svc.*` em dev. Sem `ROTA_DE_SERVICO`, serviços são recusados em OIDC. `/v2/zonas` já tem esse marcador e confere `servico === 'shell'`. O esquema `Evento` não declara `sub`. |
-| `repos/erp-dominio-stub/src/armazem.mjs`, `base/scripts/ambiente.mjs` | Sem `DADOS_DIR`, reiniciar o mock volta à semente e reinicia a sequência. Com diretório, persiste por arquivo temporário + rename. O shell recebe ambiente inteiro; zona tem `ERP_TOKEN_SERVICO` na lista de inclusão para o próprio registro: herdar um token do shell pelo ambiente do controlador exige teste e correção explícitos. |
-| testes existentes e `DEFERRED.md` | `base.test.mjs` ainda exige 401 de `svc.shell` em eventos OIDC e 404 após revogar acesso, com reutilização do cookie depois de conceder de novo. G5 muda esses resultados. D27 contém achados já corrigidos pelo D20 e testes já existentes; não reabrir todos automaticamente. |
+- Invariantes do `AGENTS.md`, em especial 1 (nenhum dado sensível ou CPF em evento ou navegador), 3 (`import 'server-only'` em todo módulo de servidor), 4 (chamada a `/v2/eventos` pelo destino declarado `eventos-acesso` do núcleo, nunca `fetch` solto), 12 (erro normalizado sem vazar detalhe interno), 13 (sem cache de payload protegido) e 15 (remoção de sessão, índice por sujeito, cursor e lock de eventos existem apenas no shell / `@erp/nucleo/shell`, fora do alcance da ACL das zonas `~erp:sessao:*`).
+- Toda variável nova vai para `docs/CONFIGURACAO.md` no mesmo commit, com padrão seguro e validação de fronteira: `ERP_EVENTOS_ACESSO_INTERVALO_MS` (padrão `5000`, mínimo `100`, teto `60000`) e `ERP_EVENTOS_ACESSO_LOCK_MS` (padrão `10000`, mínimo `1000`, teto `120000`).
+- Núcleo **0.10.5** em lockstep nas 4 apps (`task lockstep`).
+- Comandos pelo `Taskfile.yml`.
+- Commits sem rodapé de coautoria (hook `no-ai-authorship`).
+- Documentos sem travessão, sem `·` ou `→` concatenando itens e sem emoji; parágrafo numa linha só.
 
-## Desenho detalhado
+## Mapa das tasks
 
-### Contrato e credencial
+| Task | Repositório | Entrega | Depende de |
+|---|---|---|---|
+| 1 | erp-dominio-stub | `GET /v2/eventos` restrito a `svc.shell` (inclusive em modo JWT) e `sujeitos` nos eventos de pessoa | nada |
+| 2 | erp-nucleo | `removerPorSujeito` nos três stores e `removerSessoesDoSujeito` no shell (núcleo 0.10.5) | nada |
+| 3 | erp-shell e zonas | lockstep `@erp/nucleo` 0.10.5 nas 4 apps e módulo `revogacao-ativa.ts` no shell com testes de unidade | 1, 2 |
+| 4 | erp-shell e principal | ligação no `proxy.ts` do shell, testes ponta a ponta de revogação ativa e documentos (`CONFIGURACAO.md`, `ADR-0014`, `RETOMADA.md`) | 3 |
 
-O shell registra um destino próprio `eventos-acesso`: origem `ACESSO_URL`, somente `GET`, modelo literal `/v2/eventos`, credencial `servico`, timeout configurado. Chamada: `nucleo.destino('eventos-acesso').get('/v2/eventos', { query: { desde, limite } })`. Não interpolar query no modelo, não adicionar `fetch` direto ou exceção à N8. Não há rota BFF de eventos nem endpoint de administração do consumidor.
+### Task 1: `GET /v2/eventos` restrito a `svc.shell` e `sujeitos` no evento (erp-dominio-stub)
 
-`ERP_TOKEN_SERVICO` do shell passa a ter leitura de mapa **e** eventos, sem mutação de gestão. No mock, apenas `svc.shell` lê eventos nos dois modos; credencial ausente/inválida recebe 401, pessoa ou outro serviço autenticado recebem 404. Marcar só essa rota com `ROTA_DE_SERVICO`, conferindo o serviço antes de cursor e processamento; não liberar globalmente serviços em JWT. A autoridade deve recusar `/v2/eu` para pessoa desligada ou suspensa, inclusive numa tentativa de login nova; ajustar a recusa de pessoa suspensa no mock, que hoje pode devolver 200 sem módulos. A ausência de módulos de uma pessoa ativa, especialmente administradora, continua legítima. `svc.shell` continua sendo simulação local, não credencial de produção. Atualizar a descrição já defasada de serviços OIDC no §4 de `CONFIGURACAO.md`.
+**Arquivos:** `repos/erp-dominio-stub/src/gestao-acesso-v2/servidor.mjs`, `repos/erp-dominio-stub/test/gestao-acesso-v2.test.mjs`, `repos/erp-dominio-stub/test/jwt-verificacao.test.mjs`, `repos/erp-dominio-stub/contratos/gestao-acesso-v2.openapi.yaml`.
 
-Evoluir a resposta para `{ fluxo, cursor, eventos: [{ seq, tipo, sub }] }`. `fluxo` é identificador opaco da geração do histórico, persistido com os dados; reinício com os mesmos dados o conserva. Eventos vêm em ordem crescente, no máximo `limite`. `cursor` é a sequência do último registro devolvido, ou `desde` se vazio; não é o fim de páginas ainda não entregues. Lacunas de sequência são permitidas. O feed projeta registros da auditoria para esses campos mínimos: não entrega CPF, papéis, autor, justificativa, acesso ou origem. A auditoria original permanece no domínio.
+**Interfaces produzidas:**
+- `GET /v2/eventos?desde={seq}` marcada com `ROTA_DE_SERVICO` (aceita token de serviço também quando `IDP_EMISSOR` está definido, como `GET /v2/zonas`).
+- Autorização de `GET /v2/eventos`: sem credencial responde `401`; qualquer credencial que não seja `svc.shell` (outro serviço como `svc.zona1`, `svc.idp`, `svc.bff`, ou qualquer pessoa como `admin1`, `auditor1`, `gnorte1`) responde `404` `{ codigo: 'NAO_ENCONTRADO' }` (a rota não existe para quem não é o shell).
+- Parâmetro `desde`: inteiro não negativo (`0` por padrão); devolve apenas eventos com `ev.seq > desde` (fronteira estrita `>`, nunca `>=`). Se `desde` não for inteiro `>= 0` (por exemplo negativo ou texto não numérico), responde `422` `{ codigo: 'CURSOR_INVALIDO' }`.
+- Enriquecimento de sujeito em `registrar(tipo, autor, alvo, extra)`: quando `alvo` é o `id` de uma pessoa cadastrada (`pessoa(alvo)` existe), o evento publicado em `estado.eventos` inclui `sujeitos: string[]` contendo os identificadores de sessão daquela pessoa (`[p.sub, p.login].filter(Boolean)` sem duplicatas), sem incluir CPF.
+- Em `jwt-verificacao.test.mjs`: `GET /v2/eventos` entra no conjunto `MANIFESTO` (rotas de serviço com teste dedicado em modo JWT), mantendo a recusa `401` para `svc.idp`, `svc.zona1` e `svc.bff` quando o token não é admitido ou `404` quando outro serviço válido tenta ler `/v2/eventos`, e provando que `svc.shell` recebe `200` em modo JWT.
 
-Guardar `sub` no registro **no momento da mudança**, usando a pessoa atingida, inclusive nas revogações indiretas de desligamento/transferência. Não reconstruir identidade na leitura do feed a partir de cadastro mutável. Registros antigos sem `sub` são enriquecidos uma vez a partir do vínculo conhecido; se não for possível, a ativação exige reconciliação, sem inventar login/CPF como sujeito. Pessoa sem identidade vinculada não pode ter sessão: sua alteração fica na auditoria e é projetada como registro informativo `SEM_SUJEITO_VINCULADO`, `sub: null`, sem encerramento. Evento dos três tipos de encerramento exige `sub` não vazio. Tipo futuro válido é registrado e ignorado pelo shell, avançando cursor; evento conhecido sem sujeito é corpo inválido, não tipo desconhecido.
+- [ ] **Passo 1: testes que reprovam** em `gestao-acesso-v2.test.mjs` e `jwt-verificacao.test.mjs`:
+  - `GET /v2/eventos`: sem credencial `401`; com `svc.zona1`, `svc.idp`, `admin1`, `auditor1`, `gnorte1` recebe `404`; só `svc.shell` recebe `200`;
+  - `desde`: `desde=0` traz todos (`seq >= 1`), `desde=k` exclui `seq <= k` e traz `seq === k + 1` (fronteira `>` vs `>=`), `desde=-1` ou `desde=abc` recebe `422 CURSOR_INVALIDO`;
+  - `PESSOA_DESLIGADA` e `PESSOA_SUSPENSA` (na confirmação periódica vencida ou desligamento) trazem `sujeitos` com o `sub` e o `login` da pessoa (inclusive para ator da base que tem `sub` UUID e `login`), e nunca trazem o CPF;
+  - em modo JWT (`jwt-verificacao.test.mjs`), `GET /v2/eventos` aceita `Bearer svc.shell` (`200`), recusa `svc.idp`, `svc.zona1` e `svc.acesso` (`404`) e recusa JWT de usuário (`404`).
+- [ ] **Passo 2: implementar** em `repos/erp-dominio-stub/src/gestao-acesso-v2/servidor.mjs` e atualizar `contratos/gestao-acesso-v2.openapi.yaml`.
+- [ ] **Passo 3: rodar testes** (`cd repos/erp-dominio-stub && pnpm test`) e ver passar.
+- [ ] **Passo 4: mutações declaradas** (aplicar no `src`, rodar `pnpm test`, registrar o teste que pegou e reverter):
 
-Validar inteiros seguros não negativos em `desde`, positivos em `limite` e `seq`; recusar NaN, frações, negativos, overflow e limite acima do teto com 422. O shell valida o envelope inteiro antes de efeitos: fluxo, tamanho, ordem, duplicatas, tipos e sujeitos, `seq > cursor salvo`, e cursor final coerente com a página. Página vazia não avança. Fluxo diferente, cursor regressivo ou resposta repetida não zera o checkpoint nem encerra ninguém: registra falha e tenta depois. Reiniciar/resetar a origem sem conservar o histórico não promete recuperar lacunas; recuperação exige reconciliação operacional explícita.
-
-### Sessões por sujeito, expiração e concorrência
-
-Adicionar ao escritor Redis um índice `sub -> hashes de ids de sessão`, equivalente ao índice por ids, sem guardar cookies válidos. Usar ZSET por `sha256(sub)`, membros `sha256(id)`, score `expiraEm`; nomes fora de `erp:sessao:*`, por exemplo `erp:indice-sessao:*`. Os prefixos de índice, coordenação e revisão são configuráveis, separados do prefixo de sessão e entre si. Zona continua tendo somente GET em `erp:sessao:*`; não ganha leitura desses metadados nem EVAL. Definir a coordenação por uma porta separada do `EscritorDeSessao` atual, injetada somente na composição Redis do shell; arquivo continua implementando o contrato existente. Ausência dessa capacidade com Redis impede prontidão G5; nunca anunciar consumo ativo usando um escritor incompatível.
-
-Criar sessão + indexar, regravar + atualizar score/TTL, e remover + desindexar em scripts Redis atômicos do adaptador de escrita. A renovação conserva o requisito equivalente a `XX` e o mesmo sujeito. TTL do índice vai até a maior expiração dos membros, recalculado após escrita/remoção; limpeza de membros vencidos acontece nos comandos do sujeito, sem depender de notificação de expiração. Membros mortos podem permanecer até essa limpeza/TTL, mas nenhum membro vivo pode sumir antes da sessão. Remoção do último apaga o índice. Não adicionar um TTL fixo que vença antes de uma sessão renovada.
-
-Encerramento por sujeito ocorre em lotes limitados, pelas capacidades de `/shell`. Cada lote relê/valida o sujeito das chaves encontradas; referência corrompida para sessão de outro sujeito interrompe o evento e gera erro, nunca apaga a sessão alheia. Chave já expirada/ausente é sucesso idempotente. Não usar `KEYS`, varredura global por evento nem chamada ao IdP. O shell não manipula diretamente JSON de sessão ou DEL de suas chaves.
-
-Para impedir sessão criada durante o processamento, manter uma revisão global monotônica e a última revisão por sujeito, mais o marcador de evento pendente. Antes de `identidade.concluir`, a fábrica captura a revisão global. Depois de concluir, consulta acesso com o token recém-obtido, pelo mesmo registro de destinos: criar transporte **interno e temporário** com `obterToken` para essa sessão, passar à `cfg.acesso`, validar e descartar o retorno. Não expor parâmetro público de token nem gravar sessão provisória para chamar `/v2/eu`. 401 recusa login; 3xx/5xx/timeout/corpo inválido produzem erro normalizado, sem gravar. Lista vazia de módulos não é recusa de identidade.
-
-O início de evento conhecido, atômico e condicionado ao lock, incrementa revisão e marca o sujeito pendente antes do primeiro lote. A pendência guarda somente fluxo, sequência, hash do sujeito e operação genérica de encerramento, não o payload do evento. Repetição do mesmo evento pendente não incrementa de novo; retomada confere essa identidade, sem permitir trocar o sujeito sob a mesma sequência. A gravação de login compara atomicamente a revisão do seu sujeito com a capturada e exige ausência de pendência. Assim, login anterior que conclua tarde é recusado; sessão gravada antes da marca entra nos lotes; durante a pendência não entra sessão nova. Evento de outro sujeito não recusa esse login. Depois da conclusão, login novo consulta a autoridade outra vez; revisão não é cache de permissões nem banimento permanente. Renovação em voo não ressuscita chave removida e não cria índice se a regravação falhar.
-
-Revisões, pendência e checkpoint são metadados duráveis de coordenação, **sem TTL**, como decisão explícita: expirar revisão permitiria uma comparação antiga voltar a valer; expirar pendência permitiria login no meio de recuperação. Pendência sai somente na conclusão confirmada; revisões podem ser compactadas em evolução futura com prova sobre todos os logins em voo. Não guardar payload protegido no Redis ou no disco do BFF: somente sessão, índice e metadados mínimos. A página de lote fica transitoriamente em memória e é descartada.
-
-### Consumidor único, ordem e falhas
-
-Iniciar no `instrumentation.register()` Node do shell, depois da validação, fora do build, independente de requisições. Uma instância por processo via guarda global, como a necessidade de composição já observada no mapa; um ciclo por vez, sem `setInterval` sobrepondo chamadas. O mecanismo genérico de consumo fica em `/shell`, com fonte e interpretação injetadas; os três nomes de evento ficam no shell e no mock. Encerrar timers e conexão dedicada em SIGINT/SIGTERM, sem administrar outros processos.
-
-Redis coordena todos os shells: `SET NX PX` com token aleatório de proprietário, renovação e liberação por comparação do token. Esse lock é do consumidor, distinto do lock de renovação de token por sessão. Perdedor não consulta o feed nem escreve cursor. Antes de iniciar/podar sessões, concluir evento ou avançar evento desconhecido, o script confere proprietário **e cursor esperado**; conferir uma vez antes de `await` não basta. Redis compara o token no mesmo script do efeito. Lock perdido impede qualquer escrita do antigo proprietário, inclusive liberação. Uma chamada HTTP já em voo pode terminar depois da perda, mas sua resposta não é aplicada; não há dois processadores com direito de escrita.
-
-Ordem para evento novo: adquirir lock → ler checkpoint/pendência → buscar e validar página → marcar evento/sujeito → remover todos os lotes → conferir índice vazio → gravar cursor e limpar pendência **na mesma operação atômica**. Se houver pendência, terminar primeiro o evento já validado, a partir dos seus metadados, sem depender de nova resposta da fonte. Desconhecido: registrar tipo sanitizado/seq e avançar sem remover. Não avançar para o cursor da página antes de concluir cada evento; falha no segundo conserva o cursor do primeiro. Precondições e tipos Redis são conferidos antes da primeira escrita em cada script; Lua não oferece rollback automático de comandos anteriores a um erro. Checkpoint nasce em 0, com associação ao fluxo em operação protegida; primeiro boot reproduz o histórico, sem saltar para o fim. Isso pode encerrar sessões atuais de sujeitos com revogações históricas já revertidas: registrar esse custo da primeira ativação, sem deduzir permissões atuais do feed.
-
-Falha da gestão de acesso (3xx, 401 de serviço, 403/404, 5xx, timeout, conexão, JSON ausente/inválido ou limite excedido) não inicia encerramentos nem avança checkpoint; 401 do serviço nunca vira logout de usuário. Só uma pendência de evento anteriormente validado pode continuar sua remoção sem a fonte. Falha Redis conserva o último checkpoint confirmado e é registrada; efeitos de lotes **já confirmados** não são desfeitos. Timeout Redis tem resultado possivelmente aplicado: não repetir comando enfileirado às cegas; reconectar, reler checkpoint/pendência e retomar idempotentemente com lock. Desligar fila offline e reconexão automática do cliente dedicado; a próxima tentativa vem do ciclo configurado. Não prometer cancelar comando já enviado ao servidor: a proteção de proprietário é conferida quando o script executa. Sem rejeição não tratada, sem derrubar o shell. Registro contém motivo fixo e `{ codigo, supportId }`, sem stack, classe, URL com senha, token, cookie, sujeito cru ou payload; tipo desconhecido tem forma/tamanho validados. Falha do registrador não interrompe o consumidor.
-
-### Ativação e limite do modo arquivo
-
-G5 usa Redis. Login **dev com Redis** e login **OIDC com Redis** têm a mesma garantia. Sem Redis, o store de arquivo mantém o fluxo local existente e registra uma vez que revogação ativa não está disponível; não inventar cursor/lock de processo como garantia distribuída. Não alegar que `task verificar` em arquivo prova G5. Não ampliar o store de arquivo para vários shells nesta fatia.
-
-Antes de ativar o consumidor, indexar sessões existentes com `SCAN` limitado ao prefixo, leitura e rechecagem atômica da chave antes de indexar. O id já está em hash: não tentar inverter cookie. Escritores novos já mantêm o índice; a importação só acrescenta a versão ainda existente, não restaura sessões removidas nem TTL antigo. Finalizar marca de esquema pronta somente depois de varredura completa sob lock. Enquanto incompleta, servir sessões existentes, impedir novos logins e não consumir eventos; registrar o estado. Reinício retoma a importação de forma idempotente.
-
-Não misturar escritores antigos, sem índice, com o consumidor ativo. A primeira ativação exige retirar todas as instâncias antigas do shell; zonas podem continuar lendo o formato de sessão. Sessões dev antigas precisam de normalização do sujeito, verificando o ator no token dev e seu UUID conhecido; não traduzir um `sub` OIDC. Renovador dev deve reconhecer o formato anterior durante essa migração sem trocar de pessoa. Falha/corrupção na importação mantém G5 sem prontidão e pede reconciliação, nunca apaga sessões em massa. Testes usam namespaces/diretórios próprios e não removem chaves de outros ambientes.
-
-### Configuração proposta (documentar junto da futura implementação)
-
-Todas as leituras são de servidor. Ausência usa padrão; valor presente vazio/inválido é recusado para as variáveis novas. Documentar faixas e relações em `docs/CONFIGURACAO.md`, não só aqui. Valores do teste vêm do Taskfile/fixture versionada, sem constantes de política escondidas.
-
-| Parâmetro | Padrão seguro proposto | Faixa / responsabilidade |
+| # | Mutação | Teste que precisa reprovar |
 |---|---|---|
-| `ERP_EVENTOS_INTERVALO_MS` | 5000 | 1000–300000; cadência de início dos ciclos, sem sobreposição. Com fonte saudável e sem backlog, descoberta até um intervalo, mais processamento. |
-| `ERP_EVENTOS_TIMEOUT_MS` | 2000 | 100–60000; destino de eventos, incluindo leitura do corpo. |
-| `ERP_EVENTOS_LOCK_MS` | 15000 | 1000–300000; lease no Redis; maior que `ERP_EVENTOS_TIMEOUT_MS + 2 × ERP_REDIS_COMANDO_TIMEOUT_MS`. |
-| `ERP_EVENTOS_LOCK_RENOVAR_MS` | 3000 | 100–60000; menor que metade do lease; somado ao timeout Redis deve ficar abaixo do lease. |
-| `ERP_EVENTOS_LIMITE` | 100 | 1–1000; eventos por página; shell envia `limite`; stub usa o mesmo padrão/teto, rejeita excessos e o recebe na lista de inclusão. |
-| `ERP_EVENTOS_PAGINAS_POR_CICLO` | 10 | 1–100; limita trabalho por ciclo. Backlog maior continua no seguinte; não saltar cursor. |
-| `ERP_EVENTOS_SESSOES_POR_LOTE` | 100 | 1–1000; sessões removidas por script. Não limita total a encerrar. |
-| `ERP_EVENTOS_LOTES_POR_CICLO` | 100 | 1–1000; atingido o orçamento, manter evento pendente e retomá-lo no próximo ciclo, sem avançar cursor. |
-| `ERP_EVENTOS_MAX_BYTES` | 262144 | 1024–1048576; teto do corpo no transporte do destino, mesmo sem Content-Length. |
-| `ERP_EVENTOS_TEXTO_MAX_BYTES` | 256 | 64–4096; tamanho de `sub`, `tipo` e identificador de fluxo, conferido antes de chave/log; parâmetros de chave são codificados/hasheados. |
-| `ERP_EVENTOS_PREFIXO` | `erp:eventos-acesso:` | namespace de lock, checkpoint, revisão e pendência; fora do prefixo de sessão e sem colisão com índice/login/renovação. |
-| `ERP_SESSAO_INDICE_PREFIXO` | `erp:indice-sessao:` | índice por sujeito; TTL derivado das sessões, não prazo independente. |
-| `ERP_SESSAO_INDICE_SCAN_LIMITE` | 100 | 1–1000; sugestão COUNT da importação, sem assumir que SCAN devolve exatamente isso. |
-| `ERP_REDIS_COMANDO_TIMEOUT_MS` | 1000 | 100–30000; prazo real de conexão/comando nas quatro apps; erro rejeita, não vira null. Impedir fila offline de escritas que execute depois do prazo; cliente dedicado do consumidor tem cleanup. |
-| `VERIFICAR_G5_EXIGIR` | ausente; `1` nas tarefas G5 | Pré-condição ausente é falha nas tarefas dedicadas dev/OIDC, nunca skip verde. |
-| `VERIFICAR_G5_PRAZO_MS` | 8000 | 1000–300000; intervalo máximo de revogação comprovado na fixture saudável. Validar que cobre cadência + timeout do feed + orçamento Redis da fixture; não prometer esse prazo sob falha/backlog. |
+| M1 | `GET /v2/eventos` aceitar qualquer `svc.*` ou pessoa autenticada | só `svc.shell` lê `/v2/eventos`; outros recebem 404 |
+| M2 | tirar `ROTA_DE_SERVICO` de `GET /v2/eventos` | modo JWT aceita `svc.shell` em `/v2/eventos` |
+| M3 | filtro `ev.seq >= desde` em vez de `ev.seq > desde` (fronteira) | `desde=k` não repete o evento `k` |
+| M4 | aceitar `desde < 0` ou `NaN` como `0` | `desde` negativo ou texto dá `422 CURSOR_INVALIDO` |
+| M5 | omitir `sujeitos` ou omitir `p.sub` / `p.login` no evento de pessoa | evento `PESSOA_DESLIGADA` e `PESSOA_SUSPENSA` traz `sujeitos` completos |
+| M6 | vazar `p.cpf` no evento | nenhum evento contém o CPF da pessoa |
 
-Reusar `ERP_DESTINO_TIMEOUT_MS` para a consulta de acesso no login, `ERP_LOGIN_TRANSACAO_S`, os tempos de renovação e `ERP_SESSAO_MAXIMA_S` para o teto dev (D27). O último passa a ser lido pelo núcleo dev, com padrão 36000 e teto 86400 s, preservando o instante inicial em renovações; não reinicia o máximo a cada refresh. Checkpoint/revisões/pendência não expiram; índice, sessão e lock têm as regras acima. Falhas voltam na cadência configurada, sem backoff oculto. Prazos de teardown/teste entram na configuração versionada da respectiva ferramenta.
+- [ ] **Passo 5: commit no submódulo** `erp-dominio-stub`: `feat(stub): restrict /v2/eventos to svc.shell and include subject ids (G5)`.
 
-## Tasks
+### Task 2: remoção de sessão por sujeito no núcleo 0.10.5 (erp-nucleo)
 
-- [ ] **1. Fechar contrato do feed e restrição de serviço.** Repositório: `erp-dominio-stub`. Alterar `src/gestao-acesso-v2/servidor.mjs`, comentário de `src/base.mjs` e OpenAPI: snapshot de `sub`, envelope, fluxo persistido, paginação e recusas, sem abrir outras rotas JWT. Recusar `/v2/eu` da pessoa suspensa, preservando 200 de pessoa ativa sem módulos. Verificação: `pnpm test` no stub, com casos dos três produtores (incluindo transferência), sujeito sem vínculo, credenciais dev/JWT e reinício com/sem persistência. Mutações M01–M07, M26 e M30. Não depender de Keycloak real para unidade de roteamento de serviços.
+**Arquivos:** `repos/erp-nucleo/src/portas/sessao.ts`, `repos/erp-nucleo/src/adaptadores/sessao-redis.ts`, `repos/erp-nucleo/src/adaptadores/sessao-arquivo.ts`, `repos/erp-nucleo/src/testing/index.ts`, `repos/erp-nucleo/src/fabricas/criarNucleo.ts`, `repos/erp-nucleo/scripts/fronteira.mjs`, `repos/erp-nucleo/test/sessao-redis.test.mjs`, `repos/erp-nucleo/test/nucleo.test.mjs`, `repos/erp-nucleo/package.json`.
 
-- [ ] **2. Alinhar identidade dev e seu teto absoluto.** Repositório: `erp-nucleo`; principal para documentação/fixtures. Alterar `adaptadores/identidade-dev.ts` e testes para UUIDs canônicos dos atores, mantendo login no access token e migração delimitada do refresh anterior. Fechar **D27-T2-dev-maxima**: instante inicial sobrevive à renovação, expiração é o mínimo de inatividade e máximo. Verificação: `pnpm test` no núcleo e comparação com semente/realm na verificação estática; M08 e M35. Registrar mudança de semântica do `sub` dev; nenhuma lista de grupos/perfis.
+**Interfaces produzidas:**
+- Em `EscritorDeSessao` (`portas/sessao.ts`): `removerPorSujeito(sub: string): Promise<number>`, que apaga todas as sessões armazenadas cujo `sub === sub` e devolve a quantidade de sessões efetivamente removidas.
+- Em `NucleoDoShell['sessao']` (`fabricas/criarNucleo.ts`): `removerSessoesDoSujeito(sub: string): Promise<number>`, delegando ao `escrita.store.removerPorSujeito(sub)`.
+- Em `scripts/fronteira.mjs`: `'removerPorSujeito'` e `'removerSessoesDoSujeito'` adicionados a `CAPACIDADES_DE_ESCRITA` para que a verificação de fronteira por tipo garanta que nenhum módulo fora de `/shell` e `/testing` exporte essa capacidade (invariante 15).
+- Em `sessaoRedisDeEscrita` (`adaptadores/sessao-redis.ts`):
+  - Novo prefixo configurável `prefixoSujeito?: string` (padrão `'erp:sujeito:'`), validado com `validarPrefixos` para nunca colidir com `prefixo` (`'erp:sessao:'`), `prefixoLogin` ou `prefixoLock` (assim a ACL das zonas `~erp:sessao:*` nunca alcança o índice por sujeito).
+  - Ao `gravar(id, s)` (quando `ttl > 0` e `s.sub` válido): além de gravar a chave da sessão `chave(prefixo, id)`, registra a chave da sessão no índice do sujeito `chave(prefixoSujeito, s.sub)` (JSON com lista de chaves de sessão daquele `sub`, com `PX` igual ao maior TTL entre o atual da lista e o da nova sessão).
+  - Ao `removerPorSujeito(sub)`: se `typeof sub !== 'string' || !sub.length`, retorna `0` sem ir ao Redis; caso contrário, consome (`getDel`) a chave `chave(prefixoSujeito, sub)`, apaga (`del`) cada chave de sessão listada e retorna a soma das chaves que existiam (`del === 1`). Erros do cliente Redis são normalizados em `ErroDeAplicacao('ERRO_INTERNO', ...)` como nas demais operações.
+- Em `sessaoArquivoDeEscrita` (`adaptadores/sessao-arquivo.ts`) e `sessaoMemoria` (`testing/index.ts`): `removerPorSujeito(sub)` varre as sessões do store, remove todas com `s.sub === sub` (ignorando e limpando expiradas) e devolve quantas sessões válidas foram removidas (`0` para `sub` vazio ou inexistente).
 
-- [ ] **3. Definir capacidades genéricas exclusivas do shell.** Repositório: `erp-nucleo`. Porta separada para revisão de admissão, índice e coordenação de consumo; leitor das zonas permanece só `ler`, escritor de arquivo mantém contrato. Exportar valores novos apenas em `/shell`; atualizar `scripts/fronteira.mjs` com as capacidades novas. Fechar **D27-T2-fronteira** para esses novos marcadores por tipos e operações, com casos de alias/embrulho, não regex só de nome. Fechar **D27-T2-memoria-ttl-lock** ao ajustar o double: `validarTtlDoLock` antes de escrita. No mesmo `testing/index.ts`, fechar **D27-T2-transacoes-expiradas-memoria**, removendo expiradas nas operações de transação, sem timer novo. Verificação: fronteira e `pnpm test`, com EVAL/encerramento indisponíveis na raiz/app/zona; M09 e M34.
+- [ ] **Passo 1: testes que reprovam** em `test/sessao-redis.test.mjs` e `test/nucleo.test.mjs`:
+  - nos três stores (`sessaoMemoria`, `sessaoArquivoDeEscrita`, `sessaoRedisDeEscrita`), gravar 2 sessões de `'ana'` e 1 de `'bruno'`; `removerPorSujeito('ana')` devolve `2`, apaga as duas de `'ana'` (`ler` devolve `null`) e mantém a de `'bruno'` intacta;
+  - chamar `removerPorSujeito('ana')` de novo devolve `0`; `sub` vazio `''` ou não-string devolve `0` sem tocar o Redis;
+  - sessão já expirada ou já removida por `remover(id)` antes de `removerPorSujeito` não é contada como removida (`0`);
+  - no Redis, a chave de índice usa `erp:sujeito:<sha256>` (nunca o `sub` cru e nunca dentro de `erp:sessao:*`), e `prefixoSujeito` colidindo com `prefixo`, `prefixoLogin` ou `prefixoLock` é recusado na criação;
+  - no Redis fora do ar, `removerPorSujeito` rejeita com `ErroDeAplicacao` (`ERRO_INTERNO`) sem vazar mensagem nem stack do cliente;
+  - em `criarNucleoDoShell`, `shell.sessao.removerSessoesDoSujeito('ana')` remove todas as sessões de `'ana'` e `zona.sessao.atual()` passa a devolver `null`; o núcleo de zona (`criarNucleo`) não tem `removerSessoesDoSujeito`.
+- [ ] **Passo 2: implementar** nos arquivos do `erp-nucleo` e atualizar `package.json` para `0.10.5`.
+- [ ] **Passo 3: rodar testes e fronteira** (`cd repos/erp-nucleo && pnpm test`) e ver passar.
+- [ ] **Passo 4: mutações declaradas** (aplicar no `src`, rodar `pnpm test`, registrar e reverter):
 
-- [ ] **4. Manter índice Redis de forma atômica em todos os caminhos de sessão.** Repositório: `erp-nucleo`. Alterar `adaptadores/sessao-redis.ts` e cliente de escrita para os scripts, sem ampliar cliente de leitura. Cobrir criação, logout, expirada, renovação, TTL e referências inválidas. Verificação: testes do adaptador com relógio controlado e Redis real isolado na task de integração posterior; M10–M15. Renovação deve falhar sem ressuscitar sessão ou índice. Não alterar sessão fora do escritor.
-
-- [ ] **5. Coordenar lease e checkpoint do consumidor.** Repositório: `erp-nucleo`. Mecanismo genérico em `/shell` e adaptador Redis: aquisição, renovação/liberação por proprietário, cursor esperado e leitura de pendência. Verificação: unidade de estado/concorrência e Redis real da Task 12, com lease vencido e resposta perdida depois do commit; M16–M18, M23, M30 e M39. Sem tipos de negócio no núcleo.
-
-- [ ] **6. Encerrar por sujeito em lotes recuperáveis.** Repositório: `erp-nucleo`. Revisão, pendência, verificação de sujeito e índice vazio, orçamento de lotes e conclusão atômica com cursor. Acrescentar capacidade de encerramento em `NucleoDoShell`, sem chamar `identidade.encerrar`. Verificação: unidade e Redis real da Task 12, com mais sessões que o orçamento, crash entre lotes, troca de sujeito na retomada e fonte fora após início validado; M18–M23, M27, M31 e M39.
-
-- [ ] **7. Importar sessões anteriores e controlar prontidão.** Repositório: `erp-nucleo`; principal para fixture de migração. Varredura SCAN sob lock, rechecagem da versão viva, normalização dev delimitada e marca de esquema pronta após terminar. Verificação: unidade e Redis real da Task 12, com chave na última página, renovação/logout concorrentes, reinício no meio e escritor incompatível; M08, M32–M33. A ativação fica fechada enquanto o índice não cobre o store.
-
-- [ ] **8. Fechar admissão de login e corrida com renovação.** Repositório: `erp-nucleo`. Capturar revisão antes da conclusão de identidade, consultar acesso via transporte interno pelo registro antes de gravar, e fazer compare/gravação/indexação atômicos. Manter logout interativo. Fechar **D27-T2-20-renovacoes**: teste já existente em memória/arquivo, ampliado para escritor Redis com NX real e remoção durante a espera. No mesmo teste da fábrica, fechar **D27-T2-tempo-perdedores** com barreira de IdP controlada, substituindo a asserção frágil de menos de 200 ms por conclusão dos perdedores enquanto o vencedor está preso. Verificação: `pnpm test`, M24–M27 e M36; controles mostram outro sujeito e erro transitório com sessões existentes intactas.
-
-- [ ] **9. Limitar corpo no transporte registrado.** Repositório: `erp-nucleo`. Acrescentar opção de teto de resposta no destino, aplicada ao ler corpo antes de JSON, com erro normalizado e timeout do registro; não desviar a chamada para fetch particular. Verificação: testes de transporte para resposta fragmentada, sem Content-Length, corpo lento, tamanho no limite e limite + 1; M28–M29. Destinos sem a nova opção conservam contrato existente.
-
-- [ ] **10. Compor e iniciar consumidor no shell.** Repositório: `erp-shell`. Criar `lib/eventos-acesso.ts` com `server-only`, decoder e os três tipos; registrar destino em `lib/nucleo.ts`; iniciar em `instrumentation.ts` após configuração. Reusar `/shell` para o mecanismo e sessões, singleton global e ciclos sem sobreposição. Configuração inválida impede subida; fonte indisponível não impede servir. Sem Redis, registrar limite do modo arquivo. Verificação: `pnpm test` do shell, startup real em fixture, teardown e fonte falsa; M01, M16–M18, M21, M28–M30, M37–M38. Testar atividade sem requisição a página alguma.
-
-- [ ] **11. Completar configuração Redis e isolamento de ambiente.** Repositórios: `erp-shell`, `erp-zona-1`, `erp-zona-2`, `erp-zona-acesso`; principal (`base/scripts/ambiente.mjs`, testes, `CONFIGURACAO.md`, exemplo do showcase). Adaptar comandos do cliente de escrita somente no shell. Fechar **D24** com timeout real de conexão/comando; conferir **D26**, cujo GET já rejeita no código atual das quatro apps, acrescentando prova de conexão/GET que falham e nunca devolvem null. Repassar timeout de leitura às zonas, limite/texto ao stub, e somente ao shell os controles e credencial do consumidor. Filtrar token do shell antes de criar filhos de zona em todas as fases, preservando tokens próprios explícitos de registro. Verificação: unidades dos quatro repos, `task scripts:test`, configuração/subida; M40–M43. Não alegar fechar D26 apenas pelo double do núcleo.
-
-- [ ] **12. Adicionar prova Redis real e de múltiplas instâncias.** Repositório: principal, `base/verificacao/g5/`. Criar tarefa com `desc` no Taskfile para integração isolada, compartilhando namespace somente entre as duas instâncias do shell da fixture. Provar scripts, TTL/renovação, ACL da zona, lotes, importação antiga e tomada de lock após término/crash. Verificação: tarefa dedicada, M10–M27 e M31–M33/M39. Usar Redis fornecido pelo ambiente; testes manipulam somente seus dados e processos. Script de mutação fica no scratchpad, testes permanentes na suíte.
-
-- [ ] **13. Provar revogação sem visita nos modos dev e OIDC.** Repositório: principal, `base/verificacao/g5/`, `Taskfile.yml`, apoio de login. Criar tarefas `verificar:g5:dev` e `verificar:g5:oidc` sequenciais, ambas exigindo Redis, e OIDC exigindo Keycloak. Cada cenário tem dados persistentes temporários e namespace próprio; não reutilizar reset do mock de outra suíte. Fixar na configuração da fixture cadência de 1000 ms, timeout de feed 500 ms, comando Redis 250 ms e prazo de revogação 8000 ms; conferir relações do lease e orçamento antes de subir. Entrar duas vezes como davi, controlar outro sujeito, desligar `p-20` como carla; desde o 204, não navegar com davi, observar somente Redis até todas as sessões sumirem dentro desse intervalo máximo configurado. Contar `/v2/eu` em fixture de observação para provar zero consultas do sujeito durante essa janela. Depois usar os cookies antigos e afirmar login/ausência de conteúdo. Repetir suspensão e revogação, desconhecido, queda/recuperação da fonte e retomada após reinício do shell; novo login de pessoa suspensa/desligada não grava sessão. Verificação: tarefas dedicadas, sem skips, M03–M07, M18–M30 e M44. Provar segunda sessão real nos dois modos, mesmo se o SSO mantiver uma sessão única no IdP.
-
-- [ ] **14. Atualizar regressão, dependências e fechar gate.** Repositórios: quatro apps (versão exata do núcleo e lockfiles); principal (testes existentes e documentos). Preparar versão nova do núcleo para validar as Tasks 10–13 **somente em futura rodada autorizada**, número livre escolhido na execução; lockstep nas quatro apps, sem sobrescrever 0.10.4 nem reconciliar hashes preexistentes sem evidência. Atualizar teste JWT que hoje espera 401 de eventos. Na regressão de revogação, afirmar encerramento no modo Redis, novo login após concessão e outro sujeito intacto; manter prova independente da camada 2 em arquivo, sem depender de corrida entre 404 e redirect. Exercitar reset do histórico como falha explícita, nunca reiniciar cursor silenciosamente. Rodar `task test`, `task typecheck`, `task verificar:estatica`, `task scripts:test`, `task lockstep`, `task verificar` (arquivo), `task verificar:redis`, `task verificar:oidc`, tarefas G5 e showcase dev/OIDC, com portas sob um dono por vez. Gate com revisão, challenger e auditor segundo LEIA-PRIMEIRO; cada mutação identificada pelo teste que a matou, zero sobreviventes não classificados. Orquestrador aplica ledger/retomada/DEFERRED, pois `.agents/` não é gravável aqui. Verificação: relatórios por família e M45; envio/commit não estão autorizados por este plano.
-
-### Recorte dos adiados
-
-Os identificadores **D27-T2-dev-maxima**, **D27-T2-fronteira**, **D27-T2-memoria-ttl-lock**, **D27-T2-transacoes-expiradas-memoria**, **D27-T2-20-renovacoes** e **D27-T2-tempo-perdedores** correspondem aos menores da T2 do D27, com fechamento individual nas Tasks 2, 3 e 8. **D27-T2-janela**, **D27-T3-urlRetorno**, **D27-T3-porta** e **D27-T4-vidaTransacao** já têm correção no D20 e no código lido: preservar e registrar evidência, não duplicar implementação. O teste de 20 renovações já existente é preservado e ampliado para Redis, não declarado ausente.
-
-Não tocar `sessao-arquivo.ts` para ampliar concorrência: **D27-T2-lock-arquivo** e a parcela **D27-T2-transacoes-expiradas-arquivo** (também D12) continuam limites de desenvolvimento. **D27-T3-invalid_client/TypeError/causa**, **D27-T4-cookie/proxy/V1**, **D27-T5-base64url/JWKS/azp/regex** não coincidem com código de produto a modificar. A constatação de logout sem hint já tem e2e OIDC existente, a preservar. Se a implementação ampliar esse recorte, identificar os itens incidentes antes de fechar a respectiva task. D24/D26 são incidentes na alteração dos clientes Redis; D25 e a nota de JWKS da T5 do D27 cabem na edição de §4: documentar falha fechada após TTL e recuperação com cache frio no intervalo, sem mudar política do JWKS. D17 continua risco aceito; não mudar ACL/formato para separar refresh tokens nesta fatia.
-
-## Mutações declaradas
-
-Cada variante da linha é aplicada sozinha, com baseline verde; seu teste precisa reprovar pelo efeito indicado, não por erro de sintaxe/build. Mutações em cópia isolada, sem base concorrente e sem gravar na semente versionada. Registrar task, variante, teste detector e resultado; o auditor também procura fronteiras não listadas. Redis real é obrigatório para comprovar atomicidade/ACL/TTL, não apenas interpretação de Lua por double.
-
-| ID / task | Mutação | Prova exigida |
+| # | Mutação | Teste que precisa reprovar |
 |---|---|---|
-| M01 / 1,10 | Usar token de usuário, ausência de token ou qualquer `svc.*`; abrir eventos globalmente no JWT | Só `svc.shell` lê em dev/OIDC; outros serviços/pessoa recusados; primeiro-acesso/decisões continuam fechados em JWT; shell não precisa de cookie para consumir. |
-| M02 / 1 | Checar cursor/corpo antes da credencial; usar `startsWith('shell')` | Credencial errada + query inválida permanece recusa de escopo; `svc.shell-outro` não lê; zero processamento de feed antes da autorização. |
-| M03 / 1,13 | Omitir `sub`, usar `autor`/`alvo`/login ou sujeito de outro evento | Cada produtor devolve sujeito atingido; todas as sessões dele somem, sessões do autor e do controle ficam. Teste específico do UUID dev. |
-| M04 / 1,13 | Esquecer suspensão ou revogação indireta de transferência/desligamento | Feed e consumidor exercitam cada produtor, não só evento inserido por teste. |
-| M05 / 1,13 | Aceitar cursor negativo, fracionário, NaN ou repetido; aceitar envelope fora de ordem/seq duplicada | Stub recusa query; shell recusa página inteira antes de efeito, mantendo checkpoint/sessões. |
-| M06 / 1,13 | Cursor de página aponta ao fim do histórico, inclusive eventos não entregues | Histórico maior que duas páginas é todo consumido; nenhum sujeito da página seguinte é pulado. |
-| M07 / 1,13 | Reconstruir sujeito ao ler feed; retornar auditoria inteira | Mudar vínculo depois do evento não troca seu sujeito; feed não contém CPF/papéis/autor/justificativa. |
-| M08 / 2,7 | Dev mantém `sub = login`, confunde actor com UUID ou muda sujeito ao renovar | Login/refresh batem com semente e realm, token dev conserva ator; e2e dev remove índice do UUID certo. |
-| M09 / 3 | Exportar capacidade de escrita/consumo pela raiz ou zona; retirar `server-only` | Fronteira reprova export direto, alias, retorno embrulhado e import dinâmico plausível; build cliente não carrega credencial. |
-| M10 / 4,12 | Gravar sem índice ou atualizar índice separadamente da sessão | Concorrência/erro entre operações não produz sessão viva sem membro; duas sessões e namespaces isolados. |
-| M11 / 4,12 | TTL fixo/curto no índice; não estender na renovação | Índice sobrevive ao TTL antigo e revogação posterior remove sessão renovada; expiradas deixam de ter membros vivos. |
-| M12 / 4,12 | Tirar condição XX ou indexar quando regravação falha | Remoção enquanto IdP está preso seguida de refresh não restaura sessão nem índice. |
-| M13 / 4,12 | Logout remove só chave ou só membro; expirada conserva índice indefinidamente | Sessão ausente e membro limpo; último membro elimina índice; nenhuma outra sessão é afetada. |
-| M14 / 4,12 | Usar ids/sub crus em chaves ou colocar metadados em `erp:sessao:*` | Inspeção não encontra cookie/sujeito cru; usuário ACL da zona não lê índice, revisão, cursor, pendência ou login. |
-| M15 / 4,12 | Renovação aceita outro sujeito/encurta TTL de índice com outro membro mais longo | Regravação cruzada recusada; membro de vida maior continua alcançável depois do prazo da sessão curta. |
-| M16 / 5,10,12 | Retirar NX/lease, lock só em memória ou singleton só por módulo | Dois shells e módulos empacotados separadamente: um proprietário, um ciclo ativo; perdedor não consulta feed. |
-| M17 / 5,10,12 | Conferir lock apenas antes de HTTP/await; DEL/renovar lock sem comparar token | Expirar lease, tomar com outro shell e soltar resposta antiga: zero escrita do antigo; ele não renova nem libera lock alheio. |
-| M18 / 5,6,13 | Avançar cursor antes da remoção ou para o fim da página | Interromper no segundo evento/lote: cursor só cobre efeitos completos; recomeço termina todas as sessões. |
-| M19 / 6,12 | Remover só primeira sessão ou truncar no limite de lote/ciclo | Mais sessões que um lote/orçamento: pendência conserva cursor e próximo ciclo remove todas. |
-| M20 / 6,12 | Apagar sessão de outro sujeito por referência no índice | Índice deliberadamente corrompido gera erro, preserva sessão alheia e não confirma o evento. |
-| M21 / 6,10 | Tipo desconhecido encerra sessão ou interrompe/retém cursor | Desconhecido antes de revogação conhecida é registrado, não encerra ninguém e permite consumir a seguinte. |
-| M22 / 6,12 | Limpar pendência antes do último lote; cursor e limpeza não atômicos | Login durante lote final é recusado; crash no commit não deixa evento confirmado com trabalho pendente ou janela aberta. |
-| M23 / 5,6,12 | Fazer primeira escrita do script antes de conferir proprietário/cursor/tipos; trocar sujeito da pendência na retomada | Lock falso, cursor trocado, sujeito trocado ou chave de tipo errado deixam todas as chaves iguais ao snapshot anterior. |
-| M24 / 8,12 | Capturar revisão depois de concluir identidade/consultar acesso | Retorno de login pausado, evento processado, retorno liberado: não grava sessão; controle de outro sujeito grava. |
-| M25 / 8,12 | Comparar revisão/pendência em GET separado de SET; omitir a comparação | Evento entra entre comparação e gravação: login anterior/durante processamento não sobrevive. |
-| M26 / 1,8,13 | Gravar sessão antes de consultar acesso, confiar em permissões guardadas ou admitir pessoa suspensa em novo login | 401/5xx/timeout/malformado no login deixam zero sessão/índice novo; captura observa ordem acesso antes de escrita; suspensa/desligada não recriam sessão, ativa sem módulos pode logar. |
-| M27 / 6,8,12 | Chamar IdP no encerramento por evento; esquecer releitura após lock de renovação | IdP fora não bloqueia remoção; 20 renovações gastam refresh uma vez; sessão removida na espera volta ausente. |
-| M28 / 9,10 | fetch direto, cache de payload, seguir 3xx ou desviar origem por prefixo de host | N8 e transporte reprovam; duas origens reais: redirect não recebe chamada/Authorization; host com sufixo enganoso não é a origem declarada. |
-| M29 / 9,13 | Tratar 401 de serviço como sessão expirada; aceitar 5xx/JSON inválido como sucesso; retirar teto de bytes ou timeout do corpo | Fonte injetada 3xx/401/403/404/5xx/corpo inválido conserva sessões e cursor; corpo fragmentado sem Content-Length acima do limite e corpo lento são recusados; volta saudável processa evento pendente. |
-| M30 / 1,5,10,13 | Aceitar fluxo novo/regressivo/repetição ou zerar cursor silenciosamente | Reinício persistente retoma; reset de fonte não reprocessa contra sujeitos atuais nem perde checkpoint; alerta normalizado. |
-| M31 / 6,8,12 | Expirar revisão/pendência ou usar revisão global para negar todos os sujeitos | Login antigo não volta a valer após passagem de tempo; outro sujeito continua admitido. Metadados de revisão não têm TTL. |
-| M32 / 7,12 | Marcar importação pronta antes de SCAN completo; indexar snapshot sem rechecagem | Sessão antiga na última página é revogada; sessão removida/renovada durante importação não volta nem perde TTL. |
-| M33 / 7,12 | Misturar escritores sem índice ou varrer fora do namespace | Ativação requer esquema pronto e retirada de escritores antigos; teste de precondição reprova montagem incompleta; chaves de controle externo intactas. |
-| M34 / 3 | Memória aceita TTL zero/negativo/fracionário/NaN no lock; conserva transações vencidas | `validarTtlDoLock` rejeita antes de alterar estado, com controle positivo; relógio controlado e operações de transação removem expiradas, preservando as vivas. |
-| M35 / 2 | Refresh dev reinicia máximo absoluto ou aceita refresh antigo de outro ator | Relógio controlado atravessa renovações e fecha no máximo; migração só aceita identidade correspondente. |
-| M36 / 8 | Retirar NX da fábrica/double e permitir duas renovações; fazer perdedores esperarem o vencedor com token ainda válido | Prova de 20 chamadas à fábrica com Redis real detecta mais de um acesso ao IdP, não só múltiplos locks; barreira observa perdedores concluídos antes de liberar o IdP, sem teto de tempo frágil. |
-| M37 / 10 | Iniciar só em página/proxy, rodar no build ou acumular timers | Evento aplicado sem visitas; build não consulta fonte/escreve Redis; registrar duas vezes não duplica consumidor. |
-| M38 / 10 | Falha de fonte/registrador derruba processo; teardown deixa ciclo vivo | Shell continua respondendo, registra par normalizado sem segredos e recuperação funciona; sinal encerra recursos próprios. |
-| M39 / 5,6,12 | Repetir escrita Redis após timeout ou executar fila offline tardia | Resposta perdida depois de aplicação: retomada relê estado, não reavança revisão/cursor; comando ainda não enviado não fica para a reconexão. Comando já enviado é resultado incerto, conferido pela retomada. |
-| M40 / 11 | GET/conexão com erro devolve null; timeout só em Promise.race mantendo escrita enfileirada | Nas quatro apps erro rejeita; proxy conserva cookie/sessão; cliente não reenvia comando via fila offline e prazo efetivo é conferido. |
-| M41 / 11 | Herança de `ERP_TOKEN_SERVICO=svc.shell`/segredo Redis em filho de zona/build/start/registro/avulsa | Filho real recebe somente token próprio da zona na fase adequada, nunca token de leitura de eventos nem segredo de escrita; conferir ambiente entregue e processos vivos. |
-| M42 / 10,11 | Aplicar fallback silencioso a vazio/inválido; inverter ordem configuração/início do consumidor | Valor inválido recusa subida antes de Redis/rede; testes individuais de limites e relações entre lease/timeout/renovação. |
-| M43 / 11 | Criar intervalo, retry, TTL, timeout ou limite literal fora da configuração | Fixtures variam cada parâmetro e observam efeito; documentação e leitores/Taskfile têm paridade, sem export `NEXT_PUBLIC_*`. |
-| M44 / 13 | Teste navega/consulta `/v2/eu` para provocar logout ou passa com pré-condição ausente | Observação Redis mostra remoção antes da primeira navegação e zero consultas do sujeito; tarefas exigem modo/Redis/Keycloak, sem skip. |
-| M45 / 14 | Manter expectativa OIDC antiga, aceitar qualquer 404/307 pela corrida ou não relogar após concessão | Regressão distingue camada 2 de revogação ativa; cookie encerrado nunca recupera acesso por nova concessão; login novo saudável funciona. |
+| M1 | `removerPorSujeito` apagar todas as sessões sem comparar `s.sub === sub` | sessão de outro sujeito (`bruno`) permanece intacta |
+| M2 | `gravar` sobrescrever a lista do sujeito com `[chaveSessao]` em vez de acumular | segunda sessão do mesmo sujeito também é removida (devolve `2`, ambas `null`) |
+| M3 | TTL do índice do sujeito usar `Math.min` (ou só o novo `ttl` menor) em vez de `Math.max` | sessão mais longa não perde o índice quando uma mais curta do mesmo sujeito é gravada |
+| M4 | chave do índice do sujeito usar `sub` cru sem SHA-256 ou cair em `erp:sessao:*` | chave usa `erp:sujeito:<sha256>` fora de `erp:sessao:*` |
+| M5 | não validar colisão de `prefixoSujeito` com os demais prefixos | colisão de `prefixoSujeito` lança na criação |
+| M6 | `removerPorSujeito` engolir erro do Redis e devolver `0` | Redis fora do ar lança `ErroDeAplicacao('ERRO_INTERNO')` |
+| M7 | `removerPorSujeito('')` chamar o Redis | `sub` vazio devolve `0` com `0` chamadas ao Redis |
 
-## Alternativas descartadas e riscos
+- [ ] **Passo 5: commit no submódulo** `erp-nucleo`: `feat(nucleo): add session removal by subject in shell stores (G5, 0.10.5)`.
 
-- Consulta a `/v2/eu` na próxima visita, consumo por zona ou endpoint de cron no BFF: não cumpre revogação ativa e/ou os invariantes 10/15.
-- Cache de permissões, usar CPF/login/alvo como `sub`, logout do IdP por evento ou índice com ids crus: amplia dados, acopla disponibilidade e falha nos dois modos de identidade.
-- Lock em memória ou lock Redis sem proprietário/rechecagem atômica: não coordena instâncias e admite efeito depois de perder lease. Reusar lock de renovação impediria coordenação global de eventos.
-- `SCAN` em toda revogação, DEL de um snapshot único, cursor avançado por página e saltar histórico no primeiro boot: perde sessões concorrentes/eventos ou custa varredura global. SCAN fica só na importação inicial.
-- Uma operação Redis ilimitada para todas as sessões: pode bloquear o store; lotes configurados com pendência evitam limite artificial de sessões por pessoa.
-- Alterar o feed sem geração de histórico: o mock reinicia a sequência em modo memória e um cursor persistente poderia pular revogações novas. Envelope com fluxo torna essa perda observável.
+### Task 3: lockstep `@erp/nucleo` 0.10.5 e consumidor `revogacao-ativa.ts` no shell (erp-shell e zonas)
 
-Riscos materiais: atraso cresce com indisponibilidade/backlog; não há prazo garantido sem fonte/Redis saudáveis. Primeiro rollout exige retirar escritores antigos e reconciliar sujeitos/eventos legados; não prometer rollout misto transparente. Scripts envolvendo múltiplas chaves pressupõem o Redis único do ADR-0002, sem Redis Cluster nesta fatia. Revisões duráveis crescem por sujeito revogado; medir e registrar quantidade sem identidade crua, sem introduzir TTL inseguro. Sessão local acaba, mas evento não revoga token/SSO no IdP; um novo login depende da consulta vigente ao domínio. `svc.shell` do mock não prova emissão/escopos de uma credencial real de produção. Falha da fonte conserva sessões; páginas continuam decidindo acesso pelo domínio e podem responder indisponível pelo comportamento já existente.
+**Arquivos:**
+- `repos/erp-{shell,zona-1,zona-2,zona-acesso}/package.json` e `pnpm-lock.yaml` (se aplicável ao publicar `0.10.5` no registro local);
+- criar `repos/erp-shell/lib/revogacao-ativa.ts` e `repos/erp-shell/test/revogacao-ativa.test.mjs`;
+- modificar `repos/erp-shell/lib/configuracao.ts` e `repos/erp-shell/lib/nucleo.ts`.
 
-## Proposta de adendo 3 ao ADR-0014 (não aplicado)
+**Interfaces produzidas:**
 
-**Adendo 3 — G5: contrato e coordenação da revogação ativa.** A decisão 5 usa encerramento local por sujeito em `@erp/nucleo/shell`, removendo todas as sessões, sem logout remoto do IdP. Somente o shell lê eventos pelo registro de destinos, com credencial limitada à leitura de mapa e eventos; no mock, `svc.shell` é admitido nessa rota em dev e OIDC. O feed passa a `{ fluxo, cursor, eventos: [{ seq, tipo, sub }] }`, com sujeito capturado na publicação e paginação crescente. Redis mantém índice coerente com TTL/renovação, consumidor único por lease com proprietário e checkpoint posterior aos efeitos; revisão e pendência impedem login concorrente de sobreviver à remoção. Tipo desconhecido válido é registrado e ignorado com avanço do cursor. Falha da fonte não inicia encerramentos; pendências já validadas podem terminar. Mudança de fluxo não reinicia cursor; erros são normalizados. A garantia ativa exige Redis e escritores compatíveis; dev e OIDC usam o mesmo sujeito canônico. A consulta de acesso precede a gravação do login e recusa pessoa desligada/suspensa, preservando pessoa ativa sem módulos. Não há cache de permissões no BFF.
+```ts
+export type EventoDeAcesso = {
+  seq: number
+  tipo: string
+  alvo?: string
+  sujeitos?: readonly string[]
+}
+export type FonteDeEventos = (desde: number) => Promise<readonly EventoDeAcesso[]>
+export type CoordenadorDeEventos = {
+  adquirirLock(ttlMs: number): Promise<boolean>
+  lerCursor(): Promise<number>
+  gravarCursor(seq: number): Promise<void>
+}
+export type RevogadorDeSessoes = {
+  /** Dispara a sincronização se o intervalo venceu; nunca lança para quem chama (falha vai para registrarFalha). */
+  sincronizarSePreciso(): Promise<void>
+  /** Força uma rodada imediata (usado pelos testes de unidade). */
+  sincronizarAgora(): Promise<void>
+}
+export function criarRevogacaoAtiva(cfg: {
+  fonte: FonteDeEventos
+  coordenador: CoordenadorDeEventos
+  removerPorSujeito: (sub: string) => Promise<number>
+  intervaloMs: number
+  lockMs: number
+  agora?: () => number
+  registrarFalha?: (motivo: string) => void
+}): RevogadorDeSessoes
+```
 
-## Critério de conclusão
+**Regras:**
+- Tipos de evento que encerram sessão: `EVENTOS_QUE_ENCERRAM_SESSAO = new Set(['PESSOA_DESLIGADA', 'PESSOA_SUSPENSA'])`. Qualquer outro evento (como `ACESSO_REVOGADO`, `ACESSO_CONCEDIDO`, `ROTA_DE_ZONA_REGISTRADA`) avança o cursor sem remover sessão.
+- Intervalo: `lerIntervaloDeEventos(env)` lê `ERP_EVENTOS_ACESSO_INTERVALO_MS` (padrão `5000`, mínimo `100`, teto `60000`, inteiro). Lock: `lerLockDeEventos(env)` lê `ERP_EVENTOS_ACESSO_LOCK_MS` (padrão `10000`, mínimo `1000`, teto `120000`, inteiro, e deve ser `> intervaloMs` ou validado em `verificarConfiguracaoDoShell`).
+- Consumidor único: antes de buscar na fonte, chama `coordenador.adquirirLock(lockMs)` (no Redis: `SET erp:eventos-acesso:lock '1' NX PX <lockMs>`; sem Redis, em modo arquivo/dev de processo único, um coordenador em memória do processo). Se perder o lock (`false`), encerra a rodada sem chamar a fonte.
+- Cursor gravado só pelo shell: lê `desde = await coordenador.lerCursor()` (`0` se ausente ou inválido). Chama `fonte(desde)`. Ordena os eventos válidos (`Number.isInteger(ev.seq) && ev.seq > desde`) por `seq` crescente.
+- Para cada evento em ordem de `seq`:
+  - se `EVENTOS_QUE_ENCERRAM_SESSAO.has(ev.tipo)`, extrai os `sujeitos` válidos (`Array.isArray(ev.sujeitos)` com strings não vazias; fallback para `ev.alvo` se for string não vazia) e chama `removerPorSujeito(s)` para cada um;
+  - se qualquer `removerPorSujeito` lançar, interrompe o processamento da lista, grava o cursor do último evento inteiramente processado antes da falha (para que o evento que falhou seja reprocessado na próxima rodada) e registra a falha em `registrarFalha`.
+- Ao terminar a lista sem erro e tendo eventos novos (`maiorSeq > desde`), grava `coordenador.gravarCursor(maiorSeq)`.
+- Concorrência no próprio processo: chamadas simultâneas a `sincronizarSePreciso()` compartilham a mesma promessa em andamento (`emCurso`), fazendo uma busca só.
 
-Nesta rodada, pronto significa **este plano escrito e revisado por leitura**, sem mudança de produto, commit, envio, publicação ou base executada. Tasks permanecem abertas.
+- [ ] **Passo 1: atualizar `@erp/nucleo` para `0.10.5`** nas 4 apps e conferir `task lockstep`.
+- [ ] **Passo 2: testes de unidade que reprovam** em `repos/erp-shell/test/revogacao-ativa.test.mjs`:
+  - `PESSOA_DESLIGADA` e `PESSOA_SUSPENSA` removem as sessões de todos os `sujeitos` do evento e gravam o maior `seq` no cursor;
+  - `ACESSO_REVOGADO` e outros tipos avançam o cursor sem chamar `removerPorSujeito`;
+  - cursor avança monotonicamente: segunda rodada busca `desde = ultimoSeq` e ignora evento repetido com `seq <= desde`;
+  - consumidor único: quando `adquirirLock` devolve `false`, não lê cursor, não chama a fonte e não remove sessão;
+  - falha parcial em `removerPorSujeito` no segundo evento grava o cursor do primeiro evento e reprocessa o segundo na rodada seguinte;
+  - falha na fonte ou no coordenador não propaga exceção para quem chama `sincronizarSePreciso()`, registra em `registrarFalha` e tenta de novo no próximo intervalo;
+  - intervalo respeitado: antes de `intervaloMs` (`agora === intervaloMs - 1`) não sincroniza; em `agora === intervaloMs` sincroniza; chamadas simultâneas compartilham a mesma execução;
+  - validação de `ERP_EVENTOS_ACESSO_INTERVALO_MS` e `ERP_EVENTOS_ACESSO_LOCK_MS` nos limites exatos (`100` e `60000` aceitos; `99` e `60001` recusados; `1000` e `120000` aceitos; `999` e `120001` recusados).
+- [ ] **Passo 3: implementar** `lib/revogacao-ativa.ts`, `lib/configuracao.ts` e o destino `eventos-acesso` em `lib/nucleo.ts`.
+- [ ] **Passo 4: rodar testes** (`cd repos/erp-shell && pnpm test`) e ver passar.
+- [ ] **Passo 5: mutações declaradas** (aplicar, rodar `pnpm test`, registrar e reverter):
 
-Na futura execução, G5 só fecha com todos os produtores entregando o sujeito correto, índice cobrindo sessões novas/legadas/renovadas, nenhuma ressurreição sob login/refresh concorrentes, cursor durável só do shell e proprietário exclusivo comprovado com dois processos. Pessoa desligada perde todas as sessões no prazo da fixture sem nova consulta a `/v2/eu`, **dev + Redis e OIDC + Redis**, e cookies antigos não entregam conteúdo. Tipos desconhecidos progridem; fonte fora, corpo inválido, cursor/fluxo inconsistentes e perda de lock têm as respostas declaradas. Todas as configurações entram no documento no mesmo commit futuro do respectivo código; regressões e mutações passam, cada D27 incidente tem evidência individual, adendo proposto tem decisão registrada e o gate fecha. Pré-condição ausente, teste pulado ou somente store falso não contam como prova G5.
+| # | Mutação | Teste que precisa reprovar |
+|---|---|---|
+| M1 | remover sessão também em `ACESSO_REVOGADO` | `ACESSO_REVOGADO` não chama `removerPorSujeito` |
+| M2 | não remover em `PESSOA_SUSPENSA` (só em `PESSOA_DESLIGADA`) | `PESSOA_SUSPENSA` remove as sessões do sujeito |
+| M3 | ignorar `adquirirLock === false` e buscar eventos mesmo assim | perdedor do lock não chama a fonte |
+| M4 | gravar o cursor final mesmo quando `removerPorSujeito` lança no meio | falha parcial mantém o cursor no último evento concluído |
+| M5 | usar `>` em vez de `>=` na comparação do intervalo (`agora - ultima >= intervaloMs`) | exatamente em `intervaloMs` sincroniza |
+| M6 | aceitar `ev.seq >= desde` ao filtrar eventos devolvidos | evento repetido com `seq === desde` é ignorado |
+| M7 | limites de `lerIntervaloDeEventos` (`< 100` virar `<= 100` ou `> 60000` virar `>= 60000`) | fronteiras `100`, `60000`, `1000` e `120000` |
+
+- [ ] **Passo 6: commits nos submódulos** (`erp-shell`, `erp-zona-1`, `erp-zona-2`, `erp-zona-acesso`).
+
+### Task 4: ligação no `proxy.ts`, ponta a ponta e documentos (erp-shell e principal)
+
+**Arquivos:** `repos/erp-shell/proxy.ts`, `repos/erp-shell/lib/decisao-proxy.ts`, `repos/erp-shell/test/proxy.test.mjs`, `base/verificacao/base.test.mjs`, `docs/CONFIGURACAO.md`, `docs/adr/0014-gestao-de-acesso-v2.md`, `.agents/orchestrator/RETOMADA.md`, `.agents/orchestrator/ATIVIDADES.md`.
+
+**Regras:**
+- Em `decidirAcaoDoProxy` (`repos/erp-shell/lib/decisao-proxy.ts`) e `proxy.ts`: quando a requisição traz cookie de sessão (`temCookieSessao && idSessao`) e não é rota pública, telemetria nem estático de zona, chama `await sincronizarEventos()` antes de `renovarSessao(idSessao)`. Se o sujeito daquela sessão tiver sido desligado ou suspenso, `sincronizarEventos()` apaga a sessão no store e, logo em seguida, `renovarSessao(idSessao)` vê a sessão ausente (`'ausente'`) e o proxy redireciona para `/login` limpando o cookie `__Host-session`!
+- Atualizar `base/verificacao/base.test.mjs:1572`: em modo JWT (`IDP_EMISSOR`), `svc.shell` agora recebe `200` em `GET /v2/eventos` (rota de serviço do shell), enquanto `svc.zona1` e `svc.idp` recebem `404`.
+- Novo teste ponta a ponta em `base/verificacao/base.test.mjs` (ou teste integrado com o shell e a gestão de acesso v2): pessoa autenticada tem sessão ativa; após `POST /v2/pessoas/{id}/desligamento`, o consumidor de eventos do shell encerra a sessão no store e a requisição seguinte ao shell (mesmo a uma rota que não chama `/v2/eu`, ou antes de o access token vencer) redireciona `307` para `/login` com `Max-Age=0` no cookie; enquanto revogação de módulo (`POST /v2/acessos/{id}/revogacao`) mantém a sessão ativa em `GET /`.
+- Documentar `ERP_EVENTOS_ACESSO_INTERVALO_MS` e `ERP_EVENTOS_ACESSO_LOCK_MS` em `docs/CONFIGURACAO.md`, atualizar o adendo 2 do `docs/adr/0014-gestao-de-acesso-v2.md` como implementado e atualizar `RETOMADA.md` e `ATIVIDADES.md`.
+
+- [ ] **Passo 1: ligar no `decisao-proxy.ts` e `proxy.ts`** com teste em `repos/erp-shell/test/proxy.test.mjs` provando que `sincronizarEventos` roda antes de `renovarSessao` e que uma sessão cujo sujeito foi desligado em `/v2/eventos` recebe `redirecionar-login` com `limparSessao: true` na requisição seguinte.
+- [ ] **Passo 2: atualizar `base.test.mjs` e `docs/CONFIGURACAO.md`**, `docs/adr/0014-gestao-de-acesso-v2.md`, `RETOMADA.md` e `ATIVIDADES.md`.
+- [ ] **Passo 3: mutações declaradas da ligação**:
+
+| # | Mutação | Teste que precisa reprovar |
+|---|---|---|
+| M1 | chamar `sincronizarEventos` depois de `renovarSessao` em `decidirAcaoDoProxy` | sessão com token válido cujo sujeito foi desligado no evento cai em `/login` na própria requisição |
+| M2 | não chamar `sincronizarEventos` em páginas do próprio shell (`/`) | navegação a `/` após desligamento redireciona para `/login` |
+
+- [ ] **Passo 4: rodar verificações completas** (`task test`, `task typecheck`, `task verificar:estatica`, `task scripts:test`, `task lockstep`), registrar e commitar submódulos e principal.

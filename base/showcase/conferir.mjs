@@ -55,6 +55,12 @@ const carla = (await entrarComo('carla', { modo })).cookie
 ok('bruno vê o custo do recurso r-1', /CC-10/.test((await pedir('/zona1/recursos/r-1', { cookie: bruno })).html))
 ok('carla (admin de acesso) não vê custo', !/CC-10/.test((await pedir('/zona1/recursos/r-1', { cookie: carla })).html))
 
+// segregação de funções e permissões finas (v2)
+const eva = (await entrarComo('eva', { modo })).cookie
+const z2Eva = await pedir('/zona2', { cookie: eva })
+ok('carla (admin de acesso) tem 404 em /zona2 (segregação de funções)', (await pedir('/zona2', { cookie: carla })).status === 404)
+ok('eva (leitora) vê /zona2 mas não vê botão de concluir', z2Eva.status === 200 && !z2Eva.html.includes('Concluir e ir para a zona 1'))
+
 // segurança visível de fora
 const r = await pedir('/', { cookie: bruno })
 ok('CSP com nonce', /'nonce-[^']+'/.test(r.csp ?? ''))

@@ -1,6 +1,6 @@
 # ADR-0014 — Alinhamento à gestão de acesso v2
 
-**Status:** aceito com o adendo 1 (humano, 2026-09-23), inclusive a lacuna declarada até o G5 (sem revogação ativa); proposto em 2026-09-22 pelo `arquiteto-mfe`; **adendo 1** no fim (corte seco, núcleo 0.9.0) · **Afeta:** `@erp/nucleo` 0.8.0–0.9.0, `@erp/contratos`, as 4 apps, `erp-dominio-stub` · **Evolui:** ADR-0009 (decisão 2)
+**Status:** aceito com os adendos 1, 2 e 3 (humano, 2026-09-23; G5 implementado em 2026-10-16); proposto em 2026-09-22 pelo `arquiteto-mfe`; **adendo 1** (corte seco, núcleo 0.9.0), **adendo 2** (credencial `svc.shell` para `/v2/zonas`) e **adendo 3** (revogação ativa por `/v2/eventos`, núcleo 0.10.5, integrado no 0.10.6) no fim · **Afeta:** `@erp/nucleo` 0.8.0–0.10.6, `@erp/contratos`, as 4 apps, `erp-dominio-stub` · **Evolui:** ADR-0009 (decisão 2)
 
 ## Contexto
 
@@ -107,7 +107,7 @@ carregava CPF e papéis sem consumidor; o manifesto v2 usa funcionalidades relat
    sujeito, credencial de serviço no shell, cursor gravado só pelo shell e consumidor único. **Até o G5 a base
    não tem revogação ativa**: quem está dentro sai só quando a sessão acaba ou quando a página consulta `/v2/eu`.
 8. **D2 casa a pessoa por `sub`** (emenda o ADR-0013): `Sessao.sub` é o `sub` do IdP; o stub em modo JWT
-   identifica a v2 por `claims.sub`; o retorno do login chama `/v2/eu` antes de gravar e recusa `401` (**implementado em 0.10.5**).
+   identifica a v2 por `claims.sub`; o retorno do login chama `/v2/eu` antes de gravar e recusa `401` (**implementado em 0.10.5 nesta máquina; publicado na base como 0.10.6**, que junta essa correção ao G5).
    Usa o token recém-obtido pelo registro de destinos, sem sessão provisória; 3xx, 5xx, timeout e corpo
    inválido falham sem gravar. Pessoa ativa sem módulos pode entrar; desligada e suspensa recebem `401`.
 9. **Versões e ordem:** G3 primeiro, contratos **0.4.0** e núcleo **0.9.0**, funcionando com token dev; D2 depois,
@@ -125,3 +125,20 @@ tem de estar no manifesto dela. Gate — † v1 no ar e v2 fora → serviço ind
 ## Adendo 2 (2026-10-07): credencial de serviço do shell para o mapa de zonas
 
 O [ADR-0015](0015-mapa-de-zonas-vivo-e-gateway.md) (C3) adianta um pedaço da credencial de serviço do shell, que este ADR deixava para o G5: o shell lê `GET /v2/zonas` com o token `svc.shell` (`ERP_TOKEN_SERVICO`), com escopo só de leitura do mapa. No domínio falso (mock), `POST /v2/zonas/{id}/rota` só aceita `svc.{id}` e `GET /v2/zonas` só aceita `svc.shell`, com auditoria do registro. A base injeta `svc.shell` apenas no ambiente do shell, nunca no das zonas. O consumo de eventos e o resto do G5 continuam como estavam.
+
+## Adendo 3 (2026-10-16): revogação ativa por `/v2/eventos` (G5)
+
+Fecha a lacuna declarada no adendo 1 (item 7) e implementa a decisão 5:
+
+1. **Rota de eventos no domínio de acesso (`GET /v2/eventos`):** aceita exclusivamente `Bearer svc.shell` (tanto em modo dev quanto em modo JWT, via `ROTA_DE_SERVICO`); retorna `401` sem credencial e `404` para qualquer outro token de serviço ou de usuário (Invariante 7). Valida o parâmetro `desde` como inteiro não negativo (`422 CURSOR_INVALIDO` fora disso). Nos eventos que atingem uma pessoa, inclui `sujeitos: string[]` com `[sub, login]` da pessoa-alvo para casar sessões gravadas tanto em modo OIDC (`sub` = UUID) quanto em modo dev (`sub` = login), sem expor CPF.
+2. **Remoção de sessões por sujeito no `@erp/nucleo` (0.10.5 do G5; na base, 0.10.6):** `EscritorDeSessao.removerPorSujeito(sub)` e `nucleo.sessao.removerSessoesDoSujeito(sub)` (exportados exclusivamente em `@erp/nucleo/shell`, Invariante 15). No Redis (`sessaoRedisDeEscrita`), cada sessão gravada indexa seu id em `erp:sujeito:<sha256(sub)>` (fora do prefixo `erp:sessao:*` que a ACL das zonas pode ler) com `PX` igual ao maior TTL remanescente entre as sessões ativas do sujeito; `removerPorSujeito` remove as chaves de sessão e o índice.
+3. **Sincronização no proxy do shell (`lib/revogacao-ativa.ts`):** antes de decidir a ação de uma rota autenticada (`decidirAcaoDoProxy`), o shell executa `sincronizarSePreciso()` respeitando o intervalo `ERP_EVENTOS_ACESSO_INTERVALO_MS` (padrão `5000` ms), single-flight por processo e lock distribuído no Redis (`SET erp:eventos-acesso:lock 1 NX PX <ERP_EVENTOS_ACESSO_LOCK_MS>`, padrão `10000` ms). O cursor fica em `erp:eventos-acesso:cursor` no Redis (e em memória no processo). Eventos `PESSOA_DESLIGADA` e `PESSOA_SUSPENSA` removem todas as sessões de cada identificador em `sujeitos`; `ACESSO_REVOGADO` apenas avança o cursor sem encerrar a sessão (a pessoa continua autenticada e perde apenas o módulo revogado, verificado a cada página/action por `/v2/eu`, Invariante 13). Falhas na leitura de `/v2/eventos` são registradas sem derrubar a requisição em trânsito.
+
+## Adendo 4 (2026-10-19): showcase com atores v2 e limpeza da v1 (G4)
+
+Conclui a transicao para a v2 e desativa o mock legado da v1:
+
+1. **Atores canonicos no showcase:** os cinco atores do modelo de referencia (ana, bruno, carla, davi, eva) com suas permissoes na semente da gestao de acesso v2 sao exercitados em `base/showcase/conferir.mjs` e `base/verificacao/showcase/showcase.test.mjs`.
+2. **Segregacao de funcoes e permissoes finas comprovadas:** carla (admin-geral) possui 404 em `/zona2`; eva (zona2.leitor) acessa `/zona2` com visualizacao restrita das tarefas (sem botao de conclusao na UI) e tem a execucao direta da Server Action `concluirTarefa` recusada com redirecionamento e toast.
+3. **Remocao definitiva do mock legado v1:** removidos `repos/erp-dominio-stub/src/gestao-acesso.mjs`, `test/gestao-acesso.test.mjs`, a porta 4010 no servidor do stub e na configuracao de ambiente, completando a migracao exclusiva para a v2.
+

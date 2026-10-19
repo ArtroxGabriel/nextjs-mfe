@@ -1,12 +1,14 @@
-# Retomada: G5 em planejamento (2026-10-13)
+# Retomada: G4, G5 e correção do login integrados (2026-10-19)
 
-**Retomado em 2026-10-13 a pedido do humano ("avalie o processo e continue").** Gate local do P1 aprovado em 2026-10-12; envio feito; P1 operacional segue esperando o humano. **Foco na entrega (2026-10-13: "não se perder do plano").** O objetivo da base foi atingido em 2026-10-07 (F1 a F7 no showcase, tag `gate-e3e5-aprovado`). G5, G4, C2, B2 e a Lista 2 ficam depois da entrega e não começam sem decisão. O plano do G5 está engavetado em `docs/superpowers/plans/2026-10-13-g5-revogacao-ativa.md`, com o recorte no topo.
+**Atualizado em 2026-10-19 (integração).** Gate local do P1 aprovado em 2026-10-12; P1 operacional segue esperando o humano. Esta máquina corrigiu o desvio do login (ADR-0014, adendo 1, item 8: `concluirLogin` consulta `/v2/eu` antes de gravar) e preparou o P1 para o registro do GitLab, inativo. Em paralelo, o **G5 (revogação ativa de sessão por `/v2/eventos`)** e o **G4 (showcase com atores v2 e limpeza da v1)** foram implementados em outra máquina conforme ADR-0014 (adendos 3 e 4):
+- G5: `erp-dominio-stub` com `GET /v2/eventos` restrito a `Bearer svc.shell`, cursor `desde` validado e `sujeitos: [sub, login]` nos eventos; `@erp/nucleo` com `removerPorSujeito(sub)` em `@erp/nucleo/shell`; `erp-shell` com sincronização ativa periódica e revogação no proxy com lock e cursor no Redis (`lib/revogacao-ativa.ts`).
+- G4: showcase integrado com os 5 atores canônicos (`ana`, `bruno`, `carla`, `davi`, `eva`) em `base/showcase/conferir.mjs` e `base/verificacao/showcase/showcase.test.mjs`; segregação de funções de Carla (404 em `/zona2`) e permissões finas de Eva (leitura sem conclusão em `/zona2` e ação direta negada); passos A16, A17 e A18 no roteiro de verificação; mock legado da v1 (`gestao-acesso.mjs`, porta 4010) apagado.
 
-**Desvio achado no planejamento do G5:** `concluirLogin` (`erp-nucleo/src/fabricas/criarNucleo.ts`) grava a sessão sem consultar `/v2/eu`, embora o ADR-0014, adendo 1, item 8, diga que o retorno do login consulta e recusa `401`. Pessoa desligada consegue sessão nova; a página seguinte nega pela camada 2 e o domínio decide, então não vaza dado, mas o código diverge do ADR.
+**Colisão de versão resolvida na integração (ADR-0010):** os dois lados lançaram `@erp/nucleo` 0.10.5 com conteúdos diferentes (login aqui, G5 lá). O merge junta os dois no **0.10.6**, nas quatro apps; nenhum 0.10.5 vale como versão da base. Quem tiver 0.10.5 no Verdaccio local não deve usá-lo.
 
-**O que falta para entregar (atualizado 2026-10-13 noite):** (1) ~~fechar #9, #10 e #19~~ feito: GitLab #120, #121, #132, #135 e #136 fechadas; (2) desvio do login corrigido no núcleo 0.10.5 (`.agents/worker_login_1/handoff.md`), **falta o gate**; (3) P1 preparado para o registro do GitLab, inativo (`.agents/worker_gitlab_1/handoff.md`); a ativação depende do humano: espelhos dos repositórios na instância, projeto do registro, tokens e variáveis.
+**Próxima atividade:** os ajustes de pacotes vindos da revisão de monorepo (2026-10-19; decisão: esta base não migra para monorepo): (1) `@erp/moldura` passa a depender de `@erp/contratos` 0.4.0, eliminando a segunda cópia (0.2.1) nas apps; (2) `base/scripts/verificar-lockstep.mjs` conta todas as entradas `@erp/nucleo@x` (e `@erp/contratos@x`) do lockfile, não só a dependência direta; (3) a publicação testa o tarball instalado num consumidor Next mínimo que importa cada `exports`, inclusive o CSS da moldura, e publica esses mesmos bytes. Reavaliar a estrutura de repositórios só depois do P1 operacional, agrupando por dono (`erp-nucleo` + `erp-contratos`), nunca num repositório único sem aprovação obrigatória por caminho.
 
-**Lição do Codex nesta rodada:** entrega código bom, mas declara pronto sem rodar a prova que importa (OIDC nunca rodou; teste unitário contradizia a prova com pnpm). O orquestrador roda as suítes ponta a ponta e as mutações antes de aceitar. `codex exec resume` não herda `-s` nem `--add-dir`: repassar as opções na retomada.
+**Lição do Codex:** entrega código bom, mas declara pronto sem rodar a prova que importa. O orquestrador roda as suítes ponta a ponta e as mutações antes de aceitar. `codex exec resume` não herda `-s` nem `--add-dir`: repassar as opções na retomada.
 
 **Sessão vizinha ativa** em `~/Documents/sisbin-planejamento-local` (Claude + Codex, padrão de erros): regras de isolamento em `AMBIENTE.md`, última seção.
 
@@ -21,7 +23,7 @@
 
 ## Como foi executado
 
-Desde 2026-10-12 o trabalho é despachado para o Codex local (`codex exec`, sandbox `workspace-write`); o orquestrador aplica os textos e commita o principal, porque `.git/` e `.agents/` do principal são somente leitura na sandbox do Codex. Não tocar `~/Documents/sisbin-planejamento-local` nem seus processos.
+Desde 2026-10-12 o trabalho é despachado para o Codex local (`codex exec`, sandbox `workspace-write`) ou executado diretamente pelo agente principal; nunca tocar `~/Documents/sisbin-planejamento-local` nem seus processos.
 
 ## Gate do P1
 
@@ -35,8 +37,8 @@ Handoffs em `.agents/auditor_p1_4` e `.agents/worker_p1_4`; os das iterações 1
 
 ## Pendências
 
-1. **Envio:** feito pelo humano em 2026-10-13 (`erp-nucleo` df5b0f4, `erp-shell` bd51363, principal 0f51c79; `pre-push` com submódulos e lockstep verdes).
+1. **Envio:** commits da integração (os seis submódulos antes do principal) não enviados. Aguarda confirmação do humano.
 2. **P1 operacional:** registro oficial com política de imutabilidade, migração dos tarballs canônicos sem trocar bytes, reconciliação das integridades e uma execução verde do CI remoto. Precisa de endereço e credenciais do humano.
 3. Lockfiles soltos de `erp-moldura` e `erp-dominio-stub`: fora de commit; reconciliar só com o registro canônico.
 4. Diretórios temporários de teste em `/tmp` (`espera-*`, `fronteira-*`, `tx-*`, `erp-sessoes-*`, `app-*` e afins) não foram apagados: o projeto vizinho roda testes com os mesmos prefixos e não dá para atribuir a origem com segurança.
-5. Depois do P1: G5 e G4, na ordem encaminhada.
+5. **Próximos passos:** gate formal de G4 e G5.

@@ -10,7 +10,7 @@ README (o que é, porta, comandos, dependências):
 | `erp-moldura` | `@erp/moldura`: moldura visual e toast |
 | `erp-shell` | o shell (`:3000`) |
 | `erp-zona-1`, `erp-zona-2`, `erp-zona-acesso` | as zonas (`:3001`–`:3003`) |
-| `erp-dominio-stub` | domínios falsos (`:4001`–`:4004`, `:4010`) |
+| `erp-dominio-stub` | domínios falsos (`:4001`–`:4004`, `:4020`) |
 
 As ferramentas que operam a base inteira (subir, verificar ponta a ponta, Verdaccio) ficam em
 `../base/`. Ordem de publicação: `erp-contratos` → `erp-nucleo` → `erp-moldura` → aplicações.
