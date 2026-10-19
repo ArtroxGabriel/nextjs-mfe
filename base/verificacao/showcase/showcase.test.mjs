@@ -104,11 +104,19 @@ test('F2 há zonas', async () => {
 test('F3 as zonas se integram', async () => {
   const ana = (await como('ana')).cookie
   const bruno = (await como('bruno')).cookie
+  const carla = (await como('carla')).cookie
   const davi = (await como('davi')).cookie
+  const eva = (await como('eva')).cookie
 
-  // o mesmo menu nas zonas, com o item atual marcado
+  // o menu de cada um reflete exatamente os módulos e papéis concedidos
+  assert.deepEqual(menu((await pedir('/', { cookie: ana })).html).hrefs, ['/', '/zona1', '/zona2'])
+  assert.deepEqual(menu((await pedir('/', { cookie: bruno })).html).hrefs, ['/', '/zona1'])
+  assert.deepEqual(menu((await pedir('/', { cookie: carla })).html).hrefs, ['/', '/zona1', '/acesso'])
+  assert.deepEqual(menu((await pedir('/', { cookie: davi })).html).hrefs, ['/', '/zona1'])
+  assert.deepEqual(menu((await pedir('/', { cookie: eva })).html).hrefs, ['/', '/zona2'])
+
+  // o mesmo menu nas zonas onde tem acesso, com o item atual marcado
   const inicio = menu((await pedir('/', { cookie: ana })).html)
-  assert.deepEqual(inicio.hrefs, ['/', '/zona1', '/zona2'])
   for (const caminho of ['/zona1', '/zona2']) {
     const m = menu((await pedir(caminho, { cookie: ana })).html)
     assert.deepEqual(m.hrefs, inicio.hrefs, `menu de ${caminho}`)
@@ -119,7 +127,9 @@ test('F3 as zonas se integram', async () => {
   const bloco = async (cookie) => /data-fragmento="zona2\/tarefas"/.test((await pedir('/zona1', { cookie })).html)
   assert.equal(await bloco(ana), true, 'ana deveria ver o bloco')
   assert.equal(await bloco(bruno), false, 'bruno não deveria ver o bloco')
+  assert.equal(await bloco(carla), false, 'carla não deveria ver o bloco')
   assert.equal(await bloco(davi), false, 'davi não deveria ver o bloco')
+  assert.equal(await bloco(eva), false, 'eva não deveria ver o bloco')
 
   // o Sair encerra a sessão em todas as zonas
   const antes = []
@@ -137,16 +147,32 @@ test('F3 as zonas se integram', async () => {
 test('F4 os tratamentos', async () => {
   const carla = (await como('carla')).cookie
   const ana = (await como('ana')).cookie
+  const eva = (await como('eva')).cookie
 
   // recurso fora do escopo e módulo negado: 404, sem placeholder
   const fora = await pedir('/zona1/recursos/r-3', { cookie: carla })
   assert.equal(fora.status, 404, 'recurso fora do escopo')
   assert.doesNotMatch(fora.html, semPlaceholder)
-  for (const caminho of ['/zona1/relatorios', '/acesso']) {
-    const r = await pedir(caminho, { cookie: ana })
-    assert.equal(r.status, 404, `${caminho} para ana`)
-    assert.doesNotMatch(r.html, semPlaceholder, caminho)
+
+  // segregação de funções e ausência de módulos/papéis
+  const carlaZ2 = await pedir('/zona2', { cookie: carla })
+  assert.equal(carlaZ2.status, 404, 'carla (admin de acesso) tem 404 em /zona2 (segregação de funções)')
+  assert.doesNotMatch(carlaZ2.html, semPlaceholder)
+
+  const evaZ1 = await pedir('/zona1', { cookie: eva })
+  assert.equal(evaZ1.status, 404, 'eva não tem acesso a /zona1')
+  assert.doesNotMatch(evaZ1.html, semPlaceholder)
+
+  for (const u of ['ana', 'bruno', 'davi', 'eva']) {
+    const c = (await como(u)).cookie
+    const r = await pedir('/acesso', { cookie: c })
+    assert.equal(r.status, 404, `/acesso para ${u} (não admin)`)
+    assert.doesNotMatch(r.html, semPlaceholder, `/acesso para ${u}`)
   }
+
+  const rel = await pedir('/zona1/relatorios', { cookie: ana })
+  assert.equal(rel.status, 404, '/zona1/relatorios para ana')
+  assert.doesNotMatch(rel.html, semPlaceholder)
 
   // erro normalizado { codigo, supportId }, sem stack (o mesmo caminho do N2 de base.test.mjs)
   const csrf = await pedir('/api/auth/sair', {
@@ -212,6 +238,13 @@ test('F5 base de UI', async () => {
     assert.deepEqual(new Set(classesDosLinks(r.html)), new Set(classesDosLinks(primeira[1].html)), `links do menu de ${caminho} diferem do da zona 1`)
   }
   assert.match(primeira[1].html, /<button type="button">Avisar no toast do shell<\/button>/, 'botão que emite o toast na zona 1')
+
+  // permissão fina na UI: ana vê o botão de concluir na zona 2; eva (zona2.leitor) não vê
+  const z2Ana = await pedir('/zona2', { cookie: ana })
+  const eva = (await como('eva')).cookie
+  const z2Eva = await pedir('/zona2', { cookie: eva })
+  assert.match(z2Ana.html, /<button type="submit">Concluir e ir para a zona 1<\/button>/, 'ana deve ver o botão de concluir')
+  assert.doesNotMatch(z2Eva.html, /<button type="submit">Concluir e ir para a zona 1<\/button>/, 'eva não deve ver o botão de concluir')
 
   // O clique em "Avisar no toast do shell" (emitirToast em memória, ilha de cliente) só se confere à mão (A5/A6 do roteiro).
   // Aqui se prova o toast que atravessa a troca de zona e aparece pela moldura: versão desatualizada em t-4 (já concluída,
@@ -286,4 +319,13 @@ test('F7 integração com os domínios', async () => {
   assert.match(seguinte.html, /moldura-toast-erro">Este registro mudou/, 'o toast de registro desatualizado')
   // a versão nova passa (ensaio com a versão seguinte, que é a atual)
   assert.ok(passou(await tentar(aceita + 1)), 'com a versão certa a mutação deveria passar')
+
+  // eva (zona2.leitor, sem tarefas.concluir) tenta executar a Server Action diretamente: ação negada
+  const eva = (await como('eva')).cookie
+  const tentativaEva = await acaoPeloCliente({ ...CONCLUIR, campos: { ...base, id: 't-4', versao: String(aceita + 2) }, cookie: eva })
+  assert.ok(/"destino":"\/"/.test(tentativaEva.corpo), 'eva sem permissão de concluir deve ser redirecionada para /')
+  const flashEva = tentativaEva.cookies.find((c) => c.startsWith('__Host-flash='))?.split(';')[0]
+  assert.ok(flashEva, 'a recusa de eva deve deixar toast de flash')
+  const seguinteEva = await pedir('/zona2', { cookie: `${eva}; ${flashEva}` })
+  assert.match(seguinteEva.html, /moldura-toast-erro">Você não pode executar esta operação/, 'toast de operação não permitida para eva')
 })

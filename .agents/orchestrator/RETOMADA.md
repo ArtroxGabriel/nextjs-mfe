@@ -1,9 +1,8 @@
-# Retomada: G5 implementado (2026-10-16)
+# Retomada: G4 e G5 implementados (2026-10-19)
 
-**Atualizado em 2026-10-16.** Gate local do P1 aprovado em 2026-10-12; P1 operacional e envio seguem esperando o humano. O **G5 (revogação ativa de sessão por `/v2/eventos`)** foi implementado conforme `docs/superpowers/plans/2026-10-13-g5-revogacao-ativa.md` (ADR-0014, decisão 5 e adendo 3):
-- `erp-dominio-stub`: `GET /v2/eventos` restrito a `Bearer svc.shell` (inclusive em modo JWT via `ROTA_DE_SERVICO`, `404` para outros tokens e `401` sem credencial), cursor `desde` validado (`422 CURSOR_INVALIDO`), e `sujeitos: [sub, login]` nos eventos que atingem uma pessoa, sem expor CPF (6/6 mutações mortas).
-- `@erp/nucleo` `0.10.5` (lockstep nas 4 apps): `EscritorDeSessao.removerPorSujeito(sub)` e `nucleo.sessao.removerSessoesDoSujeito(sub)` em `@erp/nucleo/shell`, com índice `erp:sujeito:<sha256(sub)>` no Redis fora de `erp:sessao:*` (7/7 mutações mortas).
-- `erp-shell`: destino `eventos-acesso`, `lib/revogacao-ativa.ts` (revoga sessões em `PESSOA_DESLIGADA` e `PESSOA_SUSPENSA`, avança cursor em `ACESSO_REVOGADO` sem derrubar a sessão, single-flight + lock `erp:eventos:lock` e cursor `erp:eventos:cursor` no Redis), integrado em `decidirAcaoDoProxy` e `proxy.ts` (9/9 mutações mortas).
+**Atualizado em 2026-10-19.** Gate local do P1 aprovado em 2026-10-12; P1 operacional e envio seguem esperando o humano. O **G5 (revogação ativa de sessão por `/v2/eventos`)** e o **G4 (showcase com atores v2 e limpeza da v1)** foram implementados conforme ADR-0014 (adendos 3 e 4):
+- G5: `erp-dominio-stub` com `GET /v2/eventos` restrito a `Bearer svc.shell`, cursor `desde` validado e `sujeitos: [sub, login]` nos eventos; `@erp/nucleo` `0.10.5` com `removerPorSujeito(sub)` em `@erp/nucleo/shell`; `erp-shell` com sincronização ativa periódica e revogação no proxy com lock e cursor no Redis (`lib/revogacao-ativa.ts`).
+- G4: showcase integrado com os 5 atores canônicos (`ana`, `bruno`, `carla`, `davi`, `eva`) em `base/showcase/conferir.mjs` e `base/verificacao/showcase/showcase.test.mjs`; segregação de funções de Carla (404 em `/zona2`) e permissões finas de Eva (leitura sem conclusão em `/zona2` e ação direta negada); passos A16, A17 e A18 no roteiro de verificação; mock legado da v1 (`gestao-acesso.mjs`, porta 4010) apagado.
 
 **Sessão vizinha ativa** em `~/Documents/sisbin-planejamento-local` (Claude + Codex, padrão de erros): regras de isolamento em `AMBIENTE.md`, última seção.
 
@@ -36,4 +35,4 @@ Handoffs em `.agents/auditor_p1_4` e `.agents/worker_p1_4`; os das iterações 1
 2. **P1 operacional:** registro oficial com política de imutabilidade, migração dos tarballs canônicos sem trocar bytes, reconciliação das integridades e uma execução verde do CI remoto. Precisa de endereço e credenciais do humano.
 3. Lockfiles soltos de `erp-moldura` e `erp-dominio-stub`: fora de commit; reconciliar só com o registro canônico.
 4. Diretórios temporários de teste em `/tmp` (`espera-*`, `fronteira-*`, `tx-*`, `erp-sessoes-*`, `app-*` e afins) não foram apagados: o projeto vizinho roda testes com os mesmos prefixos e não dá para atribuir a origem com segurança.
-5. **Próximos passos:** gate do G5 e G4 (showcase com os atores da v2).
+5. **Próximos passos:** gate formal de G4 e G5.

@@ -18,10 +18,9 @@ export const PORTAS_DE_DOMINIO = {
   'dominio-a': 4001, 'dominio-b': 4002, 'dominio-c': 4003, plataforma: 4004, 'gestao-acesso-v2': 4020,
 }
 /**
- * Domínios que só sobem quando uma verificação pede (`subirDominio`). A gestão de acesso v1 fica
- * aqui para provar que as apps não voltam a ela com a v2 fora (ADR-0014, adendo 1).
+ * Domínios que só sobem quando uma verificação pede (`subirDominio`).
  */
-export const PORTAS_SOB_DEMANDA = { 'gestao-acesso': 4010 }
+export const PORTAS_SOB_DEMANDA = {}
 const PORTA = { ...PORTAS_DE_DOMINIO, ...PORTAS_SOB_DEMANDA }
 
 /** O que entra no build de uma aplicação: fonte, configuração e as versões de pacote travadas. */
